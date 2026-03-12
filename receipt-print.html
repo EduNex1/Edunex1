@@ -1,0 +1,366 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Receipt — Print</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="css/print-all.css">
+    <style>
+        * {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #fff;
+            padding: 20px;
+        }
+
+        .print-controls {
+            background: #f5f7ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .print-controls button {
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0 18px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-print {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .btn-back {
+            background: #0d1b4a;
+            color: #fff;
+        }
+
+        .btn-print:hover,
+        .btn-back:hover {
+            opacity: 0.85;
+        }
+
+        .receipt-page {
+            background: #fff;
+            border: 2px solid #333;
+            padding: 30px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #0d1b4a;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .receipt-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0d1b4a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .receipt-header .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        .receipt-header .address {
+            font-size: 10px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .receipt-title-wrap {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .receipt-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d1b4a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #0d1b4a;
+            display: inline-block;
+            padding: 4px 20px;
+            border-radius: 4px;
+        }
+
+        .stu-info {
+            margin-bottom: 14px;
+        }
+
+        .stu-info table {
+            width: 100%;
+        }
+
+        .stu-info td {
+            font-size: 11px;
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        .stu-info .lbl {
+            font-weight: 700;
+            color: #555;
+            width: 110px;
+        }
+
+        .stu-info .val {
+            font-weight: 600;
+            color: #0d1b4a;
+        }
+
+        .receipt-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+
+        .receipt-tbl th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 7px 10px;
+            text-align: left;
+        }
+
+        .receipt-tbl th:last-child {
+            text-align: right;
+        }
+
+        .receipt-tbl td {
+            font-size: 11px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .receipt-tbl td:last-child {
+            text-align: right;
+        }
+
+        .receipt-tbl tbody tr:nth-child(even) td {
+            background: #f8f9ff;
+        }
+
+        .receipt-tbl tfoot td {
+            font-weight: 700;
+            border-top: 2px solid #0d1b4a;
+            font-size: 12px;
+        }
+
+        .receipt-summary {
+            margin-bottom: 14px;
+        }
+
+        .receipt-summary table {
+            width: 100%;
+        }
+
+        .receipt-summary td {
+            font-size: 11px;
+            padding: 4px 0;
+        }
+
+        .receipt-summary .lbl {
+            font-weight: 600;
+            color: #555;
+            width: 140px;
+        }
+
+        .receipt-summary .val {
+            font-weight: 700;
+            color: #0d1b4a;
+        }
+
+        .receipt-note {
+            font-size: 10px;
+            color: #888;
+            line-height: 1.6;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .receipt-sig {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .receipt-sig .sig-item {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .receipt-sig .sig-item .line {
+            width: 120px;
+            border-top: 1px solid #333;
+            margin: 0 auto 4px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        @media print {
+            .print-controls {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .receipt-page {
+                border: 2px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .receipt-tbl th {
+                background: #333 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Controls (hidden in print) -->
+    <div class="print-controls" id="controls">
+        <button class="btn-print" id="btnPrint"><i class="fas fa-print"></i> Print Receipt</button>
+        <button class="btn-back" onclick="window.close()"><i class="fas fa-arrow-left"></i> Close</button>
+    </div>
+
+    <!-- Receipt Content -->
+    <div id="receiptContent"></div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        $(async function () {
+            const storedId = sessionStorage.getItem('receiptPrintId');
+            if (!storedId) {
+                $('#receiptContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>No receipt data found. Please go back and click Print on a receipt.</div>');
+                return;
+            }
+
+            let dep;
+            try { dep = await getFeeDeposit(storedId); } catch(e) { dep = null; }
+            if (!dep) {
+                $('#receiptContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>Receipt not found.</div>');
+                return;
+            }
+
+            let branches = [];
+            try { branches = await getBranches(); } catch(e) {}
+            const branch = branches.find(b => b.id === dep.branch_id) || {};
+
+            // Build fee table rows from items
+            let feeRows = '';
+            const items = dep.items || [];
+            items.forEach((item, i) => {
+                feeRows += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${item.particular_name || '-'}</td>
+                    <td>₹${(item.amount || 0).toLocaleString('en-IN')}</td>
+                </tr>`;
+            });
+
+            const today = new Date(dep.date);
+            const dateStr = today.getDate().toString().padStart(2, '0') + ' ' + today.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + today.getFullYear();
+
+            const schoolName = branch.school_name || 'School';
+            const schoolAddr = branch.address || '';
+            const schoolPhone = branch.phone || '';
+
+            let html = `
+            <div class="receipt-page">
+                <div class="receipt-header">
+                    ${branch.logo_url ? '<img src="'+branch.logo_url+'" style="height:48px;width:48px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
+                    <h3>${schoolName}</h3>
+                    <div class="tagline">${branch.name || ''}</div>
+                    <div class="address">${schoolAddr} &nbsp;|&nbsp; ${schoolPhone}</div>
+                </div>
+                <div class="receipt-title-wrap"><span class="receipt-title">Fee Receipt</span></div>
+
+                <div class="stu-info">
+                    <table>
+                        <tr><td class="lbl">Receipt No.</td><td class="val">${dep.receipt_no || ''}</td><td class="lbl">Date</td><td class="val">${dateStr}</td></tr>
+                        <tr><td class="lbl">Student Name</td><td class="val">${dep.student_name || '-'}</td><td class="lbl">Adm No.</td><td class="val">${dep.admission_no || '-'}</td></tr>
+                        <tr><td class="lbl">Father's Name</td><td class="val">${dep.father_name || '-'}</td><td class="lbl">Class / Section</td><td class="val">${dep.class_name || '-'} / ${dep.section || '-'}</td></tr>
+                        <tr><td class="lbl">Month</td><td class="val">${dep.month || ''}</td><td class="lbl">Category</td><td class="val">${dep.category || ''}</td></tr>
+                    </table>
+                </div>
+
+                <table class="receipt-tbl">
+                    <thead><tr><th>S.No</th><th>Particular</th><th>Amount (₹)</th></tr></thead>
+                    <tbody>${feeRows}</tbody>
+                    <tfoot>
+                        <tr><td colspan="2" style="text-align:right;">Total</td><td style="text-align:right;">₹${(dep.total_amount || 0).toLocaleString('en-IN')}</td></tr>
+                    </tfoot>
+                </table>
+
+                <div class="receipt-summary">
+                    <table>
+                        <tr><td class="lbl">Late Fee</td><td class="val">₹${(dep.late_fee || 0).toLocaleString('en-IN')}</td><td class="lbl">Concession</td><td class="val">₹${(dep.concession || 0).toLocaleString('en-IN')}</td></tr>
+                        <tr><td class="lbl">Grand Total</td><td class="val">₹${(dep.grand_total || 0).toLocaleString('en-IN')}</td><td class="lbl">Payment Mode</td><td class="val">${dep.payment_mode || ''}</td></tr>
+                        <tr><td class="lbl">Amount Received</td><td class="val">₹${(dep.received_amount || 0).toLocaleString('en-IN')}</td><td class="lbl">Balance</td><td class="val">₹${(dep.balance || 0).toLocaleString('en-IN')}</td></tr>
+                    </table>
+                </div>
+
+                <div class="receipt-note">
+                    <strong>Note:</strong> This is a computer-generated receipt and does not require a signature. For any queries, contact: ${schoolPhone}.
+                </div>
+
+                <div class="receipt-sig">
+                    <div class="sig-item"><div class="line"></div>Parent's Signature</div>
+                    <div class="sig-item"><div class="line"></div>Accountant</div>
+                    <div class="sig-item">${branch.signing_authority_signature_url ? '<img src="'+branch.signing_authority_signature_url+'" style="max-height:35px;max-width:90px;object-fit:contain;display:block;margin:0 auto;">' : ''}<div class="line"></div>${branch.signing_authority_designation || 'Principal'}</div>
+                </div>
+            </div>`;
+
+            $('#receiptContent').html(html);
+
+            $('#btnPrint').on('click', function () { window.print(); });
+        });
+    </script>
+</body>
+
+</html>

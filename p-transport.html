@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Transport — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .tp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+        .tp-item { background:#f8f9fb; border-radius:10px; padding:16px; display:flex; align-items:center; gap:14px; }
+        .tp-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+        .tp-icon.route { background:#e8eaf6; color:#304ffe; }
+        .tp-icon.vehicle { background:#fff3e0; color:#ef6c00; }
+        .tp-icon.driver { background:#e8f5e9; color:#2e7d32; }
+        .tp-icon.fee { background:#fce4ec; color:#c62828; }
+        .tp-icon.phone { background:#e0f7fa; color:#00838f; }
+        .tp-info .tp-label { font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.3px; }
+        .tp-info .tp-value { font-size:15px; font-weight:700; color:#0d1b4a; margin-top:2px; }
+        .tp-none { text-align:center; padding:40px 20px; }
+        .tp-none i { font-size:40px; color:#cfd8dc; margin-bottom:12px; }
+        .tp-none p { color:#888; font-size:13px; margin:0; }
+        @media(max-width:480px){ .tp-grid{grid-template-columns:1fr;gap:10px;} .tp-item{padding:12px;gap:10px;} .tp-icon{width:36px;height:36px;font-size:15px;} .tp-info .tp-value{font-size:13px;} }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Transport</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Transport</li></ul>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
+                    <div class="chart-card-body" style="padding:12px 16px;">
+                        <select id="childSelect" onchange="loadTransport()" class="form-control" style="max-width:350px;"><option value="">— loading —</option></select>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header"><i class="fas fa-bus"></i> Transport Details</div>
+                    <div class="chart-card-body">
+                        <div id="transportArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    const fmt = n => '\u20B9' + Number(n||0).toLocaleString('en-IN');
+    function tile(icon, cls, label, val) {
+        return '<div class="tp-item"><div class="tp-icon '+cls+'"><i class="fas fa-'+icon+'"></i></div><div class="tp-info"><div class="tp-label">'+label+'</div><div class="tp-value">'+val+'</div></div></div>';
+    }
+
+    $(async function(){
+        initPage('p-transport');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect').empty();
+            children.forEach(c => cs.append('<option value="'+c.id+'">'+c.name+' \u2014 Class '+(c.class_name||'')+(c.section?'-'+c.section:'')+'</option>'));
+            if (children.length) loadTransport();
+            else $('#transportArea').html('<div class="tp-none"><i class="fas fa-child"></i><p>No children found.</p></div>');
+        } catch(e){ console.error(e); }
+    });
+
+    async function loadTransport(){
+        const sid = $('#childSelect').val();
+        const child = children.find(c => String(c.id) === String(sid));
+        if (!child) return;
+        if (!child.route_id) {
+            $('#transportArea').html('<div class="tp-none"><i class="fas fa-bus"></i><p>No transport assigned for this child.</p></div>');
+            return;
+        }
+
+        let routeName = child.route_name || 'Route #' + child.route_id;
+        let monthlyFee = Number(child.transport_fee || 0);
+        let vehicleNo = '';
+        let driverName = '';
+        let driverPhone = '';
+
+        try {
+            const mappings = await getTransportMappings({ route_id: child.route_id }) || [];
+            if (mappings.length) {
+                const tm = mappings[0];
+                vehicleNo = tm.vehicle_no || '';
+                driverName = tm.driver_name || '';
+                driverPhone = tm.driver_phone || '';
+                if (!monthlyFee && tm.amount_per_month) monthlyFee = Number(tm.amount_per_month);
+                if (!monthlyFee && tm.route_fee) monthlyFee = Number(tm.route_fee);
+            }
+        } catch(e) { console.warn('Transport mapping not available', e); }
+
+        let html = '<div class="tp-grid">';
+        html += tile('route', 'route', 'Route', routeName);
+        html += tile('bus', 'vehicle', 'Vehicle No.', vehicleNo || 'Not assigned');
+        html += tile('id-card', 'driver', 'Driver', driverName || 'Not assigned');
+        html += tile('indian-rupee-sign', 'fee', 'Monthly Fee', monthlyFee > 0 ? fmt(monthlyFee) : 'N/A');
+        if (driverPhone) html += tile('phone', 'phone', 'Driver Phone', driverPhone);
+        html += '</div>';
+        $('#transportArea').html(html);
+    }
+    </script>
+</body>
+</html>

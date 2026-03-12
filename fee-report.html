@@ -1,0 +1,230 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Report — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control { font-size: 12px; height: 36px; }
+        .rpt-table { width: 100%; border-collapse: collapse; }
+        .rpt-table thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 8px 10px; text-align: left; letter-spacing: 0.3px; white-space: nowrap; }
+        .rpt-table tbody td { font-size: 12px; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .rpt-table tbody tr:hover td { background: #f5f7ff; }
+        .rpt-table tfoot td { font-size: 12px; font-weight: 700; padding: 10px; border-top: 2px solid #0d1b4a; background: #f5f7ff; }
+        .rpt-table .text-right { text-align: right; }
+        .print-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .btn-print-rpt { border: none; background: #042954; color: #fff; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-print-rpt:hover { opacity: 0.85; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        .total-bar { background: #f5f7ff; border: 1px solid #e8eaf6; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 20px; }
+        .total-bar .t-item label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; display: block; }
+        .total-bar .t-item .t-val { font-size: 16px; font-weight: 700; color: #0d1b4a; }
+
+        @media print {
+            .filter-card, .breadcrumbs-area, .print-bar, #header-container, #sidebar-container { display: none !important; }
+            .dashboard-content-one { margin: 0 !important; padding: 0 !important; }
+            .card { border: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Fee Report</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-chart-bar"></i> Fee Report</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date From</label>
+                                    <input type="date" class="form-control" id="fDateFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date To</label>
+                                    <input type="date" class="form-control" id="fDateTo">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass"><option value="">All Classes</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">All Sections</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Payment Mode</label>
+                                    <select class="form-control" id="fMode"><option value="">All Modes</option></select>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report -->
+                        <div id="reportArea">
+                            <div class="empty-state"><i class="fas fa-chart-bar"></i>Apply filters and click Search to generate report</div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
+
+        $(document).ready(async function () {
+            if (typeof initPage === 'function') initPage('fee-report');
+
+            await populateClassDropdown(document.getElementById('fClass'), true);
+            await populateSectionDropdown(document.getElementById('fSection'), true);
+            PAYMENT_MODES.forEach(m => $('#fMode').append(`<option value="${m}">${m}</option>`));
+
+            await renderReport();
+
+            $('#btnSearch').on('click', renderReport);
+            $('#btnReset').on('click', function () {
+                $('#fDateFrom, #fDateTo, #fClass, #fSection, #fMode').val('');
+                renderReport();
+            });
+        });
+
+        async function renderReport() {
+            const fDateFrom = $('#fDateFrom').val();
+            const fDateTo = $('#fDateTo').val();
+            const fClass = $('#fClass').val();
+            const fSection = $('#fSection').val();
+            const fMode = $('#fMode').val();
+
+            const filters = {};
+            if (fDateFrom) filters.from_date = fDateFrom;
+            if (fDateTo) filters.to_date = fDateTo;
+            if (fClass && fClass !== 'All') filters.class_id = fClass;
+            if (fSection && fSection !== 'All') filters.section = fSection;
+            if (fMode) filters.payment_mode = fMode;
+            if (typeof getSelectedSession === 'function') {
+                const session = getSelectedSession();
+                if (session) filters.session = session;
+            }
+
+            let deps;
+            try { deps = await getFeeReport(filters); } catch(err){ showToast('Failed to load data','error'); return; }
+
+            if (!deps.length) {
+                $('#reportArea').html('<div class="empty-state"><i class="fas fa-inbox"></i>No data found for selected filters</div>');
+                return;
+            }
+
+            let totalAmt = 0, totalLate = 0, totalConc = 0, totalGrand = 0, totalRec = 0, totalBal = 0;
+            let rows = '';
+            deps.forEach((d, i) => {
+                totalAmt += d.total_amount || 0;
+                totalLate += d.late_fee || 0;
+                totalConc += d.concession || 0;
+                totalGrand += d.grand_total || 0;
+                totalRec += d.received_amount || 0;
+                totalBal += d.balance || 0;
+
+                rows += `<tr>
+                    <td style="font-weight:600;">${i + 1}</td>
+                    <td>${fmtDate(d.date)}</td>
+                    <td>${d.admission_no || '-'}</td>
+                    <td style="font-weight:600;color:#0d1b4a;">${d.receipt_no}</td>
+                    <td>
+                        <div style="font-weight:600;">${d.student_name || '-'}</div>
+                        <div style="font-size:10px;color:#888;">${d.father_name || ''}</div>
+                    </td>
+                    <td>${d.class_name || '-'} / ${d.section || '-'}</td>
+                    <td>${d.month}</td>
+                    <td class="text-right">₹${(d.received_amount||0).toLocaleString('en-IN')}</td>
+                </tr>`;
+            });
+
+            let html = `
+                <div class="print-bar">
+                    <button class="btn-print-rpt" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+                </div>
+                <div style="overflow-x:auto;">
+                <table class="rpt-table">
+                    <thead><tr>
+                        <th>#</th><th>Date</th><th>Adm No.</th><th>Receipt No.</th><th>Student / Father</th><th>Class</th><th>Month</th><th class="text-right">Received (₹)</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot><tr>
+                        <td colspan="7" style="text-align:right;">Grand Total</td>
+                        <td class="text-right">₹${totalRec.toLocaleString('en-IN')}</td>
+                    </tr></tfoot>
+                </table>
+                </div>
+                <div class="total-bar">
+                    <div class="t-item"><label>Total Records</label><div class="t-val">${deps.length}</div></div>
+                    <div class="t-item"><label>Fee Amount</label><div class="t-val">₹${totalAmt.toLocaleString('en-IN')}</div></div>
+                    <div class="t-item"><label>Late Fee</label><div class="t-val">₹${totalLate.toLocaleString('en-IN')}</div></div>
+                    <div class="t-item"><label>Concession</label><div class="t-val">₹${totalConc.toLocaleString('en-IN')}</div></div>
+                    <div class="t-item"><label>Total Received</label><div class="t-val">₹${totalRec.toLocaleString('en-IN')}</div></div>
+                    <div class="t-item"><label>Balance</label><div class="t-val">₹${totalBal.toLocaleString('en-IN')}</div></div>
+                </div>`;
+
+            $('#reportArea').html(html);
+        }
+
+        function fmtDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+        }
+    </script>
+</body>
+
+</html>

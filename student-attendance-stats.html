@@ -1,0 +1,441 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Student Attendance Stats — EduNex1</title>
+    <meta name="description" content="Date-wise student attendance statistics">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .date-range-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .pct-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #f0f0f0;
+            overflow: hidden;
+            width: 60px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .pct-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .pct-bar-fill.high {
+            background: #2e7d32;
+        }
+
+        .pct-bar-fill.mid {
+            background: #ef6c00;
+        }
+
+        .pct-bar-fill.low {
+            background: #c62828;
+        }
+
+        .present-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .absent-badge {
+            background: #ffebee;
+            color: #c62828;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .total-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Summary stat cards */
+        .stat-cards {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+        }
+
+        .stat-card-number {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-card-label {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+        }
+
+        #statsTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        #statsTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #555;
+            padding: 8px;
+        }
+
+        #statsTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) {
+            .col-hide-xl {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:991px) {
+            .col-hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .col-hide-md {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:575px) {
+            .col-hide-sm {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+
+            #statsTable td,
+            #statsTable th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+
+            .pct-bar {
+                width: 40px;
+            }
+
+            .stat-card {
+                padding: 12px;
+                min-width: 110px;
+            }
+
+            .stat-card-number {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width:575px) {
+
+            #statsTable td,
+            #statsTable th {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
+
+            .pct-bar {
+                width: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Attendance Stats</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-chart-pie"></i> Student Attendance Stats</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <form class="filter-form mg-b-15" id="filterForm">
+                            <div class="row gutters-8">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select class="form-control" id="filterClass" style="font-size:12px;height:36px;">
+                                        <option value="">Select Class</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section *</label>
+                                    <select class="form-control" id="filterSection" style="font-size:12px;height:36px;">
+                                        <option value="">Select Section</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">From Date</label>
+                                    <input type="date" class="form-control" id="fromDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">To Date</label>
+                                    <input type="date" class="form-control" id="toDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-12 form-group d-flex align-items-end"
+                                    style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="flex:1;border-radius:6px;height:36px;font-size:11px;">
+                                        <i class="fas fa-search"></i> SEARCH
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                        id="btnReset" style="flex:1;border-radius:6px;height:36px;font-size:11px;">
+                                        <i class="fas fa-redo"></i> RESET
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Stats Area -->
+                        <div id="statsArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-12 flex-wrap"
+                                style="gap:8px;">
+                                <div class="date-range-badge" id="dateRangeBadge"></div>
+                            </div>
+
+                            <!-- Summary Cards -->
+                            <div class="stat-cards" id="summaryCards"></div>
+
+                            <!-- Date-wise Table -->
+                            <div class="table-responsive">
+                                <table class="table display data-table" id="statsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th class="col-hide-sm">Day</th>
+                                            <th>Total</th>
+                                            <th>Present</th>
+                                            <th>Absent</th>
+                                            <th>%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="statsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('student-attendance-stats');
+
+            let classCache = [], sectionCache = [];
+            try { [classCache, sectionCache] = await Promise.all([getClasses(), getSections()]); } catch(e) {}
+
+            const today = new Date();
+            const from = new Date(today);
+            from.setDate(today.getDate() - 30);
+            $('#fromDate').val(from.toISOString().split('T')[0]);
+            $('#toDate').val(today.toISOString().split('T')[0]);
+
+            let cHtml = '<option value="">Select Class</option>';
+            classCache.forEach(c => { cHtml += `<option value="${c.id}">Class ${c.name}</option>`; });
+            $('#filterClass').html(cHtml);
+
+            let sHtml = '<option value="">Select Section</option>';
+            sectionCache.forEach(s => { sHtml += `<option value="${s.name}">${s.name}</option>`; });
+            $('#filterSection').html(sHtml);
+
+            $('#btnSearch').on('click', loadStats);
+            $('#btnReset').on('click', function () {
+                const t = new Date(), f = new Date(t);
+                f.setDate(t.getDate() - 30);
+                $('#fromDate').val(f.toISOString().split('T')[0]);
+                $('#toDate').val(t.toISOString().split('T')[0]);
+                $('#filterClass').val('');
+                $('#filterSection').val('');
+                $('#statsArea').hide();
+            });
+
+            async function loadStats() {
+                const classId = parseInt($('#filterClass').val());
+                const section = $('#filterSection').val();
+                const fromDate = $('#fromDate').val();
+                const toDate = $('#toDate').val();
+
+                if (!classId) { showToast('Please select a class', 'error'); return; }
+                if (!section) { showToast('Please select a section', 'error'); return; }
+                if (!fromDate || !toDate) { showToast('Select both dates', 'error'); return; }
+
+                const fD = new Date(fromDate);
+                const tD = new Date(toDate);
+                const cls = classCache.find(c => c.id === classId);
+                const fmtFrom = fD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const fmtTo = tD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                $('#dateRangeBadge').html(`<i class="fas fa-calendar-alt mg-r-5"></i> Class ${cls ? cls.name : classId} — Section ${section} | ${fmtFrom} — ${fmtTo}`);
+
+                if ($.fn.DataTable.isDataTable('#statsTable')) { $('#statsTable').DataTable().destroy(); }
+
+                let records = [];
+                try { records = await getStudentAttendance({ class_id: classId, section, from_date: fromDate, to_date: toDate }); } catch(e) {}
+
+                // Group by date
+                const byDate = {};
+                records.forEach(r => {
+                    if (!byDate[r.date]) byDate[r.date] = { date: r.date, present: 0, absent: 0, leave: 0, total: 0 };
+                    byDate[r.date].total++;
+                    if (r.status === 'P') byDate[r.date].present++;
+                    else if (r.status === 'A') byDate[r.date].absent++;
+                    else if (r.status === 'L') byDate[r.date].leave++;
+                });
+                const dateData = Object.values(byDate).sort((a,b) => a.date.localeCompare(b.date));
+
+                let totalPresent = 0, totalAbsent = 0, totalRecords = 0;
+                dateData.forEach(d => {
+                    totalPresent += d.present;
+                    totalAbsent += d.absent + d.leave;
+                    totalRecords += d.total;
+                });
+                const overallPct = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0;
+                const pctColor = overallPct >= 80 ? '#2e7d32' : overallPct >= 60 ? '#ef6c00' : '#c62828';
+
+                $('#summaryCards').html(`
+                    <div class="stat-card">
+                        <div class="stat-card-number" style="color:#304ffe;">${dateData.length}</div>
+                        <div class="stat-card-label">Working Days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-number" style="color:#2e7d32;">${totalPresent}</div>
+                        <div class="stat-card-label">Total Present</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-number" style="color:#c62828;">${totalAbsent}</div>
+                        <div class="stat-card-label">Total Absent</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-number" style="color:${pctColor};">${overallPct}%</div>
+                        <div class="stat-card-label">Avg. Attendance</div>
+                    </div>
+                `);
+
+                let html = '';
+                dateData.forEach(d => {
+                    const dt = new Date(d.date);
+                    const dateStr = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const dayName = dt.toLocaleDateString('en-IN', { weekday: 'short' });
+                    const pct = d.total > 0 ? Math.round((d.present / d.total) * 100) : 0;
+                    const pctClass = pct >= 80 ? 'high' : pct >= 60 ? 'mid' : 'low';
+                    const pColor = pct >= 80 ? '#2e7d32' : pct >= 60 ? '#ef6c00' : '#c62828';
+
+                    html += `<tr>
+                        <td style="font-weight:600;">${dateStr}</td>
+                        <td class="col-hide-sm">${dayName}</td>
+                        <td><span class="total-badge">${d.total}</span></td>
+                        <td><span class="present-badge">${d.present}</span></td>
+                        <td><span class="absent-badge">${d.absent + d.leave}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center" style="gap:5px;">
+                                <div class="pct-bar"><div class="pct-bar-fill ${pctClass}" style="width:${pct}%;"></div></div>
+                                <span style="font-size:11px;font-weight:700;color:${pColor};">${pct}%</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+
+                if (!dateData.length) {
+                    html = `<tr><td colspan="6" class="text-center" style="padding:30px;color:#999;">No attendance data found</td></tr>`;
+                }
+
+                $('#statsTableBody').html(html);
+                $('#statsTable').DataTable({
+                    "pageLength": 15,
+                    "order": [[0, "desc"]],
+                    "language": { "search": "<i class='fas fa-search'></i>", "searchPlaceholder": "Quick search..." },
+                    "autoWidth": false
+                });
+                $('#statsArea').show();
+            }
+        });
+    </script>
+</body>
+
+</html>

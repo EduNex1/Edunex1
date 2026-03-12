@@ -1,0 +1,192 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Review Online Fee Request — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .panel { background:#fff; border:1px solid #e8eaf6; border-radius:12px; overflow:hidden; margin-bottom:16px; }
+        .panel-head { padding:14px 16px; border-bottom:1px solid #eef1f6; font-size:13px; font-weight:700; color:#0d1b4a; display:flex; align-items:center; gap:8px; }
+        .panel-body { padding:16px; }
+        .detail-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+        .detail-box { background:#fafbff; border:1px solid #edf0f7; border-radius:10px; padding:10px 12px; }
+        .detail-box label { display:block; font-size:9px; font-weight:700; color:#8a91a0; text-transform:uppercase; margin-bottom:3px; }
+        .detail-box div { font-size:13px; font-weight:600; color:#10224d; word-break:break-word; }
+        .proof-wrap { background:#fafbff; border:1px solid #edf0f7; border-radius:12px; padding:12px; min-height:220px; display:flex; align-items:center; justify-content:center; }
+        .proof-wrap img { max-width:100%; max-height:420px; border-radius:10px; }
+        .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; padding:4px 9px; border-radius:999px; text-transform:uppercase; }
+        .status-requested { background:#fff3e0; color:#ef6c00; }
+        .status-accepted { background:#e8f5e9; color:#2e7d32; }
+        .status-rejected { background:#ffebee; color:#c62828; }
+        .form-label-sm { font-size:11px; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:4px; display:block; letter-spacing:.3px; }
+        .form-control { font-size:12px; height:36px; }
+        .info-note { background:#f8f9ff; border:1px solid #dce3ff; border-radius:10px; padding:12px 14px; font-size:11px; color:#54627a; }
+        @media (max-width: 991px) { .detail-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 767px) { .detail-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="/fee-online-requests">Online Fee Requests</a></li>
+                        <li>Review Request</li>
+                    </ul>
+                </div>
+
+                <div id="pageWrap"><div class="panel"><div class="panel-body" style="text-align:center;color:#888;">Loading request...</div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let requestRow = null;
+
+        $(document).ready(async function () {
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            if (typeof initPage === 'function') initPage('fee-online-request-review');
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) {
+                $('#pageWrap').html('<div class="panel"><div class="panel-body" style="text-align:center;color:#c62828;">Request ID missing</div></div>');
+                return;
+            }
+            await loadRequest(id);
+        });
+
+        async function loadRequest(id) {
+            try {
+                requestRow = await getPaymentRequest(id);
+                const statusClass = requestRow.status === 'Accepted' ? 'status-accepted' : requestRow.status === 'Rejected' ? 'status-rejected' : 'status-requested';
+                const canReview = requestRow.can_review;
+                $('#pageWrap').html(`
+                    <div class="panel">
+                        <div class="panel-head"><i class="fas fa-receipt"></i>Request Summary</div>
+                        <div class="panel-body">
+                            <div class="detail-grid">
+                                <div class="detail-box"><label>Request Date</label><div>${fmtDate(requestRow.request_date)}</div></div>
+                                <div class="detail-box"><label>Student</label><div>${requestRow.student_name || '-'}</div></div>
+                                <div class="detail-box"><label>Father Name</label><div>${requestRow.father_name || '-'}</div></div>
+                                <div class="detail-box"><label>Class / Section</label><div>${requestRow.class_name || '-'} / ${requestRow.section || '-'}</div></div>
+                                <div class="detail-box"><label>Month</label><div>${requestRow.month || '-'}</div></div>
+                                <div class="detail-box"><label>Amount</label><div>₹${Number(requestRow.requested_amount || 0).toLocaleString('en-IN')}</div></div>
+                                <div class="detail-box"><label>Transaction ID</label><div>${requestRow.transaction_id || '-'}</div></div>
+                                <div class="detail-box"><label>Status</label><div><span class="status-badge ${statusClass}">${requestRow.status}</span></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head"><i class="fas fa-image"></i>Payment Proof</div>
+                        <div class="panel-body">
+                            <div class="proof-wrap">${renderProof(requestRow.payment_proof_url)}</div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head"><i class="fas fa-check-circle"></i>Review Action</div>
+                        <div class="panel-body">
+                            ${canReview ? '<div class="info-note" style="margin-bottom:14px;">Review this request once. After submit, the edit action is permanently disabled and the status updates everywhere from the database.</div>' : `<div class="info-note" style="margin-bottom:14px;">This request has already been reviewed. ${requestRow.receipt_no ? 'Receipt ' + requestRow.receipt_no + ' was created on approval.' : ''}</div>`}
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Transaction ID</label>
+                                    <input type="text" class="form-control" value="${escapeAttr(requestRow.transaction_id || '')}" readonly>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Status</label>
+                                    <select id="reviewStatus" class="form-control" ${canReview ? '' : 'disabled'}>
+                                        <option value="Requested" ${requestRow.status === 'Requested' ? 'selected' : ''}>Requested</option>
+                                        <option value="Accepted" ${requestRow.status === 'Accepted' ? 'selected' : ''}>Accept</option>
+                                        <option value="Rejected" ${requestRow.status === 'Rejected' ? 'selected' : ''}>Reject</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 form-group">
+                                    <label class="form-label-sm">Admin Note / Comment</label>
+                                    <textarea id="adminNote" class="form-control" rows="4" style="height:auto;" ${canReview ? '' : 'disabled'}>${escapeHtml(requestRow.admin_note || '')}</textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex" style="gap:8px;">
+                                ${canReview ? '<button class="fw-btn-fill btn-gradient-yellow" id="btnSubmit" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-check"></i> Submit</button>' : ''}
+                                <button class="fw-btn-fill" id="btnCancel" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-arrow-left"></i> Back</button>
+                                ${requestRow.receipt_no ? `<button class="fw-btn-fill" id="btnReceipt" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#2e7d32;"><i class="fas fa-print"></i> Print Receipt</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `);
+                $('#btnCancel').on('click', function () { window.location.href = '/fee-online-requests'; });
+                $('#btnReceipt').on('click', function () {
+                    sessionStorage.setItem('receiptPrintId', String(requestRow.receipt_id));
+                    window.open('/receipt-print', '_blank');
+                });
+                $('#btnSubmit').on('click', submitReview);
+            } catch (error) {
+                $('#pageWrap').html('<div class="panel"><div class="panel-body" style="text-align:center;color:#c62828;">Failed to load request</div></div>');
+            }
+        }
+
+        async function submitReview() {
+            const status = $('#reviewStatus').val();
+            if (status === 'Requested') {
+                showToast('Choose Accept or Reject', 'error');
+                return;
+            }
+            const btn = $('#btnSubmit');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+            try {
+                await updatePaymentRequest(requestRow.id, { status: status, admin_note: $('#adminNote').val().trim() });
+                showToast('Request updated successfully', 'success');
+                await loadRequest(requestRow.id);
+            } catch (error) {
+                showToast(error.message || 'Failed to update request', 'error');
+            } finally {
+                btn.prop('disabled', false).html('<i class="fas fa-check"></i> Submit');
+            }
+        }
+
+        function renderProof(url) {
+            if (!url) return '<div style="color:#999;">No proof uploaded</div>';
+            if (/\.pdf($|\?)/i.test(url)) return `<a href="${url}" target="_blank" style="font-weight:700;color:#1565c0;"><i class="fas fa-file-pdf" style="color:#c62828;margin-right:6px;"></i>Open PDF Proof</a>`;
+            return `<a href="${url}" target="_blank"><img src="${url}" alt="Payment Proof"></a>`;
+        }
+
+        function fmtDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function escapeAttr(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+    </script>
+</body>
+</html>

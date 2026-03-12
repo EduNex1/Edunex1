@@ -1,0 +1,242 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Notice Board — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .notice-form-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 20px; margin-bottom: 16px; }
+        .cb-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+        .cb-group label { font-size: 12px; font-weight: 600; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .cb-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #304ffe; }
+        .notice-textarea { width: 100%; min-height: 100px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 13px; resize: vertical; font-family: inherit; }
+        .notice-textarea:focus { outline: none; border-color: #304ffe; box-shadow: 0 0 0 2px rgba(48,79,254,0.1); }
+        .record-count { background: #e3f2fd; color: #1565c0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+        .notice-row { background: #fff; border: 1px solid #f0f0f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 14px; transition: box-shadow 0.15s; }
+        .notice-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .notice-date { font-size: 12px; font-weight: 600; color: #888; white-space: nowrap; padding-top: 2px; }
+        .notice-body { flex: 1; }
+        .notice-text { font-size: 13px; color: #333; margin-bottom: 6px; line-height: 1.5; }
+        .notice-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+        .notice-tag { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+        .tag-students { background: #e8f5e9; color: #2e7d32; }
+        .tag-teachers { background: #e3f2fd; color: #1565c0; }
+        .tag-school { background: #fff3e0; color: #ef6c00; }
+        .tag-users { background: #f3e5f5; color: #7b1fa2; }
+        .notice-actions { display: flex; gap: 6px; flex-shrink: 0; align-self: center; }
+        .notice-actions button { border: none; background: none; cursor: pointer; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: background 0.15s; }
+        .notice-actions .btn-edit { color: #1565c0; }
+        .notice-actions .btn-edit:hover { background: #e3f2fd; }
+        .notice-actions .btn-delete { color: #c62828; }
+        .notice-actions .btn-delete:hover { background: #ffebee; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        @media (max-width:575px) {
+            .notice-row { flex-direction: column; gap: 10px; }
+            .notice-actions { align-self: flex-end; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Notice Board</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-bullhorn"></i> Notice Board</h3>
+                            </div>
+                        </div>
+
+                        <!-- Add/Edit Notice Form -->
+                        <div class="notice-form-card" id="noticeForm">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Notice Date *</label>
+                                    <input type="date" class="form-control" id="noticeDate" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-9 col-md-8 col-12 form-group">
+                                    <label class="form-label-sm">Display To</label>
+                                    <div class="cb-group" style="margin-top:4px;">
+                                        <label><input type="checkbox" value="students" class="displayTo" checked> Students</label>
+                                        <label><input type="checkbox" value="teachers" class="displayTo"> Teachers</label>
+                                        <label><input type="checkbox" value="school" class="displayTo"> School</label>
+                                        <label><input type="checkbox" value="users" class="displayTo"> All Users</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mg-t-5">
+                                <label class="form-label-sm">Notice *</label>
+                                <textarea class="notice-textarea" id="noticeText" placeholder="Write notice here..."></textarea>
+                            </div>
+                            <div class="d-flex align-items-center" style="gap:8px;">
+                                <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSubmit" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-paper-plane"></i> Submit
+                                </button>
+                                <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnCancel" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                            <input type="hidden" id="editId" value="">
+                        </div>
+
+                        <!-- Notice History -->
+                        <div class="d-flex align-items-center justify-content-between mg-b-12" style="flex-wrap:wrap;gap:8px;">
+                            <h6 style="font-weight:700;font-size:14px;color:#0d1b4a;margin:0;"><i class="fas fa-history" style="color:#304ffe;margin-right:6px;"></i>Notice History</h6>
+                            <span class="record-count" id="recordCount">0 Records</span>
+                        </div>
+                        <div id="noticeList"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-notice');
+            $('#noticeDate').val(new Date().toISOString().split('T')[0]);
+
+            let cache = [];
+            try { cache = await getNotices(); } catch(e) { console.error('Failed to load notices', e); }
+
+            renderNotices();
+
+            function renderNotices() {
+                const list = $('#noticeList');
+                list.empty();
+                $('#recordCount').text(cache.length + ' Record' + (cache.length !== 1 ? 's' : ''));
+
+                if (!cache.length) {
+                    list.html('<div class="empty-state"><i class="fas fa-bell-slash"></i>No notices found</div>');
+                    return;
+                }
+
+                cache.forEach(n => {
+                    const d = new Date(n.date);
+                    const dateStr = d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+                    let displayArr = [];
+                    try { displayArr = JSON.parse(n.display_to || '[]'); } catch(e) { if (n.display_to) displayArr = [n.display_to]; }
+                    const tags = displayArr.map(t => {
+                        const cls = t === 'students' ? 'tag-students' : t === 'teachers' ? 'tag-teachers' : t === 'school' ? 'tag-school' : 'tag-users';
+                        return `<span class="notice-tag ${cls}">${t}</span>`;
+                    }).join('');
+
+                    list.append(`
+                        <div class="notice-row" data-id="${n.id}">
+                            <div class="notice-date">${dateStr}</div>
+                            <div class="notice-body">
+                                <div class="notice-text">${n.title}</div>
+                                <div class="notice-tags">${tags}</div>
+                            </div>
+                            <div class="notice-actions">
+                                <button class="btn-edit" onclick="editNotice(${n.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                                <button class="btn-delete" onclick="removeNotice(${n.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            // Submit
+            $('#btnSubmit').on('click', async function () {
+                const date = $('#noticeDate').val();
+                const text = $('#noticeText').val().trim();
+                const displayTo = [];
+                $('.displayTo:checked').each(function () { displayTo.push($(this).val()); });
+
+                if (!date) { showToast('Please select a date', 'error'); return; }
+                if (!text) { showToast('Please write a notice', 'error'); return; }
+                if (!displayTo.length) { showToast('Select at least one display option', 'error'); return; }
+
+                try {
+                    const editId = parseInt($('#editId').val());
+                    if (editId) {
+                        await updateMasterData('notices', editId, { date, title: text, display_to: JSON.stringify(displayTo) });
+                        showToast('Notice updated successfully', 'success');
+                    } else {
+                        await createMasterData('notices', { date, title: text, display_to: JSON.stringify(displayTo) });
+                        showToast('Notice added successfully', 'success');
+                    }
+                    cache = await getNotices();
+                    resetForm();
+                    renderNotices();
+                } catch(e) { showToast('Error saving notice', 'error'); }
+            });
+
+            // Cancel
+            $('#btnCancel').on('click', resetForm);
+
+            function resetForm() {
+                $('#noticeDate').val(new Date().toISOString().split('T')[0]);
+                $('#noticeText').val('');
+                $('.displayTo').prop('checked', false);
+                $('.displayTo[value="students"]').prop('checked', true);
+                $('#editId').val('');
+                $('#btnSubmit').html('<i class="fas fa-paper-plane"></i> Submit');
+            }
+
+            // Edit
+            window.editNotice = function (id) {
+                const n = cache.find(x => x.id === id);
+                if (!n) return;
+                $('#noticeDate').val(n.date);
+                $('#noticeText').val(n.title);
+                $('.displayTo').prop('checked', false);
+                let displayArr = [];
+                try { displayArr = JSON.parse(n.display_to || '[]'); } catch(e) { if (n.display_to) displayArr = [n.display_to]; }
+                displayArr.forEach(t => { $(`.displayTo[value="${t}"]`).prop('checked', true); });
+                $('#editId').val(id);
+                $('#btnSubmit').html('<i class="fas fa-save"></i> Update');
+                $('html, body').animate({ scrollTop: 0 }, 300);
+            };
+
+            // Delete
+            window.removeNotice = async function (id) {
+                if (!confirm('Delete this notice?')) return;
+                try {
+                    await deleteMasterData('notices', id);
+                    cache = cache.filter(x => x.id !== id);
+                    showToast('Notice deleted', 'success');
+                    renderNotices();
+                } catch(e) { showToast('Error deleting notice', 'error'); }
+            };
+        });
+    </script>
+</body>
+
+</html>

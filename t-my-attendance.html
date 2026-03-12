@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My Attendance — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>My Attendance</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>My Attendance</li></ul>
+                </div>
+            
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Select Month</div>
+                    <div class="chart-card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <input type="month" id="attendanceMonth" class="form-control" style="max-width:220px;" />
+                        <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="loadMyAttendance()" style="font-size:12px;padding:8px 18px;">
+                            <i class="fas fa-sync-alt mr-1"></i> Load
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Present</div>
+                            <div class="stat-number" id="attPresent">0</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Absent</div>
+                            <div class="stat-number" id="attAbsent">0</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Late / Other</div>
+                            <div class="stat-number" id="attOther">0</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header"><i class="fas fa-list-ul"></i> Attendance Register</div>
+                    <div class="chart-card-body" style="padding:8px 16px;">
+                        <table class="recent-table">
+                            <thead><tr><th>#</th><th>Date</th><th>Status</th><th>Remark</th></tr></thead>
+                            <tbody id="attendanceBody"><tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">Select a month to view attendance.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(function(){
+        initPage('t-my-attendance');
+        $('#attendanceMonth').val(new Date().toISOString().slice(0, 7));
+        loadMyAttendance();
+    });
+
+    async function loadMyAttendance() {
+        const user = getUser();
+        const month = $('#attendanceMonth').val();
+        if (!user || !user.linked_id || !month) {
+            return;
+        }
+        const startDate = month + '-01';
+        const endDate = new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth() + 1, 0).toISOString().slice(0, 10);
+        try {
+            const rows = await getStaffAttendance({ staff_id: user.linked_id, from_date: startDate, to_date: endDate }) || [];
+            const counts = { present: 0, absent: 0, other: 0 };
+            if (!rows.length) {
+                $('#attendanceBody').html('<tr><td colspan="4" style="text-align:center;color:#888;">No attendance found for this month.</td></tr>');
+            } else {
+                const html = rows.map((row, index) => {
+                    const normalized = String(row.status || '').toUpperCase();
+                    if (normalized === 'P' || normalized === 'PRESENT') counts.present += 1;
+                    else if (normalized === 'A' || normalized === 'ABSENT') counts.absent += 1;
+                    else counts.other += 1;
+                    return `<tr><td>${index + 1}</td><td>${row.date || '-'}</td><td><strong>${row.status || '-'}</strong></td><td>${row.remark || '-'}</td></tr>`;
+                }).join('');
+                $('#attendanceBody').html(html);
+            }
+            $('#attPresent').text(counts.present);
+            $('#attAbsent').text(counts.absent);
+            $('#attOther').text(counts.other);
+        } catch (e) {
+            console.error(e);
+            $('#attendanceBody').html('<tr><td colspan="4" style="text-align:center;color:#c62828;">Failed to load attendance.</td></tr>');
+        }
+    }
+    </script>
+</body>
+</html>

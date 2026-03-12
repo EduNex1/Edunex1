@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Report Card — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #reportArea, #reportArea * { visibility: visible; }
+            #reportArea {
+                position: absolute; left: 0; top: 0; width: 100%;
+                display: block !important;
+            }
+            .chart-card-header .btn, .chart-card-header button { display: none !important; }
+            .marksheet-wrapper { break-inside: avoid; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Report Card</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Results > Report Card</li></ul>
+                </div>
+            
+        <div class="chart-card" style="margin-bottom:16px;">
+            <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
+            <div class="chart-card-body" style="padding:12px 16px;">
+                <select id="childSelect" onchange="loadReportCard()" class="form-control" style="max-width:350px;">
+                    <option value="">— Select Child —</option>
+                </select>
+            </div>
+        </div>
+
+                <div id="reportArea" style="display:none;"></div>
+
+                <div id="noReport" class="chart-card" style="text-align:center;padding:50px 20px;">
+                    <i class="fas fa-file-alt" style="font-size:44px;color:#c5cae9;margin-bottom:14px;"></i>
+                    <h5 style="color:#0d1b4a;font-weight:700;margin-bottom:8px;">Report Card</h5>
+                    <p style="color:#888;font-size:13px;max-width:400px;margin:0 auto;">Select a child to view their report card.</p>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    $(async function () {
+        initPage('p-report-card');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect');
+            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} — Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
+        } catch (e) { console.error(e); }
+    });
+
+    async function loadReportCard() {
+        const studentId = $('#childSelect').val();
+        if (!studentId) { $('#reportArea').hide(); $('#noReport').show(); return; }
+        const stu = children.find(c => c.id == studentId);
+        try {
+            const exams = await getExamNames() || [];
+            if (!exams.length) { $('#reportArea').html('<div class="chart-card" style="text-align:center;padding:30px;"><p style="color:#888;">No exams found.</p></div>').show(); $('#noReport').hide(); return; }
+
+            let allHtml = '';
+            for (const exam of exams) {
+                const results = await getExamResults({ student_id: studentId, exam_id: exam.id });
+                if (!results || !results.length) continue;
+                let totalObt = 0, totalMax = 0, rows = '';
+                results.forEach((r, i) => {
+                    const obt = Number(r.total_marks) || 0, mx = Number(r.max_marks) || 0;
+                    totalObt += obt; totalMax += mx;
+                    const pct = mx ? ((obt / mx) * 100).toFixed(1) : '-';
+                    rows += `<tr><td>${i + 1}</td><td>${r.subject_name}</td><td>${mx}</td><td><strong>${obt}</strong></td><td>${pct}%</td><td>${r.grade || '-'}</td></tr>`;
+                });
+                const totalPct = totalMax ? ((totalObt / totalMax) * 100).toFixed(1) : '-';
+                rows += `<tr style="font-weight:700;background:#f0f4ff;"><td></td><td>TOTAL</td><td>${totalMax}</td><td><strong>${totalObt}</strong></td><td><strong>${totalPct}%</strong></td><td></td></tr>`;
+                allHtml += `<div class="chart-card" style="margin-bottom:16px;"><div class="chart-card-header"><i class="fas fa-file-alt"></i> ${exam.name}</div><div class="chart-card-body"><div class="table-responsive"><table class="recent-table"><thead><tr><th>#</th><th>Subject</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+            }
+
+            if (!allHtml) {
+                allHtml = '<div class="chart-card" style="text-align:center;padding:30px;"><p style="color:#888;">No results available yet.</p></div>';
+            } else {
+                const sec = stu.section ? '-' + stu.section : '';
+                allHtml = `<div class="chart-card" style="margin-bottom:12px;"><div class="chart-card-header"><span><i class="fas fa-user-graduate"></i> ${stu.name}</span></div><div class="chart-card-body"><p style="margin:0;color:#666;font-size:13px;">Class ${stu.class_name || ''}${sec} | Roll No: ${stu.roll_no || '-'}</p></div></div>` + allHtml;
+            }
+            $('#reportArea').html(allHtml).show();
+            $('#noReport').hide();
+        } catch (e) { console.error(e); alert('Error loading report card'); }
+    }
+    </script>
+</body>
+</html>

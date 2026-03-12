@@ -1,0 +1,373 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Promote to Next Class — EduNex1</title>
+    <meta name="description" content="Promote students to next class">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* Responsive column hiding */
+        @media (max-width:1199px) { .col-hide-xl { display: none !important; } }
+        @media (max-width:991px)  { .col-hide-lg { display: none !important; } }
+        @media (max-width:767px)  { .col-hide-md { display: none !important; } }
+        @media (max-width:575px)  { .col-hide-sm { display: none !important; } }
+        .stats-bar { flex-wrap: wrap; }
+        @media (max-width:575px) {
+            #promotionTable td, #promotionTable th { font-size: 11px; padding: 5px 6px; }
+            .student-photo { width: 28px; height: 28px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Promote to Next Class</li>
+                    </ul>
+                </div>
+
+                <!-- Promotion Form -->
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-arrow-up"></i> Promote Students</h3>
+                            </div>
+                        </div>
+
+                        <form id="promotionForm">
+                            <div class="promo-flex-row">
+                                <div class="promo-field">
+                                    <label>From Class *</label>
+                                    <select class="form-control" id="fromClass"></select>
+                                </div>
+                                <div class="promo-field">
+                                    <label>From Section</label>
+                                    <select class="form-control" id="fromSection"></select>
+                                </div>
+                                <div class="promo-field">
+                                    <label>To Class *</label>
+                                    <select class="form-control" id="toClass"></select>
+                                </div>
+                                <div class="promo-field">
+                                    <label>To Section *</label>
+                                    <select class="form-control" id="toSection"></select>
+                                </div>
+                                <div class="promo-field">
+                                    <label>To Session *</label>
+                                    <select class="form-control" id="toSession"></select>
+                                </div>
+                                <div class="promo-field">
+                                    <label>Order By</label>
+                                    <select class="form-control" id="orderBy">
+                                        <option value="rollNo">Roll No.</option>
+                                        <option value="admNo">Adm. No.</option>
+                                        <option value="nameAZ">Name (A-Z)</option>
+                                        <option value="nameZA">Name (Z-A)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Subject Toggle -->
+                            <div class="mg-t-8 mg-b-12">
+                                <div class="subject-toggle-wrapper" id="subjectToggleWrapper">
+                                    <label class="subject-checkbox-label" for="keepSubjectsToggle">
+                                        <input type="checkbox" id="keepSubjectsToggle" checked>
+                                        <span><strong>Assign current subjects</strong> — carry forward same subjects to new class</span>
+                                    </label>
+                                </div>
+                                <div class="subject-chips-area visible" id="subjectChipsArea"></div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 form-group">
+                                    <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                        id="btnSearch" style="border-radius:8px;">
+                                        <i class="fas fa-search mg-r-5"></i> Search Students
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="resultsArea" style="display:none;">
+                    <div class="card height-auto">
+                        <div class="card-body">
+                            <div class="heading-layout1 mg-b-10">
+                                <div class="item-title">
+                                    <h3><i class="fas fa-list"></i> Students to Promote</h3>
+                                </div>
+                                <div><span class="counter-badge" id="selectedCount">0</span> <span
+                                        style="font-size:12px;color:#888;">selected</span></div>
+                            </div>
+
+                            <div class="stats-bar" id="statsBar"></div>
+
+                            <div class="table-responsive">
+                                <table class="table" id="promotionTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:36px;"><input type="checkbox" id="selectAll"></th>
+                                            <th class="col-hide-md">Roll</th>
+                                            <th class="col-hide-sm">Photo</th>
+                                            <th>Name</th>
+                                            <th class="d-none d-md-table-cell">Father</th>
+                                            <th>Class</th>
+                                            <th class="col-hide-lg">Sec</th>
+                                            <th class="col-hide-xl">Subjects</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="promotionBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div id="emptyState" style="display:none;">
+                                <div class="empty-state"><i class="fas fa-users-slash"></i>
+                                    <p>No students in selected class</p>
+                                </div>
+                            </div>
+
+                            <div class="mg-t-15" id="promoteButtonArea" style="display:none;">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnPromote" style="border-radius:8px;">
+                                    <i class="fas fa-arrow-up mg-r-5"></i> Promote Selected Students
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        let selectedStudentIds = [];
+        let subjectStates = {};
+        let classCache = [], subjectCache = [], studentCache = [];
+
+        $(async function () {
+            initPage('promote-class');
+            [classCache, subjectCache] = await Promise.all([getClasses(), getSubjects()]);
+
+            await populateClassDropdown(document.getElementById('fromClass'), false);
+            await populateSectionDropdown(document.getElementById('fromSection'), true);
+            await populateClassDropdown(document.getElementById('toClass'), false);
+            await populateSectionDropdown(document.getElementById('toSection'), false);
+            await populateSessionDropdown(document.getElementById('toSession'), false);
+
+            renderSubjectChips();
+
+            $('#fromClass').on('change', function () {
+                const fromId = parseInt($(this).val());
+                if (fromId) {
+                    const idx = classCache.findIndex(c => c.id === fromId);
+                    if (idx >= 0 && idx + 1 < classCache.length) {
+                        $('#toClass').val(classCache[idx + 1].id).trigger('change');
+                    }
+                }
+            });
+
+            $('#keepSubjectsToggle').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#subjectChipsArea').addClass('visible');
+                    $('#subjectToggleWrapper').css('border-radius', '8px 8px 0 0');
+                } else {
+                    $('#subjectChipsArea').removeClass('visible');
+                    $('#subjectToggleWrapper').css('border-radius', '8px');
+                }
+            });
+
+            $('#btnSearch').on('click', searchStudents);
+
+            $('#selectAll').on('change', function () {
+                const c = $(this).is(':checked');
+                $('.student-promo-checkbox:not(:disabled)').prop('checked', c);
+                selectedStudentIds = c ? $('.student-promo-checkbox:not(:disabled)').map(function () { return parseInt($(this).val()); }).get() : [];
+                updateUI();
+            });
+
+            $('#btnPromote').on('click', doPromoteStudents);
+        });
+
+        function renderSubjectChips() {
+            let html = '';
+            subjectCache.forEach(s => {
+                subjectStates[s.id] = true;
+                html += `<span class="subject-chip on" data-id="${s.id}" onclick="toggleSubjectChip(${s.id}, this)">
+                <i class="fas fa-check" style="font-size:9px;"></i> ${s.name}
+            </span>`;
+            });
+            document.getElementById('subjectChipsArea').innerHTML = html;
+        }
+
+        function toggleSubjectChip(id, el) {
+            subjectStates[id] = !subjectStates[id];
+            if (subjectStates[id]) {
+                $(el).removeClass('off').addClass('on');
+                $(el).find('i').attr('class', 'fas fa-check').css('font-size', '9px');
+            } else {
+                $(el).removeClass('on').addClass('off');
+                $(el).find('i').attr('class', 'fas fa-times').css('font-size', '9px');
+            }
+        }
+
+        function getSelectedSubjects() {
+            if (!$('#keepSubjectsToggle').is(':checked')) return [];
+            return Object.keys(subjectStates).filter(id => subjectStates[id]).map(Number);
+        }
+
+        function getStudentSubjectNames(s) {
+            try {
+                const subs = typeof s.subjects === 'string' ? JSON.parse(s.subjects) : (s.subjects || []);
+                return subs.map(id => { const sub = subjectCache.find(x => x.id === id); return sub ? sub.name : ''; }).filter(Boolean);
+            } catch { return []; }
+        }
+
+        async function searchStudents() {
+            const fromClassId = parseInt($('#fromClass').val());
+            const fromSection = $('#fromSection').val();
+            const toClassId = parseInt($('#toClass').val());
+            const toSection = $('#toSection').val();
+            const toSession = $('#toSession').val();
+
+            if (!fromClassId) { showToast('Select From Class', 'error'); return; }
+            if (!toClassId) { showToast('Select To Class', 'error'); return; }
+            if (!toSection) { showToast('Select To Section', 'error'); return; }
+
+            try { studentCache = await getStudents({ class_id: fromClassId }); } catch(e) { studentCache = []; }
+            let students = studentCache.filter(s => s.status === 'Active');
+            if (fromSection && fromSection !== 'All') students = students.filter(s => s.section === fromSection);
+
+            const orderBy = $('#orderBy').val();
+            if (orderBy === 'rollNo') students.sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
+            else if (orderBy === 'name') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            else if (orderBy === 'admissionNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
+
+            selectedStudentIds = [];
+            $('#selectAll').prop('checked', false);
+
+            if (!students.length) {
+                $('#resultsArea').show(); $('#promotionTable').hide(); $('#promoteButtonArea').hide();
+                $('#emptyState').show(); $('#statsBar').html(''); updateUI(); return;
+            }
+
+            $('#emptyState').hide(); $('#promotionTable').show(); $('#resultsArea').show();
+
+            let eligibleCount = 0, html = '';
+
+            students.forEach(s => {
+                const cls = classCache.find(c => c.id === s.class_id);
+                const currentSubjects = getStudentSubjectNames(s);
+                const subBadges = currentSubjects.length
+                    ? currentSubjects.slice(0, 3).map(n => `<span class="subject-badge">${n}</span>`).join('') + (currentSubjects.length > 3 ? `<span class="subject-badge" style="background:#fff3e0;color:#ef6c00;">+${currentSubjects.length - 3}</span>` : '')
+                    : '<span style="color:#ccc;font-size:10px;">None</span>';
+
+                eligibleCount++;
+                html += `<tr class="student-check-row" data-id="${s.id}">
+                    <td><input type="checkbox" class="student-promo-checkbox" value="${s.id}" onchange="toggleStudent(${s.id}, this.checked)"></td>
+                    <td class="col-hide-md">${s.roll_no || ''}</td>
+                    <td class="col-hide-sm"><img src="${s.photo_url || 'img/figure/student2.png'}" alt="" class="student-photo"></td>
+                    <td><strong>${s.name}</strong></td>
+                    <td class="d-none d-md-table-cell">${s.father_name || ''}</td>
+                    <td>${cls ? cls.name : '-'}</td>
+                    <td class="col-hide-lg">${s.section || ''}</td>
+                    <td class="col-hide-xl"><div style="display:flex;flex-wrap:wrap;gap:2px;">${subBadges}</div></td>
+                    <td><span style="color:#ccc;">—</span></td>
+                </tr>`;
+            });
+
+            document.getElementById('promotionBody').innerHTML = html;
+            document.getElementById('statsBar').innerHTML = `
+            <div class="stat-item stat-total"><i class="fas fa-users mg-r-5"></i>Total: ${students.length}</div>
+            <div class="stat-item stat-eligible"><i class="fas fa-check mg-r-5"></i>Eligible: ${eligibleCount}</div>`;
+            $('#promoteButtonArea').toggle(eligibleCount > 0);
+            updateUI();
+        }
+
+        function toggleStudent(id, checked) {
+            if (checked && !selectedStudentIds.includes(id)) selectedStudentIds.push(id);
+            else selectedStudentIds = selectedStudentIds.filter(x => x !== id);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('selectedCount').textContent = selectedStudentIds.length;
+            $('.student-check-row').each(function () {
+                $(this).toggleClass('selected', selectedStudentIds.includes(parseInt($(this).data('id'))));
+            });
+        }
+
+        function doPromoteStudents() {
+            if (!selectedStudentIds.length) { showToast('Select students first', 'error'); return; }
+            const fromCls = classCache.find(c => c.id === parseInt($('#fromClass').val()));
+            const toCls = classCache.find(c => c.id === parseInt($('#toClass').val()));
+            const toSection = $('#toSection').val();
+            const toSession = $('#toSession').val();
+            const selectedSubjects = getSelectedSubjects();
+            const subjectInfo = selectedSubjects.length ? ` with ${selectedSubjects.length} subjects` : ' (no subjects assigned)';
+
+            showConfirmModal('Confirm Promotion',
+                `Promote <strong>${selectedStudentIds.length}</strong> student(s) from 
+            <strong>Class ${fromCls ? fromCls.name : ''}</strong> → 
+            <strong>Class ${toCls ? toCls.name : ''} (${toSection})</strong> 
+            for session <strong>${toSession}</strong>${subjectInfo}?`,
+                async function () {
+                    try {
+                        await promoteStudents({
+                            student_ids: selectedStudentIds,
+                            to_class_id: parseInt($('#toClass').val()),
+                            to_section: toSection,
+                            to_session: toSession,
+                            subject_ids: selectedSubjects
+                        });
+                        showToast(`${selectedStudentIds.length} students promoted successfully!`, 'success');
+                        selectedStudentIds = [];
+                        searchStudents();
+                    } catch(e) { showToast('Error promoting students: ' + e.message, 'error'); }
+                }
+            );
+        }
+        window._promoteStudentsAPI = promoteStudents;
+    </script>
+</body>
+
+</html>

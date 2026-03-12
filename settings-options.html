@@ -1,0 +1,168 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Option Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}
+        .section-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:22px 26px;margin-bottom:16px}
+        .section-title{font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8eaf6}
+        .opt-check{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5}
+        .opt-check:last-child{border-bottom:none}
+        .opt-check input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:#0d1b4a}
+        .opt-check label{font-size:12px;cursor:pointer;margin:0;color:#333}
+        .note-box{background:#fffde7;border:1px solid #fff9c4;border-radius:8px;padding:10px 14px;font-size:11px;color:#795548;margin-bottom:10px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>Option Settings</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-sliders-h"></i> Option Settings</h3></div></div>
+
+                    <!-- Academic Session Start -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-calendar-alt"></i> Academic Session</h5>
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">Session Start Month</label>
+                                <select class="form-control" id="startMonth">
+                                    <option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top:14px;">
+                            <div class="opt-check"><input type="checkbox" id="chkFeeDueInstall"><label for="chkFeeDueInstall">Enable fee due report according to installment</label></div>
+                            <div class="opt-check"><input type="checkbox" id="chkFeeDuePortal"><label for="chkFeeDuePortal">Enable fee due report in student portal</label></div>
+                            <div class="opt-check"><input type="checkbox" id="chkDiscountReceipt"><label for="chkDiscountReceipt">Enable discount display in fee receipt</label></div>
+                            <div class="opt-check"><input type="checkbox" id="chkSundayWork"><label for="chkSundayWork">Enable for Sunday is working day!</label></div>
+                        </div>
+                        <button class="btn btn-sm mt-3" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateAcademic()"><i class="fas fa-save"></i> Update</button>
+                    </div>
+
+                    <!-- Zoho Email Integration -->
+                    <div class="section-card" id="zohoEmailCard" style="display:none;">
+                        <h5 class="section-title"><i class="fas fa-envelope"></i> Zoho Email Integration (ZeptoMail)</h5>
+                        <div class="note-box"><i class="fas fa-info-circle"></i> Zoho ZeptoMail se API Key copy karein. From Email woh address hai jisse emails jayengi (e.g. support@edunex1.com). ZeptoMail dashboard se Send Mail Token generate karein.</div>
+                        <div class="row" style="gap:0;">
+                            <div class="col-lg-6 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">ZeptoMail API Key (Send Mail Token) *</label>
+                                <input type="password" class="form-control" id="zohoApiKey" placeholder="Paste your ZeptoMail Send Mail Token">
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-12 form-group">
+                                <label class="form-label-sm">From Email</label>
+                                <input type="email" class="form-control" id="zohoFromEmail" placeholder="support@edunex1.com">
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-12 form-group">
+                                <label class="form-label-sm">From Name</label>
+                                <input type="text" class="form-control" id="zohoFromName" placeholder="EduNex1">
+                            </div>
+                        </div>
+                        <button class="btn btn-sm mt-2" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateZohoEmail()"><i class="fas fa-save"></i> Save Email Settings</button>
+                    </div>
+
+                    <!-- Email Notification Settings -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-bell"></i> Email Notification Settings</h5>
+                        <div class="opt-check"><input type="checkbox" id="chkFeeDepoEmail"><label for="chkFeeDepoEmail">Enable fee deposit email notification</label></div>
+                        <div class="opt-check"><input type="checkbox" id="chkAdmissionEmail"><label for="chkAdmissionEmail">Enable admission confirmation email</label></div>
+                        <div class="opt-check"><input type="checkbox" id="chkAbsentEmail"><label for="chkAbsentEmail">Enable student absent email (automatic)</label></div>
+                        <div class="opt-check"><input type="checkbox" id="chkPresentEmail"><label for="chkPresentEmail">Enable student present email (automatic)</label></div>
+                        <button class="btn btn-sm mt-3" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateEmailNotif()"><i class="fas fa-save"></i> Update</button>
+                    </div>
+
+                    <!-- Fee Demand Bill Note -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-file-invoice-dollar"></i> Fee Demand Bill Note</h5>
+                        <div class="note-box"><i class="fas fa-info-circle"></i> This text will be printed on the fee demand bill.</div>
+                        <div class="form-group mb-0">
+                            <textarea class="form-control" id="billNote" rows="3" style="height:auto;font-size:12px;"></textarea>
+                        </div>
+                        <button class="btn btn-sm mt-3" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateBillNote()"><i class="fas fa-save"></i> Update</button>
+                    </div>
+
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('settings-options');
+        const currentUser = getUser();
+        if (currentUser && currentUser.role === 'super_admin') {
+            $('#zohoEmailCard').show();
+        }
+        // Get active branch for super_admin
+        const activeBranch = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
+        let o = {};
+        try { o = await getOptionSettings(activeBranch || undefined); } catch(e) {}
+
+        $('#startMonth').val(o['academic_start_month'] || 'April');
+        $('#chkFeeDueInstall').prop('checked', o['enable_fee_due_installment'] === 'true' || o['enable_fee_due_installment'] === true);
+        $('#chkFeeDuePortal').prop('checked', o['enable_fee_due_student_portal'] === 'true' || o['enable_fee_due_student_portal'] === true);
+        $('#chkDiscountReceipt').prop('checked', o['enable_discount_in_receipt'] === 'true' || o['enable_discount_in_receipt'] === true);
+        $('#chkSundayWork').prop('checked', o['enable_sunday_working'] === 'true' || o['enable_sunday_working'] === true);
+        $('#zohoApiKey').val(o['zoho_api_key'] || '');
+        $('#zohoFromEmail').val(o['zoho_from_email'] || '');
+        $('#zohoFromName').val(o['zoho_from_name'] || '');
+        $('#chkFeeDepoEmail').prop('checked', o['enable_fee_deposit_email'] === 'true' || o['enable_fee_deposit_email'] === true);
+        $('#chkAdmissionEmail').prop('checked', o['enable_admission_email'] === 'true' || o['enable_admission_email'] === true);
+        $('#chkAbsentEmail').prop('checked', o['enable_absent_email_auto'] === 'true' || o['enable_absent_email_auto'] === true);
+        $('#chkPresentEmail').prop('checked', o['enable_present_email_auto'] === 'true' || o['enable_present_email_auto'] === true);
+        $('#billNote').val(o['fee_demand_bill_note'] || '');
+
+        window.updateAcademic = async function(){
+            try {
+                await saveOptionSettings({
+                    academic_start_month: $('#startMonth').val(),
+                    enable_fee_due_installment: $('#chkFeeDueInstall').is(':checked'),
+                    enable_fee_due_student_portal: $('#chkFeeDuePortal').is(':checked'),
+                    enable_discount_in_receipt: $('#chkDiscountReceipt').is(':checked'),
+                    enable_sunday_working: $('#chkSundayWork').is(':checked')
+                }, activeBranch || undefined);
+                showToast('Academic settings updated','success');
+            } catch(e) { showToast('Error saving settings','error'); }
+        };
+        window.updateZohoEmail = async function(){
+            const apiKey = $('#zohoApiKey').val().trim();
+            if (!apiKey) { showToast('API Key is required','error'); return; }
+            try {
+                await saveOptionSettings({
+                    zoho_api_key: apiKey,
+                    zoho_from_email: $('#zohoFromEmail').val().trim(),
+                    zoho_from_name: $('#zohoFromName').val().trim()
+                }, activeBranch || undefined);
+                showToast('Zoho Email settings saved successfully','success');
+            } catch(e) { showToast('Error saving email settings','error'); }
+        };
+        window.updateEmailNotif = async function(){
+            try {
+                await saveOptionSettings({
+                    enable_fee_deposit_email: $('#chkFeeDepoEmail').is(':checked'),
+                    enable_admission_email: $('#chkAdmissionEmail').is(':checked'),
+                    enable_absent_email_auto: $('#chkAbsentEmail').is(':checked'),
+                    enable_present_email_auto: $('#chkPresentEmail').is(':checked')
+                }, activeBranch || undefined);
+                showToast('Email notification settings updated','success');
+            } catch(e) { showToast('Error saving settings','error'); }
+        };
+        window.updateBillNote = async function(){
+            try {
+                await saveOptionSettings({ fee_demand_bill_note: $('#billNote').val().trim() }, activeBranch || undefined);
+                showToast('Fee demand bill note updated','success');
+            } catch(e) { showToast('Error saving settings','error'); }
+        };
+    });
+    </script>
+</body>
+</html>

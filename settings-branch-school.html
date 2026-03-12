@@ -1,0 +1,463 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Branch School Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}
+        .section-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:22px 26px;margin-bottom:16px}
+        .section-title{font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8eaf6}
+        .logo-preview{width:90px;height:90px;border-radius:50%;border:3px solid #0d1b4a;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;background:#fafafa;overflow:hidden;cursor:pointer;transition:box-shadow .2s}
+        .logo-preview:hover{box-shadow:0 0 0 3px rgba(13,27,74,.15)}
+        .logo-preview img{width:100%;height:100%;object-fit:cover}
+        .qr-preview{width:80px;height:80px;border-radius:10px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;background:#fafafa;overflow:hidden}
+        .qr-preview img{width:100%;height:100%;object-fit:contain}
+        .info-box{background:#e3f2fd;border:1px solid #bbdefb;border-radius:8px;padding:10px 14px;font-size:11px;color:#1565c0;margin-bottom:14px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>Branch School Settings</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-school"></i> Branch School Settings</h3></div></div>
+
+                    <!-- Branch Selector -->
+                    <div class="filter-card">
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-4 col-md-5 col-8 form-group mb-0">
+                                <label class="form-label-sm">Select Branch</label>
+                                <select class="form-control" id="selBranch"><option value="">— Select Branch —</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="settingsArea" style="display:none;">
+
+                    <!-- School Details -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-info-circle"></i> School Details</h5>
+                        <div class="row">
+                            <div class="col-lg-2 col-md-3 col-12 form-group text-center">
+                                <label class="form-label-sm">School Logo</label>
+                                <div class="logo-preview mx-auto" id="logoPreview" onclick="$('#logoFile').click()" title="Click to upload logo"><i class="fas fa-image"></i></div>
+                                <input type="file" class="d-none" id="logoFile" accept="image/*">
+                                <small class="d-block text-center mt-1" style="font-size:9px;color:#888;cursor:pointer;" onclick="$('#logoFile').click()">Click to upload</small>
+                            </div>
+                            <div class="col-lg-10 col-md-9 col-12">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">School Name</label>
+                                        <input type="text" class="form-control" id="sName" placeholder="Full school name">
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Board</label>
+                                        <input type="text" class="form-control" id="sBoard" placeholder="e.g. CBSE, ICSE, State Board">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Principal Name</label>
+                                        <input type="text" class="form-control" id="sPrincipal" placeholder="Principal / head name">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">School Phone</label>
+                                        <input type="text" class="form-control" id="sPhone" placeholder="Landline number">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Affiliation No.</label>
+                                        <input type="text" class="form-control" id="sAffiliation" placeholder="Board affiliation number">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">School Email</label>
+                                        <input type="email" class="form-control" id="sEmail" placeholder="school@example.com">
+                                    </div>
+                                    <div class="col-lg-8 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Address</label>
+                                        <input type="text" class="form-control" id="sAddress" placeholder="Full school address">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">School Code</label>
+                                        <input type="text" class="form-control" id="sSchoolCode" placeholder="Internal / board school code">
+                                        <small style="font-size:9px;color:#888;">Stored in branch settings and used by print formats.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Session & Timing -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-calendar-check"></i> Session & Timing</h5>
+                        <div class="info-box">Set the active academic session for admin software and ERP portal (parents/students). Changing the session here will update what data is shown across all modules.</div>
+                        <div class="row">
+                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">Academic Session (School Software)</label>
+                                <select class="form-control" id="sAcademic"><option value="">— Select —</option></select>
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">ERP Session (Parents & Students)</label>
+                                <select class="form-control" id="sErp"><option value="">— Select —</option></select>
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">School Time From</label>
+                                <input type="time" class="form-control" id="sTimeFrom">
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">School Time To</label>
+                                <input type="time" class="form-control" id="sTimeTo">
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="updateSessionSettings()"><i class="fas fa-save" style="margin-right:5px;"></i>Save Session & Timing</button>
+                        </div>
+                    </div>
+
+                    <!-- Signing Authority -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-signature"></i> Signing Authority</h5>
+                        <div class="info-box">This signature will appear on ID Cards, Transfer Certificates, Character Certificates, Admit Cards, Demand Bills, Receipts &amp; Result Cards.</div>
+                        <div class="row align-items-end">
+                            <div class="col-lg-2 col-md-3 col-12 form-group text-center">
+                                <label class="form-label-sm">Signature Preview</label>
+                                <div class="qr-preview mx-auto" id="sigPreview" style="width:120px;height:60px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;background:#fafafa;"><i class="fas fa-signature" style="color:#ccc;"></i></div>
+                                <input type="file" class="form-control mt-2" id="sigFile" accept="image/*" style="font-size:10px;height:auto;padding:4px;">
+                                <small style="font-size:9px;color:#888;">Upload transparent PNG for best results</small>
+                            </div>
+                            <div class="col-lg-10 col-md-9 col-12">
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Designation</label>
+                                        <input type="text" class="form-control" id="sigDesig" placeholder="e.g. Principal">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Name</label>
+                                        <input type="text" class="form-control" id="sigName" placeholder="Full name">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="updateSigningAuthority()"><i class="fas fa-save" style="margin-right:5px;"></i>Save Signing Authority</button>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-qrcode"></i> Online Payment Method</h5>
+                        <div class="info-box">These payment details are branch-specific. Parents will only see the QR code and bank account of their own branch in the portal.</div>
+                        <div class="row">
+                            <div class="col-lg-2 col-md-3 col-12 form-group text-center">
+                                <label class="form-label-sm">Payment QR</label>
+                                <div class="qr-preview mx-auto" id="qrPreview"><i class="fas fa-qrcode"></i></div>
+                                <input type="file" class="form-control mt-2" id="qrFile" accept="image/*" style="font-size:10px;height:auto;padding:4px;">
+                                <small style="font-size:9px;color:#888;">Use a square QR image</small>
+                            </div>
+                            <div class="col-lg-10 col-md-9 col-12">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Account Holder Name</label>
+                                        <input type="text" class="form-control" id="payAccountName" placeholder="Account holder name">
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Bank Account Number</label>
+                                        <input type="text" class="form-control" id="payAccountNo" placeholder="Bank account number">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">IFSC Code</label>
+                                        <input type="text" class="form-control" id="payIfsc" placeholder="IFSC code">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Branch Name</label>
+                                        <input type="text" class="form-control" id="payBranchName" placeholder="Bank branch name">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">UPI ID / Note</label>
+                                        <input type="text" class="form-control" id="payUpi" placeholder="Optional UPI ID">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm mt-2" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="updatePaymentSettings()"><i class="fas fa-save" style="margin-right:5px;"></i>Update Payment Method</button>
+                    </div>
+
+                    <div style="display:flex;gap:10px;margin-top:6px;">
+                        <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="updateDetails()"><i class="fas fa-save" style="margin-right:5px;"></i>Update School Details</button>
+                    </div>
+
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin','branch_admin'])) return;
+        initPage('settings-branch-school');
+
+        const currentUser = typeof getUser === 'function' ? getUser() : null;
+        const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
+
+        // For branch_admin: change title to "School Settings"
+        if (!isSuperAdmin) {
+            document.title = 'School Settings — EduNex1';
+            $('.breadcrumbs-area ul li:last').text('School Settings');
+            $('.heading-layout1 .item-title h3').html('<i class="fas fa-school"></i> School Settings');
+        }
+
+        let branchesCache = [];
+        let currentOptionSettings = {};
+        try {
+            branchesCache = await getBranches();
+        } catch(e){
+            showToast(e.message||'Failed to load branch data','error');
+        }
+
+        // Load sessions first (needed before loadSettings populates the dropdowns)
+        let sessionsCache = [];
+        try { sessionsCache = await getMasterData('academic_sessions'); } catch(e){}
+        sessionsCache.forEach(s=>{ $('#sAcademic').append(`<option value="${s.name}">${s.name}</option>`); $('#sErp').append(`<option value="${s.name}">${s.name}</option>`); });
+
+        // Logo state (must be declared before loadSettings is called)
+        let croppedLogoBlob = null;
+        let pendingLogoPreview = '';
+
+        // Super admin: show branch selector; Branch admin: auto-load their branch
+        if (isSuperAdmin) {
+            branchesCache.forEach(b=>$('#selBranch').append(`<option value="${b.id}">${b.name}</option>`));
+        } else {
+            // Hide branch selector for branch_admin — auto-load their branch
+            $('.filter-card').hide();
+            if (branchesCache.length) {
+                try {
+                    await loadSettings(branchesCache[0].id);
+                } catch(e) {
+                    console.error('Failed to load school settings', e);
+                    showToast(e.message||'Failed to load school settings','error');
+                }
+                $('#settingsArea').show();
+            }
+        }
+
+        // Logo file preview
+        // Logo crop modal
+        $('#logoFile').on('change',function(e){
+            const f=e.target.files[0]; if(!f) return;
+            croppedLogoBlob = null;
+            const r=new FileReader();
+            r.onload=function(ev){ openLogoCropModal(ev.target.result); };
+            r.readAsDataURL(f);
+        });
+        function openLogoCropModal(imgSrc){
+            if(window._logoCropper){window._logoCropper.destroy();window._logoCropper=null;}
+            $('.crop-modal-overlay').remove();
+            const html=`<div class="crop-modal-overlay" id="cropOverlay">
+                <div class="crop-modal-box">
+                    <div class="crop-modal-header"><i class="fas fa-crop-alt"></i> Crop School Logo</div>
+                    <div class="crop-modal-body"><img id="cropImage" src="${imgSrc}" alt="Crop"></div>
+                    <div class="crop-modal-footer">
+                        <button class="btn-crop-cancel" onclick="closeLogoCropModal()">Cancel</button>
+                        <button class="btn-crop-save" onclick="applyLogoCrop()"><i class="fas fa-check mg-r-5"></i>Crop & Save</button>
+                    </div>
+                </div>
+            </div>`;
+            $('body').append(html);
+            const image=document.getElementById('cropImage');
+            window._logoCropper=new Cropper(image,{aspectRatio:1,viewMode:1,dragMode:'move',autoCropArea:0.85,responsive:true,guides:true,center:true,background:false});
+        }
+        window.closeLogoCropModal=function(){
+            if(window._logoCropper){window._logoCropper.destroy();window._logoCropper=null;}
+            $('#cropOverlay').remove(); $('#logoFile').val('');
+        };
+        window.applyLogoCrop=function(){
+            if(!window._logoCropper) return;
+            const canvas=window._logoCropper.getCroppedCanvas({width:300,height:300,imageSmoothingQuality:'high'});
+            const croppedData=canvas.toDataURL('image/png',0.9);
+            canvas.toBlob(function(blob){
+                if(!blob){ showToast('Failed to crop logo','error'); return; }
+                croppedLogoBlob=blob;
+                pendingLogoPreview=croppedData;
+                $('#logoPreview').html('<img src="'+croppedData+'" alt="Logo">');
+                closeLogoCropModal();
+            },'image/png',0.9);
+        };
+        $('#qrFile').on('change',function(){ const f=this.files[0]; if(f){ const r=new FileReader(); r.onload=function(e){$('#qrPreview').html('<img src="'+e.target.result+'" alt="QR">');}; r.readAsDataURL(f); }});
+        $('#sigFile').on('change',function(){ const f=this.files[0]; if(f){ const r=new FileReader(); r.onload=function(e){$('#sigPreview').html('<img src="'+e.target.result+'" alt="Signature" style="max-width:100%;max-height:100%;object-fit:contain;">');}; r.readAsDataURL(f); }});
+
+        async function loadSettings(branchId){
+            croppedLogoBlob = null;
+            pendingLogoPreview = '';
+            $('#logoFile').val('');
+            const bs = branchesCache.find(x=>x.id===branchId);
+            if(bs){
+                $('#sName').val(bs.school_name||''); $('#sBoard').val(bs.board||''); $('#sPrincipal').val(bs.principal_name||'');
+                $('#sPhone').val(bs.phone||''); $('#sAffiliation').val(bs.affiliation_no||''); $('#sEmail').val(bs.email||''); $('#sAddress').val(bs.address||''); $('#sSchoolCode').val(bs.school_code||'');
+                $('#sigDesig').val(bs.signing_authority_designation||'Principal'); $('#sigName').val(bs.signing_authority_name||bs.principal_name||'');
+                $('#sigPreview').html(bs.signing_authority_signature_url ? '<img src="'+bs.signing_authority_signature_url+'" alt="Signature" style="max-width:100%;max-height:100%;object-fit:contain;">' : '<i class="fas fa-signature" style="color:#ccc;"></i>');
+                $('#logoPreview').html(bs.logo_url ? '<img src="'+bs.logo_url+'" alt="Logo">' : '<i class="fas fa-image"></i>');
+            } else {
+                $('#settingsArea input, #settingsArea select').val('');
+            }
+            try {
+                currentOptionSettings = await getOptionSettings(branchId) || {};
+            } catch(e) {
+                currentOptionSettings = {};
+            }
+            if(!currentOptionSettings || typeof currentOptionSettings !== 'object') currentOptionSettings = {};
+            $('#payAccountName').val(currentOptionSettings.online_payment_account_name || '');
+            $('#payAccountNo').val(currentOptionSettings.online_payment_account_no || '');
+            $('#payIfsc').val(currentOptionSettings.online_payment_ifsc || '');
+            $('#payBranchName').val(currentOptionSettings.online_payment_branch_name || '');
+            $('#payUpi').val(currentOptionSettings.online_payment_upi || '');
+            $('#qrPreview').html(currentOptionSettings.online_payment_qr_url ? '<img src="'+currentOptionSettings.online_payment_qr_url+'" alt="QR">' : '<i class="fas fa-qrcode"></i>');
+            // Session & Timing
+            $('#sAcademic').val(currentOptionSettings.academic_session || '');
+            $('#sErp').val(currentOptionSettings.erp_session || '');
+            $('#sTimeFrom').val(currentOptionSettings.school_time_from || '');
+            $('#sTimeTo').val(currentOptionSettings.school_time_to || '');
+        }
+
+        $('#selBranch').on('change', async function(){
+            const bid=parseInt($(this).val())||0;
+            if(!bid){$('#settingsArea').slideUp(200);return;}
+            try {
+                await loadSettings(bid);
+            } catch(e) {
+                console.error('Failed to load school settings', e);
+                showToast(e.message||'Failed to load school settings','error');
+            }
+            $('#settingsArea').slideDown(200);
+        });
+
+        window.updateDetails=async function(){
+            const bid = isSuperAdmin ? (parseInt($('#selBranch').val())||0) : (branchesCache[0] ? branchesCache[0].id : 0);
+            if(!bid){showToast('Select a branch','error');return;}
+            const bs = branchesCache.find(x=>x.id===bid);
+            if(!bs){showToast('Branch not found','error');return;}
+            try {
+                let logo_url = bs.logo_url || '';
+                if(croppedLogoBlob){
+                    const uploaded = await uploadFile(new File([croppedLogoBlob], 'school-logo-'+Date.now()+'.png', {type:'image/png'}));
+                    if(!uploaded || !uploaded.url) throw new Error(uploaded && uploaded.error ? uploaded.error : 'Logo upload failed');
+                    logo_url = uploaded.url;
+                    croppedLogoBlob = null;
+                    pendingLogoPreview = '';
+                }
+                await updateBranch(bid, {
+                    name: bs.name, code: bs.code,
+                    school_name: $('#sName').val().trim(), principal_name: $('#sPrincipal').val().trim(),
+                    phone: $('#sPhone').val().trim(), email: $('#sEmail').val().trim(),
+                    address: $('#sAddress').val().trim(), board: $('#sBoard').val().trim(),
+                    affiliation_no: $('#sAffiliation').val().trim(), school_code: $('#sSchoolCode').val().trim(), logo_url
+                });
+                bs.school_name = $('#sName').val().trim();
+                bs.principal_name = $('#sPrincipal').val().trim();
+                bs.phone = $('#sPhone').val().trim();
+                bs.email = $('#sEmail').val().trim();
+                bs.address = $('#sAddress').val().trim();
+                bs.board = $('#sBoard').val().trim();
+                bs.affiliation_no = $('#sAffiliation').val().trim();
+                bs.school_code = $('#sSchoolCode').val().trim();
+                bs.logo_url = logo_url;
+                $('#logoPreview').html(logo_url ? '<img src="'+logo_url+'" alt="Logo">' : '<i class="fas fa-image"></i>');
+                showToast('School details updated','success');
+            } catch(err){ showToast(err.message||'Failed to update','error'); }
+        };
+
+        window.updateSigningAuthority=async function(){
+            const bid = isSuperAdmin ? (parseInt($('#selBranch').val())||0) : (branchesCache[0] ? branchesCache[0].id : 0);
+            if(!bid){showToast('Select a branch','error');return;}
+            const bs = branchesCache.find(x=>x.id===bid);
+            if(!bs){showToast('Branch not found','error');return;}
+            try {
+                let sigUrl = bs.signing_authority_signature_url || '';
+                const file = $('#sigFile')[0].files[0];
+                if(file){
+                    const uploaded = await uploadFile(file);
+                    if(!uploaded || !uploaded.url) throw new Error(uploaded && uploaded.error ? uploaded.error : 'Signature upload failed');
+                    sigUrl = uploaded.url;
+                }
+                await updateBranch(bid, {
+                    signing_authority_name: $('#sigName').val().trim(),
+                    signing_authority_designation: $('#sigDesig').val().trim() || 'Principal',
+                    signing_authority_signature_url: sigUrl
+                });
+                bs.signing_authority_name = $('#sigName').val().trim();
+                bs.signing_authority_designation = $('#sigDesig').val().trim() || 'Principal';
+                bs.signing_authority_signature_url = sigUrl;
+                showToast('Signing authority updated','success');
+            } catch(err){ showToast(err.message||'Failed to update signing authority','error'); }
+        };
+
+        window.updateSessionSettings=async function(){
+            const bid = isSuperAdmin ? (parseInt($('#selBranch').val())||0) : (branchesCache[0] ? branchesCache[0].id : 0);
+            if(!bid){showToast('Select a branch','error');return;}
+            try {
+                const selectedSession = $('#sAcademic').val();
+                await saveOptionSettings({
+                    academic_session: selectedSession,
+                    erp_session: $('#sErp').val(),
+                    school_time_from: $('#sTimeFrom').val(),
+                    school_time_to: $('#sTimeTo').val()
+                }, bid);
+                currentOptionSettings.academic_session = selectedSession;
+                currentOptionSettings.erp_session = $('#sErp').val();
+                currentOptionSettings.school_time_from = $('#sTimeFrom').val();
+                currentOptionSettings.school_time_to = $('#sTimeTo').val();
+                // Also set this session as Active in academic_sessions table
+                if (selectedSession) {
+                    const sess = sessionsCache.find(s => s.name === selectedSession);
+                    if (sess) {
+                        // Set all sessions to Inactive, then set the selected one to Active
+                        for (const s of sessionsCache) {
+                            if (s.status === 'Active' && s.id !== sess.id) {
+                                await updateMasterData('academic_sessions', s.id, { status: 'Inactive' });
+                                s.status = 'Inactive';
+                            }
+                        }
+                        if (sess.status !== 'Active') {
+                            await updateMasterData('academic_sessions', sess.id, { status: 'Active' });
+                            sess.status = 'Active';
+                        }
+                    }
+                }
+                // Update the header session switcher to reflect the new active session
+                sessionStorage.setItem('vkis_selected_session', selectedSession);
+                showToast('Session & timing updated','success');
+            } catch(err){ showToast(err.message||'Failed to update session settings','error'); }
+        };
+
+        window.updatePaymentSettings=async function(){
+            const bid = isSuperAdmin ? (parseInt($('#selBranch').val())||0) : (branchesCache[0] ? branchesCache[0].id : 0);
+            if(!bid){showToast('Select a branch','error');return;}
+            try {
+                let qrUrl = currentOptionSettings.online_payment_qr_url || '';
+                const file = $('#qrFile')[0].files[0];
+                if(file){
+                    const uploaded = await uploadFile(file);
+                    if(!uploaded || !uploaded.url) throw new Error(uploaded && uploaded.error ? uploaded.error : 'QR upload failed');
+                    qrUrl = uploaded.url;
+                }
+                await saveOptionSettings({
+                    online_payment_qr_url: qrUrl,
+                    online_payment_account_name: $('#payAccountName').val().trim(),
+                    online_payment_account_no: $('#payAccountNo').val().trim(),
+                    online_payment_ifsc: $('#payIfsc').val().trim(),
+                    online_payment_branch_name: $('#payBranchName').val().trim(),
+                    online_payment_upi: $('#payUpi').val().trim()
+                }, bid);
+                currentOptionSettings.online_payment_qr_url = qrUrl;
+                showToast('Payment method updated','success');
+            } catch(err){ showToast(err.message||'Failed to update payment method','error'); }
+        };
+    });
+    </script>
+</body>
+</html>

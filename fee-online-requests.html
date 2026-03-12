@@ -1,0 +1,188 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Online Fee Requests — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background:#fff; border-radius:12px; border:1px solid #f0f0f0; padding:18px 20px; margin-bottom:16px; }
+        .form-label-sm { font-size:11px; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:4px; display:block; letter-spacing:.3px; }
+        .form-control { font-size:12px; height:36px; }
+        .r-table { width:100%; border-collapse:collapse; }
+        .r-table thead th { font-size:10px; font-weight:700; text-transform:uppercase; background:#0d1b4a; color:#fff; padding:8px 10px; text-align:left; }
+        .r-table tbody td { font-size:12px; padding:9px 10px; border-bottom:1px solid #eef1f6; vertical-align:middle; }
+        .r-table tbody tr:hover td { background:#f8faff; }
+        .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; padding:4px 9px; border-radius:999px; text-transform:uppercase; }
+        .status-requested { background:#fff3e0; color:#ef6c00; }
+        .status-accepted { background:#e8f5e9; color:#2e7d32; }
+        .status-rejected { background:#ffebee; color:#c62828; }
+        .action-btn { border:none; background:none; cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; color:#0d1b4a; }
+        .action-btn:hover { background:#eef2ff; }
+        .total-bar { background:#f5f7ff; border:1px solid #e8eaf6; border-radius:8px; padding:12px 16px; margin-top:12px; display:flex; gap:20px; flex-wrap:wrap; }
+        .t-item label { font-size:9px; font-weight:700; color:#888; text-transform:uppercase; display:block; }
+        .t-val { font-size:16px; font-weight:700; color:#0d1b4a; }
+        .empty-state { text-align:center; padding:40px; color:#bbb; }
+        .empty-state i { font-size:36px; margin-bottom:10px; display:block; }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Online Fee Requests</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-money-check"></i> Online Fee Requests</h3></div></div>
+
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass"><option value="">All Classes</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">All Sections</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Status</label>
+                                    <select class="form-control" id="fStatus">
+                                        <option value="">All Status</option>
+                                        <option value="Requested">Requested</option>
+                                        <option value="Accepted">Accepted</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date From</label>
+                                    <input type="date" class="form-control" id="fDateFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date To</label>
+                                    <input type="date" class="form-control" id="fDateTo">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-search"></i> Search</button>
+                                    <button class="fw-btn-fill" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="requestList"><div class="empty-state"><i class="fas fa-hourglass-half"></i>Loading requests...</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(async function () {
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            if (typeof initPage === 'function') initPage('fee-online-requests');
+            try {
+                const [classes, sections] = await Promise.all([
+                    getClasses().catch(() => []),
+                    getSections().catch(() => [])
+                ]);
+                classes.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+                sections.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+            } catch (e) {}
+
+            $('#btnSearch').on('click', renderList);
+            $('#btnReset').on('click', function () {
+                $('#fClass, #fSection, #fStatus, #fDateFrom, #fDateTo').val('');
+                renderList();
+            });
+
+            renderList();
+        });
+
+        async function renderList() {
+            try {
+                const filters = {};
+                if ($('#fClass').val()) filters.class_id = $('#fClass').val();
+                if ($('#fSection').val()) filters.section = $('#fSection').val();
+                if ($('#fStatus').val()) filters.status = $('#fStatus').val();
+                if ($('#fDateFrom').val()) filters.from_date = $('#fDateFrom').val();
+                if ($('#fDateTo').val()) filters.to_date = $('#fDateTo').val();
+                const rows = await getPaymentRequests(filters);
+                if (!rows || !rows.length) {
+                    $('#requestList').html('<div class="empty-state"><i class="fas fa-inbox"></i>No payment request found</div>');
+                    return;
+                }
+                let totalAmount = 0;
+                let requestedCount = 0;
+                const body = rows.map((row, index) => {
+                    totalAmount += Number(row.requested_amount || 0);
+                    if (row.status === 'Requested') requestedCount += 1;
+                    const statusClass = row.status === 'Accepted' ? 'status-accepted' : row.status === 'Rejected' ? 'status-rejected' : 'status-requested';
+                    return `<tr>
+                        <td>${index + 1}</td>
+                        <td>${fmtDate(row.request_date)}</td>
+                        <td><div style="font-weight:700;color:#0d1b4a;">${row.student_name || '-'}</div><div style="font-size:10px;color:#888;">${row.father_name || '-'}</div></td>
+                        <td>${row.class_name || '-'} / ${row.section || '-'}</td>
+                        <td style="font-weight:700;">${row.month || '-'}</td>
+                        <td style="font-weight:700;color:#0d1b4a;">${row.transaction_id || '-'}</td>
+                        <td>${row.payment_proof_url ? `<a href="${row.payment_proof_url}" target="_blank" style="font-weight:700;color:#1565c0;">View Proof</a>` : '-'}</td>
+                        <td>₹${Number(row.requested_amount || 0).toLocaleString('en-IN')}</td>
+                        <td><span class="status-badge ${statusClass}">${row.status}</span></td>
+                        <td>${row.can_review ? `<button class="action-btn" title="Review" onclick="openReview(${row.id})"><i class="fas fa-edit"></i></button>` : '-'}</td>
+                    </tr>`;
+                }).join('');
+                $('#requestList').html(`
+                    <div style="overflow-x:auto;">
+                        <table class="r-table">
+                            <thead><tr><th>#</th><th>Request Date</th><th>Student / Father</th><th>Class / Sec</th><th>Month</th><th>Transaction ID</th><th>Pay Proof</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>${body}</tbody>
+                        </table>
+                    </div>
+                    <div class="total-bar">
+                        <div class="t-item"><label>Total Requests</label><div class="t-val">${rows.length}</div></div>
+                        <div class="t-item"><label>Pending Review</label><div class="t-val">${requestedCount}</div></div>
+                        <div class="t-item"><label>Total Requested Amount</label><div class="t-val">₹${totalAmount.toLocaleString('en-IN')}</div></div>
+                    </div>`);
+            } catch (error) {
+                $('#requestList').html('<div class="empty-state"><i class="fas fa-exclamation-circle"></i>Failed to load requests</div>');
+            }
+        }
+
+        function fmtDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        window.openReview = function (id) {
+            window.location.href = '/fee-online-request-review?id=' + encodeURIComponent(id);
+        };
+    </script>
+</body>
+</html>

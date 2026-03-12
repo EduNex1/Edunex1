@@ -1,0 +1,159 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Book Types — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}
+        .action-btn-edit{background:#fff3e0;color:#ef6c00}.action-btn-edit:hover{background:#ef6c00;color:#fff}
+        .action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Library</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li><a href="/library-books">Books</a></li><li>Book Types</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-tags"></i> Manage Book Types</h3></div></div>
+
+                        <!-- Add Type Form -->
+                        <div class="filter-card">
+                            <div class="row align-items-end" style="gap:0;">
+                                <div class="col-lg-4 col-md-5 col-8 form-group mb-0">
+                                    <label class="form-label-sm">Book Type Name</label>
+                                    <input type="text" class="form-control" id="typeName" placeholder="e.g. Novel, Journal...">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-4 form-group mb-0" style="display:flex;gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 20px;" onclick="addType()"><i class="fas fa-plus"></i> Add Type</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Type List -->
+                        <div class="table-card">
+                            <div class="table-responsive" style="padding:0 2px 10px;">
+                                <table class="list-table">
+                                    <thead><tr>
+                                        <th style="width:60px">Sr No.</th><th>Type Name</th><th style="width:90px">Action</th>
+                                    </tr></thead>
+                                    <tbody id="typeBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editTypeModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#0d1b4a;color:#fff;padding:10px 16px;">
+                    <h6 class="modal-title" style="font-size:13px;font-weight:700;">Edit Book Type</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label-sm">Type Name</label>
+                    <input type="text" class="form-control" id="editTypeName">
+                    <input type="hidden" id="editTypeId">
+                </div>
+                <div class="modal-footer" style="padding:8px 16px;">
+                    <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;" onclick="saveEdit()">Save</button>
+                    <button class="btn btn-sm btn-light" data-dismiss="modal" style="font-size:13px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('library-book-type');
+        let cache = [];
+
+        async function loadTypes() {
+            try { cache = await getMasterData('book_types'); } catch(e){ cache = []; }
+            const rows = cache.map((t, i) => `<tr>
+                <td class="text-center">${i + 1}</td>
+                <td>${t.name}</td>
+                <td>
+                    <button class="action-btn action-btn-edit" title="Edit" onclick="editType(${t.id})"><i class="fas fa-pen"></i></button>
+                    <button class="action-btn action-btn-delete" title="Delete" onclick="removeType(${t.id})"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            </tr>`).join('');
+            $('#typeBody').html(rows || '<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No book types</td></tr>');
+        }
+
+        window.addType = async function() {
+            const name = $('#typeName').val().trim();
+            if (!name) { showToast('Enter a type name', 'error'); return; }
+            try { await createMasterData('book_types', {name}); $('#typeName').val(''); await loadTypes(); showToast('Book type added', 'success'); }
+            catch(e){ showToast('Failed to add','error'); }
+        };
+
+        window.editType = function(id) {
+            const t = cache.find(x=>x.id===id);
+            if (!t) return;
+            $('#editTypeId').val(t.id);
+            $('#editTypeName').val(t.name);
+            $('#editTypeModal').modal('show');
+        };
+
+        window.saveEdit = async function() {
+            const id = parseInt($('#editTypeId').val());
+            const name = $('#editTypeName').val().trim();
+            if (!name) { showToast('Enter a name', 'error'); return; }
+            try { await updateMasterData('book_types', id, {name}); $('#editTypeModal').modal('hide'); await loadTypes(); showToast('Book type updated', 'success'); }
+            catch(e){ showToast('Failed to update','error'); }
+        };
+
+        window.removeType = async function(id) {
+            if (!confirm('Delete this book type?')) return;
+            try { await deleteMasterData('book_types', id); await loadTypes(); showToast('Book type deleted', 'success'); }
+            catch(e){ showToast('Failed to delete','error'); }
+        };
+
+        await loadTypes();
+    });
+    </script>
+</body>
+</html>

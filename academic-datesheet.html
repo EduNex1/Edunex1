@@ -1,0 +1,660 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Date Sheet — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .quick-links {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .ql-btn {
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 2px solid #304ffe;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #fff;
+            color: #304ffe;
+        }
+
+        .ql-btn.active,
+        .ql-btn:hover {
+            background: #304ffe;
+            color: #fff;
+        }
+
+        .record-count {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-published {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-draft {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .ds-table td,
+        .ds-table th {
+            font-size: 12px;
+            vertical-align: middle;
+            padding: 7px 10px;
+        }
+
+        .ds-table th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #555;
+            letter-spacing: 0.3px;
+        }
+
+        .ds-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .action-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.15s;
+        }
+
+        .action-btn.edit {
+            color: #1565c0;
+        }
+
+        .action-btn.edit:hover {
+            background: #e3f2fd;
+        }
+
+        .action-btn.delete {
+            color: #c62828;
+        }
+
+        .action-btn.delete:hover {
+            background: #ffebee;
+        }
+
+        .action-btn.print {
+            color: #2e7d32;
+        }
+
+        .action-btn.print:hover {
+            background: #e8f5e9;
+        }
+
+        .form-card {
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .entry-form {
+            background: #f5f7ff;
+            border: 1px solid #e8eaf6;
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 12px;
+        }
+
+        .entry-form h6 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #304ffe;
+            margin-bottom: 10px;
+        }
+
+        .entry-list {
+            margin-top: 12px;
+        }
+
+        .entry-list .el-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .filter-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        @media (max-width:767px) {
+
+            .ds-table td,
+            .ds-table th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+
+            .col-hide-md {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:575px) {
+
+            .ds-table td,
+            .ds-table th {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
+
+            .col-hide-sm {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Date Sheet</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-calendar-alt"></i> Date Sheet</h3>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="quick-links">
+                            <button class="ql-btn" id="tabCreate"><i class="fas fa-plus mg-r-5"></i>Create Date
+                                Sheet</button>
+                            <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Date
+                                Sheets</button>
+                        </div>
+
+                        <!-- ==================== CREATE SECTION ==================== -->
+                        <div id="createSection" style="display:none;">
+                            <!-- Step 1: Exam Info -->
+                            <div class="form-card" id="step1">
+                                <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i
+                                        class="fas fa-info-circle" style="color:#304ffe;margin-right:6px;"></i>Exam
+                                    Information</h6>
+                                <div class="row gutters-8 align-items-end">
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Exam *</label>
+                                        <select class="form-control" id="createExam"
+                                            style="font-size:12px;height:36px;"></select>
+                                    </div>
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Publish Date *</label>
+                                        <input type="date" class="form-control" id="createPublishDate"
+                                            style="font-size:12px;height:36px;">
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-6 form-group">
+                                        <label class="form-label-sm">Status</label>
+                                        <select class="form-control" id="createStatus"
+                                            style="font-size:12px;height:36px;">
+                                            <option value="Draft">Draft</option>
+                                            <option value="Published">Published</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-auto form-group d-flex" style="gap:6px;">
+                                        <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSaveSheet"
+                                            style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;white-space:nowrap;">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                        <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                            id="btnCancelSheet"
+                                            style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;white-space:nowrap;">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="editSheetId" value="">
+                            </div>
+
+                            <!-- Step 2: Add Entries (shown after save) -->
+                            <div id="step2" style="display:none;">
+                                <div class="entry-form">
+                                    <h6><i class="fas fa-plus-circle mg-r-5"></i>Add Subject Entry</h6>
+                                    <div class="row gutters-8 align-items-end">
+                                        <div class="col-lg-2 col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Date *</label>
+                                            <input type="date" class="form-control" id="entryDate"
+                                                style="font-size:12px;height:36px;">
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Time From *</label>
+                                            <input type="time" class="form-control" id="entryTimeFrom" value="09:00"
+                                                style="font-size:12px;height:36px;">
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Time To *</label>
+                                            <input type="time" class="form-control" id="entryTimeTo" value="12:00"
+                                                style="font-size:12px;height:36px;">
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Class *</label>
+                                            <select class="form-control" id="entryClass"
+                                                style="font-size:12px;height:36px;"></select>
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Subject *</label>
+                                            <select class="form-control" id="entrySubject"
+                                                style="font-size:12px;height:36px;"></select>
+                                        </div>
+                                        <div class="col-auto form-group d-flex" style="gap:6px;">
+                                            <button type="button" class="fw-btn-fill btn-gradient-yellow"
+                                                id="btnSaveEntry"
+                                                style="border-radius:6px;height:36px;font-size:11px;padding:0 14px;width:auto;white-space:nowrap;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                            <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                                id="btnCancelEntry"
+                                                style="border-radius:6px;height:36px;font-size:11px;padding:0 14px;width:auto;white-space:nowrap;">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="editEntryId" value="">
+                                </div>
+
+                                <!-- Entry List with filters -->
+                                <div class="entry-list">
+                                    <div class="el-header">
+                                        <span class="record-count" id="entryCount">0 Entries</span>
+                                        <div class="d-flex align-items-end" style="gap:6px;">
+                                            <select class="form-control" id="entryFilterClass"
+                                                style="font-size:11px;height:32px;width:auto;min-width:120px;">
+                                                <option value="">All Classes</option>
+                                            </select>
+                                            <select class="form-control" id="entryFilterSubject"
+                                                style="font-size:11px;height:32px;width:auto;min-width:120px;">
+                                                <option value="">All Subjects</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered ds-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Day</th>
+                                                    <th>Time</th>
+                                                    <th>Class</th>
+                                                    <th>Subject</th>
+                                                    <th style="width:70px;">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="entryBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ==================== VIEW SECTION ==================== -->
+                        <div id="viewSection">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10"
+                                style="flex-wrap:wrap;gap:8px;">
+                                <span class="record-count" id="sheetCount">0 Date Sheets</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered ds-table" id="sheetTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Exam</th>
+                                            <th>Publish Date</th>
+                                            <th class="col-hide-md">Entries</th>
+                                            <th>Status</th>
+                                            <th style="width:100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sheetBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-datesheet');
+
+            let currentSheetId = null;
+            let examCache = [], classCache = [], subjectCache = [], sheetCache = [], entryCache = [];
+            try {
+                [examCache, classCache, subjectCache, sheetCache] = await Promise.all([
+                    getExams(), getClasses(), getSubjects(), getDateSheets()
+                ]);
+            } catch(e) { console.error('Load error', e); }
+
+            // Populate dropdowns
+            examCache.forEach(e => { $('#createExam').append(`<option value="${e.id}">${e.name}</option>`); });
+            classCache.forEach(c => {
+                $('#entryClass, #entryFilterClass').append(`<option value="${c.id}">${c.name}</option>`);
+            });
+            subjectCache.forEach(s => {
+                $('#entrySubject, #entryFilterSubject').append(`<option value="${s.id}">${s.name}</option>`);
+            });
+
+            $('#createPublishDate').val(new Date().toISOString().split('T')[0]);
+            loadSheetList();
+
+            // ==================== TAB SWITCHING ====================
+            $('#tabView').on('click', function () {
+                $(this).addClass('active'); $('#tabCreate').removeClass('active');
+                $('#viewSection').show(); $('#createSection').hide();
+                currentSheetId = null;
+                loadSheetList();
+            });
+            $('#tabCreate').on('click', function () {
+                $(this).addClass('active'); $('#tabView').removeClass('active');
+                $('#createSection').show(); $('#viewSection').hide();
+                resetSheetForm();
+            });
+
+            // ==================== SHEET LIST (View tab) ====================
+            function loadSheetList() {
+                const tbody = $('#sheetBody');
+                tbody.empty();
+                $('#sheetCount').text(sheetCache.length + ' Date Sheet' + (sheetCache.length !== 1 ? 's' : ''));
+
+                if (!sheetCache.length) {
+                    tbody.html('<tr><td colspan="5" class="text-center" style="padding:30px;color:#bbb;"><i class="fas fa-calendar-alt" style="font-size:24px;display:block;margin-bottom:8px;"></i>No date sheets created</td></tr>');
+                    return;
+                }
+
+                sheetCache.forEach(ds => {
+                    const exam = examCache.find(e => e.id === ds.exam_id);
+                    const statusCls = ds.status === 'Published' ? 'status-published' : 'status-draft';
+                    tbody.append(`<tr>
+                        <td style="font-weight:600;">${exam ? exam.name : (ds.exam_name || '-')}</td>
+                        <td>${fmtDate(ds.publish_date)}</td>
+                        <td class="col-hide-md">—</td>
+                        <td><span class="status-badge ${statusCls}">${ds.status}</span></td>
+                        <td style="white-space:nowrap;">
+                            <button class="action-btn print" onclick="printSheet(${ds.id})" title="Print"><i class="fas fa-print"></i></button>
+                            <button class="action-btn edit" onclick="editSheet(${ds.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="removeSheet(${ds.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`);
+                });
+            }
+
+            // ==================== CREATE / EDIT SHEET ====================
+            $('#btnSaveSheet').on('click', async function () {
+                const examId = $('#createExam').val();
+                const publishDate = $('#createPublishDate').val();
+                const status = $('#createStatus').val();
+                if (!examId || !publishDate) { showToast('Fill exam and publish date', 'error'); return; }
+
+                try {
+                    const editId = parseInt($('#editSheetId').val());
+                    if (editId) {
+                        await updateDateSheet(editId, { exam_id: examId, publish_date: publishDate, status });
+                        currentSheetId = editId;
+                        showToast('Date sheet updated', 'success');
+                    } else {
+                        const ds = await createDateSheet({ exam_id: examId, publish_date: publishDate, status });
+                        currentSheetId = ds.id;
+                        showToast('Date sheet created — now add entries', 'success');
+                    }
+                    sheetCache = await getDateSheets();
+
+                    // Show step 2
+                    $('#step1').find('select, input[type="date"]').prop('disabled', true);
+                    $('#btnSaveSheet').hide();
+                    $('#step2').show();
+                    await loadEntries();
+                } catch(e) { showToast('Error saving date sheet', 'error'); }
+            });
+
+            $('#btnCancelSheet').on('click', function () {
+                currentSheetId = null;
+                $('#tabView').click();
+            });
+
+            function resetSheetForm() {
+                $('#createExam').val(examCache.length ? examCache[0].id : '');
+                $('#createPublishDate').val(new Date().toISOString().split('T')[0]);
+                $('#createStatus').val('Draft');
+                $('#editSheetId').val('');
+                $('#step1').find('select, input[type="date"]').prop('disabled', false);
+                $('#btnSaveSheet').show().html('<i class="fas fa-save"></i> Save');
+                $('#step2').hide();
+                currentSheetId = null;
+            }
+
+            // ==================== ENTRIES ====================
+            async function loadEntries() {
+                if (!currentSheetId) return;
+                try { entryCache = await getDateSheetEntries(currentSheetId); } catch(e) { entryCache = []; }
+
+                const classFilter = $('#entryFilterClass').val();
+                const subjFilter = $('#entryFilterSubject').val();
+
+                let entries = entryCache.slice();
+                if (classFilter) entries = entries.filter(e => e.class_id === parseInt(classFilter));
+                if (subjFilter) entries = entries.filter(e => e.subject_id === parseInt(subjFilter));
+
+                entries.sort((a, b) => {
+                    if (a.date !== b.date) return (a.date||'').localeCompare(b.date||'');
+                    return (a.class_id||0) - (b.class_id||0);
+                });
+
+                const tbody = $('#entryBody');
+                tbody.empty();
+                $('#entryCount').text(entries.length + ' Entr' + (entries.length !== 1 ? 'ies' : 'y'));
+
+                if (!entries.length) {
+                    tbody.html('<tr><td colspan="6" class="text-center" style="padding:20px;color:#bbb;">No entries yet — add subjects above</td></tr>');
+                    return;
+                }
+
+                entries.forEach(e => {
+                    const cls = classCache.find(c => c.id === e.class_id);
+                    const sub = subjectCache.find(s => s.id === e.subject_id);
+                    const d = new Date(e.date);
+                    const dayName = d.toLocaleDateString('en-IN', { weekday: 'short' });
+                    tbody.append(`<tr>
+                        <td style="font-weight:600;white-space:nowrap;">${fmtDate(e.date)}</td>
+                        <td>${dayName}</td>
+                        <td style="white-space:nowrap;">${fmt12(e.time_from)} – ${fmt12(e.time_to)}</td>
+                        <td>${cls ? cls.name : (e.class_name || '-')}</td>
+                        <td style="font-weight:600;">${sub ? sub.name : (e.subject_name || '-')}</td>
+                        <td style="white-space:nowrap;">
+                            <button class="action-btn edit" onclick="editEntry(${e.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="removeEntry(${e.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`);
+                });
+            }
+
+            // Entry filters
+            $('#entryFilterClass, #entryFilterSubject').on('change', function () { loadEntries(); });
+
+            // Save entry
+            $('#btnSaveEntry').on('click', async function () {
+                const data = {
+                    date: $('#entryDate').val(),
+                    time_from: $('#entryTimeFrom').val(),
+                    time_to: $('#entryTimeTo').val(),
+                    class_id: $('#entryClass').val(),
+                    subject_id: $('#entrySubject').val()
+                };
+                if (!data.date || !data.time_from || !data.time_to || !data.class_id || !data.subject_id) {
+                    showToast('Fill all fields', 'error'); return;
+                }
+
+                try {
+                    const editEntryId = parseInt($('#editEntryId').val());
+                    if (editEntryId) {
+                        await updateDateSheetEntry(editEntryId, data);
+                        showToast('Entry updated', 'success');
+                    } else {
+                        await createDateSheetEntry(currentSheetId, data);
+                        showToast('Entry added', 'success');
+                    }
+                    resetEntryForm();
+                    await loadEntries();
+                } catch(e) { showToast('Error saving entry', 'error'); }
+            });
+
+            $('#btnCancelEntry').on('click', resetEntryForm);
+
+            function resetEntryForm() {
+                $('#entryDate').val('');
+                $('#entryTimeFrom').val('09:00');
+                $('#entryTimeTo').val('12:00');
+                $('#entryClass').val('');
+                $('#entrySubject').val('');
+                $('#editEntryId').val('');
+                $('#btnSaveEntry').html('<i class="fas fa-plus"></i> Add');
+            }
+
+            window.editEntry = function (entryId) {
+                const e = entryCache.find(x => x.id === entryId);
+                if (!e) return;
+                $('#entryDate').val(e.date);
+                $('#entryTimeFrom').val(e.time_from);
+                $('#entryTimeTo').val(e.time_to);
+                $('#entryClass').val(e.class_id);
+                $('#entrySubject').val(e.subject_id);
+                $('#editEntryId').val(entryId);
+                $('#btnSaveEntry').html('<i class="fas fa-save"></i> Update');
+                $('html, body').animate({ scrollTop: $('#step2').offset().top - 80 }, 200);
+            };
+
+            window.removeEntry = async function (entryId) {
+                if (!confirm('Delete this entry?')) return;
+                try {
+                    await deleteDateSheetEntry(entryId);
+                    showToast('Entry deleted', 'success');
+                    await loadEntries();
+                } catch(e) { showToast('Error deleting entry', 'error'); }
+            };
+
+            // ==================== EDIT SHEET (from view list) ====================
+            window.editSheet = function (id) {
+                const ds = sheetCache.find(x => x.id === id);
+                if (!ds) return;
+                $('#tabCreate').click();
+                setTimeout(async function () {
+                    $('#createExam').val(ds.exam_id);
+                    $('#createPublishDate').val(ds.publish_date);
+                    $('#createStatus').val(ds.status);
+                    $('#editSheetId').val(id);
+                    currentSheetId = id;
+                    $('#btnSaveSheet').html('<i class="fas fa-save"></i> Update');
+                    $('#step2').show();
+                    await loadEntries();
+                }, 50);
+            };
+
+            window.removeSheet = async function (id) {
+                if (!confirm('Delete this date sheet and all its entries?')) return;
+                try {
+                    await deleteDateSheet(id);
+                    sheetCache = sheetCache.filter(x => x.id !== id);
+                    showToast('Date sheet deleted', 'success');
+                    loadSheetList();
+                } catch(e) { showToast('Error deleting date sheet', 'error'); }
+            };
+
+            // ==================== PRINT ====================
+            window.printSheet = function (id) {
+                window.open('/datesheet-print?id=' + id, '_blank');
+            };
+
+            // ==================== HELPERS ====================
+            function fmtDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+            }
+            function fmt12(t) {
+                if (!t) return '';
+                const [h, m] = t.split(':');
+                const hr = parseInt(h);
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                const hr12 = hr === 0 ? 12 : hr > 12 ? hr - 12 : hr;
+                return hr12.toString().padStart(2, '0') + ':' + m + ' ' + ampm;
+            }
+        });
+    </script>
+</body>
+
+</html>

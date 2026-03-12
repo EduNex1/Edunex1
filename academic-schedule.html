@@ -1,0 +1,474 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Course Schedule — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .quick-links {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .ql-btn {
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 2px solid #304ffe;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #fff;
+            color: #304ffe;
+        }
+
+        .ql-btn.active,
+        .ql-btn:hover {
+            background: #304ffe;
+            color: #fff;
+        }
+
+        .record-count {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .filter-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .cs-table td,
+        .cs-table th {
+            font-size: 12px;
+            vertical-align: middle;
+            padding: 7px 10px;
+        }
+
+        .cs-table th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #555;
+            letter-spacing: 0.3px;
+        }
+
+        .cs-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .action-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.15s;
+        }
+
+        .action-btn.edit {
+            color: #1565c0;
+        }
+
+        .action-btn.edit:hover {
+            background: #e3f2fd;
+        }
+
+        .action-btn.delete {
+            color: #c62828;
+        }
+
+        .action-btn.delete:hover {
+            background: #ffebee;
+        }
+
+        .form-card {
+            background: #fafafa;
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        @media (max-width:1199px) {
+            .col-hide-xl {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:991px) {
+            .col-hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .col-hide-md {
+                display: none !important;
+            }
+
+            .cs-table td,
+            .cs-table th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+        }
+
+        @media (max-width:575px) {
+            .col-hide-sm {
+                display: none !important;
+            }
+
+            .cs-table td,
+            .cs-table th {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Course Schedule</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-clipboard-list"></i> Course Schedule</h3>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="quick-links">
+                            <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View
+                                Schedule</button>
+                            <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Schedule</button>
+                        </div>
+
+                        <!-- ADD FORM -->
+                        <div class="form-card" id="addSection" style="display:none;">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select class="form-control" id="addClass"
+                                        style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Subject *</label>
+                                    <select class="form-control" id="addSubject"
+                                        style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Exam</label>
+                                    <select class="form-control" id="addExam" style="font-size:12px;height:36px;">
+                                        <option value="">— Optional —</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Schedule *</label>
+                                    <input type="text" class="form-control" id="addSchedule"
+                                        placeholder="e.g. 01 Mar – 15 Mar" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Topic *</label>
+                                    <input type="text" class="form-control" id="addTopic"
+                                        placeholder="Chapter / Topic name" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Assignment</label>
+                                    <input type="text" class="form-control" id="addAssignment"
+                                        placeholder="Homework / Assignment (optional)"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center" style="gap:8px;margin-top:8px;">
+                                <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSave"
+                                    style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                    id="btnCancelAdd"
+                                    style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                            <input type="hidden" id="editId" value="">
+                        </div>
+
+                        <!-- VIEW SECTION -->
+                        <div id="viewSection">
+                            <div class="row gutters-8 align-items-end mg-b-12">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="filterClass" style="font-size:12px;height:36px;">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Subject</label>
+                                    <select class="form-control" id="filterSubject" style="font-size:12px;height:36px;">
+                                        <option value="">All Subjects</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Exam</label>
+                                    <select class="form-control" id="filterExam" style="font-size:12px;height:36px;">
+                                        <option value="">All Exams</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto form-group d-flex" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-search"></i> SEARCH
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                        id="btnReset"
+                                        style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-redo"></i> RESET
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="filterBadge" style="display:none;"></div>
+
+                            <div class="d-flex align-items-center justify-content-between mg-b-10"
+                                style="flex-wrap:wrap;gap:8px;">
+                                <span class="record-count" id="recordCount">0 Records</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered cs-table" id="csTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Schedule</th>
+                                            <th>Subject</th>
+                                            <th>Topic</th>
+                                            <th class="col-hide-md">Assignment</th>
+                                            <th class="col-hide-lg">Exam</th>
+                                            <th style="width:70px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="csBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-schedule');
+
+            let classCache = [], subjectCache = [], examCache = [], scheduleCache = [];
+            try {
+                [classCache, subjectCache, examCache, scheduleCache] = await Promise.all([
+                    getClasses(), getSubjects(), getExams(), getCourseSchedules()
+                ]);
+            } catch(e) { console.error('Failed to load data', e); }
+
+            // Populate dropdowns
+            classCache.forEach(c => { $('#filterClass, #addClass').append(`<option value="${c.id}">${c.name}</option>`); });
+            subjectCache.forEach(s => { $('#filterSubject, #addSubject').append(`<option value="${s.id}">${s.name}</option>`); });
+            examCache.forEach(e => { $('#filterExam, #addExam').append(`<option value="${e.id}">${e.name}</option>`); });
+
+            if (classCache.length) $('#filterClass').val(classCache[0].id);
+            loadTable();
+
+            // Tabs
+            $('#tabView').on('click', function () {
+                $(this).addClass('active'); $('#tabAdd').removeClass('active');
+                $('#viewSection').show(); $('#addSection').hide();
+            });
+            $('#tabAdd').on('click', function () {
+                $(this).addClass('active'); $('#tabView').removeClass('active');
+                $('#addSection').show(); $('#viewSection').hide();
+                resetAddForm();
+            });
+
+            // Search / Reset
+            $('#btnSearch').on('click', loadTable);
+            $('#btnReset').on('click', function () {
+                $('#filterClass, #filterSubject, #filterExam').val('');
+                loadTable();
+            });
+
+            async function loadTable() {
+                const classId = $('#filterClass').val();
+                const subjectId = $('#filterSubject').val();
+                const examId = $('#filterExam').val();
+
+                const filters = {};
+                if (classId) filters.class_id = classId;
+                if (subjectId) filters.subject_id = subjectId;
+                if (examId) filters.exam_id = examId;
+
+                try { scheduleCache = await getCourseSchedules(filters); } catch(e) {}
+
+                const tbody = $('#csBody');
+                tbody.empty();
+                $('#recordCount').text(scheduleCache.length + ' Record' + (scheduleCache.length !== 1 ? 's' : ''));
+
+                // Filter badge
+                const parts = [];
+                if (classId) { const c = classCache.find(x => x.id === parseInt(classId)); if (c) parts.push(c.name); }
+                if (subjectId) { const s = subjectCache.find(x => x.id === parseInt(subjectId)); if (s) parts.push(s.name); }
+                if (examId) { const e = examCache.find(x => x.id === parseInt(examId)); if (e) parts.push(e.name); }
+                if (parts.length) {
+                    $('#filterBadge').html(`<div class="filter-badge"><i class="fas fa-filter mg-r-5"></i>${parts.join(' — ')}</div>`).show();
+                } else {
+                    $('#filterBadge').hide();
+                }
+
+                if (!scheduleCache.length) {
+                    tbody.html('<tr><td colspan="6" class="text-center" style="padding:30px;color:#bbb;"><i class="fas fa-clipboard" style="font-size:24px;display:block;margin-bottom:8px;"></i>No schedules found</td></tr>');
+                    return;
+                }
+
+                scheduleCache.forEach(s => {
+                    const sub = subjectCache.find(x => x.id === s.subject_id);
+                    const exam = s.exam_id ? examCache.find(e => e.id === s.exam_id) : null;
+                    tbody.append(`<tr>
+                        <td style="font-weight:600;font-size:11px;white-space:nowrap;">${s.schedule}</td>
+                        <td style="font-weight:600;">${sub ? sub.name : (s.subject_name || '-')}</td>
+                        <td>${s.topic}</td>
+                        <td class="col-hide-md" style="color:#666;">${s.assignment || '—'}</td>
+                        <td class="col-hide-lg"><span style="font-size:10px;font-weight:600;color:#ef6c00;">${exam ? exam.name : '—'}</span></td>
+                        <td>
+                            <button class="action-btn edit" onclick="editSchedule(${s.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="removeSchedule(${s.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`);
+                });
+            }
+
+            // Save
+            $('#btnSave').on('click', async function () {
+                const data = {
+                    class_id: $('#addClass').val(),
+                    subject_id: $('#addSubject').val(),
+                    exam_id: $('#addExam').val() || null,
+                    schedule: $('#addSchedule').val().trim(),
+                    topic: $('#addTopic').val().trim(),
+                    assignment: $('#addAssignment').val().trim()
+                };
+                if (!data.class_id || !data.subject_id || !data.schedule || !data.topic) {
+                    showToast('Fill all mandatory fields', 'error'); return;
+                }
+                try {
+                    const editId = parseInt($('#editId').val());
+                    if (editId) {
+                        await updateCourseSchedule(editId, data);
+                        showToast('Schedule updated', 'success');
+                    } else {
+                        await createCourseSchedule(data);
+                        showToast('Schedule added', 'success');
+                    }
+                    $('#tabView').click();
+                    await loadTable();
+                } catch(e) { showToast('Error saving schedule', 'error'); }
+            });
+
+            $('#btnCancelAdd').on('click', function () { $('#tabView').click(); });
+
+            function resetAddForm() {
+                $('#addClass, #addSubject, #addExam').val('');
+                $('#addSchedule, #addTopic, #addAssignment').val('');
+                $('#editId').val('');
+                $('#btnSave').html('<i class="fas fa-save"></i> Save');
+            }
+
+            window.editSchedule = function (id) {
+                const s = scheduleCache.find(x => x.id === id);
+                if (!s) return;
+                $('#tabAdd').click();
+                setTimeout(function () {
+                    $('#addClass').val(s.class_id);
+                    $('#addSubject').val(s.subject_id);
+                    $('#addExam').val(s.exam_id || '');
+                    $('#addSchedule').val(s.schedule);
+                    $('#addTopic').val(s.topic);
+                    $('#addAssignment').val(s.assignment);
+                    $('#editId').val(id);
+                    $('#btnSave').html('<i class="fas fa-save"></i> Update');
+                }, 50);
+            };
+
+            window.removeSchedule = async function (id) {
+                if (!confirm('Delete this schedule?')) return;
+                try {
+                    await deleteCourseSchedule(id);
+                    showToast('Schedule deleted', 'success');
+                    await loadTable();
+                } catch(e) { showToast('Error deleting schedule', 'error'); }
+            };
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,405 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Staff Attendance — EduNex1</title>
+    <meta name="description" content="Mark daily staff attendance">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .att-status-select {
+            width: 110px;
+            font-size: 11px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 0 6px;
+            font-weight: 600;
+        }
+
+        .att-status-select.present {
+            border-color: #2e7d32;
+            color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .att-status-select.absent {
+            border-color: #c62828;
+            color: #c62828;
+            background: #ffebee;
+        }
+
+        .att-status-select.leave {
+            border-color: #ef6c00;
+            color: #ef6c00;
+            background: #fff3e0;
+        }
+
+        .att-remark {
+            width: 100%;
+            font-size: 11px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 0 8px;
+        }
+
+        .check-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .check-all-row .form-check-input {
+            position: static;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        #attTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        #attTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #555;
+            padding: 8px;
+        }
+
+        #attTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .date-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .staff-photo-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+
+        .status-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-dot .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.active .dot {
+            background: #2e7d32;
+        }
+
+        .status-dot.active {
+            color: #2e7d32;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) {
+            .col-hide-xl {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:991px) {
+            .col-hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .col-hide-md {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:575px) {
+            .col-hide-sm {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .att-status-select {
+                width: 90px;
+                font-size: 10px;
+            }
+
+            .att-remark {
+                font-size: 10px;
+            }
+
+            #attTable td,
+            #attTable th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+        }
+
+        @media (max-width:575px) {
+            .att-status-select {
+                width: 80px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Staff</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Staff Attendance</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-clipboard-check"></i> Mark Staff
+                                    Attendance</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <form class="filter-form mg-b-15" id="filterForm">
+                            <div class="row gutters-8">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Date *</label>
+                                    <input type="date" class="form-control" id="attDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Designation</label>
+                                    <select class="form-control" id="filterDesignation"
+                                        style="font-size:12px;height:36px;">
+                                        <option value="All">All Designations</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-12 form-group">
+                                    <label class="form-label-sm">Search</label>
+                                    <input type="text" class="form-control" id="filterSearch"
+                                        placeholder="Search by name..." style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-12 form-group d-flex align-items-end"
+                                    style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="flex:1;border-radius:6px;height:36px;font-size:11px;"><i
+                                            class="fas fa-search"></i> SEARCH</button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                        id="btnReset" style="flex:1;border-radius:6px;height:36px;font-size:11px;"><i
+                                            class="fas fa-redo"></i> RESET</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Attendance List -->
+                        <div id="attListArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10 flex-wrap"
+                                style="gap:8px;">
+                                <div class="date-badge" id="attDateBadge"></div>
+                                <div class="check-all-row">
+                                    <input type="checkbox" class="form-check-input" id="checkAllPresent" checked>
+                                    <label for="checkAllPresent"
+                                        style="font-weight:600;font-size:12px;margin:0;cursor:pointer;color:#2e7d32;">Mark
+                                        All Present</label>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="attTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-hide-lg">Status</th>
+                                            <th class="col-hide-sm">Emp ID</th>
+                                            <th>Photo</th>
+                                            <th>Staff Name</th>
+                                            <th class="col-hide-md">Father Name</th>
+                                            <th>Designation</th>
+                                            <th>Attendance</th>
+                                            <th>Remark</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="mg-t-15">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnSave" style="border-radius:8px;">
+                                    <i class="fas fa-save mg-r-5"></i> Save Attendance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('staff-attendance');
+
+            let staffCache = [], designationCache = [];
+            try { [staffCache, designationCache] = await Promise.all([getStaff({ status: 'Active' }), getDesignations()]); } catch(e) {}
+
+            const today = new Date().toISOString().split('T')[0];
+            $('#attDate').val(today);
+
+            let dHtml = '<option value="All">All Designations</option>';
+            designationCache.forEach(d => { dHtml += `<option value="${d.name}">${d.name}</option>`; });
+            $('#filterDesignation').html(dHtml);
+
+            loadAttendance();
+
+            $('#btnSearch').on('click', loadAttendance);
+            $('#btnReset').on('click', function () { $('#attDate').val(today); $('#filterDesignation').val('All'); $('#filterSearch').val(''); loadAttendance(); });
+
+            async function loadAttendance() {
+                const date = $('#attDate').val();
+                if (!date) { showToast('Please select a date', 'error'); return; }
+
+                const desg = $('#filterDesignation').val();
+                const search = $('#filterSearch').val().trim().toLowerCase();
+
+                let activeStaff = staffCache.slice();
+                if (desg !== 'All') activeStaff = activeStaff.filter(s => s.designation === desg);
+                if (search) activeStaff = activeStaff.filter(s => s.name.toLowerCase().includes(search) || (s.phone || '').includes(search));
+
+                let existing = [];
+                try { existing = await getStaffAttendance({ date }); } catch(e) {}
+
+                const d = new Date(date);
+                const dateDisplay = d.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+                $('#attDateBadge').html(`<i class="fas fa-calendar-alt mg-r-5"></i> ${dateDisplay}`);
+
+                const statusMap = { P: 'present', A: 'absent', L: 'leave' };
+
+                let html = '';
+                activeStaff.forEach(s => {
+                    const record = existing.find(a => a.staff_id === s.id);
+                    const dbStatus = record ? record.status : 'P';
+                    const cssClass = statusMap[dbStatus] || 'present';
+
+                    html += `<tr data-staff-id="${s.id}">
+                        <td class="col-hide-lg"><span class="status-dot active"><span class="dot"></span>Active</span></td>
+                        <td class="col-hide-sm" style="font-weight:600;font-size:11px;">${s.employee_id || ''}</td>
+                        <td><img src="${s.photo_url || 'img/default-user.png'}" class="staff-photo-sm" alt="${s.name}"></td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        <td class="col-hide-md" style="color:#666;">${s.father_name || ''}</td>
+                        <td><span style="font-size:10px;font-weight:600;color:#304ffe;">${s.designation || ''}</span></td>
+                        <td>
+                            <select class="att-status-select ${cssClass}" data-staff-id="${s.id}">
+                                <option value="P" ${dbStatus === 'P' ? 'selected' : ''}>Present</option>
+                                <option value="A" ${dbStatus === 'A' ? 'selected' : ''}>Absent</option>
+                                <option value="L" ${dbStatus === 'L' ? 'selected' : ''}>Leave</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="att-remark" data-staff-id="${s.id}" value="${record ? (record.remark || '') : ''}" placeholder="Remark (optional)"></td>
+                    </tr>`;
+                });
+
+                if (!activeStaff.length) {
+                    html = `<tr><td colspan="8" class="text-center" style="padding:30px;color:#999;font-size:13px;"><i class="fas fa-user-slash" style="font-size:24px;display:block;margin-bottom:8px;"></i>No staff found</td></tr>`;
+                }
+
+                $('#attTableBody').html(html);
+                $('#attListArea').show();
+            }
+
+            $(document).on('change', '.att-status-select', function () {
+                const v = $(this).val();
+                const cls = { P: 'present', A: 'absent', L: 'leave' }[v] || 'present';
+                $(this).removeClass('present absent leave').addClass(cls);
+            });
+
+            $('#checkAllPresent').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.att-status-select').val('P').removeClass('absent leave').addClass('present');
+                }
+            });
+
+            let hasUnsavedChanges = false;
+            $(document).on('change', '.att-status-select, .att-remark', function () { hasUnsavedChanges = true; });
+            $(window).on('beforeunload', function (e) { if (hasUnsavedChanges) { e.preventDefault(); return 'You have unsaved attendance changes.'; } });
+
+            $('#btnSave').on('click', async function () {
+                const date = $('#attDate').val();
+                if (!date) { showToast('Please select a date', 'error'); return; }
+
+                const records = [];
+                $('#attTableBody tr').each(function () {
+                    const staffId = parseInt($(this).data('staff-id'));
+                    if (!staffId) return;
+                    const status = $(this).find('.att-status-select').val();
+                    const remark = $(this).find('.att-remark').val().trim();
+                    records.push({ staff_id: staffId, status, remark });
+                });
+
+                if (!records.length) { showToast('No records to save', 'error'); return; }
+
+                try {
+                    await markStaffAttendance(date, records);
+                    hasUnsavedChanges = false;
+                    showToast(`Attendance saved for ${records.length} staff members`, 'success');
+                } catch(e) { showToast('Error saving attendance', 'error'); }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,408 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Result Update — Student Wise — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control,.form-select{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .info-bar{background:#f8f9ff;border:1px solid #e0e0e0;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:none}
+        .info-bar .ib-item{display:inline-block;margin-right:24px;font-size:12px;color:#333}.info-bar .ib-label{font-weight:700;color:#0d1b4a;margin-right:4px}
+        .mark-input{width:70px;font-size:12px;height:30px;text-align:center;border:1px solid #ced4da;border-radius:4px;padding:2px 6px}
+        .mark-input:focus{border-color:#1565c0;outline:none;box-shadow:0 0 0 2px rgba(21,101,192,.15)}
+        .grade-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;display:inline-block}
+        .details-card{background:#f8f9ff;border:2px dashed #c5cae9;border-radius:12px;padding:20px;margin-top:16px;display:none}
+        .details-card h6{font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:14px;text-transform:uppercase;border-bottom:2px solid #e0e0e0;padding-bottom:8px}
+        .details-card .note-text{font-size:11px;color:#888;font-style:italic;margin-bottom:14px;display:block}
+        .detail-input{font-size:12px;height:34px;border:1px solid #ced4da;border-radius:4px;padding:4px 10px;width:100%}
+        .detail-input:focus{border-color:#1565c0;outline:none;box-shadow:0 0 0 2px rgba(21,101,192,.15)}
+        .prac-tag{font-size:9px;color:#888;font-style:italic}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Result</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Result Update — Student Wise</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-user-edit"></i> Result Update — Student Wise</h3></div></div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Class *</label>
+                                    <select class="form-control" id="fClass" onchange="onClassChange()"><option value="">— Class —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Section *</label>
+                                    <select class="form-control" id="fSection"><option value="">— Section —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Admission No. / Student</label>
+                                    <select class="form-control" id="fStudent"><option value="">— Select Student —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Exam *</label>
+                                    <select class="form-control" id="fExam"><option value="">— Exam —</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-12 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetAll()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Info Bar -->
+                        <div class="info-bar" id="infoBar">
+                            <span class="ib-item"><span class="ib-label">Student Name:</span><span id="ibName">—</span></span>
+                            <span class="ib-item"><span class="ib-label">Class/Section:</span><span id="ibClass">—</span></span>
+                            <span class="ib-item"><span class="ib-label">Exam:</span><span id="ibExam">—</span></span>
+                            <span class="ib-item"><span class="ib-label">Adm No.:</span><span id="ibAdm">—</span></span>
+                        </div>
+
+                        <!-- Marks Table -->
+                        <div class="table-card" id="marksCard" style="display:none;">
+                            <div class="table-header">
+                                <h5><i class="fas fa-clipboard-list"></i> Marks Entry</h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="list-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px;">Sr.</th>
+                                            <th>Subject</th>
+                                            <th>Exam Name</th>
+                                            <th>Min Marks</th>
+                                            <th>Max Marks</th>
+                                            <th>Obtained Marks</th>
+                                            <th>Practical <span class="prac-tag">(optional)</span></th>
+                                            <th>Grade <span class="prac-tag">(optional)</span></th>
+                                            <th style="width:40px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="marksBody"></tbody>
+                                </table>
+                            </div>
+                            <div style="padding:14px 20px;text-align:right;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 28px;" onclick="updateMarks()"><i class="fas fa-save"></i> Update Marks</button>
+                            </div>
+                        </div>
+
+                        <!-- Details (Optional) -->
+                        <div class="details-card" id="detailsCard">
+                            <h6><i class="fas fa-info-circle"></i> Additional Details (Optional)
+                                <span class="note-text">Note: Generally needed for Half Yearly / Annual / Last Exams or Final Exams</span>
+                            </h6>
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Attendance</label>
+                                    <input type="text" class="detail-input" id="dAttendance" placeholder="e.g. 92%">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Remark</label>
+                                    <select class="detail-input" id="dRemark">
+                                        <option value="">— Select —</option>
+                                        <option>Excellent</option>
+                                        <option>Very Good</option>
+                                        <option>Good</option>
+                                        <option>Satisfactory</option>
+                                        <option>Needs Improvement</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Height (cm)</label>
+                                    <input type="number" class="detail-input" id="dHeight" placeholder="e.g. 142">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Weight (kg)</label>
+                                    <input type="number" class="detail-input" id="dWeight" placeholder="e.g. 38">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Result</label>
+                                    <select class="detail-input" id="dResult">
+                                        <option value="">— Select —</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Compartment</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Division / Grade</label>
+                                    <select class="detail-input" id="dDivision">
+                                        <option value="">— Select —</option>
+                                        <option>First</option>
+                                        <option>Second</option>
+                                        <option>Third</option>
+                                        <option>A+</option>
+                                        <option>A</option>
+                                        <option>B+</option>
+                                        <option>B</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Rank</label>
+                                    <input type="number" class="detail-input" id="dRank" placeholder="e.g. 1">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Result Date</label>
+                                    <input type="date" class="detail-input" id="dDate">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Promoted to Class</label>
+                                    <select class="detail-input" id="dPromoted">
+                                        <option value="">— Select —</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="text-align:right;margin-top:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 28px;" onclick="submitDetails()"><i class="fas fa-check-circle"></i> Submit Details</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function () {
+            initPage('result-student-wise');
+
+            function getGrade(pct) {
+                if (pct >= 91) return 'A1'; if (pct >= 81) return 'A2'; if (pct >= 71) return 'B1';
+                if (pct >= 61) return 'B2'; if (pct >= 51) return 'C1'; if (pct >= 41) return 'C2';
+                if (pct >= 33) return 'D'; return 'E';
+            }
+
+            let classCache = [], examCache = [], subjectCache = [], studentCache = [];
+            try { [classCache, examCache, subjectCache] = await Promise.all([getClasses(), getExams(), getSubjects()]); } catch(e) {}
+
+            classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
+            examCache.forEach(e => document.getElementById('fExam').innerHTML += `<option value="${e.id}">${e.name}</option>`);
+            classCache.forEach(c => document.getElementById('dPromoted').innerHTML += `<option value="${c.id}">${c.name}</option>`);
+
+            let currentStudent = null, currentExam = null;
+
+            window.onClassChange = async function () {
+                const classId = parseInt(document.getElementById('fClass').value);
+                const secSel = document.getElementById('fSection');
+                const stuSel = document.getElementById('fStudent');
+                secSel.innerHTML = '<option value="">— Section —</option>';
+                stuSel.innerHTML = '<option value="">— Select Student —</option>';
+                if (!classId) return;
+                try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
+                const sections = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
+                sections.forEach(s => secSel.innerHTML += `<option value="${s}">${s}</option>`);
+                secSel.onchange = function () { populateStudents(this.value); };
+            };
+
+            function populateStudents(section) {
+                const stuSel = document.getElementById('fStudent');
+                stuSel.innerHTML = '<option value="">— Select Student —</option>';
+                if (!section) return;
+                studentCache.filter(s => s.section === section && s.status === 'Active')
+                    .sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0))
+                    .forEach(s => stuSel.innerHTML += `<option value="${s.id}">${s.admission_no} — ${s.name}</option>`);
+            }
+
+            window.searchResult = async function () {
+                const classId = parseInt(document.getElementById('fClass').value);
+                const section = document.getElementById('fSection').value;
+                const studentId = parseInt(document.getElementById('fStudent').value);
+                const examId = parseInt(document.getElementById('fExam').value);
+                if (!classId || !section || !examId) { alert('Please select Class, Section, and Exam'); return; }
+
+                let student;
+                if (studentId) {
+                    student = studentCache.find(s => s.id === studentId);
+                } else {
+                    student = studentCache.find(s => s.section === section && s.status === 'Active');
+                }
+                if (!student) { alert('No student found'); return; }
+
+                currentStudent = student;
+                currentExam = examCache.find(e => e.id === examId);
+                const cls = classCache.find(c => c.id === student.class_id);
+
+                document.getElementById('ibName').textContent = student.name;
+                document.getElementById('ibClass').textContent = (cls ? cls.name : '') + ' / ' + (student.section || '');
+                document.getElementById('ibExam').textContent = currentExam ? currentExam.name : '';
+                document.getElementById('ibAdm').textContent = student.admission_no || '';
+                document.getElementById('infoBar').style.display = 'block';
+
+                // Fetch existing marks
+                let existingResults = [];
+                try { existingResults = await getExamResults({ student_id: student.id, exam_id: examId }); } catch(e) {}
+
+                const tbody = document.getElementById('marksBody');
+                tbody.innerHTML = '';
+                const stuSubjects = student.subjects ? (typeof student.subjects === 'string' ? JSON.parse(student.subjects) : student.subjects) : [];
+                const subjects = stuSubjects.map(sid => subjectCache.find(s => s.id === parseInt(sid))).filter(Boolean);
+                subjects.forEach((sub, idx) => {
+                    const existing = existingResults.find(r => r.subject_id === sub.id);
+                    const minM = existing ? (existing.min_marks || '') : '';
+                    const maxM = existing ? (existing.max_marks || '') : '';
+                    const obtM = existing ? (existing.theory_marks || '') : '';
+                    const prac = existing && existing.practical_marks ? existing.practical_marks : '';
+                    const grade = existing ? (existing.grade || '') : '';
+                    tbody.innerHTML += `<tr data-subject-id="${sub.id}">
+                        <td>${idx + 1}</td>
+                        <td style="font-weight:600;">${sub.name}</td>
+                        <td style="color:#666;">${currentExam ? currentExam.name : ''}</td>
+                        <td><input type="number" class="mark-input min-mark" value="${minM}" placeholder="Min"></td>
+                        <td><input type="number" class="mark-input max-mark" value="${maxM}" placeholder="Max"></td>
+                        <td><input type="number" class="mark-input obt-mark" value="${obtM}" placeholder="Marks" oninput="autoGrade(this)"></td>
+                        <td><input type="number" class="mark-input prac-mark" value="${prac}" placeholder="—"></td>
+                        <td><span class="grade-badge" style="background:#e3f2fd;color:#0d1b4a;">${grade || '—'}</span></td>
+                        <td><button class="btn btn-sm" style="background:none;color:#d32f2f;font-size:14px;padding:2px 8px;" onclick="clearRow(this)" title="Clear"><i class="fas fa-eraser"></i></button></td>
+                    </tr>`;
+                });
+
+                document.getElementById('marksCard').style.display = 'block';
+                document.getElementById('detailsCard').style.display = 'block';
+
+                // Load existing details
+                let detList = [];
+                try { detList = await getResultDetails({ student_id: student.id, exam_id: examId }); } catch(e) {}
+                const det = detList[0] || null;
+                if (det) {
+                    document.getElementById('dAttendance').value = det.attendance || '';
+                    document.getElementById('dRemark').value = det.remark || '';
+                    document.getElementById('dHeight').value = det.height || '';
+                    document.getElementById('dWeight').value = det.weight || '';
+                    document.getElementById('dResult').value = det.result || '';
+                    document.getElementById('dDivision').value = det.division || '';
+                    document.getElementById('dRank').value = det.rank || '';
+                    document.getElementById('dDate').value = det.result_date || '';
+                    document.getElementById('dPromoted').value = det.promoted_to || '';
+                } else {
+                    ['dAttendance','dRemark','dHeight','dWeight','dResult','dDivision','dRank','dDate','dPromoted'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
+                }
+            };
+
+            window.autoGrade = function (el) {
+                const row = el.closest('tr');
+                const maxM = parseFloat(row.querySelector('.max-mark').value) || 0;
+                const obtM = parseFloat(el.value) || 0;
+                const badge = row.querySelector('.grade-badge');
+                if (maxM > 0 && obtM >= 0) {
+                    badge.textContent = getGrade((obtM / maxM) * 100);
+                } else {
+                    badge.textContent = '—';
+                }
+            };
+
+            window.clearRow = function (btn) {
+                const row = btn.closest('tr');
+                row.querySelectorAll('.mark-input').forEach(inp => inp.value = '');
+                row.querySelector('.grade-badge').textContent = '—';
+            };
+
+            window.updateMarks = async function () {
+                if (!currentStudent || !currentExam) return;
+                const rows = document.querySelectorAll('#marksBody tr');
+                const results = [];
+                rows.forEach(row => {
+                    const subId = parseInt(row.dataset.subjectId);
+                    const minM = parseInt(row.querySelector('.min-mark').value);
+                    const maxM = parseInt(row.querySelector('.max-mark').value);
+                    const obtM = parseInt(row.querySelector('.obt-mark').value);
+                    const prac = row.querySelector('.prac-mark').value ? parseInt(row.querySelector('.prac-mark').value) : 0;
+                    const gradeText = row.querySelector('.grade-badge').textContent;
+                    if (!isNaN(obtM) && !isNaN(maxM) && !isNaN(minM)) {
+                        results.push({
+                            student_id: currentStudent.id,
+                            subject_id: subId,
+                            min_marks: minM,
+                            max_marks: maxM,
+                            theory_marks: obtM,
+                            practical_marks: prac,
+                            total_marks: obtM + prac,
+                            grade: gradeText !== '—' ? gradeText : getGrade((obtM / maxM) * 100)
+                        });
+                    }
+                });
+                try {
+                    await saveExamResults(currentExam.id, results);
+                    alert(`Marks updated for ${results.length} subject(s) — ${currentStudent.name}`);
+                } catch(e) { alert('Error saving marks'); }
+            };
+
+            window.submitDetails = async function () {
+                if (!currentStudent || !currentExam) return;
+                try {
+                    await saveResultDetail({
+                        student_id: currentStudent.id,
+                        exam_id: currentExam.id,
+                        attendance: document.getElementById('dAttendance').value,
+                        remark: document.getElementById('dRemark').value,
+                        height: document.getElementById('dHeight').value,
+                        weight: document.getElementById('dWeight').value,
+                        result: document.getElementById('dResult').value,
+                        division: document.getElementById('dDivision').value,
+                        rank: parseInt(document.getElementById('dRank').value) || '',
+                        result_date: document.getElementById('dDate').value,
+                        promoted_to: document.getElementById('dPromoted').value
+                    });
+                    alert(`Details saved for ${currentStudent.name} — ${currentExam.name}`);
+                } catch(e) { alert('Error saving details'); }
+            };
+
+            window.resetAll = function () {
+                document.getElementById('fClass').value = '';
+                document.getElementById('fSection').innerHTML = '<option value="">— Section —</option>';
+                document.getElementById('fStudent').innerHTML = '<option value="">— Select Student —</option>';
+                document.getElementById('fExam').value = '';
+                document.getElementById('infoBar').style.display = 'none';
+                document.getElementById('marksCard').style.display = 'none';
+                document.getElementById('detailsCard').style.display = 'none';
+                currentStudent = null;
+                currentExam = null;
+            };
+        })();
+    </script>
+</body>
+</html>

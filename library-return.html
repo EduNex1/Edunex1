@@ -1,0 +1,252 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Book Return — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .status-issued{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100}
+        .status-returned{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#e8f5e9;color:#1b5e20}
+        .return-form{background:#f5f7ff;border-radius:12px;border:1px solid #d6ddf5;padding:18px 20px;margin-bottom:16px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Library</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li><a href="/library-books">Books</a></li><li>Book Return</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-undo-alt"></i> Book Return</h3></div></div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Class</label>
+                                    <select class="form-control" id="fClass"><option value="">— All Classes —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">— All —</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-5 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchIssues()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetFilter()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Issued Books List -->
+                        <div class="table-card">
+                            <div class="table-responsive" style="padding:0 2px 10px;">
+                                <table class="list-table">
+                                    <thead><tr>
+                                        <th>Adm No.</th><th>Student Name</th><th>Book Type</th><th>Book Title</th>
+                                        <th>Issue Date</th><th>Due Return</th><th>Status</th><th>Return Date</th>
+                                        <th>Extra Days</th><th>Penalty (₹)</th><th>Action</th>
+                                    </tr></thead>
+                                    <tbody id="issueBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Return Form (hidden) -->
+                        <div class="return-form" id="returnSection" style="display:none;">
+                            <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-undo-alt"></i> Process Return</h6>
+                            <input type="hidden" id="rIssueId">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Student</label>
+                                    <input type="text" class="form-control" id="rStudent" readonly style="background:#e9ecef;">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Book Title</label>
+                                    <input type="text" class="form-control" id="rBook" readonly style="background:#e9ecef;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Due Return Date</label>
+                                    <input type="text" class="form-control" id="rDueDate" readonly style="background:#e9ecef;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Return Date</label>
+                                    <input type="date" class="form-control" id="rReturnDate">
+                                </div>
+                                <div class="col-lg-1 col-md-2 col-4 form-group">
+                                    <label class="form-label-sm">Extra Days</label>
+                                    <input type="text" class="form-control" id="rExtra" readonly style="background:#e9ecef;font-weight:700;color:#c62828;">
+                                </div>
+                                <div class="col-lg-1 col-md-2 col-4 form-group">
+                                    <label class="form-label-sm">Fine (₹)</label>
+                                    <input type="text" class="form-control" id="rFine" readonly style="background:#e9ecef;font-weight:700;color:#c62828;">
+                                </div>
+                            </div>
+                            <div class="mt-2" style="display:flex;gap:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 26px;" onclick="processReturn()"><i class="fas fa-check"></i> Submit Return</button>
+                                <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:7px 20px;" onclick="cancelReturn()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('library-return');
+
+        let classCache = [], sectionCache = [], issuesCache = [], optSettings = {};
+        try {
+            const [cls, secs, issues, opts] = await Promise.all([
+                getClasses(), getSections(), getBookIssues(), getOptionSettings()
+            ]);
+            classCache = cls; sectionCache = secs; issuesCache = issues;
+            optSettings = opts || {};
+        } catch(e) { console.error('Failed to load data', e); }
+
+        const finePerDay = parseInt(optSettings['library_fine_per_day'] || '5');
+
+        // Populate class & section
+        classCache.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+        sectionCache.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+
+        function calcExtraDays(dueDate, retDate) {
+            const due = new Date(dueDate);
+            const ret = new Date(retDate);
+            const diff = Math.floor((ret - due) / (1000*60*60*24));
+            return diff > 0 ? diff : 0;
+        }
+        function calcPenalty(extraDays, rate) {
+            return extraDays > 0 ? extraDays * rate : 0;
+        }
+
+        function loadIssues(classId, section) {
+            let issues = issuesCache.slice();
+            if (classId) issues = issues.filter(i => i.class_id === classId || i.student_class_id === classId);
+            if (section) issues = issues.filter(i => i.section === section || i.student_section === section);
+
+            const rows = issues.map(iss => {
+                const isReturned = iss.status === 'Returned';
+                const extra = isReturned && iss.return_date ? calcExtraDays(iss.due_date, iss.return_date) : '—';
+                const penalty = typeof extra === 'number' ? '₹' + calcPenalty(extra, finePerDay) : '—';
+                const statusBadge = isReturned
+                    ? '<span class="status-returned">Returned</span>'
+                    : '<span class="status-issued">Issued</span>';
+                const actionBtn = isReturned
+                    ? '<span style="font-size:10px;color:#888;">—</span>'
+                    : `<button class="btn btn-sm" style="background:#042954;color:#fff;font-size:11px;padding:4px 12px;" onclick="openReturn(${iss.id})"><i class="fas fa-undo-alt"></i> Return</button>`;
+
+                return `<tr>
+                    <td>${iss.admission_no || '—'}</td>
+                    <td>${iss.student_name || '—'}</td>
+                    <td>${iss.type_name || '—'}</td>
+                    <td>${iss.book_title || '—'}</td>
+                    <td>${iss.issue_date || ''}</td>
+                    <td>${iss.due_date || ''}</td>
+                    <td>${statusBadge}</td>
+                    <td>${iss.return_date || '—'}</td>
+                    <td class="text-center">${extra}</td>
+                    <td class="text-center">${penalty}</td>
+                    <td>${actionBtn}</td>
+                </tr>`;
+            }).join('');
+            $('#issueBody').html(rows || '<tr><td colspan="11" class="text-center text-muted" style="padding:30px;">No issued books found</td></tr>');
+        }
+
+        window.searchIssues = function() {
+            const classId = parseInt($('#fClass').val()) || 0;
+            const section = $('#fSection').val();
+            loadIssues(classId, section);
+        };
+
+        window.resetFilter = function() {
+            $('#fClass, #fSection').val('');
+            loadIssues();
+            cancelReturn();
+        };
+
+        window.openReturn = function(issueId) {
+            const iss = issuesCache.find(x => x.id === issueId);
+            if (!iss) return;
+            $('#rIssueId').val(iss.id);
+            $('#rStudent').val(iss.student_name ? iss.student_name + ' (' + (iss.admission_no||'') + ')' : '—');
+            $('#rBook').val(iss.book_title || '—');
+            $('#rDueDate').val(iss.due_date);
+            const today = new Date().toISOString().split('T')[0];
+            $('#rReturnDate').val(today);
+            calcReturnInfo();
+            $('#returnSection').slideDown(200);
+            $('html, body').animate({ scrollTop: $('#returnSection').offset().top - 100 }, 300);
+        };
+
+        $('#rReturnDate').on('change', calcReturnInfo);
+
+        function calcReturnInfo() {
+            const dueDate = $('#rDueDate').val();
+            const retDate = $('#rReturnDate').val();
+            if (dueDate && retDate) {
+                const extra = calcExtraDays(dueDate, retDate);
+                const fine = calcPenalty(extra, finePerDay);
+                $('#rExtra').val(extra);
+                $('#rFine').val(fine);
+            }
+        }
+
+        window.processReturn = async function() {
+            const issueId = parseInt($('#rIssueId').val()) || 0;
+            const retDate = $('#rReturnDate').val();
+            if (!issueId || !retDate) { showToast('Fill return date', 'error'); return; }
+            try {
+                await returnBook(issueId, { return_date: retDate });
+                issuesCache = await getBookIssues();
+                showToast('Book returned successfully!', 'success');
+                $('#returnSection').slideUp(200);
+                searchIssues();
+            } catch(e) { showToast(e.message || 'Error returning book', 'error'); }
+        };
+
+        window.cancelReturn = function() {
+            $('#returnSection').slideUp(200);
+        };
+
+        loadIssues();
+    });
+    </script>
+</body>
+</html>

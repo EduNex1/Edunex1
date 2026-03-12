@@ -1,0 +1,99 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Exam Name — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}.list-table{width:100%;border-collapse:collapse}.list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}.list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.list-table tbody tr:hover td{background:#f5f7ff}.table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}.action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}.action-btn-edit{background:#fff3e0;color:#ef6c00}.action-btn-edit:hover{background:#ef6c00;color:#fff}.action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+        .status-published{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#e8f5e9;color:#1b5e20}
+        .status-draft{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100}
+        .note-box{background:#fffde7;border:1px solid #fff9c4;border-radius:8px;padding:10px 14px;font-size:11px;color:#795548;margin-bottom:14px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Masters</h3><ul><li><a href="/dashboard">Home</a></li><li>Exam Name</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-file-alt"></i> Exam Name</h3></div></div>
+                    <div class="filter-card" id="formSection">
+                        <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;" id="formTitle"><i class="fas fa-plus-circle"></i> Add Exam Name</h6>
+                        <input type="hidden" id="editId">
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">Exam Name</label>
+                                <input type="text" class="form-control" id="eName" placeholder="e.g. Unit Test - I">
+                            </div>
+                            <div class="col-lg-1 col-md-2 col-4 form-group">
+                                <label class="form-label-sm">Sr No.</label>
+                                <input type="number" class="form-control" id="eSerial" placeholder="1" min="1">
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-4 form-group">
+                                <label class="form-label-sm">Min Marks</label>
+                                <input type="number" class="form-control" id="eMin" placeholder="0" min="0">
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-4 form-group">
+                                <label class="form-label-sm">Max Marks</label>
+                                <input type="number" class="form-control" id="eMax" placeholder="100" min="1">
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-6 form-group">
+                                <label class="form-label-sm">Status</label>
+                                <select class="form-control" id="eStatus"><option value="Published">Published</option><option value="Draft">Draft</option></select>
+                            </div>
+                        </div>
+                        <div class="note-box"><i class="fas fa-info-circle"></i> <strong>Note:</strong> Status "Published" means marks will be shown on student dashboard.</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 22px;" onclick="saveItem()"><i class="fas fa-save"></i> Save</button>
+                            <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:7px 16px;" onclick="cancelEdit()"><i class="fas fa-redo"></i> Reset</button>
+                        </div>
+                    </div>
+                    <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
+                        <table class="list-table"><thead><tr><th style="width:50px">Sr No.</th><th>Exam Name</th><th>Min Marks</th><th>Max Marks</th><th>Status</th><th style="width:90px">Action</th></tr></thead><tbody id="listBody"></tbody></table>
+                    </div></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('master-exam-name');
+        let cache = [];
+        async function load(){
+            try { cache = await getExamNames(); } catch(e){ showToast('Failed to load','error'); }
+            const rows = cache.map((e,i)=>{
+                const st = e.status==='Published'?'<span class="status-published">Published</span>':'<span class="status-draft">Draft</span>';
+                return `<tr><td class="text-center">${e.display_order||i+1}</td><td><strong>${e.name}</strong></td><td class="text-center">${e.min_marks||0}</td><td class="text-center">${e.max_marks||100}</td><td>${st}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            }).join('');
+            $('#listBody').html(rows||'<tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No exam names</td></tr>');
+        }
+        window.saveItem=async function(){
+            const name=$('#eName').val().trim(), display_order=parseInt($('#eSerial').val())||0, min_marks=parseInt($('#eMin').val())||0, max_marks=parseInt($('#eMax').val())||100, status=$('#eStatus').val(), editId=parseInt($('#editId').val())||0;
+            if(!name){showToast('Enter exam name','error');return;}
+            try {
+                const data={name, display_order, min_marks, max_marks, status};
+                if(editId) await updateMasterData('exam_names', editId, data);
+                else await createMasterData('exam_names', data);
+                cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
+            } catch(e){ showToast('Failed to save','error'); }
+        };
+        window.editItem=function(id){
+            const e=cache.find(x=>x.id===id); if(!e)return;
+            $('#editId').val(e.id);$('#eName').val(e.name);$('#eSerial').val(e.display_order);$('#eMin').val(e.min_marks);$('#eMax').val(e.max_marks);$('#eStatus').val(e.status);
+            $('#formTitle').html('<i class="fas fa-edit"></i> Edit Exam Name');
+        };
+        window.cancelEdit=function(){$('#editId').val('');$('#eName').val('');$('#eSerial').val('');$('#eMin').val('');$('#eMax').val('');$('#eStatus').val('Published');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Exam Name');};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('exam_names',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        await load();
+    });
+    </script>
+</body>
+</html>

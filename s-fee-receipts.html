@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fee Receipts — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee Receipts</h3>
+                    <ul><li><a href="/student-dashboard">Home</a></li><li>Fee > Receipts</li></ul>
+                </div>
+            
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-receipt"></i> Fee Receipts</div>
+                    <div class="chart-card-body">
+                    <div class="table-responsive"><table class="recent-table">
+                        <thead><tr><th>#</th><th>Receipt No</th><th>Date</th><th>Amount</th><th>Mode</th></tr></thead>
+                        <tbody id="receiptBody"><tr><td colspan="5" style="text-align:center;color:#888;">Loading...</td></tr></tbody>
+                    </table></div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function () {
+        initPage('s-fee-receipts');
+        try {
+            const children = await getMyChildren();
+            const stu = children && children[0];
+            if (!stu) { $('#receiptBody').html('<tr><td colspan="5" style="text-align:center;color:#888;">Student not found.</td></tr>'); return; }
+            const deposits = await getFeeDeposits({ student_id: stu.id }) || [];
+            if (!deposits.length) { $('#receiptBody').html('<tr><td colspan="5" style="text-align:center;color:#888;">No fee receipts found.</td></tr>'); return; }
+            let html = '';
+            deposits.forEach((d, i) => {
+                html += `<tr><td>${i + 1}</td><td>${d.receipt_no || d.id}</td><td>${d.date || d.created_at || '-'}</td><td><strong>\u20B9${Number(d.received_amount || 0).toLocaleString('en-IN')}</strong></td><td>${d.payment_mode || '-'}</td></tr>`;
+            });
+            $('#receiptBody').html(html);
+        } catch (e) { console.error(e); }
+    });
+    </script>
+</body>
+</html>

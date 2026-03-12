@@ -1,0 +1,412 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Demand Bill — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        .form-label-sm {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+            letter-spacing: 0.3px;
+        }
+
+        .form-control {
+            font-size: 12px;
+            height: 36px;
+        }
+
+        .ms-dropdown {
+            position: relative;
+        }
+
+        .ms-dropdown .ms-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .ms-dropdown .ms-toggle::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 10px;
+            color: #888;
+        }
+
+        .ms-dropdown .ms-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            z-index: 100;
+            display: none;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .ms-dropdown.open .ms-menu {
+            display: block;
+        }
+
+        .ms-dropdown .ms-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .ms-dropdown .ms-item:hover {
+            background: #f5f7ff;
+        }
+
+        .ms-dropdown .ms-item input {
+            width: 15px;
+            height: 15px;
+            accent-color: #0d1b4a;
+        }
+
+        .ms-dropdown .ms-item.ms-all {
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 4px;
+            padding-bottom: 8px;
+        }
+
+        .stu-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stu-table thead th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 8px;
+            text-align: left;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .stu-table tbody td {
+            font-size: 12px;
+            padding: 8px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .stu-table tbody tr:hover td {
+            background: #f5f7ff;
+        }
+
+        .stu-photo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Demand Bill</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-file-invoice"></i> Demand Bill</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass">
+                                        <option value="">Select Class</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection">
+                                        <option value="">All Sections</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Month(s)</label>
+                                    <div class="ms-dropdown" id="monthDropdown">
+                                        <div class="ms-toggle" id="monthToggle">Select Months</div>
+                                        <div class="ms-menu" id="monthMenu"></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Particular(s)</label>
+                                    <div class="ms-dropdown" id="partDropdown">
+                                        <div class="ms-toggle" id="partToggle">Select Particulars</div>
+                                        <div class="ms-menu" id="partMenu"></div>
+                                    </div>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnReset"
+                                        style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student List -->
+                        <div id="stuList">
+                            <div class="empty-state"><i class="fas fa-file-invoice"></i>Select class, months and
+                                particulars, then click Search</div>
+                        </div>
+
+                        <!-- Proceed Button -->
+                        <div id="proceedBar" style="display:none;margin-top:16px;text-align:right;">
+                            <button class="fw-btn-fill" id="btnProceed"
+                                style="border-radius:6px;height:40px;font-size:13px;padding:0 24px;width:auto;background:#2e7d32;">
+                                <i class="fas fa-print"></i> Proceed to Print
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('fee-demand-bill');
+
+            const FEE_MONTHS = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
+
+            let classCache = [], sectionCache = [], studentCache = [], particularCache = [];
+            try { [classCache, sectionCache, particularCache] = await Promise.all([getClasses(), getSections(), getFeeParticulars()]); } catch(e) {}
+
+            classCache.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+            sectionCache.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+
+            buildMultiSelect('#monthMenu', '#monthToggle', FEE_MONTHS.map((m, i) => ({ val: m, label: m })));
+            buildMultiSelect('#partMenu', '#partToggle', particularCache.map(p => ({ val: p.id, label: p.name })));
+
+            $('#monthToggle').on('click', function (e) {
+                e.stopPropagation();
+                $('#monthDropdown').toggleClass('open');
+                $('#partDropdown').removeClass('open');
+            });
+            $('#partToggle').on('click', function (e) {
+                e.stopPropagation();
+                $('#partDropdown').toggleClass('open');
+                $('#monthDropdown').removeClass('open');
+            });
+            $(document).on('click', function () { $('.ms-dropdown').removeClass('open'); });
+            $('.ms-menu').on('click', function (e) { e.stopPropagation(); });
+
+            $('#btnSearch').on('click', renderStudents);
+            $('#btnReset').on('click', function () {
+                $('#fClass, #fSection').val('');
+                $('.ms-check').prop('checked', false);
+                $('.ms-all-check').prop('checked', false);
+                $('#monthToggle').text('Select Months');
+                $('#partToggle').text('Select Particulars');
+                $('#stuList').html('<div class="empty-state"><i class="fas fa-file-invoice"></i>Select class, months and particulars, then click Search</div>');
+                $('#proceedBar').hide();
+            });
+
+            $('#btnProceed').on('click', function () {
+                const selected = [];
+                $('.stu-check:checked').each(function () { selected.push(parseInt($(this).val())); });
+                if (!selected.length) { alert('Please select at least one student.'); return; }
+
+                const months = getMultiSelectValues('#monthMenu');
+                const parts = getMultiSelectValues('#partMenu').map(Number);
+                const classVal = parseInt($('#fClass').val());
+
+                const billData = { studentIds: selected, months: months, particularIds: parts, class_id: isNaN(classVal) ? null : classVal, section: $('#fSection').val() || '' };
+                // Pass current session if available
+                if (typeof getSelectedSession === 'function') {
+                    const sess = getSelectedSession();
+                    if (sess) billData.session = sess;
+                }
+                sessionStorage.setItem('demandBill', JSON.stringify(billData));
+                window.open('/demand-bill-print', '_blank');
+            });
+
+            async function renderStudents() {
+                const fClass = $('#fClass').val();
+                const fSection = $('#fSection').val();
+                const months = getMultiSelectValues('#monthMenu');
+                const parts = getMultiSelectValues('#partMenu').map(Number);
+
+                if (!fClass) { alert('Please select a class.'); return; }
+                if (!months.length) { alert('Please select at least one month.'); return; }
+                if (!parts.length) { alert('Please select at least one particular.'); return; }
+
+                try { studentCache = await getStudents({ class_id: fClass, section: fSection || undefined }); } catch(e) { studentCache = []; }
+
+                if (!studentCache.length) {
+                    $('#stuList').html('<div class="empty-state"><i class="fas fa-inbox"></i>No students found</div>');
+                    $('#proceedBar').hide();
+                    return;
+                }
+
+                let rows = '';
+                studentCache.forEach((s, i) => {
+                    rows += `<tr>
+                        <td><input type="checkbox" class="stu-check" value="${s.id}" checked></td>
+                        <td><img src="${s.photo_url || 'img/figure/student2.png'}" class="stu-photo" alt=""></td>
+                        <td style="font-weight:600;">${s.admission_no}</td>
+                        <td>${s.roll_no || '-'}</td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        <td>${s.father_name || '-'}</td>
+                        <td>${s.gender || '-'}</td>
+                        <td>${s.class_name || '-'} / ${s.section || '-'}</td>
+                    </tr>`;
+                });
+
+                let html = `
+                    <div style="overflow-x:auto;">
+                    <table class="stu-table">
+                        <thead><tr>
+                            <th><input type="checkbox" id="checkAll" checked></th>
+                            <th>Photo</th><th>Adm No.</th><th>Roll No.</th><th>Student Name</th><th>Father Name</th><th>Gender</th><th>Class / Sec</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    </div>
+                    <div style="margin-top:8px;font-size:11px;color:#888;"><strong>${studentCache.length}</strong> student(s) found &nbsp;|&nbsp; <strong>${months.length}</strong> month(s) &nbsp;|&nbsp; <strong>${parts.length}</strong> particular(s) selected</div>`;
+
+                $('#stuList').html(html);
+                $('#proceedBar').show();
+
+                $('#checkAll').on('change', function () {
+                    $('.stu-check').prop('checked', $(this).prop('checked'));
+                });
+            }
+
+            function buildMultiSelect(menuSel, toggleSel, items) {
+                let html = `<div class="ms-item ms-all"><input type="checkbox" class="ms-all-check"> Select All</div>`;
+                items.forEach(item => {
+                    html += `<div class="ms-item"><input type="checkbox" class="ms-check" value="${item.val}"> ${item.label}</div>`;
+                });
+                $(menuSel).html(html);
+
+                $(menuSel).on('change', '.ms-all-check', function () {
+                    $(menuSel).find('.ms-check').prop('checked', $(this).prop('checked'));
+                    updateToggle(menuSel, toggleSel);
+                });
+                $(menuSel).on('change', '.ms-check', function () {
+                    const total = $(menuSel).find('.ms-check').length;
+                    const checked = $(menuSel).find('.ms-check:checked').length;
+                    $(menuSel).find('.ms-all-check').prop('checked', total === checked);
+                    updateToggle(menuSel, toggleSel);
+                });
+            }
+
+            function updateToggle(menuSel, toggleSel) {
+                const checked = [];
+                $(menuSel).find('.ms-check:checked').each(function () {
+                    checked.push($(this).parent().text().trim());
+                });
+                if (!checked.length) {
+                    $(toggleSel).text(toggleSel === '#monthToggle' ? 'Select Months' : 'Select Particulars');
+                } else if (checked.length <= 2) {
+                    $(toggleSel).text(checked.join(', '));
+                } else {
+                    $(toggleSel).text(checked.length + ' selected');
+                }
+            }
+
+            function getMultiSelectValues(menuSel) {
+                const vals = [];
+                $(menuSel).find('.ms-check:checked').each(function () { vals.push($(this).val()); });
+                return vals;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,417 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Student Attendance � EduNex1</title>
+    <meta name="description" content="Mark daily student attendance">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .att-status-select {
+            width: 110px;
+            font-size: 11px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 0 6px;
+            font-weight: 600;
+        }
+
+        .att-status-select.present {
+            border-color: #2e7d32;
+            color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .att-status-select.absent {
+            border-color: #c62828;
+            color: #c62828;
+            background: #ffebee;
+        }
+
+        .att-remark {
+            width: 100%;
+            font-size: 11px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 0 8px;
+        }
+
+        .check-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .check-all-row .form-check-input {
+            position: static;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .student-photo-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+
+        #attTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        #attTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #555;
+            padding: 8px;
+        }
+
+        #attTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .info-badges-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .info-badge-light {
+            display: inline-block;
+            background: #f0f2ff;
+            color: #304ffe;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) {
+            .col-hide-xl {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:991px) {
+            .col-hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .col-hide-md {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:575px) {
+            .col-hide-sm {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .att-status-select {
+                width: 90px;
+                font-size: 10px;
+            }
+
+            .att-remark {
+                font-size: 10px;
+            }
+
+            #attTable td,
+            #attTable th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+        }
+
+        @media (max-width:575px) {
+            .att-status-select {
+                width: 80px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Student Attendance</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-clipboard-check"></i> Mark Student Attendance</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <form class="filter-form mg-b-15" id="filterForm">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select class="form-control" id="filterClass" style="font-size:12px;height:36px;">
+                                        <option value="">Select Class</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section *</label>
+                                    <select class="form-control" id="filterSection" style="font-size:12px;height:36px;">
+                                        <option value="">Select Section</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Attendance Date *</label>
+                                    <input type="date" class="form-control" id="attDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Order By</label>
+                                    <select class="form-control" id="orderBy" style="font-size:12px;height:36px;">
+                                        <option value="rollNo">Roll No.</option>
+                                        <option value="admNo">Admission No.</option>
+                                        <option value="nameAZ">Name (A-Z)</option>
+                                        <option value="nameZA">Name (Z-A)</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto form-group d-flex" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;">
+                                        <i class="fas fa-search"></i> SEARCH
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                        id="btnReset"
+                                        style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;">
+                                        <i class="fas fa-redo"></i> RESET
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Attendance List -->
+                        <div id="attListArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10 flex-wrap"
+                                style="gap:8px;">
+                                <div class="info-badges-row">
+                                    <div class="info-badge" id="classBadge"></div>
+                                    <div class="info-badge-light" id="sectionBadge"></div>
+                                    <div class="info-badge-light" id="dateBadge"></div>
+                                </div>
+                                <div class="check-all-row">
+                                    <input type="checkbox" class="form-check-input" id="checkAllPresent" checked>
+                                    <label for="checkAllPresent"
+                                        style="font-weight:600;font-size:12px;margin:0;cursor:pointer;color:#2e7d32;">Mark
+                                        All Present</label>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="attTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-hide-lg">Adm. No.</th>
+                                            <th class="col-hide-md">Roll No.</th>
+                                            <th>Photo</th>
+                                            <th>Student Name</th>
+                                            <th class="col-hide-md">Father Name</th>
+                                            <th>Attendance</th>
+                                            <th>Remark</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="mg-t-15">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnSave" style="border-radius:8px;">
+                                    <i class="fas fa-save mg-r-5"></i> Save Attendance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(document).ready(async function () {
+            initPage('student-attendance');
+
+            const today = new Date().toISOString().split('T')[0];
+            $('#attDate').val(today);
+
+            // Populate class dropdown from API
+            populateClassDropdown(document.getElementById('filterClass'), false);
+            populateSectionDropdown(document.getElementById('filterSection'), false);
+
+            $('#btnSearch').on('click', loadAttendance);
+            $('#btnReset').on('click', function () {
+                $('#filterClass').val('');
+                $('#filterSection').val('');
+                $('#attDate').val(today);
+                $('#attListArea').hide();
+            });
+
+            async function loadAttendance() {
+                const classId = parseInt($('#filterClass').val());
+                const section = $('#filterSection').val();
+                const date = $('#attDate').val();
+
+                if (!classId) { showToast('Please select a class', 'error'); return; }
+                if (!section) { showToast('Please select a section', 'error'); return; }
+                if (!date) { showToast('Please select a date', 'error'); return; }
+
+                try {
+                    // Get students for this class & section
+                    const students = await getStudents({ class_id: classId, section: section, status: 'Active' });
+                    // Get existing attendance for this date
+                    const existing = await getStudentAttendance({ date: date, class_id: classId });
+
+                    // Badges
+                    const classOpt = $('#filterClass option:selected').text();
+                    const d = new Date(date);
+                    const dateDisplay = d.toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+                    $('#classBadge').html(`<i class="fas fa-school mg-r-5"></i> ${classOpt}`);
+                    $('#sectionBadge').html(`<i class="fas fa-layer-group mg-r-5"></i> Section ${section}`);
+                    $('#dateBadge').html(`<i class="fas fa-calendar-alt mg-r-5"></i> ${dateDisplay}`);
+
+                    let html = '';
+                    students.forEach(s => {
+                        const record = existing.find(a => a.student_id === s.id);
+                        const status = record ? record.status : 'Present';
+                        const initial = (s.name || '?')[0].toUpperCase();
+
+                        html += `<tr data-student-id="${s.id}">
+                            <td class="col-hide-lg" style="font-weight:600;font-size:11px;">${s.admission_no||''}</td>
+                            <td class="col-hide-md" style="font-weight:600;font-size:11px;">${s.roll_no || '-'}</td>
+                            <td><div class="student-photo-sm" style="width:28px;height:28px;border-radius:50%;background:#304ffe;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${initial}</div></td>
+                            <td style="font-weight:600;">${s.name}</td>
+                            <td class="col-hide-md" style="color:#666;">${s.father_name||''}</td>
+                            <td>
+                                <select class="att-status-select ${status.toLowerCase()}" data-student-id="${s.id}">
+                                    <option value="Present" ${status === 'Present' ? 'selected' : ''}>Present</option>
+                                    <option value="Absent" ${status === 'Absent' ? 'selected' : ''}>Absent</option>
+                                </select>
+                            </td>
+                            <td><input type="text" class="att-remark" data-student-id="${s.id}" value="" placeholder="Remark (optional)"></td>
+                        </tr>`;
+                    });
+
+                    if (!students.length) {
+                        html = `<tr><td colspan="7" class="text-center" style="padding:30px;color:#999;font-size:13px;"><i class="fas fa-user-slash" style="font-size:24px;display:block;margin-bottom:8px;"></i>No students found in this class & section</td></tr>`;
+                    }
+
+                    $('#attTableBody').html(html);
+                    $('#attListArea').show();
+                    updateCheckAll();
+                } catch(e) { showToast('Error loading attendance: ' + e.message, 'error'); }
+            }
+
+            // Change select color based on value
+            $(document).on('change', '.att-status-select', function () {
+                const v = $(this).val().toLowerCase();
+                $(this).removeClass('present absent').addClass(v);
+                updateCheckAll();
+            });
+
+            function updateCheckAll() {
+                const allPresent = $('.att-status-select').length > 0 && $('.att-status-select').filter(function () { return $(this).val() !== 'Present'; }).length === 0;
+                $('#checkAllPresent').prop('checked', allPresent);
+            }
+
+            // Check All Present
+            $('#checkAllPresent').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('.att-status-select').val('Present').removeClass('absent').addClass('present');
+                }
+            });
+
+            // Unsaved changes warning
+            let hasUnsavedChanges = false;
+            $(document).on('change', '.att-status-select, .att-remark', function () { hasUnsavedChanges = true; });
+            $(window).on('beforeunload', function (e) { if (hasUnsavedChanges) { e.preventDefault(); return 'You have unsaved attendance changes.'; } });
+
+            // Save
+            $('#btnSave').on('click', async function () {
+                const date = $('#attDate').val();
+                if (!date) { showToast('Please select a date', 'error'); return; }
+
+                const records = [];
+                $('#attTableBody tr').each(function () {
+                    const studentId = parseInt($(this).data('student-id'));
+                    if (!studentId) return;
+                    const status = $(this).find('.att-status-select').val();
+                    records.push({ student_id: studentId, status: status });
+                });
+
+                if (!records.length) { showToast('No records to save', 'error'); return; }
+
+                try {
+                    await markStudentAttendance(date, records);
+                    hasUnsavedChanges = false;
+                    showToast(`Attendance saved for ${records.length} students`, 'success');
+                } catch(e) { showToast('Error saving: ' + e.message, 'error'); }
+            });
+        });
+    </script>
+</body>
+
+</html>

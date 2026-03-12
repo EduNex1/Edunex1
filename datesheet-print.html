@@ -1,0 +1,347 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Date Sheet — Print</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="css/print-all.css">
+    <style>
+        * {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #fff;
+            padding: 20px;
+        }
+
+        .print-controls {
+            background: #f5f7ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .print-controls label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .print-controls select {
+            font-size: 12px;
+            height: 36px;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
+            padding: 0 10px;
+            min-width: 140px;
+        }
+
+        .print-controls button {
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0 18px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #333;
+        }
+
+        .btn-reset {
+            background: #0d1b4a;
+            color: #fff;
+        }
+
+        .btn-print {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .btn-search:hover,
+        .btn-reset:hover,
+        .btn-print:hover {
+            opacity: 0.85;
+        }
+
+        .ds-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #304ffe;
+            padding-bottom: 14px;
+        }
+
+        .ds-header h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0d1b4a;
+            margin: 0;
+        }
+
+        .ds-header h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #304ffe;
+            margin: 4px 0 0;
+        }
+
+        .ds-header .meta {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .ds-print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .ds-print-table th {
+            background: #0d1b4a;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            text-align: left;
+            letter-spacing: 0.3px;
+        }
+
+        .ds-print-table td {
+            font-size: 12px;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .ds-print-table tbody tr:nth-child(even) td {
+            background: #f8f9ff;
+        }
+
+        .ds-print-table tbody tr:hover td {
+            background: #e8eaf6;
+        }
+
+        .class-section {
+            margin-bottom: 24px;
+        }
+
+        .class-section h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #304ffe;
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background: #e8eaf6;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        @media print {
+            .print-controls {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .ds-header {
+                border-bottom-color: #000;
+            }
+
+            .ds-header h4 {
+                color: #000;
+            }
+
+            .ds-print-table th {
+                background: #333 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .ds-print-table tbody tr:nth-child(even) td {
+                background: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .class-section h5 {
+                background: #e0e0e0 !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Controls (hidden in print) -->
+    <div class="print-controls" id="controls">
+        <div>
+            <label>Class</label>
+            <select id="filterClass">
+                <option value="">All Classes</option>
+            </select>
+        </div>
+        <div style="display:flex;gap:6px;align-items:end;">
+            <button class="btn-search" id="btnSearch"><i class="fas fa-search"></i> Search</button>
+            <button class="btn-reset" id="btnReset"><i class="fas fa-redo"></i> Reset</button>
+            <button class="btn-print" id="btnPrint"><i class="fas fa-print"></i> Print PDF</button>
+        </div>
+    </div>
+
+    <!-- Date Sheet Content -->
+    <div id="dsContent"></div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        $(async function () {
+            const params = new URLSearchParams(window.location.search);
+            const sheetId = parseInt(params.get('id'));
+
+            let sheets = [], exams = [], classes = [], subjects = [], branches = [];
+            try { [sheets, exams, classes, subjects, branches] = await Promise.all([getDateSheets(), getExamNames(), getClasses(), getSubjects(), getBranches()]); } catch(e) {}
+
+            const ds = sheets.find(x => x.id === sheetId);
+            if (!ds) {
+                $('#dsContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>Date sheet not found</div>');
+                return;
+            }
+
+            let entries = [];
+            try { entries = await getDateSheetEntries(sheetId); } catch(e) {}
+
+            const exam = exams.find(e => e.id === ds.exam_id);
+            const branch = branches.find(b => b.id === ds.branch_id) || {};
+            const schoolName = branch.school_name || 'School';
+
+            function getClassById(id) { return classes.find(c => c.id === id); }
+            function getSubjectById(id) { return subjects.find(s => s.id === id); }
+
+            // Populate class filter with only classes that have entries
+            const classIds = [...new Set(entries.map(e => e.class_id))].sort((a, b) => a - b);
+            classIds.forEach(cid => {
+                const c = getClassById(cid);
+                if (c) $('#filterClass').append(`<option value="${cid}">${c.name}</option>`);
+            });
+
+            renderDateSheet();
+
+            $('#btnSearch').on('click', renderDateSheet);
+            $('#btnReset').on('click', function () { $('#filterClass').val(''); renderDateSheet(); });
+            $('#btnPrint').on('click', function () { window.print(); });
+
+            function renderDateSheet() {
+                const classFilter = $('#filterClass').val();
+                let filtered = entries.slice();
+                if (classFilter) filtered = filtered.filter(e => e.class_id === parseInt(classFilter));
+
+                // Group by class
+                const grouped = {};
+                filtered.forEach(e => {
+                    if (!grouped[e.class_id]) grouped[e.class_id] = [];
+                    grouped[e.class_id].push(e);
+                });
+
+                const sortedClassIds = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+
+                let html = `
+                    <div class="ds-header">
+                        ${branch.logo_url ? '<img src="'+branch.logo_url+'" style="height:48px;width:48px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
+                        <h2>${schoolName}</h2>
+                        <h4>${exam ? exam.name : 'Examination'} — Date Sheet</h4>
+                        <div class="meta">Published: ${fmtDate(ds.publish_date)} &nbsp;|&nbsp; Session: ${exam ? exam.session : ''}</div>
+                    </div>
+                `;
+
+                if (!sortedClassIds.length) {
+                    html += '<div class="no-data">No entries for the selected filter</div>';
+                    $('#dsContent').html(html);
+                    return;
+                }
+
+                sortedClassIds.forEach(cid => {
+                    const cls = getClassById(cid);
+                    const clsEntries = grouped[cid].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+                    html += `<div class="class-section">`;
+                    html += `<h5><i class="fas fa-graduation-cap" style="margin-right:6px;"></i>${cls ? cls.name : 'Class ' + cid}</h5>`;
+                    html += `<table class="ds-print-table">
+                        <thead>
+                            <tr>
+                                <th style="width:30px;">S.No</th>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Subject</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                    clsEntries.forEach((e, i) => {
+                        const sub = getSubjectById(e.subject_id);
+                        const d = new Date(e.date);
+                        const dayName = d.toLocaleDateString('en-IN', { weekday: 'long' });
+                        html += `<tr>
+                            <td style="font-weight:600;">${i + 1}</td>
+                            <td style="font-weight:600;">${fmtDate(e.date)}</td>
+                            <td>${dayName}</td>
+                            <td>${fmt12(e.time_from)} – ${fmt12(e.time_to)}</td>
+                            <td style="font-weight:600;">${sub ? sub.name + ' (' + sub.code + ')' : '-'}</td>
+                        </tr>`;
+                    });
+
+                    html += `</tbody></table></div>`;
+                });
+
+                $('#dsContent').html(html);
+            }
+
+            function fmtDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+            }
+            function fmt12(t) {
+                if (!t) return '';
+                const [h, m] = t.split(':');
+                const hr = parseInt(h);
+                const ampm = hr >= 12 ? 'PM' : 'AM';
+                const hr12 = hr === 0 ? 12 : hr > 12 ? hr - 12 : hr;
+                return hr12.toString().padStart(2, '0') + ':' + m + ' ' + ampm;
+            }
+        });
+    </script>
+</body>
+
+</html>

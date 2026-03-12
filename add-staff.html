@@ -1,0 +1,666 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Add Staff — EduNex1</title>
+    <meta name="description" content="Add a new staff member">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/datepicker.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ─── Staff Form Overrides (same as admit-form) ─── */
+        .admit-form-card { border: none; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .admit-form-card .card-body { padding: 24px 28px; }
+
+        .form-section { margin-bottom: 18px; }
+        .form-section-title {
+            background: #0d1b4a; color: #fff; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            padding: 8px 16px; border-radius: 6px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .form-section-title i { font-size: 12px; opacity: 0.7; }
+
+        .admit-form .form-group { margin-bottom: 12px; }
+        .admit-form label {
+            font-size: 11px; font-weight: 700; color: #444;
+            text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+        }
+        .admit-form .form-control, .admit-form select.form-control {
+            font-size: 12px; height: 34px; padding: 4px 10px;
+            border: 1px solid #d0d5dd; border-radius: 5px;
+        }
+        .admit-form textarea.form-control { height: auto; min-height: 34px; }
+
+        /* Photo area */
+        .photo-box {
+            width: 100px; height: 120px; border: 2px dashed #c5cae9;
+            border-radius: 8px; background: #f8f9ff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; transition: all 0.2s; margin: 0 auto;
+        }
+        .photo-box:hover { border-color: #304ffe; background: #eef0ff; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-box .ph-placeholder { text-align: center; color: #aaa; }
+        .photo-box .ph-placeholder i { font-size: 20px; color: #304ffe; display: block; margin-bottom: 2px; }
+        .photo-box .ph-placeholder span { font-size: 9px; }
+
+        /* Consent note */
+        .consent-box {
+            background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 8px;
+            padding: 14px 18px; margin: 16px 0;
+        }
+        .consent-box label { text-transform: none; font-size: 12px; font-weight: 500; color: #444; cursor: pointer; }
+        .consent-box input[type="checkbox"] { accent-color: #304ffe; margin-right: 8px; }
+
+        /* Buttons */
+        .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+        .form-actions .btn-submit {
+            background: #0d1b4a; color: #fff;
+            border: none; border-radius: 6px; padding: 10px 28px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .form-actions .btn-submit:hover { opacity: 0.9; }
+        .form-actions .btn-back {
+            background: #f0f1f5; color: #555; border: 1px solid #ddd;
+            border-radius: 6px; padding: 10px 24px; font-size: 13px; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+        }
+        .form-actions .btn-back:hover { background: #e5e7eb; }
+
+        @media (max-width: 576px) {
+            .admit-form-card .card-body { padding: 14px 12px; }
+            .form-section-title { font-size: 11px; padding: 7px 12px; }
+            .admit-form label { font-size: 10px; }
+            .admit-form .form-control { font-size: 11px; height: 32px; }
+            .photo-box { width: 80px; height: 96px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Staff</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Add Staff</li>
+                    </ul>
+                </div>
+
+                <div class="card admit-form-card">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3 id="formTitle"><i class="fas fa-user-plus"></i> Staff Registration Form</h3>
+                            </div>
+                        </div>
+
+                        <form class="admit-form" id="staffForm" autocomplete="off">
+
+                            <!-- ═══════════ EMPLOYMENT DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-id-badge"></i> Employment Details</div>
+                                <div class="row">
+                                    <!-- Photo -->
+                                    <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center" style="min-width:120px;">
+                                        <label>Photo</label>
+                                        <div class="photo-box" id="photoUploadArea" onclick="document.getElementById('photoInput').click()">
+                                            <div class="ph-placeholder" id="uploadPlaceholder">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Upload</span>
+                                            </div>
+                                            <img id="photoPreview" src="" alt="" style="display:none;">
+                                        </div>
+                                        <small style="color:#aaa;font-size:9px;margin-top:3px;display:block;">Passport size</small>
+                                        <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                                    </div>
+
+                                    <!-- Fields beside photo -->
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Employee ID *</label>
+                                                <input type="text" class="form-control auto-generated-field" id="employeeId" readonly>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Date of Joining *</label>
+                                                <input type="text" class="form-control air-datepicker" id="joiningDate" placeholder="DD/MM/YYYY">
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Designation *</label>
+                                                <select class="form-control" id="designation"></select>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Status *</label>
+                                                <select class="form-control" id="status">
+                                                    <option value="Active" selected>Active</option>
+                                                    <option value="On Leave">On Leave</option>
+                                                    <option value="Resigned">Resigned</option>
+                                                    <option value="Terminated">Terminated</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                                <label>Qualification *</label>
+                                                <input type="text" class="form-control" id="qualification" placeholder="e.g. M.A., B.Ed.">
+                                            </div>
+                                            <div class="col-lg-5 col-md-6 col-12 form-group">
+                                                <label>Teaching Subjects</label>
+                                                <select class="form-control select2" id="teachingSubjects" multiple="multiple" style="width:100%;"></select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Experience</label>
+                                                <input type="text" class="form-control" id="experience" placeholder="e.g. 5 years">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ PERSONAL DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user"></i> Personal Details</div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Full Name *</label>
+                                        <input type="text" class="form-control" id="staffName" placeholder="Full name">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Father's Name *</label>
+                                        <input type="text" class="form-control" id="fatherName" placeholder="Father's name">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Husband's Name</label>
+                                        <input type="text" class="form-control" id="husbandName" placeholder="If applicable">
+                                    </div>
+                                    <div class="col-xl-1 col-lg-2 col-md-3 col-6 form-group">
+                                        <label>Gender *</label>
+                                        <select class="form-control" id="gender">
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-2 col-md-3 col-6 form-group">
+                                        <label>Date of Birth *</label>
+                                        <input type="text" class="form-control air-datepicker" id="dob" placeholder="DD/MM/YYYY">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ CONTACT & ADDRESS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-phone-alt"></i> Contact & Address</div>
+                                <div class="row">
+                                    <div class="col-xl-5 col-lg-6 col-12 form-group">
+                                        <label>Address *</label>
+                                        <textarea class="form-control" id="address" placeholder="Full address" rows="2"></textarea>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Primary Mobile *</label>
+                                        <input type="tel" class="form-control" id="phone" placeholder="10-digit" maxlength="10">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Secondary Mobile</label>
+                                        <input type="tel" class="form-control" id="secondaryMobile" placeholder="10-digit" maxlength="10">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Email *</label>
+                                        <input type="email" class="form-control" id="email" placeholder="email@example.com" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ SALARY & GOVERNMENT IDS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-id-card"></i> Salary & Government IDs</div>
+                                <div class="row">
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Basic Salary (₹)</label>
+                                        <input type="number" class="form-control" id="salary" placeholder="Monthly">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>PAN Number</label>
+                                        <input type="text" class="form-control" id="panNumber" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>PF Number</label>
+                                        <input type="text" class="form-control" id="pfNumber" placeholder="UP/LKO/00001">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Aadhar Number</label>
+                                        <input type="text" class="form-control" id="aadharNumber" placeholder="1234 5678 9012" maxlength="14">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ BANK ACCOUNT DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-university"></i> Bank Account Details</div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Bank Name</label>
+                                        <input type="text" class="form-control" id="bankName" placeholder="e.g. State Bank of India">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Branch Name</label>
+                                        <input type="text" class="form-control" id="branchName" placeholder="Branch">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Account Number</label>
+                                        <input type="text" class="form-control" id="bankAccount" placeholder="Account number">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>IFSC Code</label>
+                                        <input type="text" class="form-control" id="ifsc" placeholder="SBIN0001234" style="text-transform:uppercase;">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Account Type</label>
+                                        <select class="form-control" id="accountType">
+                                            <option value="">Select</option>
+                                            <option value="Savings">Savings</option>
+                                            <option value="Current">Current</option>
+                                            <option value="Salary">Salary</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ OTHER DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-info-circle"></i> Other Details</div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Last School / Institution</label>
+                                        <input type="text" class="form-control" id="lastSchool" placeholder="Previous workplace">
+                                    </div>
+                                    <div class="col-xl-8 col-lg-8 col-md-6 col-12 form-group">
+                                        <label>Comments / Remarks</label>
+                                        <textarea class="form-control" id="comments" placeholder="Any additional remarks" rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ UPLOAD DOCUMENTS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-5 col-md-5 col-12 form-group">
+                                        <label>Document Name *</label>
+                                        <input type="text" class="form-control" id="docName" placeholder="e.g. Aadhar Card, PAN Card, Resume">
+                                    </div>
+                                    <div class="col-xl-5 col-lg-5 col-md-5 col-12 form-group">
+                                        <label>Select File *</label>
+                                        <input type="file" class="form-control" id="docFileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="font-size:11px;padding:5px 8px;">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-2 col-md-2 col-12 form-group d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm" id="addDocBtn"
+                                            style="background:#0d1b4a;color:#fff;font-size:11px;font-weight:600;padding:7px 16px;border-radius:6px;">
+                                            <i class="fas fa-plus mg-r-5"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="doc-list" id="docList"></div>
+                            </div>
+
+                            <!-- ═══════════ SUBMIT ═══════════ -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit"><i class="fas fa-save mg-r-5"></i> Save Staff</button>
+                                <a href="view-staff.html" class="btn-back"><i class="fas fa-arrow-left mg-r-5"></i> Back</a>
+                            </div>
+
+                        </form>
+
+                        <!-- Staff Login Details - Separate section (shown on edit) -->
+                        <div id="loginSection" style="display:none; margin-top:20px; border-top:2px solid #e8eaf6; padding-top:18px;">
+                            <div class="form-section-title"><i class="fas fa-key"></i> Staff Login Details</div>
+                            <div class="row align-items-end">
+                                <div class="col-xl-3 col-lg-4 col-6 form-group">
+                                    <label style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Staff Login ID</label>
+                                    <input type="text" class="form-control auto-generated-field" id="loginId" readonly style="font-size:12px;height:34px;">
+                                </div>
+                                <div class="col-xl-3 col-lg-4 col-6 form-group">
+                                    <label style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;">Password</label>
+                                    <div class="password-toggle-wrapper">
+                                        <input type="password" class="form-control" id="passwordField" value="Staff@2025" style="font-size:12px;height:34px;">
+                                        <button type="button" class="toggle-btn" onclick="togglePassword()"><i class="fas fa-eye" id="passwordToggleIcon"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-lg-4 col-12 form-group">
+                                    <button type="button" class="btn-submit" onclick="saveLoginDetails()" style="background:#0d1b4a;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;">
+                                        <i class="fas fa-save mg-r-5"></i> Save Login
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/datepicker.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <script>
+        let isEditMode = false;
+        let editStaffId = null;
+        let uploadedDocs = [];
+
+        function togglePassword() {
+            const f = document.getElementById('passwordField');
+            const i = document.getElementById('passwordToggleIcon');
+            if (f.type === 'password') { f.type = 'text'; i.classList.replace('fa-eye', 'fa-eye-slash'); }
+            else { f.type = 'password'; i.classList.replace('fa-eye-slash', 'fa-eye'); }
+        }
+
+        $(document).ready(async function () {
+            initPage('add-staff');
+
+            // Populate designation dropdown from API
+            populateDesignationDropdown(document.getElementById('designation'), false);
+
+            // Populate teaching subjects from API
+            try {
+                const subjects = await getSubjects();
+                let subHtml = '';
+                subjects.forEach(s => { subHtml += `<option value="${s.id}">${s.name}</option>`; });
+                $('#teachingSubjects').html(subHtml);
+            } catch(e) { console.error('Failed to load subjects', e); }
+            $('#teachingSubjects').select2({ placeholder: 'Select subjects (if applicable)', allowClear: true });
+
+            // Auto-fill
+            $('#employeeId').val('(Auto-generated)');
+            const today = new Date();
+            $('#joiningDate').val(String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear());
+
+            // Photo upload — open crop modal
+            $('#photoInput').on('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const r = new FileReader();
+                r.onload = function (ev) { openCropModal(ev.target.result); };
+                r.readAsDataURL(file);
+            });
+
+            // Check if editing
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            if (editId) {
+                isEditMode = true;
+                editStaffId = parseInt(editId);
+                await loadStaffForEdit(editStaffId);
+            }
+
+            // Aadhar auto-format
+            $('#aadharNumber').on('input', function () {
+                let v = this.value.replace(/\D/g, '').substring(0, 12);
+                if (v.length > 8) v = v.substring(0, 4) + ' ' + v.substring(4, 8) + ' ' + v.substring(8);
+                else if (v.length > 4) v = v.substring(0, 4) + ' ' + v.substring(4);
+                this.value = v;
+            });
+
+            // Document upload
+            $('#addDocBtn').on('click', addDocument);
+
+            // Submit
+            $('#staffForm').on('submit', async function (e) {
+                e.preventDefault();
+                if (!validateForm()) return;
+
+                const formData = getStaffFormData();
+
+                if (isEditMode) {
+                    try {
+                        await updateStaffMember(editStaffId, formData);
+                        showToast('Staff updated successfully!', 'success');
+                        setTimeout(() => { window.location.href = 'view-staff.html'; }, 1500);
+                    } catch(err) { showToast('Error: ' + err.message, 'error'); }
+                } else {
+                    try {
+                        const newStaff = await createStaffMember(formData);
+                        showSuccessOverlay({ ...formData, ...newStaff });
+                    } catch(err) { showToast('Error: ' + err.message, 'error'); }
+                }
+            });
+        });
+
+        function getStaffFormData() {
+            return {
+                name: $('#staffName').val().trim(),
+                father_name: $('#fatherName').val().trim(),
+                dob: parseDateInput($('#dob').val()),
+                gender: $('#gender').val(),
+                designation: $('#designation').val(),
+                qualification: $('#qualification').val().trim(),
+                phone: $('#phone').val().trim(),
+                email: $('#email').val().trim(),
+                address: $('#address').val().trim(),
+                aadhar_no: ($('#aadharNumber').val() || '').replace(/\s/g, ''),
+                joining_date: parseDateInput($('#joiningDate').val()),
+                basic_salary: parseInt($('#salary').val()) || 0,
+                bank_name: $('#bankName').val().trim(),
+                account_no: $('#bankAccount').val().trim(),
+                ifsc_code: $('#ifsc').val().trim().toUpperCase(),
+                pan_no: $('#panNumber').val().trim().toUpperCase(),
+                status: $('#status').val(),
+                photo_url: $('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : '',
+            };
+        }
+
+        /* ─── Crop Modal ─── */
+        function openCropModal(imgSrc) {
+            $('.crop-modal-overlay').remove();
+            const html = `
+            <div class="crop-modal-overlay" id="cropOverlay">
+                <div class="crop-modal-box">
+                    <div class="crop-modal-header"><i class="fas fa-crop-alt"></i> Crop Photo</div>
+                    <div class="crop-modal-body">
+                        <img id="cropImage" src="${imgSrc}" alt="Crop">
+                    </div>
+                    <div class="crop-modal-footer">
+                        <button class="btn-crop-cancel" onclick="closeCropModal()">Cancel</button>
+                        <button class="btn-crop-save" onclick="applyCrop()"><i class="fas fa-check mg-r-5"></i>Crop & Save</button>
+                    </div>
+                </div>
+            </div>`;
+            $('body').append(html);
+            const image = document.getElementById('cropImage');
+            window._cropper = new Cropper(image, {
+                aspectRatio: 5 / 6, viewMode: 1, dragMode: 'move',
+                autoCropArea: 0.85, responsive: true, guides: true, center: true, background: false,
+            });
+        }
+
+        function closeCropModal() {
+            if (window._cropper) { window._cropper.destroy(); window._cropper = null; }
+            $('#cropOverlay').remove();
+            $('#photoInput').val('');
+        }
+
+        function applyCrop() {
+            if (!window._cropper) return;
+            const canvas = window._cropper.getCroppedCanvas({ width: 300, height: 360, imageSmoothingQuality: 'high' });
+            const croppedData = canvas.toDataURL('image/jpeg', 0.9);
+            $('#photoPreview').attr('src', croppedData).show();
+            $('#uploadPlaceholder').hide();
+            closeCropModal();
+        }
+
+        /* ─── Document Upload ─── */
+        function addDocument() {
+            const name = $('#docName').val().trim();
+            const fileInput = document.getElementById('docFileInput');
+            const file = fileInput.files[0];
+            if (!name) { showToast('Please enter a document name', 'error'); return; }
+            if (!file) { showToast('Please select a file', 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                uploadedDocs.push({ id: Date.now(), name: name, fileName: file.name, size: file.size, type: file.type, data: ev.target.result });
+                renderDocList();
+                $('#docName').val('');
+                fileInput.value = '';
+                showToast(`"${name}" added successfully`, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeDoc(id) { uploadedDocs = uploadedDocs.filter(d => d.id !== id); renderDocList(); }
+
+        function renderDocList() {
+            const container = $('#docList');
+            if (!uploadedDocs.length) { container.html(''); return; }
+            let html = '';
+            uploadedDocs.forEach(d => {
+                const sizeKB = (d.size / 1024).toFixed(1);
+                const icon = d.type.includes('pdf') ? 'fa-file-pdf' : d.type.includes('image') ? 'fa-file-image' : 'fa-file';
+                html += `<div class="doc-item"><div class="doc-icon"><i class="fas ${icon}"></i></div><div class="doc-info"><div class="doc-label">${d.name}</div><div class="doc-name">${d.fileName}</div><div class="doc-size">${sizeKB} KB</div></div><button type="button" class="doc-remove" onclick="removeDoc(${d.id})" title="Remove"><i class="fas fa-times"></i></button></div>`;
+            });
+            container.html(html);
+        }
+
+        /* ─── Utilities ─── */
+        function parseDateInput(d) { if (!d) return ''; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : d; }
+        function formatDateForInput(d) { if (!d) return ''; const dt = new Date(d); if (isNaN(dt)) return d; return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear(); }
+
+        /* ─── Validation ─── */
+        function validateForm() {
+            let v = true;
+            const req = ['staffName', 'fatherName', 'dob', 'gender', 'phone', 'email', 'address', 'designation', 'qualification', 'joiningDate'];
+            $('.is-invalid').removeClass('is-invalid');
+            $('.field-error').remove();
+            const labels = {
+                staffName: 'Staff name is required', fatherName: "Father's name is required",
+                dob: 'Date of birth is required', gender: 'Please select gender',
+                phone: 'Primary mobile is required', email: 'Email is required', address: 'Address is required',
+                designation: 'Please select designation', qualification: 'Qualification is required',
+                joiningDate: 'Date of joining is required'
+            };
+            req.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el.value) {
+                    $(el).addClass('is-invalid');
+                    $(el).closest('.form-group').append(`<small class="field-error" style="color:#c62828;font-size:10px;display:block;margin-top:2px;">${labels[id]}</small>`);
+                    v = false;
+                }
+            });
+            const ph = $('#phone').val().trim();
+            if (ph && !/^\d{10}$/.test(ph)) {
+                $('#phone').addClass('is-invalid');
+                $('#phone').closest('.form-group').find('.field-error').remove();
+                $('#phone').closest('.form-group').append('<small class="field-error" style="color:#c62828;font-size:10px;">Must be 10 digits</small>');
+                v = false;
+            }
+            const em = $('#email').val().trim();
+            if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+                $('#email').addClass('is-invalid');
+                $('#email').closest('.form-group').find('.field-error').remove();
+                $('#email').closest('.form-group').append('<small class="field-error" style="color:#c62828;font-size:10px;">Invalid email format</small>');
+                v = false;
+            }
+            if (!v) showToast('Please fix the errors below', 'error');
+            return v;
+        }
+
+        async function loadStaffForEdit(id) {
+            try {
+                const s = await getStaffMember(id);
+                if (!s || s.error) { showToast('Staff not found', 'error'); return; }
+                $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit Staff — ' + s.name);
+                document.title = 'Edit Staff — EduNex1';
+                $('#employeeId').val(s.employee_id || '');
+                $('#joiningDate').val(formatDateForInput(s.joining_date));
+                $('#status').val(s.status || 'Active');
+                $('#staffName').val(s.name || '');
+                $('#fatherName').val(s.father_name || '');
+                $('#husbandName').val('');
+                $('#gender').val(s.gender || '');
+                $('#dob').val(formatDateForInput(s.dob));
+                $('#designation').val(s.designation || '');
+                $('#qualification').val(s.qualification || '');
+                $('#salary').val(s.basic_salary || '');
+                $('#address').val(s.address || '');
+                $('#phone').val(s.phone || '');
+                $('#email').val(s.email || '');
+                $('#panNumber').val(s.pan_no || '');
+                $('#aadharNumber').val(s.aadhar_no || '');
+                $('#bankName').val(s.bank_name || '');
+                $('#bankAccount').val(s.account_no || '');
+                $('#ifsc').val(s.ifsc_code || '');
+                if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); }
+                $('#loginSection').show();
+                $('#loginId').val(s.employee_id || '');
+            } catch(e) { showToast('Error loading staff', 'error'); console.error(e); }
+        }
+
+        function saveLoginDetails() {
+            showToast('Password changes are managed via user settings', 'info');
+        }
+
+        function showSuccessOverlay(staff) {
+            document.body.insertAdjacentHTML('beforeend', `
+            <div class="success-overlay" id="successOverlay">
+                <div class="success-card">
+                    <div class="check-icon"><i class="fas fa-check"></i></div>
+                    <h5 style="font-weight:700;color:#333;margin-bottom:6px;">Staff Added Successfully!</h5>
+                    <p style="color:#666;font-size:13px;margin-bottom:4px;"><strong>${staff.name||''}</strong> added as ${staff.designation||'Staff'}.</p>
+                    <p style="color:#0d1b4a;font-weight:600;font-size:14px;margin-bottom:8px;">${staff.employee_id||''}</p>
+                    <table style="margin:0 auto 16px;font-size:13px;border-collapse:collapse;text-align:left;">
+                        <tr><td style="padding:4px 10px;color:#666;">Login Password</td><td style="padding:4px 10px;font-weight:600;color:#333;font-family:monospace;">${staff.password||''}</td></tr>
+                    </table>
+                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="addAnother()"><i class="fas fa-plus mg-r-5"></i> Add Another</button>
+                        <a href="view-staff.html" class="btn-fill-lg btn-outline-navy"><i class="fas fa-list mg-r-5"></i> View Staff</a>
+                    </div>
+                </div>
+            </div>`);
+        }
+
+        function addAnother() {
+            document.getElementById('successOverlay').remove();
+            document.getElementById('staffForm').reset();
+            setTimeout(() => {
+                $('#employeeId').val('(Auto-generated)');
+                $('#teachingSubjects').val(null).trigger('change');
+                $('#photoPreview').hide();
+                $('#uploadPlaceholder').show();
+                uploadedDocs = [];
+                renderDocList();
+            }, 50);
+        }
+    </script>
+</body>
+
+</html>

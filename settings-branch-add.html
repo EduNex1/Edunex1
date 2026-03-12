@@ -1,0 +1,79 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Add Branch — Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}
+        .branch-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:24px 28px;margin-bottom:16px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li><a href="/settings-branches">Branches</a></li><li id="pageMode">Add Branch</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3 id="formTitle"><i class="fas fa-plus-circle"></i> Add Branch</h3></div></div>
+                    <div class="branch-card">
+                        <input type="hidden" id="editId">
+                        <div class="row">
+                            <div class="col-lg-5 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Branch / City Name <span style="color:red">*</span></label>
+                                <input type="text" class="form-control" id="bName" placeholder="e.g. EduNex1 Main Branch">
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-12 form-group">
+                                <label class="form-label-sm">Branch Code (3 Letters) <span style="color:red">*</span></label>
+                                <input type="text" class="form-control" id="bCode" placeholder="e.g. LKN" maxlength="3" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;font-size:14px;">
+                                <small style="font-size:9px;color:#888;">Used in Adm. No., Emp. ID &amp; Admin login</small>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:8px;">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="saveBranchItem()"><i class="fas fa-save"></i> Save</button>
+                            <a href="/settings-branches" class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:8px 22px;"><i class="fas fa-times"></i> Cancel</a>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin'])) return;
+        initPage('settings-branches');
+        const params = new URLSearchParams(window.location.search);
+        const editId = parseInt(params.get('id'))||0;
+        if(editId){
+            try {
+                const branches = await getBranches();
+                const b = (Array.isArray(branches)?branches:[]).find(x=>x.id===editId);
+                if(b){ $('#editId').val(b.id); $('#bName').val(b.name); $('#bCode').val(b.code||'').prop('readonly', true); $('#formTitle').html('<i class="fas fa-edit"></i> Edit Branch'); $('#pageMode').text('Edit Branch'); }
+            } catch(e) { console.error(e); }
+        }
+        // Auto-uppercase code input
+        $('#bCode').on('input', function(){ this.value = this.value.replace(/[^A-Za-z]/g,'').toUpperCase().substring(0,3); });
+        window.saveBranchItem=async function(){
+            const name=$('#bName').val().trim();
+            if(!name){showToast('Enter branch / city name','error');return;}
+            const code=$('#bCode').val().trim().toUpperCase();
+            if(!editId){
+                if(!code || code.length !== 3 || !/^[A-Z]{3}$/.test(code)){showToast('Branch code must be exactly 3 uppercase letters','error');return;}
+            }
+            try {
+                if(editId){ await updateBranch(editId, {name}); showToast('Branch updated','success'); }
+                else { await createBranch({name, code}); showToast('Branch added','success'); }
+                setTimeout(()=>{ window.location.href='/settings-branches'; },600);
+            } catch(e){ showToast(e.message||'Failed to save branch','error'); }
+        };
+    });
+    </script>
+</body>
+</html>

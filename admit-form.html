@@ -1,0 +1,1031 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>New Admission — EduNex1</title>
+    <meta name="description" content="Add a new student admission">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/datepicker.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ─── Admission Form Overrides ─── */
+        .admit-form-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .admit-form-card .card-body {
+            padding: 24px 28px;
+        }
+
+        .form-section {
+            margin-bottom: 18px;
+        }
+
+        .form-section-title {
+            background: #0d1b4a;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-section-title i {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .admit-form .form-group {
+            margin-bottom: 12px;
+        }
+
+        .admit-form label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+        }
+
+        .admit-form .form-control,
+        .admit-form select.form-control {
+            font-size: 12px;
+            height: 34px;
+            padding: 4px 10px;
+            border: 1px solid #d0d5dd;
+            border-radius: 5px;
+        }
+
+        .admit-form textarea.form-control {
+            height: auto;
+            min-height: 34px;
+        }
+
+        /* Photo area in form */
+        .photo-box {
+            width: 100px;
+            height: 120px;
+            border: 2px dashed #c5cae9;
+            border-radius: 8px;
+            background: #f8f9ff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.2s;
+            margin: 0 auto;
+        }
+
+        .photo-box:hover {
+            border-color: #304ffe;
+            background: #eef0ff;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-box .ph-placeholder {
+            text-align: center;
+            color: #aaa;
+        }
+
+        .photo-box .ph-placeholder i {
+            font-size: 20px;
+            color: #304ffe;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .photo-box .ph-placeholder span {
+            font-size: 9px;
+        }
+
+        /* Radio ID type selector */
+        .id-type-selector {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .id-type-selector label {
+            text-transform: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .id-type-selector input[type="radio"] {
+            accent-color: #304ffe;
+        }
+
+        /* Consent note */
+        .consent-box {
+            background: #f8f9ff;
+            border: 1px solid #e0e4f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 16px 0;
+        }
+
+        .consent-box label {
+            text-transform: none;
+            font-size: 12px;
+            font-weight: 500;
+            color: #444;
+            cursor: pointer;
+        }
+
+        .consent-box input[type="checkbox"] {
+            accent-color: #304ffe;
+            margin-right: 8px;
+        }
+
+        /* Buttons */
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .form-actions .btn-submit {
+            background: #0d1b4a;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 28px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .form-actions .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        .form-actions .btn-back {
+            background: #f0f1f5;
+            color: #555;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .form-actions .btn-back:hover {
+            background: #e5e7eb;
+        }
+
+        @media (max-width: 576px) {
+            .admit-form-card .card-body {
+                padding: 14px 12px;
+            }
+
+            .form-section-title {
+                font-size: 11px;
+                padding: 7px 12px;
+            }
+
+            .admit-form label {
+                font-size: 10px;
+            }
+
+            .admit-form .form-control {
+                font-size: 11px;
+                height: 32px;
+            }
+
+            .photo-box {
+                width: 80px;
+                height: 96px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>New Admission</li>
+                    </ul>
+                </div>
+
+                <div class="card admit-form-card">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3 id="formTitle"><i class="fas fa-file-alt"></i> Student Admission Form</h3>
+                            </div>
+                        </div>
+
+                        <form class="admit-form" id="admissionForm" autocomplete="off">
+
+                            <!-- ═══════════ SCHOLAR DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user-graduate"></i> Scholar Details
+                                </div>
+                                <div class="row">
+                                    <!-- Photo -->
+                                    <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center"
+                                        style="min-width:120px;">
+                                        <label>Photo</label>
+                                        <div class="photo-box" id="photoUploadArea"
+                                            onclick="document.getElementById('photoInput').click()">
+                                            <div class="ph-placeholder" id="uploadPlaceholder">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Upload</span>
+                                            </div>
+                                            <img id="photoPreview" src="" alt="" style="display:none;">
+                                        </div>
+                                        <small style="color:#aaa;font-size:9px;margin-top:3px;display:block;">Passport
+                                            size</small>
+                                        <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                                    </div>
+
+                                    <!-- Fields beside photo -->
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Admission No. *</label>
+                                                <input type="text" class="form-control auto-generated-field"
+                                                    id="admissionNo" readonly>
+                                            </div>
+                                            <div class="col-xl-4 col-lg-5 col-md-8 col-6 form-group">
+                                                <label>Student Name *</label>
+                                                <input type="text" class="form-control" id="studentName"
+                                                    placeholder="Full name">
+                                            </div>
+                                            <div class="col-xl-3 col-lg-2 col-md-4 col-6 form-group">
+                                                <label>Date of Birth *</label>
+                                                <input type="text" class="form-control air-datepicker" id="dob"
+                                                    placeholder="DD/MM/YYYY">
+                                            </div>
+                                            <div class="col-xl-2 col-lg-2 col-md-4 col-6 form-group">
+                                                <label>PEN</label>
+                                                <input type="text" class="form-control" id="pen"
+                                                    placeholder="Personal Edu. No.">
+                                            </div>
+                                        </div>
+                                        <!-- ID Type selector + Class/Section in same column -->
+                                        <div class="row">
+                                            <div class="col-lg-5 col-md-6 col-12 form-group">
+                                                <div class="id-type-selector">
+                                                    <label><input type="radio" name="idType" value="unique_id" checked>
+                                                        Unique ID</label>
+                                                    <label><input type="radio" name="idType" value="enrollment_no">
+                                                        Enrollment No.</label>
+                                                    <label><input type="radio" name="idType" value="aadharshila_id">
+                                                        Aadharshila ID</label>
+                                                </div>
+                                                <input type="text" class="form-control" id="idTypeValue"
+                                                    placeholder="Enter selected ID value">
+                                            </div>
+                                            <div class="col-lg-2 col-md-3 col-6 form-group">
+                                                <label>Class *</label>
+                                                <select class="form-control" id="classSelect"></select>
+                                            </div>
+                                            <div class="col-lg-2 col-md-3 col-6 form-group">
+                                                <label>Section *</label>
+                                                <select class="form-control" id="sectionSelect"></select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Date of Admission *</label>
+                                                <input type="text" class="form-control air-datepicker"
+                                                    id="admissionDate" placeholder="DD/MM/YYYY">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Gender *</label>
+                                        <select class="form-control" id="gender">
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Category *</label>
+                                        <select class="form-control" id="category">
+                                            <option value="">Select</option>
+                                            <option value="General">General</option>
+                                            <option value="OBC">OBC</option>
+                                            <option value="SC">SC</option>
+                                            <option value="ST">ST</option>
+                                            <option value="EWS">EWS</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Stream</label>
+                                        <select class="form-control" id="stream">
+                                            <option value="">Select</option>
+                                            <option value="Science">Science</option>
+                                            <option value="Commerce">Commerce</option>
+                                            <option value="Arts">Arts</option>
+                                            <option value="N/A">N/A</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Fee Category</label>
+                                        <select class="form-control" id="feeCategory">
+                                            <option value="">Select</option>
+                                            <option value="Full Fee">Full Fee</option>
+                                            <option value="Half Fee">Half Fee</option>
+                                            <option value="Free">Free</option>
+                                            <option value="RTE">RTE</option>
+                                            <option value="Scholarship">Scholarship</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Mobile No. *</label>
+                                        <input type="tel" class="form-control" id="phone" placeholder="10-digit"
+                                            maxlength="10">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Email *</label>
+                                        <input type="email" class="form-control" id="email" placeholder="email@example.com">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Roll No.</label>
+                                        <input type="number" class="form-control" id="rollNo" placeholder="Auto">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Blood Group</label>
+                                        <select class="form-control" id="bloodGroup">
+                                            <option value="">Select</option>
+                                            <option>A+</option>
+                                            <option>A-</option>
+                                            <option>B+</option>
+                                            <option>B-</option>
+                                            <option>AB+</option>
+                                            <option>AB-</option>
+                                            <option>O+</option>
+                                            <option>O-</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Status *</label>
+                                        <select class="form-control" id="status">
+                                            <option value="Active">Active</option>
+                                            <option value="TC">TC</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Left">Left</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>New / Old</label>
+                                        <select class="form-control" id="newOld">
+                                            <option value="New">New</option>
+                                            <option value="Old">Old</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>House</label>
+                                        <select class="form-control" id="house">
+                                            <option value="">Select</option>
+                                            <option value="Red">Red House</option>
+                                            <option value="Blue">Blue House</option>
+                                            <option value="Green">Green House</option>
+                                            <option value="Yellow">Yellow House</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Role (House)</label>
+                                        <select class="form-control" id="houseRole">
+                                            <option value="">Select</option>
+                                            <option value="Captain">Captain</option>
+                                            <option value="Vice Captain">Vice Captain</option>
+                                            <option value="Member">Member</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Height (cm)</label>
+                                        <input type="number" class="form-control" id="height" placeholder="e.g. 140">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Weight (kg)</label>
+                                        <input type="number" class="form-control" id="weight" placeholder="e.g. 35">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Aadhar Number</label>
+                                        <input type="text" class="form-control" id="aadharNumber"
+                                            placeholder="1234 5678 9012" maxlength="14">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Family ID</label>
+                                        <input type="text" class="form-control" id="familyId" placeholder="Family ID">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>SSSM ID</label>
+                                        <input type="text" class="form-control" id="sssmId" placeholder="SSSM ID">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ ADDRESS DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                        <label>Address *</label>
+                                        <textarea class="form-control" id="address" placeholder="Full address"
+                                            rows="2"></textarea>
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>State *</label>
+                                        <select class="form-control" id="state">
+                                            <option value="">Select State</option>
+                                            <option>Andhra Pradesh</option>
+                                            <option>Arunachal Pradesh</option>
+                                            <option>Assam</option>
+                                            <option>Bihar</option>
+                                            <option>Chhattisgarh</option>
+                                            <option>Goa</option>
+                                            <option>Gujarat</option>
+                                            <option>Haryana</option>
+                                            <option>Himachal Pradesh</option>
+                                            <option>Jharkhand</option>
+                                            <option>Karnataka</option>
+                                            <option>Kerala</option>
+                                            <option>Madhya Pradesh</option>
+                                            <option>Maharashtra</option>
+                                            <option>Manipur</option>
+                                            <option>Meghalaya</option>
+                                            <option>Mizoram</option>
+                                            <option>Nagaland</option>
+                                            <option>Odisha</option>
+                                            <option>Punjab</option>
+                                            <option>Rajasthan</option>
+                                            <option>Sikkim</option>
+                                            <option>Tamil Nadu</option>
+                                            <option>Telangana</option>
+                                            <option>Tripura</option>
+                                            <option>Uttar Pradesh</option>
+                                            <option>Uttarakhand</option>
+                                            <option>West Bengal</option>
+                                            <option>Andaman & Nicobar</option>
+                                            <option>Chandigarh</option>
+                                            <option>Dadra & Nagar Haveli</option>
+                                            <option>Daman & Diu</option>
+                                            <option>Delhi</option>
+                                            <option>Jammu & Kashmir</option>
+                                            <option>Ladakh</option>
+                                            <option>Lakshadweep</option>
+                                            <option>Puducherry</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>District</label>
+                                        <input type="text" class="form-control" id="district"
+                                            placeholder="District name">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Pin Code</label>
+                                        <input type="text" class="form-control" id="pinCode" placeholder="6-digit"
+                                            maxlength="6">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Nationality</label>
+                                        <input type="text" class="form-control" id="nationality" value="Indian">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Period of Residence (State)</label>
+                                        <input type="text" class="form-control" id="residencePeriod"
+                                            placeholder="e.g. Since birth / 5 years">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ PARENTS / GUARDIAN DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-users"></i> Parents / Guardian Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Father's Name *</label>
+                                        <input type="text" class="form-control" id="fatherName"
+                                            placeholder="Father's full name">
+                                    </div>
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Mother's Name *</label>
+                                        <input type="text" class="form-control" id="motherName"
+                                            placeholder="Mother's full name">
+                                    </div>
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Local Guardian Name</label>
+                                        <input type="text" class="form-control" id="guardianName"
+                                            placeholder="Guardian name (if any)">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Guardian Address</label>
+                                        <input type="text" class="form-control" id="guardianAddress"
+                                            placeholder="Guardian address">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Guardian Mobile</label>
+                                        <input type="tel" class="form-control" id="guardianMobile"
+                                            placeholder="10-digit" maxlength="10">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Relation</label>
+                                        <select class="form-control" id="guardianRelation">
+                                            <option value="">Select</option>
+                                            <option value="Father">Father</option>
+                                            <option value="Mother">Mother</option>
+                                            <option value="Uncle">Uncle</option>
+                                            <option value="Aunt">Aunt</option>
+                                            <option value="Grand Father">Grand Father</option>
+                                            <option value="Grand Mother">Grand Mother</option>
+                                            <option value="Brother">Brother</option>
+                                            <option value="Sister">Sister</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Father's Occupation</label>
+                                        <input type="text" class="form-control" id="fatherOccupation"
+                                            placeholder="e.g. Farmer, Govt.">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Religion</label>
+                                        <select class="form-control" id="religion"></select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Caste Name</label>
+                                        <input type="text" class="form-control" id="casteName" placeholder="Caste name">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ TRANSFER CERTIFICATE DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-exchange-alt"></i> Transfer Certificate
+                                    Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Withdrawal File Number</label>
+                                        <input type="text" class="form-control" id="withdrawalFileNo"
+                                            placeholder="File number">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Scholar Register Number</label>
+                                        <input type="text" class="form-control" id="scholarRegNo"
+                                            placeholder="Register number">
+                                    </div>
+                                    <div class="col-xl-6 col-lg-4 col-md-4 col-12 form-group">
+                                        <label>Last School Name</label>
+                                        <input type="text" class="form-control" id="lastSchool"
+                                            placeholder="Previous school name">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ BANK ACCOUNT DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-university"></i> Bank Account Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Name of Account Holder</label>
+                                        <input type="text" class="form-control" id="accountHolder"
+                                            placeholder="Account holder name">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Branch Name</label>
+                                        <input type="text" class="form-control" id="branchName" placeholder="Branch">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Account Number</label>
+                                        <input type="text" class="form-control" id="accountNumber"
+                                            placeholder="Account number">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>IFSC Code</label>
+                                        <input type="text" class="form-control" id="ifscCode"
+                                            placeholder="e.g. SBIN0001234" style="text-transform:uppercase;">
+                                    </div>
+                                    <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
+                                        <label>Security Amount (₹)</label>
+                                        <input type="number" class="form-control" id="securityAmount" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ OTHER DETAILS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-info-circle"></i> Other Details</div>
+                                <div class="row">
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Opt for Transport</label>
+                                        <select class="form-control" id="transportOpt">
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group" id="routeGroup"
+                                        style="display:none;">
+                                        <label>Bus Route</label>
+                                        <select class="form-control" id="routeSelect"></select>
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-6 form-group">
+                                        <label>Last Due Amount (₹)</label>
+                                        <input type="number" class="form-control" id="lastDueAmount" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 form-group">
+                                        <label>Other Information</label>
+                                        <textarea class="form-control" id="otherInfo"
+                                            placeholder="Any additional information..." rows="2"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ UPLOAD DOCUMENTS ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-5 col-md-5 col-12 form-group">
+                                        <label>Document Name *</label>
+                                        <input type="text" class="form-control" id="docName"
+                                            placeholder="e.g. Aadhar Card, Birth Certificate">
+                                    </div>
+                                    <div class="col-xl-5 col-lg-5 col-md-5 col-12 form-group">
+                                        <label>Select File *</label>
+                                        <input type="file" class="form-control" id="docFileInput"
+                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                            style="font-size:11px;padding:5px 8px;">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-2 col-md-2 col-12 form-group d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm" id="addDocBtn"
+                                            style="background:#0d1b4a;color:#fff;font-size:11px;font-weight:600;padding:7px 16px;border-radius:6px;">
+                                            <i class="fas fa-plus mg-r-5"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="doc-list" id="docList"></div>
+                            </div>
+
+                            <!-- ═══════════ CONSENT NOTE ═══════════ -->
+                            <div class="consent-box">
+                                <label>
+                                    <input type="checkbox" id="consentCheck">
+                                    I agree to abide by the rules of the institution and the department as laid in the
+                                    educational
+                                    code.
+                                </label>
+                            </div>
+
+                            <!-- ═══════════ SUBMIT ═══════════ -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit"><i class="fas fa-save mg-r-5"></i>
+                                    Submit</button>
+                                <a href="all-student.html" class="btn-back"><i class="fas fa-arrow-left mg-r-5"></i>
+                                    Back</a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/datepicker.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <script>
+        let uploadedDocs = [];
+        let croppedPhotoBlob = null;
+        let uploadedPhotoUrl = '';
+
+        $(document).ready(function () {
+            initPage('new-admission');
+            $('#admissionNo').val('(Auto-generated)');
+
+            populateClassDropdown(document.getElementById('classSelect'), false);
+            populateSectionDropdown(document.getElementById('sectionSelect'), false);
+            populateReligionDropdown(document.getElementById('religion'));
+            populateRouteDropdown(document.getElementById('routeSelect'));
+
+            const today = new Date();
+            $('#admissionDate').val(String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear());
+
+            // Check if editing
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            if (editId) { loadStudentForEdit(parseInt(editId)); }
+
+            // Photo upload — open crop modal
+            $('#photoInput').on('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const r = new FileReader();
+                r.onload = function (ev) { openCropModal(ev.target.result); };
+                r.readAsDataURL(file);
+            });
+
+            // Transport toggle
+            $('#transportOpt').on('change', function () {
+                $('#routeGroup').toggle($(this).val() === 'Yes');
+            });
+
+            // Aadhar auto-format
+            $('#aadharNumber').on('input', function () {
+                let v = this.value.replace(/\D/g, '').substring(0, 12);
+                if (v.length > 8) v = v.substring(0, 4) + ' ' + v.substring(4, 8) + ' ' + v.substring(8);
+                else if (v.length > 4) v = v.substring(0, 4) + ' ' + v.substring(4);
+                this.value = v;
+            });
+
+            // Document upload
+            $('#addDocBtn').on('click', addDocument);
+
+            // Submit
+            $('#admissionForm').on('submit', async function (e) {
+                e.preventDefault();
+                if (!validateForm()) return;
+
+                try {
+                    let photoUrl = uploadedPhotoUrl || ($('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : null);
+                    if (croppedPhotoBlob) {
+                        const uploadResult = await uploadFile(new File([croppedPhotoBlob], `student-photo-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+                        if (!uploadResult || uploadResult.error || !uploadResult.url) {
+                            throw new Error((uploadResult && uploadResult.error) || 'Photo upload failed');
+                        }
+                        photoUrl = uploadResult.url;
+                        uploadedPhotoUrl = uploadResult.url;
+                        croppedPhotoBlob = null;
+                    }
+
+                    const formData = getFormData(photoUrl);
+
+                    if (editId) {
+                        await updateStudent(parseInt(editId), formData);
+                        showToast('Student updated successfully!', 'success');
+                        setTimeout(() => { window.location.href = 'all-student.html'; }, 1500);
+                    } else {
+                        const newStudent = await createStudent(formData);
+                        showSuccessOverlay({ ...formData, ...newStudent });
+                    }
+                } catch(err) { showToast('Error: ' + err.message, 'error'); }
+            });
+        });
+
+        function getFormData(photoUrl) {
+            return {
+                name: $('#studentName').val().trim(),
+                father_name: $('#fatherName').val().trim(),
+                mother_name: $('#motherName').val().trim(),
+                dob: parseDateInput($('#dob').val()),
+                gender: $('#gender').val(),
+                category: $('#category').val(),
+                religion: $('#religion').val(),
+                phone: $('#phone').val().trim(),
+                address: $('#address').val().trim(),
+                class_id: parseInt($('#classSelect').val()),
+                section: $('#sectionSelect').val(),
+                admission_date: parseDateInput($('#admissionDate').val()),
+                roll_no: parseInt($('#rollNo').val()) || 0,
+                route_id: parseInt($('#routeSelect').val()) || null,
+                status: $('#status').val(),
+                photo_url: photoUrl || null,
+                email: $('#email') ? $('#email').val() : '',
+                aadhar_no: ($('#aadharNumber').val() || '').replace(/\s/g, ''),
+                blood_group: $('#bloodGroup').val() || '',
+                state: $('#state').val() || '',
+                district: ($('#district').val() || '').trim(),
+                pin_code: ($('#pinCode').val() || '').trim(),
+                nationality: ($('#nationality').val() || '').trim() || 'Indian',
+            };
+        }
+
+        /* ─── Crop Modal ─── */
+        function openCropModal(imgSrc) {
+            $('.crop-modal-overlay').remove();
+            const html = `
+            <div class="crop-modal-overlay" id="cropOverlay">
+                <div class="crop-modal-box">
+                    <div class="crop-modal-header"><i class="fas fa-crop-alt"></i> Crop Photo</div>
+                    <div class="crop-modal-body">
+                        <img id="cropImage" src="${imgSrc}" alt="Crop">
+                    </div>
+                    <div class="crop-modal-footer">
+                        <button class="btn-crop-cancel" onclick="closeCropModal()">Cancel</button>
+                        <button class="btn-crop-save" onclick="applyCrop()"><i class="fas fa-check mg-r-5"></i>Crop & Save</button>
+                    </div>
+                </div>
+            </div>`;
+            $('body').append(html);
+            const image = document.getElementById('cropImage');
+            window._cropper = new Cropper(image, {
+                aspectRatio: 5 / 6, viewMode: 1, dragMode: 'move',
+                autoCropArea: 0.85, responsive: true, guides: true, center: true, background: false,
+            });
+        }
+
+        function closeCropModal() {
+            if (window._cropper) { window._cropper.destroy(); window._cropper = null; }
+            $('#cropOverlay').remove();
+            $('#photoInput').val('');
+        }
+
+        function applyCrop() {
+            if (!window._cropper) return;
+            const canvas = window._cropper.getCroppedCanvas({ width: 300, height: 360, imageSmoothingQuality: 'high' });
+            const croppedData = canvas.toDataURL('image/jpeg', 0.9);
+            canvas.toBlob(function (blob) { croppedPhotoBlob = blob; uploadedPhotoUrl = ''; }, 'image/jpeg', 0.9);
+            $('#photoPreview').attr('src', croppedData).show();
+            $('#uploadPlaceholder').hide();
+            closeCropModal();
+        }
+
+        /* ─── Document Upload ─── */
+        function addDocument() {
+            const name = $('#docName').val().trim();
+            const fileInput = document.getElementById('docFileInput');
+            const file = fileInput.files[0];
+            if (!name) { showToast('Please enter a document name', 'error'); return; }
+            if (!file) { showToast('Please select a file', 'error'); return; }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                uploadedDocs.push({ id: Date.now(), name: name, fileName: file.name, size: file.size, type: file.type, data: ev.target.result });
+                renderDocList();
+                $('#docName').val('');
+                fileInput.value = '';
+                showToast(`"${name}" added successfully`, 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeDoc(id) { uploadedDocs = uploadedDocs.filter(d => d.id !== id); renderDocList(); }
+
+        function renderDocList() {
+            const container = $('#docList');
+            if (!uploadedDocs.length) { container.html(''); return; }
+            let html = '';
+            uploadedDocs.forEach(d => {
+                const sizeKB = (d.size / 1024).toFixed(1);
+                const icon = d.type.includes('pdf') ? 'fa-file-pdf' : d.type.includes('image') ? 'fa-file-image' : 'fa-file';
+                html += `<div class="doc-item"><div class="doc-icon"><i class="fas ${icon}"></i></div><div class="doc-info"><div class="doc-label">${d.name}</div><div class="doc-name">${d.fileName}</div><div class="doc-size">${sizeKB} KB</div></div><button type="button" class="doc-remove" onclick="removeDoc(${d.id})" title="Remove"><i class="fas fa-times"></i></button></div>`;
+            });
+            container.html(html);
+        }
+
+        /* ─── Utilities ─── */
+        function parseDateInput(d) { if (!d) return ''; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : d; }
+        function formatDateForInput(d) { if (!d) return ''; const dt = new Date(d); if (isNaN(dt)) return d; return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear(); }
+
+        function validateForm() {
+            let v = true;
+            const req = ['studentName', 'fatherName', 'motherName', 'dob', 'gender', 'category', 'phone', 'email', 'address', 'classSelect', 'sectionSelect'];
+            $('.is-invalid').removeClass('is-invalid'); $('.field-error').remove();
+            const labels = { studentName: 'Student name is required', fatherName: "Father's name is required", motherName: "Mother's name is required", dob: 'Date of birth is required', gender: 'Please select gender', category: 'Please select category', phone: 'Mobile number is required', email: 'Email is required', address: 'Address is required', classSelect: 'Please select class', sectionSelect: 'Please select section' };
+            req.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el.value) { $(el).addClass('is-invalid'); $(el).closest('.form-group').append(`<small class="field-error" style="color:#c62828;font-size:10px;display:block;margin-top:2px;">${labels[id]}</small>`); v = false; }
+            });
+            const ph = $('#phone').val().trim();
+            if (ph && !/^\d{10}$/.test(ph)) { $('#phone').addClass('is-invalid'); $('#phone').closest('.form-group').find('.field-error').remove(); $('#phone').closest('.form-group').append('<small class="field-error" style="color:#c62828;font-size:10px;">Must be 10 digits</small>'); v = false; }
+            const em = $('#email').val().trim();
+            if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { $('#email').addClass('is-invalid'); $('#email').closest('.form-group').find('.field-error').remove(); $('#email').closest('.form-group').append('<small class="field-error" style="color:#c62828;font-size:10px;">Invalid email format</small>'); v = false; }
+            if (!$('#consentCheck').is(':checked')) { showToast('Please accept the consent declaration', 'error'); v = false; }
+            if (!v) showToast('Please fix the errors below', 'error');
+            return v;
+        }
+
+        async function loadStudentForEdit(id) {
+            try {
+                const s = await getStudent(id);
+                if (!s || s.error) { showToast('Student not found', 'error'); return; }
+                $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit Student — ' + s.name);
+                document.title = 'Edit Student — EduNex1';
+                $('#admissionNo').val(s.admission_no || '');
+                $('#studentName').val(s.name || '');
+                $('#fatherName').val(s.father_name || '');
+                $('#motherName').val(s.mother_name || '');
+                $('#dob').val(formatDateForInput(s.dob));
+                $('#gender').val(s.gender || '');
+                $('#category').val(s.category || '');
+                $('#religion').val(s.religion || '');
+                $('#phone').val(s.phone || '');
+                $('#email').val(s.email || '');
+                $('#address').val(s.address || '');
+                $('#classSelect').val(s.class_id || '');
+                $('#sectionSelect').val(s.section || '');
+                $('#rollNo').val(s.roll_no || '');
+                $('#admissionDate').val(formatDateForInput(s.admission_date));
+                $('#status').val(s.status || 'Active');
+                if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); uploadedPhotoUrl = s.photo_url; croppedPhotoBlob = null; }
+                if (s.aadhar_no) $('#aadharNumber').val(s.aadhar_no);
+                if (s.blood_group) $('#bloodGroup').val(s.blood_group);
+                if (s.state) $('#state').val(s.state);
+                if (s.district) $('#district').val(s.district);
+                if (s.pin_code) $('#pinCode').val(s.pin_code);
+                if (s.nationality) $('#nationality').val(s.nationality);
+                $('#consentCheck').prop('checked', true);
+            } catch(e) { showToast('Error loading student', 'error'); console.error(e); }
+        }
+
+        function showSuccessOverlay(student) {
+            const parentLine = student.parent_password
+                ? `<tr><td style="padding:4px 10px;color:#666;">Parent Password</td><td style="padding:4px 10px;font-weight:600;color:#333;font-family:monospace;">${student.parent_password}</td></tr>`
+                : '';
+            document.body.insertAdjacentHTML('beforeend', `
+            <div class="success-overlay" id="successOverlay">
+                <div class="success-card">
+                    <div class="check-icon"><i class="fas fa-check"></i></div>
+                    <h5 style="font-weight:700;color:#333;margin-bottom:6px;">Admission Successful!</h5>
+                    <p style="color:#666;font-size:13px;margin-bottom:4px;"><strong>${student.name||''}</strong> admitted successfully.</p>
+                    <p style="color:#304ffe;font-weight:600;font-size:14px;margin-bottom:8px;">${student.admission_no||''}</p>
+                    <table style="margin:0 auto 16px;font-size:13px;border-collapse:collapse;text-align:left;">
+                        <tr><td style="padding:4px 10px;color:#666;">Student Password</td><td style="padding:4px 10px;font-weight:600;color:#333;font-family:monospace;">${student.student_password||''}</td></tr>
+                        ${parentLine}
+                    </table>
+                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark" onclick="addAnother()"><i class="fas fa-plus mg-r-5"></i> Add Another</button>
+                        <a href="all-student.html" class="btn-fill-lg btn-outline-navy"><i class="fas fa-list mg-r-5"></i> View List</a>
+                    </div>
+                </div>
+            </div>`);
+        }
+
+        function addAnother() {
+            document.getElementById('successOverlay').remove();
+            document.getElementById('admissionForm').reset();
+            setTimeout(() => {
+                $('#admissionNo').val('(Auto-generated)');
+                $('#photoPreview').hide(); $('#uploadPlaceholder').show();
+                croppedPhotoBlob = null; uploadedPhotoUrl = '';
+                uploadedDocs = []; renderDocList();
+                $('#routeGroup').hide();
+            }, 50);
+        }
+    </script>
+</body>
+
+</html>

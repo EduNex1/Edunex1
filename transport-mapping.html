@@ -1,0 +1,329 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Route Mapping — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all .15s;
+            margin: 0 1px;
+        }
+
+        .action-btn-edit {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .action-btn-edit:hover {
+            background: #ef6c00;
+            color: #fff;
+        }
+
+        .action-btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .action-btn-delete:hover {
+            background: #c62828;
+            color: #fff;
+        }
+
+        #mappingTable {
+            width: 100% !important;
+        }
+
+        #mappingTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        #mappingTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #fff;
+            background: #0d1b4a;
+            padding: 8px 10px;
+            white-space: nowrap;
+        }
+
+        #mappingTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .mapping-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .mapping-form label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .mapping-form .form-control {
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <!-- Breadcrumb -->
+                <div class="breadcrumbs-area">
+                    <h3>Transport</h3>
+                    <ul>
+                        <li><a href="/dashboard">Home</a></li>
+                        <li>Route Mapping</li>
+                    </ul>
+                </div>
+
+                <!-- Mapping Form -->
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1 mb-3">
+                            <div class="item-title">
+                                <h3>Map Vehicle to Route</h3>
+                            </div>
+                        </div>
+                        <div class="mapping-form" id="mappingForm">
+                            <div style="flex:1;min-width:200px;">
+                                <label>Vehicle Number <span class="text-danger">*</span></label>
+                                <select class="form-control" id="selVehicle">
+                                    <option value="">— Select Vehicle —</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;min-width:200px;">
+                                <label>Route Name <span class="text-danger">*</span></label>
+                                <select class="form-control" id="selRoute">
+                                    <option value="">— Select Route —</option>
+                                </select>
+                            </div>
+                            <div style="min-width:140px;">
+                                <label>Amount/Month (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="amountMonth" min="0"
+                                    placeholder="e.g. 800">
+                            </div>
+                            <div style="display:flex;gap:6px;">
+                                <button class="btn btn-sm"
+                                    style="background:#042954;color:#fff;font-size:12px;height:36px;"
+                                    id="btnSaveMapping"><i class="fas fa-save mr-1"></i>Save</button>
+                                <button class="btn btn-sm btn-light"
+                                    style="font-size:12px;height:36px;border:1px solid #ccc;"
+                                    id="btnCancelMapping">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapping List -->
+                <div class="card height-auto mt-3">
+                    <div class="card-body">
+                        <div class="heading-layout1 mb-3">
+                            <div class="item-title">
+                                <h3>All Route Mappings</h3>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="mappingTable" class="table table-bordered display text-nowrap">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editMappingModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#0d1b4a;color:#fff;padding:10px 16px;">
+                    <h6 class="modal-title" style="font-size:13px;font-weight:700;">Edit Mapping</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="editMappingBody"></div>
+                <div class="modal-footer" style="padding:8px 16px;">
+                    <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;"
+                        id="btnUpdateMapping">Save</button>
+                    <button class="btn btn-sm btn-light" data-dismiss="modal" style="font-size:13px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(function () {
+            initPage('transport-mapping');
+
+            let editId = null;
+            let vehiclesList = [];
+            let routesList = [];
+            let mappingsCache = [];
+
+            async function populateDropdowns() {
+                try {
+                    vehiclesList = await getVehicles();
+                    routesList = await getTransportRoutes();
+                    const vOpts = vehiclesList.map(v => `<option value="${v.id}">${v.vehicle_no} — ${v.driver_name || ''}</option>`).join('');
+                    const rOpts = routesList.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+                    $('#selVehicle').html('<option value="">— Select Vehicle —</option>' + vOpts);
+                    $('#selRoute').html('<option value="">— Select Route —</option>' + rOpts);
+                } catch (e) { showToast('Failed to load dropdowns', 'error'); }
+            }
+
+            async function loadTable() {
+                try {
+                    mappingsCache = await getTransportMappings();
+                    const rows = mappingsCache.map((m, i) => `<tr>
+                        <td class="text-center">${i + 1}</td>
+                        <td>${m.vehicle_no ? m.vehicle_no + ' — ' + (m.driver_name || '') : '—'}</td>
+                        <td>${m.route_name || '—'}</td>
+                        <td class="text-right">₹${m.amount_per_month || 0}</td>
+                        <td class="text-center">
+                            <button class="action-btn action-btn-edit" title="Edit" onclick="editMapping(${m.id})"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn action-btn-delete" title="Delete" onclick="removeMapping(${m.id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`).join('');
+
+                    if ($.fn.DataTable.isDataTable('#mappingTable')) {
+                        $('#mappingTable').DataTable().destroy();
+                    }
+                    $('#mappingTable thead').html(`<tr><th style="width:60px;">Sr No</th><th>Vehicle Name</th><th>Route Name</th><th style="width:120px;">Amount/Month</th><th style="width:90px;">Action</th></tr>`);
+                    $('#mappingTable tbody').html(rows);
+                    $('#mappingTable').DataTable({
+                        pageLength: 10,
+                        language: { search: "", searchPlaceholder: "Search mappings..." },
+                        columnDefs: [{ orderable: false, targets: [4] }]
+                    });
+                } catch (e) { showToast('Failed to load mappings', 'error'); }
+            }
+
+            $('#btnSaveMapping').on('click', async function () {
+                const vehicle_id = parseInt($('#selVehicle').val());
+                const route_id = parseInt($('#selRoute').val());
+                const amount_per_month = parseFloat($('#amountMonth').val()) || 0;
+                if (!vehicle_id || !route_id || !amount_per_month) {
+                    showToast('Please fill all required fields', 'error');
+                    return;
+                }
+                try {
+                    await createTransportMapping({ vehicle_id, route_id, amount_per_month });
+                    resetForm();
+                    await loadTable();
+                    showToast('Mapping saved successfully', 'success');
+                } catch (e) { showToast(e.message || 'Save failed', 'error'); }
+            });
+
+            function resetForm() {
+                $('#selVehicle').val('');
+                $('#selRoute').val('');
+                $('#amountMonth').val('');
+                editId = null;
+            }
+
+            $('#btnCancelMapping').on('click', function () { resetForm(); });
+
+            window.editMapping = async function (id) {
+                editId = id;
+                try {
+                    const m = mappingsCache.find(x => x.id === id);
+                    if (!m) return;
+                    const vOpts = vehiclesList.map(v => `<option value="${v.id}" ${v.id === m.vehicle_id ? 'selected' : ''}>${v.vehicle_no} — ${v.driver_name || ''}</option>`).join('');
+                    const rOpts = routesList.map(r => `<option value="${r.id}" ${r.id === m.route_id ? 'selected' : ''}>${r.name}</option>`).join('');
+                    $('#editMappingBody').html(`
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Vehicle</label>
+                        <select class="form-control" id="eVehicle" style="font-size:12px;"><option value="">— Select —</option>${vOpts}</select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Route</label>
+                        <select class="form-control" id="eRoute" style="font-size:12px;"><option value="">— Select —</option>${rOpts}</select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Amount/Month (₹)</label>
+                        <input type="number" class="form-control" id="eAmount" value="${m.amount_per_month || 0}" style="font-size:12px;" min="0">
+                    </div>
+                `);
+                    $('#editMappingModal').modal('show');
+                } catch (e) { showToast('Failed to load mapping', 'error'); }
+            };
+
+            $('#btnUpdateMapping').on('click', async function () {
+                if (!editId) return;
+                const vehicle_id = parseInt($('#eVehicle').val());
+                const route_id = parseInt($('#eRoute').val());
+                const amount_per_month = parseFloat($('#eAmount').val()) || 0;
+                if (!vehicle_id || !route_id || !amount_per_month) { showToast('Please fill all fields', 'error'); return; }
+                try {
+                    await updateTransportMapping(editId, { vehicle_id, route_id, amount_per_month });
+                    $('#editMappingModal').modal('hide');
+                    await loadTable();
+                    showToast('Mapping updated', 'success');
+                } catch (e) { showToast(e.message || 'Update failed', 'error'); }
+            });
+
+            window.removeMapping = async function (id) {
+                if (!confirm('Delete this mapping?')) return;
+                try {
+                    await deleteTransportMapping(id);
+                    await loadTable();
+                    showToast('Mapping deleted', 'success');
+                } catch (e) { showToast(e.message || 'Delete failed', 'error'); }
+            };
+
+            populateDropdowns();
+            loadTable();
+        });
+    </script>
+</body>
+
+</html>

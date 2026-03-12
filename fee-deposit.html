@@ -1,0 +1,611 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Deposit — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .form-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 20px; margin-bottom: 16px; }
+        .or-divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+        .or-divider hr { flex: 1; border: none; border-top: 1px dashed #ccc; }
+        .or-divider span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; }
+
+        /* Particulars checkboxes */
+        .part-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+        .part-group label { font-size: 12px; font-weight: 600; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .part-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #0d1b4a; }
+        .part-divider { width: 1px; height: 18px; background: #ccc; }
+
+        /* Receipt */
+        .receipt-card { background: #fff; border: 2px solid #e0e0e0; border-radius: 14px; padding: 0; margin-top: 16px; overflow: hidden; }
+        .receipt-header { background: #fff; color: #0d1b4a; padding: 14px 20px; text-align: center; border-bottom: 2px solid #0d1b4a; }
+        .receipt-header h5 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+        .receipt-header small { font-size: 11px; color: #555; }
+        .receipt-body { padding: 20px; }
+        .r-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .r-field { flex: 1; min-width: 180px; }
+        .r-field label { display: block; font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+        .r-field .r-val { font-size: 13px; font-weight: 600; color: #0d1b4a; padding: 6px 10px; background: #f8f9ff; border-radius: 6px; border: 1px solid #eee; min-height: 34px; }
+        .r-field input, .r-field select { font-size: 12px; height: 34px; }
+        .r-sep { border: none; border-top: 1px dashed #e0e0e0; margin: 14px 0; }
+
+        /* Fee breakdown table */
+        .fee-tbl { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .fee-tbl th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 6px 10px; text-align: left; }
+        .fee-tbl td { font-size: 12px; padding: 7px 10px; border-bottom: 1px solid #e0e0e0; }
+        .fee-tbl tfoot td { font-weight: 700; border-top: 2px solid #0d1b4a; font-size: 13px; }
+
+        /* Summary row */
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin: 14px 0; }
+        .s-item { background: #f5f7ff; border: 1px solid #e8eaf6; border-radius: 8px; padding: 10px 12px; }
+        .s-item label { display: block; font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 3px; }
+        .s-item .s-val { font-size: 15px; font-weight: 700; color: #0d1b4a; }
+        .s-item input { font-size: 13px; font-weight: 600; height: 32px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 8px; width: 100%; }
+        .s-item input:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .s-highlight { background: #f5f7ff; border-color: #e0e0e0; }
+        .s-highlight .s-val { color: #0d1b4a; }
+        .s-warn { background: #f5f7ff; border-color: #e0e0e0; }
+        .s-warn .s-val { color: #0d1b4a; }
+
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+
+        @media (max-width:767px) {
+            .r-field { min-width: 140px; }
+            .summary-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        }
+        @media (max-width:575px) {
+            .r-field { min-width: 100%; }
+            .receipt-body { padding: 14px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Fee Deposit</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-money-check-alt"></i> Fee Deposit</h3>
+                            </div>
+                        </div>
+
+                        <!-- ===== STEP 1: Select Student ===== -->
+                        <div class="form-card" id="step1">
+                            <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-user-graduate" style="color:#0d1b4a;margin-right:6px;"></i>Select Student</h6>
+
+                            <!-- Option A: By Admission No -->
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Enter Admission No.</label>
+                                    <input type="text" class="form-control" id="admNo" placeholder="e.g. ADM-2025-001" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-auto form-group">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnFetchAdm" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                        <i class="fas fa-search"></i> Fetch
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="or-divider"><hr><span>or select manually</span><hr></div>
+
+                            <!-- Option B: By Class → Section → Student -->
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Class</label>
+                                    <select class="form-control" id="selClass" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Section</label>
+                                    <select class="form-control" id="selSection" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Student</label>
+                                    <select class="form-control" id="selStudent" style="font-size:12px;height:36px;"></select>
+                                </div>
+                            </div>
+
+                            <!-- Month + Particulars -->
+                            <div id="monthPartSection" style="display:none;">
+                                <hr style="border-top:1px dashed #e0e0e0;margin:14px 0;">
+                                <div class="row gutters-8 align-items-end">
+                                    <div class="col-lg-2 col-md-3 col-6 form-group">
+                                        <label class="form-label-sm">Select Month *</label>
+                                        <select class="form-control" id="selMonth" style="font-size:12px;height:36px;">
+                                            <option value="">Select Month</option>
+                                            <option>January</option><option>February</option><option>March</option>
+                                            <option>April</option><option>May</option><option>June</option>
+                                            <option>July</option><option>August</option><option>September</option>
+                                            <option>October</option><option>November</option><option>December</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group mg-t-8">
+                                    <label class="form-label-sm">Select Particulars *</label>
+                                    <div class="part-group" id="partGroup">
+                                        <label><input type="checkbox" id="partAll"> <strong>Select All</strong></label>
+                                        <span class="part-divider"></span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mg-t-10" style="gap:8px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnProceed" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                        <i class="fas fa-arrow-right"></i> Proceed
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                        <i class="fas fa-undo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== STEP 2: Fee Receipt Form ===== -->
+                        <div id="receiptSection" style="display:none;">
+                            <div class="receipt-card">
+                                <div class="receipt-header">
+                                    <h5><i class="fas fa-receipt"></i> Fee Receipt</h5>
+                                    <small id="schoolName"></small>
+                                </div>
+                                <div class="receipt-body">
+                                    <!-- Row 1: Category, Receipt, Date -->
+                                    <div class="r-row">
+                                        <div class="r-field" style="max-width:160px;">
+                                            <label>Fee Category</label>
+                                            <div class="r-val" id="rCategory">Old</div>
+                                        </div>
+                                        <div class="r-field" style="max-width:160px;">
+                                            <label>Receipt No.</label>
+                                            <div class="r-val" id="rReceiptNo"></div>
+                                        </div>
+                                        <div class="r-field" style="max-width:160px;">
+                                            <label>Date</label>
+                                            <div class="r-val" id="rDate"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Row 2: Student Info -->
+                                    <div class="r-row">
+                                        <div class="r-field">
+                                            <label>Admission No.</label>
+                                            <div class="r-val" id="rAdmNo"></div>
+                                        </div>
+                                        <div class="r-field">
+                                            <label>Student Name</label>
+                                            <div class="r-val" id="rStudentName"></div>
+                                        </div>
+                                        <div class="r-field">
+                                            <label>Father's Name</label>
+                                            <div class="r-val" id="rFatherName"></div>
+                                        </div>
+                                    </div>
+                                    <div class="r-row">
+                                        <div class="r-field" style="max-width:160px;">
+                                            <label>Class / Section</label>
+                                            <div class="r-val" id="rClassSec"></div>
+                                        </div>
+                                        <div class="r-field" style="max-width:160px;">
+                                            <label>Fee for Month</label>
+                                            <div class="r-val" id="rMonth"></div>
+                                        </div>
+                                        <div class="r-field">
+                                            <label>Sibling Details</label>
+                                            <div class="r-val" id="rSibling">—</div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="r-sep">
+
+                                    <!-- Fee Breakdown Table -->
+                                    <table class="fee-tbl">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:30px;">#</th>
+                                                <th>Particular</th>
+                                                <th style="text-align:right;">Charge (₹)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="feeRows"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:right;">Total Amount</td>
+                                                <td style="text-align:right;" id="rTotalAmt">₹0</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                    <!-- Summary Grid -->
+                                    <div class="summary-grid">
+                                        <div class="s-item">
+                                            <label>Total Amount</label>
+                                            <div class="s-val" id="sTotalAmt">₹0</div>
+                                        </div>
+                                        <div class="s-item">
+                                            <label>Late Fee / Last Due</label>
+                                            <input type="number" id="sLateFee" value="0" min="0">
+                                        </div>
+                                        <div class="s-item">
+                                            <label>Old Balance</label>
+                                            <div class="s-val" id="sOldBal">₹0</div>
+                                        </div>
+                                        <div class="s-item">
+                                            <label>Concession</label>
+                                            <input type="number" id="sConcession" value="0" min="0">
+                                        </div>
+                                        <div class="s-item s-highlight">
+                                            <label>Grand Total</label>
+                                            <div class="s-val" id="sGrandTotal">₹0</div>
+                                        </div>
+                                        <div class="s-item s-highlight">
+                                            <label>Received Amount</label>
+                                            <input type="number" id="sReceived" value="0" min="0" style="font-weight:700;">
+                                        </div>
+                                        <div class="s-item s-warn">
+                                            <label>Balance</label>
+                                            <div class="s-val" id="sBalance">₹0</div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="r-sep">
+
+                                    <!-- Payment Mode + Remarks -->
+                                    <div class="r-row" style="align-items:end;">
+                                        <div class="r-field" style="max-width:200px;">
+                                            <label>Payment Mode *</label>
+                                            <select class="form-control" id="rPayMode" style="font-size:12px;height:36px;"></select>
+                                        </div>
+                                        <div class="r-field">
+                                            <label>Remarks / Details</label>
+                                            <input type="text" class="form-control" id="rRemarks" placeholder="Optional remarks..." style="font-size:12px;height:36px;">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center mg-t-14" style="gap:8px;">
+                                        <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSubmit" style="border-radius:6px;height:36px;font-size:12px;padding:0 22px;width:auto;">
+                                            <i class="fas fa-check-circle"></i> Submit
+                                        </button>
+                                        <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnBack" style="border-radius:6px;height:36px;font-size:12px;padding:0 22px;width:auto;">
+                                            <i class="fas fa-arrow-left"></i> Back
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(async function () {
+            if (typeof initPage === 'function') initPage('fee-deposit');
+
+            let selectedStudent = null;
+            let totalAmount = 0;
+            let classesCache = [];
+            let feeParticularsCache = [];
+            let feeSlabCache = [];
+            let routesCache = [];
+
+            // Load classes and fee particulars from API
+            try {
+                classesCache = await getClasses();
+                $('#selClass').html('<option value="">Select Class</option>' + classesCache.map(c => `<option value="${c.id}">${c.name}</option>`).join(''));
+            } catch(e) { console.error('Failed to load classes', e); }
+
+            $('#selSection').html('<option value="">Select Section</option>');
+            $('#selStudent').html('<option value="">Select Student</option>');
+
+            // Populate particulars checkboxes from API
+            try {
+                feeParticularsCache = await getFeeParticulars();
+                // Show only non-transport particulars (transport fee auto-added from route)
+                feeParticularsCache.filter(p => !p.is_transport).forEach(p => {
+                    const charge = p.charge || p.amount || 0;
+                    $('#partGroup').append(`<label><input type="checkbox" class="part-cb" value="${p.id}" data-charge="${charge}"> ${p.name} <span class="part-charge" style="color:#888;font-size:10px;">(₹${charge})</span></label>`);
+                });
+                routesCache = await getTransportRoutes();
+            } catch(e) { console.error('Failed to load fee particulars', e); }
+
+            // Payment modes
+            const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
+            $('#rPayMode').html('<option value="">Select</option>' + PAYMENT_MODES.map(m => `<option>${m}</option>`).join(''));
+
+            // School name from user context
+            const user = JSON.parse(localStorage.getItem('vkis_user') || '{}');
+            $('#schoolName').text(user.school_name || 'School Management System');
+
+            // ===== Class → Section → Student cascade =====
+            $('#selClass').on('change', async function () {
+                const classId = $(this).val();
+                if (!classId) { $('#selSection').html('<option value="">Select Section</option>'); $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
+                try {
+                    const studs = await getStudents({ class_id: classId, status: 'Active' });
+                    const secs = [...new Set(studs.map(s => s.section).filter(Boolean))].sort();
+                    $('#selSection').html('<option value="">Select Section</option>' + secs.map(s => `<option>${s}</option>`).join(''));
+                    $('#selStudent').html('<option value="">Select Student</option>');
+                } catch(e) { console.error(e); }
+                hideMonthPart();
+            });
+
+            $('#selSection').on('change', async function () {
+                const classId = $('#selClass').val();
+                const sec = $(this).val();
+                if (!classId || !sec) { $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
+                try {
+                    const studs = await getStudents({ class_id: classId, section: sec, status: 'Active' });
+                    $('#selStudent').html('<option value="">Select Student</option>' + studs.map(s => `<option value="${s.id}">${s.name} (${s.admission_no})</option>`).join(''));
+                } catch(e) { console.error(e); }
+                hideMonthPart();
+            });
+
+            $('#selStudent').on('change', async function () {
+                const sid = $(this).val();
+                if (sid) { await selectStudent(parseInt(sid)); } else { hideMonthPart(); }
+            });
+
+            // ===== Fetch by Admission No =====
+            $('#btnFetchAdm').on('click', async function () {
+                const admNo = $('#admNo').val().trim();
+                if (!admNo) { showToast('Enter an admission number', 'error'); return; }
+                try {
+                    const allStudents = await getStudents({ status: 'Active' });
+                    const stu = allStudents.find(s => (s.admission_no||'').toLowerCase() === admNo.toLowerCase());
+                    if (!stu) { showToast('Student not found', 'error'); return; }
+                    $('#selClass').val(stu.class_id).trigger('change');
+                    setTimeout(() => {
+                        $('#selSection').val(stu.section).trigger('change');
+                        setTimeout(() => { $('#selStudent').val(stu.id).trigger('change'); }, 200);
+                    }, 200);
+                } catch(e) { showToast('Error: ' + e.message, 'error'); }
+            });
+
+            async function selectStudent(id) {
+                try {
+                    selectedStudent = await getStudent(id);
+                    if (!selectedStudent) return;
+                    feeSlabCache = await getFeeSlabs(selectedStudent.class_id);
+                    refreshParticularCharges(selectedStudent);
+                    $('#monthPartSection').slideDown(200);
+                    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                    $('#selMonth').val(months[new Date().getMonth()]);
+                    // Show transport info if student has a route
+                    $('#transportInfo').remove();
+                    if (selectedStudent.route_id) {
+                        const route = routesCache.find(r => r.id === selectedStudent.route_id);
+                        if (route && route.fee > 0) {
+                            $('#partGroup').closest('.form-group, div').after(`<div id="transportInfo" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;align-items:center;gap:8px;">
+                                <i class="fas fa-bus" style="color:#2e7d32;font-size:16px;"></i>
+                                <div><strong style="font-size:12px;color:#2e7d32;">Transport Fee (Auto)</strong><br><span style="font-size:11px;color:#555;">Route: ${route.name} — ₹${route.fee.toLocaleString('en-IN')}/month</span></div>
+                                <input type="hidden" id="transportFee" value="${route.fee}">
+                            </div>`);
+                        }
+                    }
+                } catch(e) { showToast('Error loading student', 'error'); }
+            }
+
+            function getStudentFeeCategory(student) {
+                return String((student && student.category) || 'Default');
+            }
+
+            function getParticularChargeForStudent(student, particularId) {
+                const category = getStudentFeeCategory(student);
+                const categoryMatch = feeSlabCache.find(s => Number(s.particular_id) === Number(particularId) && String(s.category || 'Default') === category);
+                const defaultMatch = feeSlabCache.find(s => Number(s.particular_id) === Number(particularId) && String(s.category || 'Default') === 'Default');
+                const slabAmount = categoryMatch ? Number(categoryMatch.amount || 0) : defaultMatch ? Number(defaultMatch.amount || 0) : NaN;
+                if (Number.isFinite(slabAmount)) return slabAmount;
+                const particular = feeParticularsCache.find(p => Number(p.id) === Number(particularId));
+                return Number(particular ? (particular.charge || particular.amount || 0) : 0);
+            }
+
+            function refreshParticularCharges(student) {
+                $('.part-cb').each(function () {
+                    const particularId = parseInt($(this).val(), 10);
+                    const charge = getParticularChargeForStudent(student, particularId);
+                    $(this).attr('data-charge', charge);
+                    $(this).closest('label').find('.part-charge').text(`(₹${charge.toLocaleString('en-IN')})`);
+                });
+                $('#rCategory').text(getStudentFeeCategory(student));
+            }
+
+            function hideMonthPart() {
+                selectedStudent = null;
+                feeSlabCache = [];
+                $('#monthPartSection').slideUp(200);
+                $('#receiptSection').slideUp(200);
+                $('#transportInfo').remove();
+                refreshParticularCharges(null);
+            }
+
+            // Select All particulars
+            $('#partAll').on('change', function () { $('.part-cb').prop('checked', $(this).is(':checked')); });
+            $('.part-group').on('change', '.part-cb', function () {
+                $('#partAll').prop('checked', $('.part-cb').length === $('.part-cb:checked').length);
+            });
+
+            // ===== PROCEED =====
+            $('#btnProceed').on('click', function () {
+                if (!selectedStudent) { showToast('Please select a student', 'error'); return; }
+                const month = $('#selMonth').val();
+                if (!month) { showToast('Please select a month', 'error'); return; }
+                const parts = [];
+                $('.part-cb:checked').each(function () { parts.push(parseInt($(this).val())); });
+                if (!parts.length) { showToast('Select at least one particular', 'error'); return; }
+
+                buildReceipt(selectedStudent, month, parts);
+                $('#receiptSection').slideDown(300);
+                $('html, body').animate({ scrollTop: $('#receiptSection').offset().top - 20 }, 300);
+            });
+
+            function buildReceipt(stu, month, parts) {
+                const today = new Date();
+                const dateStr = today.getDate().toString().padStart(2, '0') + ' ' + today.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + today.getFullYear();
+                const className = classesCache.find(c => c.id === stu.class_id);
+
+                $('#rDate').text(dateStr);
+                $('#rAdmNo').text(stu.admission_no || '');
+                $('#rStudentName').text(stu.name);
+                $('#rFatherName').text(stu.father_name || '');
+                $('#rClassSec').text((className ? className.name : '') + ' / ' + stu.section);
+                $('#rMonth').text(month);
+                $('#rSibling').text('—');
+                $('#rCategory').text(getStudentFeeCategory(stu));
+
+                // Fee rows
+                const tbody = $('#feeRows');
+                tbody.empty();
+                totalAmount = 0;
+                let rowNum = 0;
+                parts.forEach((pid) => {
+                    const p = feeParticularsCache.find(x => x.id === pid);
+                    if (!p) return;
+                    const charge = getParticularChargeForStudent(stu, pid);
+                    totalAmount += charge;
+                    rowNum++;
+                    tbody.append(`<tr><td>${rowNum}</td><td>${p.name}</td><td style="text-align:right;">₹${charge.toLocaleString('en-IN')}</td></tr>`);
+                });
+                // Auto-add transport fee from route
+                const transportFee = parseFloat($('#transportFee').val()) || 0;
+                if (transportFee > 0) {
+                    totalAmount += transportFee;
+                    rowNum++;
+                    const route = routesCache.find(r => r.id === stu.route_id);
+                    tbody.append(`<tr style="background:#e8f5e9;"><td>${rowNum}</td><td><i class="fas fa-bus" style="color:#2e7d32;margin-right:4px;"></i>Transport Fee${route ? ' (' + route.name + ')' : ''}</td><td style="text-align:right;">₹${transportFee.toLocaleString('en-IN')}</td></tr>`);
+                }
+                $('#rTotalAmt').text('₹' + totalAmount.toLocaleString('en-IN'));
+                $('#sTotalAmt').text('₹' + totalAmount.toLocaleString('en-IN'));
+
+                const oldBal = Math.max(0, Number(stu.old_balance || 0));
+                $('#sOldBal').text('₹' + oldBal.toLocaleString('en-IN'));
+
+                $('#sLateFee').val(0);
+                $('#sConcession').val(0);
+                $('#sReceived').val(0);
+                $('#rRemarks').val('');
+                $('#rPayMode').val('');
+                recalcGrandTotal();
+            }
+
+            function getOldBalance() {
+                if (!selectedStudent) return 0;
+                return Math.max(0, Number(selectedStudent.old_balance || 0));
+            }
+
+            function recalcGrandTotal() {
+                const late = parseFloat($('#sLateFee').val()) || 0;
+                const conc = parseFloat($('#sConcession').val()) || 0;
+                const oldBal = getOldBalance();
+                const grand = totalAmount + late + oldBal - conc;
+                const received = parseFloat($('#sReceived').val()) || 0;
+                const balance = grand - received;
+
+                $('#sGrandTotal').text('₹' + grand.toLocaleString('en-IN'));
+                $('#sBalance').text('₹' + balance.toLocaleString('en-IN'));
+            }
+
+            // Live recalculation
+            $('#sLateFee, #sConcession, #sReceived').on('input', recalcGrandTotal);
+
+            // ===== SUBMIT =====
+            $('#btnSubmit').on('click', async function () {
+                if (!selectedStudent) return;
+                const month = $('#selMonth').val();
+                const payMode = $('#rPayMode').val();
+                if (!payMode) { showToast('Select a payment mode', 'error'); return; }
+
+                const received = parseFloat($('#sReceived').val()) || 0;
+                if (received <= 0) { showToast('Enter received amount', 'error'); return; }
+
+                const late = parseFloat($('#sLateFee').val()) || 0;
+                const conc = parseFloat($('#sConcession').val()) || 0;
+                const oldBal = getOldBalance();
+                const grand = totalAmount + late + oldBal - conc;
+                const balance = grand - received;
+
+                try {
+                    const items = [];
+                    $('.part-cb:checked').each(function () {
+                        const particularId = parseInt($(this).val(), 10);
+                        items.push({ particular_id: particularId, amount: getParticularChargeForStudent(selectedStudent, particularId) });
+                    });
+                    const transportFee = parseFloat($('#transportFee').val()) || 0;
+                    if (transportFee > 0) {
+                        const transportParticular = feeParticularsCache.find(p => p.is_transport);
+                        if (transportParticular) {
+                            items.push({ particular_id: transportParticular.id, amount: transportFee });
+                        }
+                    }
+                    const deposit = await createFeeDeposit({
+                        date: new Date().toISOString().split('T')[0],
+                        student_id: selectedStudent.id,
+                        month: month,
+                        total_amount: totalAmount,
+                        late_fee: late,
+                        concession: conc,
+                        grand_total: grand,
+                        received_amount: received,
+                        balance: balance,
+                        payment_mode: payMode,
+                        category: getStudentFeeCategory(selectedStudent),
+                        remarks: $('#rRemarks').val().trim(),
+                        session: (typeof getSelectedSession === 'function' ? (getSelectedSession() || '') : ''),
+                        items: items
+                    });
+                    showToast('Fee deposited! Receipt: ' + deposit.receipt_no, 'success');
+                    fullReset();
+                } catch(e) { showToast('Error: ' + e.message, 'error'); }
+            });
+
+            // ===== RESET / BACK =====
+            $('#btnReset').on('click', fullReset);
+            $('#btnBack').on('click', function () { $('#receiptSection').slideUp(300); });
+
+            function fullReset() {
+                selectedStudent = null;
+                totalAmount = 0;
+                $('#admNo').val('');
+                $('#selClass').val(''); $('#selSection').html('<option value="">Select Section</option>'); $('#selStudent').html('<option value="">Select Student</option>');
+                $('#selMonth').val('');
+                $('#partAll').prop('checked', false); $('.part-cb').prop('checked', false);
+                $('#monthPartSection').hide();
+                $('#receiptSection').slideUp(200);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Add Book — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Library</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li><a href="/library-books">Books</a></li><li>Add Book</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-plus-circle"></i> Add New Book</h3></div></div>
+
+                        <div class="filter-card">
+                            <form id="addBookForm" onsubmit="return false;">
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Book ID / No.</label>
+                                        <input type="text" class="form-control" id="bookNo" placeholder="e.g. BK-011">
+                                    </div>
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">ISBN No.</label>
+                                        <input type="text" class="form-control" id="isbn" placeholder="e.g. 978-3-16-148410-0">
+                                    </div>
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Book Type</label>
+                                        <div class="d-flex align-items-end" style="gap:6px;">
+                                            <select class="form-control" id="typeId" style="flex:1;"><option value="">— Select Type —</option></select>
+                                            <a href="/library-book-type" class="btn btn-sm" style="background:#042954;color:#fff;font-size:11px;padding:7px 10px;white-space:nowrap;" title="Add new type"><i class="fas fa-plus"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Author / Writer</label>
+                                        <input type="text" class="form-control" id="author" placeholder="Author name">
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Book Title</label>
+                                        <input type="text" class="form-control" id="title" placeholder="Book title">
+                                    </div>
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Publisher & Place</label>
+                                        <input type="text" class="form-control" id="publisher" placeholder="Publisher, City">
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-6 form-group">
+                                        <label class="form-label-sm">Cost (₹)</label>
+                                        <input type="number" class="form-control" id="cost" placeholder="0" min="0">
+                                    </div>
+                                    <div class="col-lg-1 col-md-2 col-4 form-group">
+                                        <label class="form-label-sm">Copies</label>
+                                        <input type="number" class="form-control" id="copies" placeholder="1" min="1" value="1">
+                                    </div>
+                                    <div class="col-lg-2 col-md-2 col-4 form-group">
+                                        <label class="form-label-sm">Rack No.</label>
+                                        <input type="text" class="form-control" id="rackNo" placeholder="e.g. R-3">
+                                    </div>
+                                </div>
+                                <div class="mt-2" style="display:flex;gap:8px;">
+                                    <button type="button" class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 26px;" onclick="submitBook()"><i class="fas fa-save"></i> Submit</button>
+                                    <button type="button" class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:7px 20px;" onclick="resetForm()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('library-add-book');
+
+        // Populate type dropdown
+        let bookTypes = [];
+        try { bookTypes = await getMasterData('book_types'); } catch(e) {}
+        bookTypes.forEach(t => $('#typeId').append(`<option value="${t.id}">${t.name}</option>`));
+
+        window.submitBook = async function() {
+            const book_no = $('#bookNo').val().trim();
+            const isbn = $('#isbn').val().trim();
+            const type_id = parseInt($('#typeId').val()) || 0;
+            const author = $('#author').val().trim();
+            const title = $('#title').val().trim();
+            const publisher = $('#publisher').val().trim();
+            const cost = parseInt($('#cost').val()) || 0;
+            const quantity = parseInt($('#copies').val()) || 1;
+            const rack_no = $('#rackNo').val().trim();
+
+            if (!book_no || !title || !type_id) {
+                showToast('Please fill Book No., Title, and select Book Type', 'error');
+                return;
+            }
+
+            try {
+                await createBook({ book_no, isbn, type_id, author, title, publisher, cost, quantity, rack_no });
+                showToast('Book added successfully!', 'success');
+                resetForm();
+            } catch(e) { showToast('Error adding book', 'error'); }
+        };
+
+        window.resetForm = function() {
+            $('#addBookForm')[0].reset();
+            $('#typeId').val('');
+        };
+    });
+    </script>
+</body>
+</html>

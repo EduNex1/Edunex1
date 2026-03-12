@@ -1,0 +1,167 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Add User — Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}
+        .user-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:24px 28px;margin-bottom:16px}
+        .pwd-hint{font-size:10px;color:#888;margin-top:3px}
+        .status-row{display:flex;align-items:center;gap:8px;padding-top:23px}
+        .status-row input{width:16px;height:16px}
+        .readonly-note{font-size:10px;color:#888;margin-top:3px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li><a href="/settings-users">Users</a></li><li id="pageMode">Add User</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3 id="formTitle"><i class="fas fa-user-plus"></i> Add New User</h3></div></div>
+                    <div class="user-card">
+                        <input type="hidden" id="editId">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Login ID <span style="color:red">*</span></label>
+                                <input type="text" class="form-control" id="uLoginId" placeholder="e.g. admin.main">
+                                <div class="readonly-note" id="loginReadonlyNote" style="display:none;">Login ID cannot be changed after user creation.</div>
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Role <span style="color:red">*</span></label>
+                                <select class="form-control" id="uRole">
+                                    <option value="">— Select Role —</option>
+                                    <option value="branch_admin">Branch Admin</option>
+                                    <option value="teacher">Teacher</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="accountant">Accountant</option>
+                                    <option value="librarian">Librarian</option>
+                                    <option value="parent">Parent</option>
+                                    <option value="student">Student</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Linked Record ID</label>
+                                <input type="number" class="form-control" id="uLinkedId" placeholder="Optional student/staff/parent ID" min="1">
+                                <div class="readonly-note" id="linkedReadonlyNote" style="display:none;">Linked record ID is only set during creation in the current API.</div>
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Branch <span style="color:red">*</span></label>
+                                <select class="form-control" id="uBranch"><option value="">— Select Branch —</option></select>
+                                <div class="readonly-note" id="branchReadonlyNote" style="display:none;">Branch cannot be changed from this edit form in the current API.</div>
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group" id="pwdGroup">
+                                <label class="form-label-sm">Password <span style="color:red">*</span></label>
+                                <div style="position:relative;">
+                                    <input type="password" class="form-control" id="uPassword" placeholder="Min 6 characters" minlength="6">
+                                    <button type="button" onclick="togglePwd()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:13px;"><i class="fas fa-eye" id="pwdIcon"></i></button>
+                                </div>
+                                <div class="pwd-hint">Minimum 6 characters</div>
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Status</label>
+                                <div class="status-row">
+                                    <input type="checkbox" id="uActive" checked>
+                                    <label for="uActive" style="font-size:12px;margin:0;cursor:pointer;">User is active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:14px;">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="saveUser()"><i class="fas fa-save"></i> Save</button>
+                            <a href="/settings-users" class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:8px 22px;"><i class="fas fa-times"></i> Cancel</a>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('settings-users');
+        const currentUser = typeof getUser === 'function' ? getUser() : null;
+        const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
+
+        // Branch admin: hide branch_admin role option
+        if (!isSuperAdmin) $('#uRole option[value="branch_admin"]').remove();
+
+        // Load branches
+        let branches = [];
+        try { branches = await getBranches(); } catch(e) {}
+
+        if (isSuperAdmin) {
+            // Super admin: show all branches in dropdown
+            (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
+        } else {
+            // Branch admin: auto-set their branch, disable dropdown
+            if (branches.length) {
+                branches.forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
+                $('#uBranch').val(currentUser.branch_id);
+            } else {
+                // Fallback if branches API returned empty
+                $('#uBranch').append(`<option value="${currentUser.branch_id}">My Branch</option>`);
+                $('#uBranch').val(currentUser.branch_id);
+            }
+            $('#uBranch').prop('disabled', true);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const editId = parseInt(params.get('id'))||0;
+        if(editId){
+            try {
+                const users = await getUsers();
+                const list = Array.isArray(users) ? users : (users.results || []);
+                const u = list.find(x=>x.id===editId);
+                if(u){
+                    $('#editId').val(u.id);
+                    $('#uLoginId').val(u.login_id||'').prop('readonly', true);
+                    $('#uRole').val(u.role||'');
+                    $('#uBranch').val(u.branch_id||'').prop('disabled', true);
+                    $('#uLinkedId').prop('disabled', true);
+                    $('#uActive').prop('checked', !!u.is_active);
+                    $('#loginReadonlyNote').show();
+                    $('#linkedReadonlyNote').show();
+                    $('#branchReadonlyNote').show();
+                    $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit User — '+(u.login_id||''));
+                    $('#pageMode').text('Edit User');
+                    if(currentUser && currentUser.role !== 'super_admin') $('#uRole').prop('disabled', true);
+                }
+            } catch(e) { console.error(e); }
+        }
+        window.togglePwd=function(){
+            const p=$('#uPassword'), i=$('#pwdIcon');
+            if(p.attr('type')==='password'){p.attr('type','text');i.removeClass('fa-eye').addClass('fa-eye-slash');}
+            else{p.attr('type','password');i.removeClass('fa-eye-slash').addClass('fa-eye');}
+        };
+        window.saveUser=async function(){
+            const login_id=$('#uLoginId').val().trim();
+            const role=$('#uRole').val();
+            const branch_id=parseInt($('#uBranch').val())||0;
+            const password=$('#uPassword').val();
+            const linked_id=parseInt($('#uLinkedId').val())||null;
+            const is_active=$('#uActive').is(':checked') ? 1 : 0;
+            if(!login_id){showToast('Enter login ID','error');return;}
+            if(!role){showToast('Select role','error');return;}
+            if(!branch_id){showToast('Select branch','error');return;}
+            if(!editId && password.length<6){showToast('Password must be at least 6 characters','error');return;}
+            const data = editId ? { is_active } : { branch_id, role, login_id, linked_id };
+            if(!editId || (currentUser && currentUser.role === 'super_admin')) data.role = role;
+            if(password) data.password = password;
+            try {
+                if(editId){ await updateUser(editId, data); }
+                else { await createUser(data); }
+                showToast(editId?'User updated':'User added','success');
+                setTimeout(()=>{ window.location.href='/settings-users'; },600);
+            } catch(e){ showToast('Error: '+e.message,'error'); }
+        };
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Vendors — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .action-icon{width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+        .action-icon.edit{background:#e3f2fd;color:#1565c0}.action-icon.edit:hover{background:#1565c0;color:#fff}
+        .action-icon.delete{background:#fce4ec;color:#c62828}.action-icon.delete:hover{background:#c62828;color:#fff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .add-form-card{background:#f8f9ff;border:2px dashed #c5cae9;border-radius:10px;padding:18px 20px;margin-bottom:16px;display:none}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .quick-link{font-size:12px;font-weight:600;color:#0d1b4a;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+        .quick-link:hover{color:#304ffe;text-decoration:underline}
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Accounts</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Vendors</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-truck"></i> Vendors</h3></div></div>
+
+                        <!-- Quick Link -->
+                        <div style="margin-bottom:12px;">
+                            <a class="quick-link" onclick="toggleAddForm()"><i class="fas fa-plus-circle"></i> Add Vendor</a>
+                        </div>
+
+                        <!-- Add Form -->
+                        <div class="add-form-card" id="addFormCard">
+                            <div style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-plus-circle"></i> Add / Edit Vendor</div>
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Vendor Name *</label>
+                                    <input type="text" class="form-control" id="aName" placeholder="Vendor name">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Mobile</label>
+                                    <input type="text" class="form-control" id="aMobile" placeholder="Mobile no.">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Email</label>
+                                    <input type="email" class="form-control" id="aEmail" placeholder="Email">
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Address</label>
+                                    <input type="text" class="form-control" id="aAddress" placeholder="Address">
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Remark</label>
+                                    <input type="text" class="form-control" id="aRemark" placeholder="Remark">
+                                </div>
+                                <div class="col-12 form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="saveVendor()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-save"></i> Submit</button>
+                                    <button class="fw-btn-fill" onclick="cancelAdd()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-times"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-4 col-md-5 col-8 form-group">
+                                    <label class="form-label-sm">Enter Keyword</label>
+                                    <input type="text" class="form-control" id="fKeyword" placeholder="Search vendor name, mobile, email...">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="renderList()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-search"></i> Search</button>
+                                    <button class="fw-btn-fill" onclick="clearFilters()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-redo"></i> Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list-alt" style="margin-right:6px;"></i>Vendor List</h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="list-table">
+                                    <thead><tr><th>Action</th><th>Sr.</th><th>Vendor</th><th>Contact Details</th><th>Remark</th></tr></thead>
+                                    <tbody id="listBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let editingId = null;
+        let vendorsCache = [];
+
+        $(document).ready(async function(){
+            if(typeof initPage==='function') initPage('account-vendor');
+            await renderList();
+        });
+
+        function toggleAddForm(){ editingId=null; resetForm(); $('#addFormCard').slideDown(200); $('#aName').focus(); }
+        function cancelAdd(){ editingId=null; resetForm(); $('#addFormCard').slideUp(200); }
+        function resetForm(){ $('#aName,#aMobile,#aEmail,#aAddress,#aRemark').val(''); }
+
+        async function saveVendor(){
+            const name=$('#aName').val().trim(), phone=$('#aMobile').val().trim(),
+                  email=$('#aEmail').val().trim(), address=$('#aAddress').val().trim(), gst_no=$('#aRemark').val().trim();
+
+            if(!name){ showToast('Please enter vendor name','error'); $('#aName').focus(); return; }
+
+            const payload = { name, phone, email, address, gst_no };
+
+            try {
+                if(editingId){
+                    await updateVendor(editingId, payload);
+                    showToast('Vendor updated!','success'); editingId=null;
+                } else {
+                    await createVendor(payload);
+                    showToast('Vendor added!','success');
+                }
+                cancelAdd(); await renderList();
+            } catch(err){ showToast(err.message||'Failed to save','error'); }
+        }
+
+        function editVendorRow(id){
+            const v=vendorsCache.find(x=>x.id===id); if(!v) return;
+            editingId=id;
+            $('#aName').val(v.name); $('#aMobile').val(v.phone||''); $('#aEmail').val(v.email||'');
+            $('#aAddress').val(v.address||''); $('#aRemark').val(v.gst_no||'');
+            $('#addFormCard').slideDown(200); $('#aName').focus();
+            $('html,body').animate({scrollTop:$('#addFormCard').offset().top-80},300);
+        }
+
+        async function removeVendor(id){
+            const v=vendorsCache.find(x=>x.id===id); if(!v) return;
+            showConfirmModal('Delete Vendor',`Delete vendor "<strong>${v.name}</strong>"?`, async function(){
+                try {
+                    await deleteVendor(id);
+                    showToast('Vendor deleted!','success');
+                    await renderList();
+                } catch(err){ showToast(err.message||'Failed to delete','error'); }
+            });
+        }
+
+        function clearFilters(){ $('#fKeyword').val(''); renderList(); }
+
+        async function renderList(){
+            const fKey=$('#fKeyword').val().toLowerCase().trim();
+
+            try {
+                vendorsCache = await getVendors();
+            } catch(err){ showToast('Failed to load vendors','error'); return; }
+
+            let list=[...vendorsCache];
+            if(fKey) list=list.filter(v=> v.name.toLowerCase().includes(fKey)||(v.phone||'').toLowerCase().includes(fKey)||(v.email||'').toLowerCase().includes(fKey)||(v.address||'').toLowerCase().includes(fKey));
+
+            const tb=$('#listBody');
+            if(!list.length){ tb.html('<tr><td colspan="5"><div class="empty-state"><i class="fas fa-truck"></i>No vendors found</div></td></tr>'); return; }
+
+            let html='';
+            list.forEach((v,i)=>{
+                const contact=[];
+                if(v.phone) contact.push(`<i class="fas fa-phone" style="color:#555;font-size:10px;"></i> ${v.phone}`);
+                if(v.email) contact.push(`<i class="fas fa-envelope" style="color:#555;font-size:10px;"></i> ${v.email}`);
+                if(v.address) contact.push(`<i class="fas fa-map-marker-alt" style="color:#555;font-size:10px;"></i> ${v.address}`);
+                html+=`<tr>
+                    <td style="white-space:nowrap;"><button class="action-icon edit" title="Edit" onclick="editVendorRow(${v.id})"><i class="fas fa-pen"></i></button> <button class="action-icon delete" title="Delete" onclick="removeVendor(${v.id})"><i class="fas fa-trash-alt"></i></button></td>
+                    <td style="font-weight:600;color:#555;">${i+1}</td>
+                    <td style="font-weight:600;">${v.name}</td>
+                    <td style="font-size:11px;white-space:normal;line-height:1.8;">${contact.length?contact.join('<br>'):'—'}</td>
+                    <td style="color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;">${v.gst_no||'—'}</td>
+                </tr>`;
+            });
+            tb.html(html);
+        }
+    </script>
+</body>
+</html>

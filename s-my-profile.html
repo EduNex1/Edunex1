@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My Profile — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .profile-card { border:none; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+        .profile-card .card-body { padding:24px 28px; }
+        .form-section { margin-bottom:18px; }
+        .form-section-title {
+            background:#0d1b4a; color:#fff; font-size:12px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.8px;
+            padding:8px 16px; border-radius:6px; margin-bottom:14px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .form-section-title i { font-size:12px; opacity:0.7; }
+        .profile-field { margin-bottom:12px; }
+        .profile-field label {
+            font-size:10px; font-weight:700; color:#888;
+            text-transform:uppercase; letter-spacing:0.3px; margin-bottom:3px; display:block;
+        }
+        .profile-field .pf-value {
+            font-size:13px; font-weight:600; color:#0d1b4a;
+            background:#f8f9ff; border:1px solid #e8eaf6; border-radius:5px;
+            padding:6px 10px; min-height:34px; display:flex; align-items:center;
+        }
+        .profile-photo {
+            width:100px; height:120px; border:2px solid #e8eaf6; border-radius:8px;
+            background:#f8f9ff; display:flex; align-items:center; justify-content:center;
+            overflow:hidden; margin:0 auto;
+        }
+        .profile-photo .initials {
+            font-size:28px; font-weight:800; color:#304ffe;
+        }
+        .profile-photo img { width:100%; height:100%; object-fit:cover; }
+        @media (max-width:576px) {
+            .profile-card .card-body { padding:14px 12px; }
+            .form-section-title { font-size:11px; padding:7px 12px; }
+            .profile-field label { font-size:9px; }
+            .profile-field .pf-value { font-size:12px; padding:5px 8px; }
+            .profile-photo { width:80px; height:96px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>My Profile</h3>
+                    <ul><li><a href="/student-dashboard">Home</a></li><li>My Profile</li></ul>
+                </div>
+            
+                <div id="profileArea"><p style="text-align:center;color:#888;padding:40px;">Loading...</p></div>
+
+                <!-- Change Password -->
+                <div class="chart-card" style="margin-top:16px;">
+                    <div class="chart-card-header"><i class="fas fa-key"></i> Change Password</div>
+                    <div class="chart-card-body">
+                        <form id="pwForm">
+                            <div class="row gutters-8">
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>Current Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwCurrent" class="form-control" required>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>New Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwNew" class="form-control" required minlength="4">
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>Confirm New Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwConfirm" class="form-control" required minlength="4">
+                                </div>
+                                <div class="col-12 form-group" style="margin-top:8px;">
+                                    <button type="submit" class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" style="font-size:12px;padding:9px 20px;">
+                                        <i class="fas fa-lock mr-1"></i> Update Password
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    function pf(label, val) {
+        return '<div class="col-xl-3 col-lg-3 col-md-4 col-6 profile-field"><label>' + label + '</label><div class="pf-value">' + (val || '-') + '</div></div>';
+    }
+    $(async function () {
+        initPage('s-my-profile');
+        try {
+            const children = await getMyChildren();
+            const s = children && children[0];
+            if (!s) { $('#profileArea').html('<div class="chart-card" style="text-align:center;padding:40px;"><p style="color:#888;">Profile not found.</p></div>'); return; }
+            const initials = (s.name || '').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            const photoHtml = s.photo_url
+                ? '<img src="' + s.photo_url + '" alt="Photo">'
+                : '<span class="initials">' + initials + '</span>';
+
+            let html = '<div class="card profile-card"><div class="card-body">';
+
+            // Scholar Details
+            html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-user-graduate"></i> Scholar Details</div>';
+            html += '<div class="row">';
+            html += '<div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4" style="min-width:120px;"><label style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:center;display:block;">Photo</label><div class="profile-photo">' + photoHtml + '</div></div>';
+            html += '<div class="col"><div class="row">';
+            html += pf('Admission No', s.admission_no);
+            html += pf('Student Name', s.name);
+            html += pf('Date of Birth', s.dob);
+            html += pf('PEN', s.pen);
+            html += '</div><div class="row">';
+            html += pf('Class', (s.class_name || '') + (s.section ? ' - ' + s.section : ''));
+            html += pf('Roll No', s.roll_no);
+            html += pf('Date of Admission', s.admission_date || s.date_of_admission);
+            html += pf('Status', s.status);
+            html += '</div></div>';
+            html += '</div></div>';
+
+            // Personal Details
+            html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Personal Details</div>';
+            html += '<div class="row">';
+            html += pf('Gender', s.gender);
+            html += pf('Category', s.category);
+            html += pf('Blood Group', s.blood_group);
+            html += pf('Aadhar Number', s.aadhar_number || s.aadhar);
+            html += pf('Family ID', s.family_id);
+            html += pf('SSSM ID', s.sssm_id);
+            html += pf('Height', s.height ? s.height + ' cm' : null);
+            html += pf('Weight', s.weight ? s.weight + ' kg' : null);
+            html += '</div></div>';
+
+            // Parents / Guardian Details
+            html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-users"></i> Parents / Guardian Details</div>';
+            html += '<div class="row">';
+            html += pf("Father's Name", s.father_name);
+            html += pf("Mother's Name", s.mother_name);
+            html += pf('Phone', s.phone);
+            html += pf('Email', s.email);
+            html += '</div></div>';
+
+            // Address Details
+            html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details</div>';
+            html += '<div class="row">';
+            html += '<div class="col-xl-6 col-lg-6 col-12 profile-field"><label>Address</label><div class="pf-value">' + (s.address || '-') + '</div></div>';
+            html += pf('State', s.state);
+            html += pf('District', s.district);
+            html += pf('Pin Code', s.pin_code || s.pincode);
+            html += pf('Nationality', s.nationality || 'Indian');
+            html += '</div></div>';
+
+            // Transport Details
+            if (s.route_id || s.transport_fee) {
+                html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-bus"></i> Transport Details</div>';
+                html += '<div class="row">';
+                html += pf('Route', s.route_name);
+                html += pf('Vehicle No', s.vehicle_no);
+                html += pf('Driver', s.driver_name);
+                html += pf('Monthly Fee', s.transport_fee ? '\u20B9' + Number(s.transport_fee).toLocaleString('en-IN') : null);
+                html += '</div></div>';
+            }
+
+            html += '</div></div>';
+            $('#profileArea').html(html);
+        } catch (e) { console.error(e); }
+
+        $('#pwForm').on('submit', async function(e) {
+            e.preventDefault();
+            var cur=$('#pwCurrent').val(),nw=$('#pwNew').val(),cf=$('#pwConfirm').val();
+            if(nw!==cf){showToast('New passwords do not match','error');return;}
+            if(nw.length<4){showToast('Password must be at least 4 characters','error');return;}
+            try{await changePassword(cur,nw);showToast('Password changed successfully','success');$('#pwCurrent').val('');$('#pwNew').val('');$('#pwConfirm').val('');}catch(err){showToast(err.message||'Failed to change password','error');}
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Allowance Heads — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+
+        .form-label-sm {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+            letter-spacing: 0.3px;
+        }
+
+        .form-control {
+            font-size: 12px;
+            height: 36px;
+        }
+
+        .head-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .head-table thead th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 14px;
+            text-align: left;
+        }
+
+        .head-table tbody td {
+            font-size: 12px;
+            padding: 9px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .head-table tbody tr:hover td {
+            background: #f5f7ff;
+        }
+
+        .action-icon {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.15s;
+        }
+
+        .action-icon.edit {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .action-icon.edit:hover {
+            background: #1565c0;
+            color: #fff;
+        }
+
+        .action-icon.delete {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .action-icon.delete:hover {
+            background: #c62828;
+            color: #fff;
+        }
+
+        .add-form-card {
+            background: #f8f9ff;
+            border: 2px dashed #c5cae9;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .quick-link {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0d1b4a;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quick-link:hover {
+            color: #304ffe;
+            text-decoration: underline;
+        }
+
+        .table-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .table-header h5 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d1b4a;
+        }
+
+        .note-text {
+            font-size: 11px;
+            color: #888;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Payroll</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Allowance Heads</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-plus-circle"></i> Allowance Heads</h3>
+                            </div>
+                        </div>
+
+                        <!-- Quick Link -->
+                        <div style="margin-bottom: 12px;">
+                            <a class="quick-link" onclick="toggleAddForm()"><i class="fas fa-plus-circle"></i> Add
+                                Allowance Head</a>
+                        </div>
+
+                        <!-- Add Form (inline, hidden by default) -->
+                        <div class="add-form-card" id="addFormCard">
+                            <div class="row align-items-end" style="gap:0;">
+                                <div class="col-lg-5 col-md-6 col-12 form-group mb-2">
+                                    <label class="form-label-sm">Allowance Head Name *</label>
+                                    <input type="text" class="form-control" id="headName"
+                                        placeholder="e.g. House Rent Allowance (HRA), Dearness Allowance">
+                                </div>
+                                <div class="col-auto form-group mb-2 d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="saveHead()"
+                                        style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                    <button class="fw-btn-fill" onclick="cancelAdd()"
+                                        style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list" style="margin-right:6px;"></i>Allowance Head List</h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="head-table" id="headTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:60px;">Sr. No.</th>
+                                            <th>Allowance Head Name</th>
+                                            <th style="width:100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="headBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <p class="note-text"><i class="fas fa-info-circle"></i> Allowance heads are optional — configure
+                            only if applicable for your school payroll.</p>
+
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let editingId = null;
+        let cache = [];
+
+        $(document).ready(async function () {
+            if (typeof initPage === 'function') initPage('allowance-head');
+            await renderList();
+        });
+
+        async function renderList() {
+            try { cache = await getMasterData('allowance_heads'); } catch(e){ cache = []; }
+            const tbody = document.getElementById('headBody');
+            if (!cache.length) {
+                tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state"><i class="fas fa-plus-circle"></i>No allowance heads added yet</div></td></tr>';
+                return;
+            }
+            let html = '';
+            cache.forEach((h, i) => {
+                html += `<tr>
+                    <td style="font-weight:600;color:#555;">${i + 1}</td>
+                    <td style="font-weight:600;">${h.name}</td>
+                    <td>
+                        <button class="action-icon edit" title="Edit" onclick="editHead(${h.id})"><i class="fas fa-pen"></i></button>
+                        <button class="action-icon delete" title="Delete" onclick="removeHead(${h.id})" style="margin-left:4px;"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function toggleAddForm() {
+            editingId = null;
+            $('#headName').val('');
+            $('#addFormCard').slideDown(200);
+            $('#headName').focus();
+        }
+
+        function cancelAdd() {
+            editingId = null;
+            $('#headName').val('');
+            $('#addFormCard').slideUp(200);
+        }
+
+        async function saveHead() {
+            const name = $('#headName').val().trim();
+            if (!name) { showToast('Please enter allowance head name', 'error'); $('#headName').focus(); return; }
+            try {
+                if (editingId) {
+                    await updateMasterData('allowance_heads', editingId, {name});
+                    showToast('Allowance head updated!', 'success');
+                    editingId = null;
+                } else {
+                    await createMasterData('allowance_heads', {name});
+                    showToast('Allowance head added!', 'success');
+                }
+                $('#headName').val('');
+                $('#addFormCard').slideUp(200);
+                await renderList();
+            } catch(e){ showToast('Failed to save','error'); }
+        }
+
+        function editHead(id) {
+            const h = cache.find(d => d.id === id);
+            if (!h) return;
+            editingId = id;
+            $('#headName').val(h.name);
+            $('#addFormCard').slideDown(200);
+            $('#headName').focus();
+        }
+
+        function removeHead(id) {
+            const h = cache.find(d => d.id === id);
+            if (!h) return;
+            showConfirmModal('Delete Allowance Head', `Are you sure you want to delete "<strong>${h.name}</strong>"?`, async function () {
+                try { await deleteMasterData('allowance_heads', id); showToast('Allowance head deleted!', 'success'); await renderList(); }
+                catch(e){ showToast('Failed','error'); }
+            });
+        }
+
+        // Enter key support
+        $(document).on('keydown', '#headName', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); saveHead(); }
+        });
+    </script>
+</body>
+
+</html>

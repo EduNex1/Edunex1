@@ -1,0 +1,263 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Cash Deposit / Withdraw — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;white-space:nowrap}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .action-icon{width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+        .action-icon.edit{background:#e3f2fd;color:#1565c0}.action-icon.edit:hover{background:#1565c0;color:#fff}
+        .action-icon.delete{background:#fce4ec;color:#c62828}.action-icon.delete:hover{background:#c62828;color:#fff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .add-form-card{background:#f8f9ff;border:2px dashed #c5cae9;border-radius:10px;padding:18px 20px;margin-bottom:16px;display:none}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .quick-link{font-size:12px;font-weight:600;color:#0d1b4a;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+        .quick-link:hover{color:#304ffe;text-decoration:underline}
+        .type-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
+        .type-badge.deposit{background:#e8f5e9;color:#2e7d32}
+        .type-badge.withdraw{background:#fce4ec;color:#c62828}
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Accounts</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Cash Deposit / Withdraw</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-exchange-alt"></i> Cash Deposit / Withdraw</h3></div></div>
+
+                        <!-- Quick Link -->
+                        <div style="margin-bottom:12px;">
+                            <a class="quick-link" onclick="toggleAddForm()"><i class="fas fa-plus-circle"></i> Add Transaction</a>
+                        </div>
+
+                        <!-- Add Form -->
+                        <div class="add-form-card" id="addFormCard">
+                            <div style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-plus-circle"></i> Add Cash Transaction</div>
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Type *</label>
+                                    <select class="form-control" id="aType">
+                                        <option value="">Select</option>
+                                        <option value="Deposit">Deposit</option>
+                                        <option value="Withdraw">Withdraw</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date *</label>
+                                    <input type="date" class="form-control" id="aDate">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Amount (₹) *</label>
+                                    <input type="number" class="form-control" id="aAmount" min="0" placeholder="0">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Bank *</label>
+                                    <select class="form-control" id="aBank"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">By</label>
+                                    <input type="text" class="form-control" id="aBy" placeholder="e.g. Rajesh Kumar">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Remark</label>
+                                    <input type="text" class="form-control" id="aRemark" placeholder="Remark...">
+                                </div>
+                                <div class="col-12 form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="saveTxn()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-save"></i> Submit</button>
+                                    <button class="fw-btn-fill" onclick="cancelAdd()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-times"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Cash Type</label>
+                                    <select class="form-control" id="fType"><option value="">All</option><option value="Deposit">Deposit</option><option value="Withdraw">Withdraw</option></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Bank</label>
+                                    <select class="form-control" id="fBank"><option value="">All Banks</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date</label>
+                                    <input type="date" class="form-control" id="fDate">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="renderList()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-search"></i> Search</button>
+                                    <button class="fw-btn-fill" onclick="clearFilters()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-redo"></i> Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list-alt" style="margin-right:6px;"></i>Transaction List</h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="list-table">
+                                    <thead><tr><th>Action</th><th>Sr.</th><th>Date</th><th>Cash Type</th><th>Amount (₹)</th><th>Bank</th><th>By</th><th>Remark</th></tr></thead>
+                                    <tbody id="listBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    (async function(){
+        let editingId = null;
+        let bankCache = [];
+        let txnCache = [];
+
+        if(typeof initPage==='function') initPage('cash-deposit-withdraw');
+
+        try { bankCache = await getBankAccounts(); } catch(e){ showToast('Failed to load bank accounts','error'); }
+        try { txnCache = await getCashTransactions(); } catch(e){ showToast('Failed to load transactions','error'); }
+
+        /* populate filter bank dropdown */
+        bankCache.forEach(b=>{
+            $('#fBank').append(`<option value="${b.id}">${b.bank_name} (${b.account_no||''})</option>`);
+        });
+        refreshBankDropdown();
+        renderList();
+
+        function refreshBankDropdown(){
+            $('#aBank').html('<option value="">Select Bank</option>');
+            bankCache.forEach(b=>$('#aBank').append(`<option value="${b.id}">${b.bank_name} (${b.account_no||''})</option>`));
+        }
+
+        window.toggleAddForm = function(){ editingId=null; resetForm(); $('#aDate').val(new Date().toISOString().split('T')[0]); refreshBankDropdown(); $('#addFormCard').slideDown(200); };
+        window.cancelAdd = function(){ editingId=null; resetForm(); $('#addFormCard').slideUp(200); };
+        function resetForm(){ $('#aDate,#aAmount,#aBy,#aRemark').val(''); $('#aType,#aBank').val(''); }
+
+        window.saveTxn = async function(){
+            const type=$('#aType').val(), date=$('#aDate').val(), amount=parseFloat($('#aAmount').val()),
+                  bank_id=parseInt($('#aBank').val()), reference_no=$('#aBy').val().trim(), description=$('#aRemark').val().trim();
+
+            if(!type){ showToast('Please select type','error'); return; }
+            if(!date){ showToast('Please select date','error'); return; }
+            if(!amount||amount<=0){ showToast('Please enter valid amount','error'); return; }
+            if(!bank_id){ showToast('Please select bank','error'); return; }
+
+            const payload = { type: type.toLowerCase(), date, amount, bank_id, reference_no, description };
+            try {
+                if(editingId){
+                    await updateCashTransaction(editingId, payload);
+                    showToast('Transaction updated!','success'); editingId=null;
+                } else {
+                    await createCashTransaction(payload);
+                    showToast('Transaction added!','success');
+                }
+                txnCache = await getCashTransactions();
+                window.cancelAdd(); renderList();
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
+        };
+
+        window.editTxn = function(id){
+            const t = txnCache.find(x=>x.id===id); if(!t) return;
+            editingId=id; refreshBankDropdown();
+            $('#aType').val(t.type==='deposit'?'Deposit':'Withdraw');
+            $('#aDate').val(t.date); $('#aAmount').val(t.amount);
+            $('#aBank').val(t.bank_id); $('#aBy').val(t.reference_no||''); $('#aRemark').val(t.description||'');
+            $('#addFormCard').slideDown(200);
+            $('html,body').animate({scrollTop:$('#addFormCard').offset().top-80},300);
+        };
+
+        window.removeTxn = function(id){
+            const t = txnCache.find(x=>x.id===id); if(!t) return;
+            const label = t.type==='deposit'?'Deposit':'Withdraw';
+            showConfirmModal('Delete Transaction',`Delete ${label} — ₹${t.amount.toLocaleString('en-IN')}?`, async function(){
+                try {
+                    await deleteCashTransaction(id);
+                    showToast('Transaction deleted!','success');
+                    txnCache = await getCashTransactions();
+                    renderList();
+                } catch(e){ showToast(e.message||'Failed to delete','error'); }
+            });
+        };
+
+        window.clearFilters = function(){ $('#fType,#fBank').val(''); $('#fDate').val(''); renderList(); };
+
+        window.renderList = renderList;
+        function renderList(){
+            const fType=$('#fType').val(), fBank=$('#fBank').val(), fDate=$('#fDate').val();
+
+            let list=[...txnCache];
+            if(fType) list=list.filter(t=> t.type === fType.toLowerCase());
+            if(fBank) list=list.filter(t=> t.bank_id === parseInt(fBank));
+            if(fDate) list=list.filter(t=> t.date === fDate);
+
+            list.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+
+            const tb=$('#listBody');
+            if(!list.length){ tb.html('<tr><td colspan="8"><div class="empty-state"><i class="fas fa-exchange-alt"></i>No transactions found</div></td></tr>'); return; }
+
+            let html='';
+            list.forEach((t,i)=>{
+                const cls = t.type==='deposit'?'deposit':'withdraw';
+                const clr = t.type==='deposit'?'#2e7d32':'#c62828';
+                const label = t.type==='deposit'?'Deposit':'Withdraw';
+                html+=`<tr>
+                    <td style="white-space:nowrap;"><button class="action-icon edit" title="Edit" onclick="editTxn(${t.id})"><i class="fas fa-pen"></i></button> <button class="action-icon delete" title="Delete" onclick="removeTxn(${t.id})"><i class="fas fa-trash-alt"></i></button></td>
+                    <td style="font-weight:600;color:#555;">${i+1}</td>
+                    <td>${formatDate(t.date)}</td>
+                    <td><span class="type-badge ${cls}">${label}</span></td>
+                    <td style="font-weight:700;color:${clr};">₹${t.amount.toLocaleString('en-IN')}</td>
+                    <td>${t.bank_name||'—'}</td>
+                    <td>${t.reference_no||'—'}</td>
+                    <td style="color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;">${t.description||'—'}</td>
+                </tr>`;
+            });
+            tb.html(html);
+        }
+
+        function formatDate(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+    })();
+    </script>
+</body>
+</html>

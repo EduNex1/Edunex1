@@ -1,0 +1,7 @@
+worker/
+node_modules/
+.git/
+package.json
+package-lock.json
+server.js
+.wrangler/

@@ -1,0 +1,355 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Syllabus — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .quick-links { display: flex; gap: 8px; margin-bottom: 16px; }
+        .ql-btn { padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 2px solid #304ffe; cursor: pointer; transition: all 0.15s; background: #fff; color: #304ffe; }
+        .ql-btn.active, .ql-btn:hover { background: #304ffe; color: #fff; }
+        .record-count { background: #e3f2fd; color: #1565c0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+        .status-published { background: #e8f5e9; color: #2e7d32; }
+        .status-draft { background: #fff3e0; color: #e65100; }
+        .syl-table td, .syl-table th { font-size: 12px; vertical-align: middle; padding: 7px 10px; }
+        .syl-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.3px; }
+        .syl-table tbody tr:hover { background: #f8f9ff; }
+        .action-btn { border: none; background: none; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; transition: background 0.15s; }
+        .action-btn.edit { color: #1565c0; } .action-btn.edit:hover { background: #e3f2fd; }
+        .action-btn.delete { color: #c62828; } .action-btn.delete:hover { background: #ffebee; }
+        .action-btn.download { color: #2e7d32; } .action-btn.download:hover { background: #e8f5e9; }
+        .form-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        .file-upload-area { border: 2px dashed #d0d0d0; border-radius: 8px; padding: 20px; text-align: center; color: #999; cursor: pointer; transition: border-color 0.15s; position: relative; }
+        .file-upload-area:hover { border-color: #304ffe; }
+        .file-upload-area i { font-size: 24px; display: block; margin-bottom: 6px; }
+        .file-upload-area span.file-name { display: block; font-weight: 600; color: #333; font-size: 12px; margin-top: 6px; }
+        @media (max-width:767px) { .col-hide-md { display: none !important; } .syl-table td, .syl-table th { font-size: 11px; padding: 5px 6px; } }
+        @media (max-width:575px) { .col-hide-sm { display: none !important; } .syl-table td, .syl-table th { font-size: 10px; padding: 4px 5px; } }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Syllabus</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-book-open"></i> Syllabus</h3>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="quick-links">
+                            <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Syllabus</button>
+                            <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Syllabus</button>
+                        </div>
+
+                        <!-- ADD FORM -->
+                        <div class="form-card" id="addSection" style="display:none;">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select class="form-control" id="addClass" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Subject *</label>
+                                    <select class="form-control" id="addSubject" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Status</label>
+                                    <select class="form-control" id="addStatus" style="font-size:12px;height:36px;">
+                                        <option value="Draft">Draft</option>
+                                        <option value="Published">Published</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row gutters-8">
+                                <div class="col-lg-6 col-12 form-group">
+                                    <label class="form-label-sm">Syllabus Title *</label>
+                                    <input type="text" class="form-control" id="addTitle" placeholder="e.g. Mathematics — Class 5 Full Syllabus" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-6 col-12 form-group">
+                                    <label class="form-label-sm">Note</label>
+                                    <textarea class="form-control" id="addNote" rows="2" placeholder="Optional description or instructions" style="font-size:12px;"></textarea>
+                                </div>
+                            </div>
+                            <div class="row gutters-8">
+                                <div class="col-lg-6 col-12 form-group">
+                                    <label class="form-label-sm">File Upload</label>
+                                    <div class="file-upload-area" id="fileDropZone">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span style="font-size:11px;">Click or drag to upload PDF / DOC file</span>
+                                        <span class="file-name" id="fileName"></span>
+                                        <input type="file" id="addFile" accept=".pdf,.doc,.docx" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center" style="gap:8px;margin-top:8px;">
+                                <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSave" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnCancelAdd" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                            <input type="hidden" id="editId" value="">
+                        </div>
+
+                        <!-- VIEW SECTION -->
+                        <div id="viewSection">
+                            <div class="row gutters-8 align-items-end mg-b-12">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="filterClass" style="font-size:12px;height:36px;">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Subject</label>
+                                    <select class="form-control" id="filterSubject" style="font-size:12px;height:36px;">
+                                        <option value="">All Subjects</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Status</label>
+                                    <select class="form-control" id="filterStatus" style="font-size:12px;height:36px;">
+                                        <option value="">All</option>
+                                        <option value="Published">Published</option>
+                                        <option value="Draft">Draft</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto form-group d-flex" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-search"></i> SEARCH
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnReset" style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-redo"></i> RESET
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between mg-b-10" style="flex-wrap:wrap;gap:8px;">
+                                <span class="record-count" id="recordCount">0 Records</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered syl-table" id="sylTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th class="col-hide-md">Note</th>
+                                            <th>Status</th>
+                                            <th style="width:90px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sylBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-syllabus');
+
+            let uploadedFileName = '';
+            let classCache = [], subjectCache = [], sylCache = [];
+            try {
+                [classCache, subjectCache, sylCache] = await Promise.all([getClasses(), getSubjects(), getSyllabi()]);
+            } catch(e) {}
+
+            classCache.forEach(c => { $('#filterClass, #addClass').append(`<option value="${c.id}">${c.name}</option>`); });
+            subjectCache.forEach(s => { $('#filterSubject, #addSubject').append(`<option value="${s.id}">${s.name}</option>`); });
+
+            if (classCache.length) $('#filterClass').val(classCache[0].id);
+            loadTable();
+
+            // Tabs
+            $('#tabView').on('click', function () {
+                $(this).addClass('active'); $('#tabAdd').removeClass('active');
+                $('#viewSection').show(); $('#addSection').hide();
+            });
+            $('#tabAdd').on('click', function () {
+                $(this).addClass('active'); $('#tabView').removeClass('active');
+                $('#addSection').show(); $('#viewSection').hide();
+                resetAddForm();
+            });
+
+            // File upload
+            $('#addFile').on('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    uploadedFileName = file.name;
+                    $('#fileName').text(file.name);
+                } else {
+                    uploadedFileName = '';
+                    $('#fileName').text('');
+                }
+            });
+
+            // Search / Reset
+            $('#btnSearch').on('click', loadTable);
+            $('#btnReset').on('click', function () {
+                $('#filterClass, #filterSubject, #filterStatus').val('');
+                loadTable();
+            });
+
+            function loadTable() {
+                const classId = $('#filterClass').val();
+                const subjectId = $('#filterSubject').val();
+                const status = $('#filterStatus').val();
+
+                let data = sylCache.slice();
+                if (classId) data = data.filter(s => s.class_id === parseInt(classId));
+                if (subjectId) data = data.filter(s => s.subject_id === parseInt(subjectId));
+                if (status) data = data.filter(s => s.status === status);
+
+                const tbody = $('#sylBody');
+                tbody.empty();
+                $('#recordCount').text(data.length + ' Record' + (data.length !== 1 ? 's' : ''));
+
+                if (!data.length) {
+                    tbody.html('<tr><td colspan="6" class="text-center" style="padding:30px;color:#bbb;"><i class="fas fa-book-open" style="font-size:24px;display:block;margin-bottom:8px;"></i>No syllabus found</td></tr>');
+                    return;
+                }
+
+                data.forEach(s => {
+                    const cl = classCache.find(c => c.id === s.class_id);
+                    const sub = subjectCache.find(x => x.id === s.subject_id);
+                    const statusCls = s.status === 'Published' ? 'status-published' : 'status-draft';
+                    const fileIcon = s.file_name
+                        ? `<button class="action-btn download" onclick="downloadFile('${s.file_name}')" title="Download"><i class="fas fa-download"></i></button>`
+                        : '';
+                    tbody.append(`<tr>
+                        <td style="font-weight:600;">${s.title}</td>
+                        <td style="white-space:nowrap;">${cl ? cl.name : '-'}</td>
+                        <td>${sub ? sub.name : '-'}</td>
+                        <td class="col-hide-md" style="color:#666;font-size:11px;">${s.note || '—'}</td>
+                        <td><span class="status-badge ${statusCls}">${s.status}</span></td>
+                        <td style="white-space:nowrap;">
+                            ${fileIcon}
+                            <button class="action-btn edit" onclick="editSyl(${s.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="removeSyl(${s.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`);
+                });
+            }
+
+            // Save
+            $('#btnSave').on('click', async function () {
+                const data = {
+                    class_id: parseInt($('#addClass').val()),
+                    subject_id: parseInt($('#addSubject').val()),
+                    title: $('#addTitle').val().trim(),
+                    note: $('#addNote').val().trim(),
+                    file_name: uploadedFileName,
+                    status: $('#addStatus').val()
+                };
+                if (!data.class_id || !data.subject_id || !data.title) {
+                    showToast('Fill all mandatory fields', 'error'); return;
+                }
+                const editId = parseInt($('#editId').val());
+                try {
+                    if (editId) {
+                        await updateSyllabus(editId, data);
+                        showToast('Syllabus updated', 'success');
+                    } else {
+                        await createSyllabus(data);
+                        showToast('Syllabus added', 'success');
+                    }
+                    sylCache = await getSyllabi();
+                } catch(e) { showToast('Error saving syllabus', 'error'); return; }
+                $('#tabView').click();
+                loadTable();
+            });
+
+            $('#btnCancelAdd').on('click', function () { $('#tabView').click(); });
+
+            function resetAddForm() {
+                $('#addClass, #addSubject').val('');
+                $('#addStatus').val('Draft');
+                $('#addTitle, #addNote').val('');
+                $('#addFile').val('');
+                uploadedFileName = '';
+                $('#fileName').text('');
+                $('#editId').val('');
+                $('#btnSave').html('<i class="fas fa-save"></i> Save');
+            }
+
+            window.editSyl = function (id) {
+                const s = sylCache.find(x => x.id === id);
+                if (!s) return;
+                $('#tabAdd').click();
+                setTimeout(function () {
+                    $('#addClass').val(s.class_id);
+                    $('#addSubject').val(s.subject_id);
+                    $('#addStatus').val(s.status);
+                    $('#addTitle').val(s.title);
+                    $('#addNote').val(s.note);
+                    if (s.file_name) { uploadedFileName = s.file_name; $('#fileName').text(s.file_name); }
+                    $('#editId').val(id);
+                    $('#btnSave').html('<i class="fas fa-save"></i> Update');
+                }, 50);
+            };
+
+            window.removeSyl = function (id) {
+                showConfirmModal('Delete Syllabus', 'Delete this syllabus?', async function () {
+                    try {
+                        await deleteSyllabus(id);
+                        sylCache = sylCache.filter(x => x.id !== id);
+                        showToast('Syllabus deleted', 'success');
+                        loadTable();
+                    } catch(e) { showToast('Error deleting syllabus', 'error'); }
+                });
+            };
+
+            window.downloadFile = function (name) {
+                showToast('Download: ' + name, 'success');
+            };
+        });
+    </script>
+</body>
+
+</html>

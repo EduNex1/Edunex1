@@ -1,0 +1,260 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Issue Book — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/datepicker.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .info-strip{background:#f5f7ff;border-radius:10px;padding:12px 18px;margin-bottom:14px;display:flex;gap:26px;flex-wrap:wrap}
+        .info-strip .info-item{display:flex;flex-direction:column}
+        .info-strip .info-label{font-size:10px;text-transform:uppercase;color:#888;font-weight:700;letter-spacing:.3px}
+        .info-strip .info-val{font-size:13px;font-weight:600;color:#0d1b4a}
+        .issue-form{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Library</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li><a href="/library-books">Books</a></li><li>Issue Book</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-hand-holding"></i> Issue Book</h3></div></div>
+
+                        <!-- Step 1: Select Student -->
+                        <div class="filter-card" id="stepFilter">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Class</label>
+                                    <select class="form-control" id="fClass"><option value="">— Select —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">— All —</option></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group" id="studentGroup" style="display:none;">
+                                    <label class="form-label-sm">Student</label>
+                                    <select class="form-control" id="fStudent"><option value="">— Select —</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchStudent()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetForm()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Student Info + Issue Form (hidden) -->
+                        <div id="issueSection" style="display:none;">
+                            <div class="info-strip" id="studentInfo"></div>
+                            <div class="issue-form">
+                                <div class="row" style="gap:0;">
+                                    <div class="col-lg-3 col-md-4 col-6 form-group">
+                                        <label class="form-label-sm">Book Type</label>
+                                        <select class="form-control" id="iType"><option value="">— Select —</option></select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-5 col-6 form-group">
+                                        <label class="form-label-sm">Book Title</label>
+                                        <select class="form-control" id="iBook"><option value="">— Select Type first —</option></select>
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-6 form-group">
+                                        <label class="form-label-sm">Issue Date</label>
+                                        <input type="date" class="form-control" id="iIssueDate">
+                                    </div>
+                                    <div class="col-lg-4 col-md-5 col-12 form-group">
+                                        <label class="form-label-sm">Due Return Date</label>
+                                        <div class="d-flex align-items-center" style="gap:6px;flex-wrap:wrap;">
+                                            <input type="date" class="form-control" id="iDueDate" style="flex:0 0 160px;">
+                                            <div id="duePresets" class="d-flex" style="gap:4px;flex-wrap:wrap;"></div>
+                                            <div class="d-flex align-items-center" style="gap:4px;">
+                                                <input type="number" class="form-control" id="customDays" placeholder="Days" min="1" style="width:70px;height:32px;font-size:11px;">
+                                                <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:10px;padding:5px 10px;white-space:nowrap;" onclick="setCustomDays()">Set</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 26px;" onclick="issueBook()"><i class="fas fa-check"></i> Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('library-issue');
+
+        let selectedStudent = null;
+        let classCache = [], sectionCache = [], bookTypes = [], booksCache = [], optSettings = {};
+
+        try {
+            const [cls, secs, btypes, books, opts] = await Promise.all([
+                getClasses(), getSections(), getMasterData('book_types'), getBooks(), getOptionSettings()
+            ]);
+            classCache = cls; sectionCache = secs; bookTypes = btypes; booksCache = books;
+            optSettings = opts || {};
+        } catch(e) { console.error('Failed to load data', e); }
+
+        const defaultDueDays = parseInt(optSettings['library_default_due_days'] || '14');
+        function getPresets() { try { return JSON.parse(optSettings['library_due_day_presets'] || '[]'); } catch(e) { return []; } }
+
+        // Populate class & section
+        classCache.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+        sectionCache.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+
+        // When class or section changes, populate students
+        $('#fClass, #fSection').on('change', async function() {
+            const classId = parseInt($('#fClass').val()) || 0;
+            const section = $('#fSection').val();
+            if (classId) {
+                try {
+                    const filters = { class_id: classId, status: 'Active' };
+                    if (section) filters.section = section;
+                    const students = await getStudents(filters);
+                    $('#fStudent').html('<option value="">— Select —</option>');
+                    students.forEach(s => $('#fStudent').append(`<option value="${s.id}">${s.name} (${s.admission_no})</option>`));
+                    $('#studentGroup').show();
+                } catch(e) { showToast('Error loading students', 'error'); }
+            } else {
+                $('#studentGroup').hide();
+            }
+        });
+
+        // Populate book types
+        bookTypes.forEach(t => $('#iType').append(`<option value="${t.id}">${t.name}</option>`));
+
+        // When type changes, filter book titles
+        $('#iType').on('change', function() {
+            const typeId = parseInt($(this).val()) || 0;
+            const available = booksCache.filter(b => b.type_id === typeId);
+            $('#iBook').html('<option value="">— Select —</option>');
+            available.forEach(b => {
+                const avail = b.available || 0;
+                if (avail > 0) {
+                    $('#iBook').append(`<option value="${b.id}">${b.title} (Avail: ${avail})</option>`);
+                }
+            });
+        });
+
+        // Build due-date preset buttons from settings
+        function buildPresets() {
+            let html = '';
+            getPresets().forEach(d => {
+                html += `<button type="button" class="btn btn-sm due-preset" data-days="${d}" style="background:#e8eaf6;color:#0d1b4a;font-size:10px;padding:5px 10px;font-weight:700;border-radius:6px;white-space:nowrap;">${d} Days</button>`;
+            });
+            $('#duePresets').html(html);
+        }
+        buildPresets();
+
+        function setDueDays(days) {
+            const issueDate = $('#iIssueDate').val();
+            const base = issueDate ? new Date(issueDate) : new Date();
+            base.setDate(base.getDate() + days);
+            $('#iDueDate').val(base.toISOString().split('T')[0]);
+            $('.due-preset').css({background:'#e8eaf6',color:'#0d1b4a'});
+            $(`.due-preset[data-days="${days}"]`).css({background:'#0d1b4a',color:'#fff'});
+        }
+
+        $(document).on('click', '.due-preset', function() {
+            setDueDays(parseInt($(this).data('days')));
+        });
+
+        window.setCustomDays = function() {
+            const d = parseInt($('#customDays').val()) || 0;
+            if (d < 1) { showToast('Enter valid number of days', 'error'); return; }
+            setDueDays(d);
+        };
+
+        $('#iIssueDate').on('change', function() {
+            setDueDays(defaultDueDays);
+        });
+
+        const today = new Date().toISOString().split('T')[0];
+        $('#iIssueDate').val(today);
+        setDueDays(defaultDueDays);
+
+        window.searchStudent = async function() {
+            const studentId = parseInt($('#fStudent').val()) || 0;
+            if (!studentId) { showToast('Please select a student', 'error'); return; }
+            try {
+                selectedStudent = await getStudent(studentId);
+            } catch(e) { selectedStudent = null; }
+            if (!selectedStudent) { showToast('Student not found', 'error'); return; }
+            const cl = classCache.find(c => c.id === selectedStudent.class_id);
+            $('#studentInfo').html(`
+                <div class="info-item"><span class="info-label">Student Name</span><span class="info-val">${selectedStudent.name}</span></div>
+                <div class="info-item"><span class="info-label">Admission No</span><span class="info-val">${selectedStudent.admission_no}</span></div>
+                <div class="info-item"><span class="info-label">Class</span><span class="info-val">${cl ? cl.name : '—'}</span></div>
+                <div class="info-item"><span class="info-label">Section</span><span class="info-val">${selectedStudent.section}</span></div>
+                <div class="info-item"><span class="info-label">Father's Name</span><span class="info-val">${selectedStudent.father_name || ''}</span></div>
+            `);
+            $('#issueSection').slideDown(200);
+        };
+
+        window.resetForm = function() {
+            selectedStudent = null;
+            $('#fClass, #fSection, #fStudent').val('');
+            $('#studentGroup').hide();
+            $('#issueSection').slideUp(200);
+            $('#iType, #iBook').val('');
+        };
+
+        window.issueBook = async function() {
+            if (!selectedStudent) { showToast('Select a student first', 'error'); return; }
+            const bookId = parseInt($('#iBook').val()) || 0;
+            const issueDate = $('#iIssueDate').val();
+            const dueDate = $('#iDueDate').val();
+            if (!bookId) { showToast('Select a book', 'error'); return; }
+            if (!issueDate || !dueDate) { showToast('Select dates', 'error'); return; }
+
+            try {
+                await createBookIssue({
+                    student_id: selectedStudent.id,
+                    book_id: bookId,
+                    issue_date: issueDate,
+                    due_date: dueDate,
+                    status: 'Issued'
+                });
+                booksCache = await getBooks();
+                showToast('Book issued successfully!', 'success');
+                $('#iType, #iBook').val('');
+            } catch(e) { showToast(e.message || 'Error issuing book', 'error'); }
+        };
+    });
+    </script>
+</body>
+</html>

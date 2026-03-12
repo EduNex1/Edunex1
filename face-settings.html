@@ -1,0 +1,241 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Face Attendance Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .section-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:22px 26px;margin-bottom:16px}
+        .section-title{font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8eaf6}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .note-box{background:#fffde7;border:1px solid #fff9c4;border-radius:8px;padding:10px 14px;font-size:11px;color:#795548;margin-bottom:14px}
+        .note-box i{margin-right:6px}
+        .status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;margin-right:8px}
+        .status-pill.green{background:#e8f5e9;color:#2e7d32}
+        .status-pill.orange{background:#fff3e0;color:#e65100}
+        .status-pill i{font-size:14px}
+        .preview-box{background:#f8f9ff;border:1px solid #e0e0e0;border-radius:10px;padding:16px;margin-top:14px}
+        .preview-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#888;letter-spacing:.5px;margin-bottom:8px}
+        .preview-time{font-size:20px;font-weight:800;color:#042954;margin-right:4px}
+        .preview-ampm{font-size:11px;font-weight:700;color:#888}
+        .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:8px}
+        .toggle-row .tr-label{font-size:12px;font-weight:600;color:#333}
+        .toggle-row .tr-hint{font-size:10px;color:#999;margin-top:2px}
+        .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+        .toggle-switch input{opacity:0;width:0;height:0}
+        .toggle-switch .slider{position:absolute;inset:0;background:#ccc;border-radius:24px;cursor:pointer;transition:.3s}
+        .toggle-switch .slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+        .toggle-switch input:checked+.slider{background:#042954}
+        .toggle-switch input:checked+.slider:before{transform:translateX(20px)}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Face Attendance Settings</h3><ul><li><a href="index.html">Home</a></li><li><a href="/face-attendance">Face Attendance</a></li><li>Settings</li></ul></div>
+
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-cog"></i> Face Attendance Settings</h3></div></div>
+
+                    <!-- Timing Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-clock me-2"></i>Attendance Timing</h5>
+                        <div class="note-box">
+                            <i class="fas fa-info-circle"></i>
+                            Set the school opening time and late deadline. Students/staff arriving after the late deadline will be marked as <b>Late (L)</b> instead of <b>Present (P)</b>.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">School Opening Time</label>
+                                <input type="time" class="form-control" id="inpOpen" value="08:00">
+                                <small class="text-muted" style="font-size:10px">Time when school opens &amp; attendance can start</small>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Late Deadline Time</label>
+                                <input type="time" class="form-control" id="inpLate" value="08:30">
+                                <small class="text-muted" style="font-size:10px">After this time, attendance marked as Late (L)</small>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Absent Cutoff Time</label>
+                                <input type="time" class="form-control" id="inpAbsent" value="09:00">
+                                <small class="text-muted" style="font-size:10px">After this time, remaining students/staff auto-marked Absent (A)</small>
+                            </div>
+                            <div class="col-lg-3 col-12 form-group d-flex align-items-end">
+                                <button class="fw-btn-fill btn-gradient-yellow" id="btnSave" style="height:36px;font-size:12px">
+                                    <i class="fas fa-save me-1"></i>Save Settings
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="preview-box" id="previewBox">
+                            <div class="preview-label">Current Timing Preview</div>
+                            <div class="d-flex align-items-center flex-wrap" style="gap:8px">
+                                <span class="status-pill green"><i class="fas fa-door-open"></i>Opens: <span id="pvOpen">--:--</span></span>
+                                <i class="fas fa-arrow-right preview-arrow"></i>
+                                <span class="status-pill orange"><i class="fas fa-clock"></i>Late After: <span id="pvLate">--:--</span></span>
+                                <i class="fas fa-arrow-right preview-arrow"></i>
+                                <span class="status-pill" style="background:#ffebee;color:#c62828"><i class="fas fa-user-times"></i>Absent After: <span id="pvAbsent">--:--</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Holiday Rules Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-calendar-times me-2"></i>Holiday Rules</h5>
+                        <div class="note-box">
+                            <i class="fas fa-info-circle"></i>
+                            On holidays, Sundays, and (optionally) 2nd Saturdays, <b>no auto-absent marking</b> will happen. Students/Staff coming on these days can still be marked Present/Late via face recognition.
+                        </div>
+
+                        <div class="toggle-row">
+                            <div>
+                                <div class="tr-label"><i class="fas fa-calendar-day me-1" style="color:#c62828"></i>Skip Sundays</div>
+                                <div class="tr-hint">No auto-absent on Sundays (always enabled)</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked disabled>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div>
+                                <div class="tr-label"><i class="fas fa-calendar-check me-1" style="color:#e65100"></i>Skip Holidays</div>
+                                <div class="tr-hint">No auto-absent on dates in the Holiday List (always enabled)</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked disabled>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-row">
+                            <div>
+                                <div class="tr-label"><i class="fas fa-calendar-week me-1" style="color:#1565c0"></i>2nd Saturday Holiday</div>
+                                <div class="tr-hint">Mark 2nd Saturday of every month as holiday (no auto-absent)</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="chk2ndSat">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- How It Works Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-question-circle me-2"></i>How It Works</h5>
+                        <div style="font-size:12px;color:#555;line-height:1.8">
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
+                                <span>When a face is recognized <b>before the late deadline</b>, attendance is marked as <b style="color:#2e7d32">Present (P)</b>.</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#fff3e0;color:#e65100;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
+                                <span>When a face is recognized <b>after the late deadline</b>, attendance is marked as <b style="color:#e65100">Late (L)</b>.</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#ffebee;color:#c62828;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
+                                <span>After the <b>Absent Cutoff Time</b>, all students/staff who haven't been recognized are automatically marked as <b style="color:#c62828">Absent (A)</b>.</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#e3f2fd;color:#1565c0;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">4</span>
+                                <span>If someone marked Absent later shows their face, their status <b>automatically changes to Late (L)</b>.</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#f3e5f5;color:#6a1b9a;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">5</span>
+                                <span>Each person can only be marked <b>once per day</b> — duplicate recognition is ignored.</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2">
+                                <span style="width:22px;height:22px;border-radius:50%;background:#fce4ec;color:#880e4f;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">6</span>
+                                <span>On <b>Sundays, Holidays</b> (from holiday list), and <b>2nd Saturdays</b> (if enabled) — no auto-absent marking happens. Applies to both students &amp; staff.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div></div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(document).ready(async function () {
+        initPage('face-settings');
+        await loadSettings();
+
+        $('#btnSave').click(saveSettings);
+        $('#inpOpen, #inpLate, #inpAbsent').on('change', updatePreview);
+    });
+
+    function fmt12(t) {
+        if (!t) return '--:--';
+        const [h, m] = t.split(':').map(Number);
+        return ((h % 12) || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+
+    function updatePreview() {
+        $('#pvOpen').text(fmt12($('#inpOpen').val()));
+        $('#pvLate').text(fmt12($('#inpLate').val()));
+        $('#pvAbsent').text(fmt12($('#inpAbsent').val()));
+    }
+
+    async function loadSettings() {
+        try {
+            const s = await getOptionSettings();
+            if (s.face_att_school_open) $('#inpOpen').val(s.face_att_school_open);
+            if (s.face_att_late_deadline) $('#inpLate').val(s.face_att_late_deadline);
+            if (s.face_att_absent_cutoff) $('#inpAbsent').val(s.face_att_absent_cutoff);
+            if (s.face_att_2nd_sat_holiday === '1') $('#chk2ndSat').prop('checked', true);
+            else $('#chk2ndSat').prop('checked', false);
+        } catch (e) {
+            console.error('Failed to load settings:', e);
+        }
+        updatePreview();
+    }
+
+    async function saveSettings() {
+        const open = $('#inpOpen').val();
+        const late = $('#inpLate').val();
+        const absent = $('#inpAbsent').val();
+        if (!open || !late || !absent) { alert('Please fill all fields'); return; }
+        if (late <= open) { alert('Late deadline must be after opening time'); return; }
+        if (absent <= late) { alert('Absent cutoff must be after late deadline'); return; }
+
+        const btn = $('#btnSave');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Saving...');
+        try {
+            await saveOptionSettings({
+                face_att_school_open: open,
+                face_att_late_deadline: late,
+                face_att_absent_cutoff: absent,
+                face_att_2nd_sat_holiday: $('#chk2ndSat').is(':checked') ? '1' : '0'
+            });
+            updatePreview();
+            alert('Settings saved successfully!');
+        } catch (e) {
+            alert('Failed to save: ' + (e.message || 'Error'));
+        }
+        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i>Save Settings');
+    }
+    </script>
+</body>
+</html>

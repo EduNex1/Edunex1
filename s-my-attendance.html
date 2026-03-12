@@ -1,0 +1,223 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>My Attendance — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .cal-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            text-align: center;
+            text-transform: uppercase;
+            padding: 4px;
+        }
+
+        .cal-day {
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cal-day.present {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .cal-day.absent {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .cal-day.late {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .cal-day.holiday {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .cal-day.empty {
+            background: transparent;
+        }
+
+        .cal-day.today {
+            border: 2px solid #0d1b4a;
+            font-weight: 800;
+        }
+
+        .att-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .att-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .att-legend .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>My Attendance</h3>
+                    <ul>
+                        <li><a href="/student-dashboard">Home</a></li>
+                        <li>My Attendance</li>
+                    </ul>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-user-graduate" style="color:#304ffe;"></i> <span id="stuNameLabel">Aarav Sharma — Class 5-A</span></div>
+                    <div class="chart-card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                        <div style="margin-left:auto;font-weight:700;color:#0d1b4a;">
+                            <span id="monthLabel">March 2026</span>
+                            <button class="btn btn-sm btn-outline-secondary ml-2" onclick="changeMonth(-1)"
+                                style="font-size:10px;padding:2px 8px;">◀</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changeMonth(1)"
+                                style="font-size:10px;padding:2px 8px;">▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-chart-bar"></i> Attendance Summary</div>
+                    <div class="chart-card-body">
+                    <div class="stats-grid stats-grid-4">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Present</div>
+                            <div class="stat-number" id="sPres">22</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-times"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Absent</div>
+                            <div class="stat-number" id="sAbs">1</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Late</div>
+                            <div class="stat-number" id="sLate">1</div>
+                            <div class="stat-sub">Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-percentage"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-number" id="sPerc">92%</div>
+                            <div class="stat-sub">Overall</div>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Attendance Calendar</div>
+                    <div class="chart-card-body">
+                        <div class="cal-grid">
+                            <div class="cal-header">Sun</div>
+                            <div class="cal-header">Mon</div>
+                            <div class="cal-header">Tue</div>
+                            <div class="cal-header">Wed</div>
+                            <div class="cal-header">Thu</div>
+                            <div class="cal-header">Fri</div>
+                            <div class="cal-header">Sat</div>
+                        </div>
+                        <div class="cal-grid" id="calGrid"></div>
+                        <div class="att-legend"><span><span class="dot" style="background:#2e7d32;"></span>
+                                Present</span><span><span class="dot" style="background:#c62828;"></span>
+                                Absent</span><span><span class="dot" style="background:#ef6c00;"></span>
+                                Late</span><span><span class="dot" style="background:#7b1fa2;"></span> Holiday</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        var currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear();
+        var attendanceData = {};
+        $(function () { initPage('s-my-attendance'); loadAttendance(); });
+        function changeMonth(d) { currentMonth += d; if (currentMonth > 11) { currentMonth = 0; currentYear++; } if (currentMonth < 0) { currentMonth = 11; currentYear--; } loadAttendance(); }
+        async function loadAttendance() {
+            var user = JSON.parse(localStorage.getItem('vkis_user') || '{}');
+            var studentId = user.linked_id || user.id;
+            var monthStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
+            try {
+                var records = await getStudentAttendance({ student_id: studentId, month: monthStr });
+                attendanceData = {};
+                var sMap = {p:'present',a:'absent',l:'late',present:'present',absent:'absent',late:'late',holiday:'holiday'};
+                records.forEach(function(r) { var day = parseInt(r.date.split('-')[2]); attendanceData[day] = sMap[(r.status||'').toLowerCase()] || ''; });
+            } catch(e) { attendanceData = {}; }
+            renderCalendar();
+        }
+        function renderCalendar() { var m = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']; document.getElementById('monthLabel').textContent = m[currentMonth] + ' ' + currentYear; var fd = new Date(currentYear, currentMonth, 1).getDay(); var dm = new Date(currentYear, currentMonth + 1, 0).getDate(); var t = new Date(); var td = t.getDate(); var ic = t.getMonth() === currentMonth && t.getFullYear() === currentYear; var md = {}; for (var d = 1; d <= dm; d++) { var dow = new Date(currentYear, currentMonth, d).getDay(); if (dow === 0) md[d] = 'holiday'; else if (attendanceData[d]) md[d] = attendanceData[d]; else if (ic && d > td) md[d] = ''; else md[d] = ''; } var h = ''; for (var e = 0; e < fd; e++)h += '<div class="cal-day empty"></div>'; for (var d = 1; d <= dm; d++) { var c = md[d] || 'empty'; h += '<div class="cal-day ' + c + (ic && d === td ? ' today' : '') + '">' + d + '</div>'; } document.getElementById('calGrid').innerHTML = h; var p = Object.values(attendanceData).filter(function (v) { return v === 'present'; }).length; var a = Object.values(attendanceData).filter(function (v) { return v === 'absent'; }).length; var l = Object.values(attendanceData).filter(function (v) { return v === 'late'; }).length; var tt = p + a + l; document.getElementById('sPres').textContent = p; document.getElementById('sAbs').textContent = a; document.getElementById('sLate').textContent = l; document.getElementById('sPerc').textContent = tt ? Math.round((p + l) / tt * 100) + '%' : '—'; }
+    </script>
+</body>
+
+</html>

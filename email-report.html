@@ -1,0 +1,197 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Email Report — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control,.form-control-sm{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .type-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px;display:inline-block}
+        .type-badge.student{background:#e3f2fd;color:#1565c0}
+        .type-badge.staff{background:#fff3e0;color:#e65100}
+        .email-msg-cell{white-space:pre-wrap;max-width:400px;font-size:11px;color:#555;line-height:1.5}
+        .count-badge{font-size:10px;background:#0d1b4a;color:#fff;border-radius:10px;padding:2px 8px;margin-left:6px}
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Email</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Email Report</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-chart-bar"></i> Email Report</h3></div></div>
+
+                        <!-- Filter Card -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Email Type</label>
+                                    <select class="form-control" id="fType">
+                                        <option value="">All</option>
+                                        <option value="Student">Student</option>
+                                        <option value="Staff">Staff</option>
+                                        <option value="Fee Reminder">Fee Reminder</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">From Date</label>
+                                    <input type="date" class="form-control" id="fFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">To Date</label>
+                                    <input type="date" class="form-control" id="fTo">
+                                </div>
+                                <div class="col-lg-6 col-md-12 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchReport()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetFilters()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Log List -->
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list"></i> Email Log <span class="count-badge" id="countBadge">0</span></h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="list-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sr.</th>
+                                            <th>Type</th>
+                                            <th>Recipient Type</th>
+                                            <th>Subject</th>
+                                            <th>Message</th>
+                                            <th>Sent To</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    (async function(){
+        initPage('email-report');
+
+        let emailCache = [];
+        try { emailCache = await getEmailLog(); } catch(e){ showToast('Failed to load email log','error'); }
+
+        window.searchReport = function() {
+            const type = document.getElementById('fType').value;
+            const from = document.getElementById('fFrom').value;
+            const to = document.getElementById('fTo').value;
+
+            let data = [...emailCache];
+            if (type) data = data.filter(d => d.type === type);
+            if (from) data = data.filter(d => (d.sent_at||'') >= from);
+            if (to) data = data.filter(d => (d.sent_at||'') <= to + 'T23:59:59');
+
+            data.sort((a, b) => (b.sent_at||'').localeCompare(a.sent_at||''));
+            renderReport(data);
+        };
+
+        function renderReport(data) {
+            const tbody = document.getElementById('reportTableBody');
+            const badge = document.getElementById('countBadge');
+            badge.textContent = data.length;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i>No email records found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map((d, i) => {
+                const typeClass = d.type === 'Student' ? 'student' : 'staff';
+                const msg = d.message || '';
+                const msgPreview = msg.length > 120 ? msg.substring(0, 120) + '...' : msg;
+                const fDate = formatDate(d.sent_at);
+                const statusColor = d.status === 'Sent' ? 'background:#e8f5e9;color:#2e7d32;' : 'background:#ffebee;color:#c62828;';
+                return '<tr>' +
+                    '<td style="font-weight:600;color:#999;">' + (i + 1) + '</td>' +
+                    '<td><span class="type-badge ' + typeClass + '">' + escapeHtml(d.type||'—') + '</span></td>' +
+                    '<td style="font-weight:600;color:#0d1b4a;font-size:11px;">' + escapeHtml(d.recipient_type||'—') + '</td>' +
+                    '<td style="font-weight:600;font-size:11px;color:#0d1b4a;">' + escapeHtml(d.subject||'—') + '</td>' +
+                    '<td class="email-msg-cell" title="' + escapeHtml(msg) + '">' + escapeHtml(msgPreview) + '</td>' +
+                    '<td style="font-size:11px;">' + escapeHtml(d.email||'—') + '</td>' +
+                    '<td style="font-weight:600;">' + fDate + '</td>' +
+                    '<td><span style="' + statusColor + 'padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">' + escapeHtml(d.status||'—') + '</span></td>' +
+                '</tr>';
+            }).join('');
+        }
+
+        function formatDate(ds) {
+            if (!ds) return '';
+            const d = new Date(ds);
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return String(d.getDate()).padStart(2,'0') + '-' + months[d.getMonth()] + '-' + d.getFullYear();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        window.resetFilters = function() {
+            document.getElementById('fType').value = '';
+            document.getElementById('fFrom').value = '';
+            document.getElementById('fTo').value = '';
+            window.searchReport();
+        };
+
+        /* initial load */
+        window.searchReport();
+    })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,868 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Dashboard — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== WELCOME BANNER ===== */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0d1b4a 0%, #1a3a7a 60%, #2952a3 100%) !important;
+            border-radius: 10px;
+            padding: 22px 28px;
+            color: #fff !important;
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -30px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -70px;
+            left: 40%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .welcome-banner h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            position: relative;
+            z-index: 1;
+            color: #fff !important;
+        }
+
+        .welcome-banner p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75) !important;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner .welcome-date {
+            position: absolute;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: right;
+            z-index: 1;
+            color: #fff !important;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== STAT CARDS ROW ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px 12px;
+            border: 1px solid #e8eaf6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: box-shadow 0.2s;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(13, 27, 74, 0.1);
+        }
+
+        .stat-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue {
+            background: #e8eaf6;
+            color: #0d1b4a;
+        }
+
+        .stat-icon.green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .stat-icon.orange {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .stat-icon.red {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .stat-icon.purple {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .stat-icon.teal {
+            background: #e0f2f1;
+            color: #00695c;
+        }
+
+        .stat-info {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .stat-info .stat-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-info .stat-number {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0d1b4a;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-info .stat-sub {
+            font-size: 9px;
+            color: #888;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ===== CHART CARDS ===== */
+        .chart-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e8eaf6;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .chart-card-header {
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-card-header i {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chart-card-body {
+            padding: 16px;
+        }
+
+        /* ===== RECENT STUDENTS TABLE ===== */
+        .recent-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .recent-table th {
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 6px 8px;
+            border-bottom: 2px solid #e8eaf6;
+            text-align: left;
+        }
+
+        .recent-table td {
+            font-size: 11px;
+            padding: 8px 8px;
+            border-bottom: 1px solid #f0f1f3;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .recent-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .recent-table .name-cell {
+            font-weight: 700;
+            color: #0d1b4a;
+        }
+
+        /* ===== QUICK ACCESS GRID ===== */
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-item {
+            background: #f8f9fb;
+            border: 1px solid #e8eaf6;
+            border-radius: 8px;
+            padding: 14px 10px;
+            text-align: center;
+            text-decoration: none;
+            color: #0d1b4a;
+            transition: all 0.2s;
+        }
+
+        .quick-item:hover {
+            background: #0d1b4a;
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 27, 74, 0.2);
+        }
+
+        .quick-item i {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .quick-item span {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== ACTIVITY TIMELINE ===== */
+        .activity-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f1f3;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .activity-dot.blue {
+            background: #304ffe;
+        }
+
+        .activity-dot.green {
+            background: #2e7d32;
+        }
+
+        .activity-dot.orange {
+            background: #ef6c00;
+        }
+
+        .activity-dot.red {
+            background: #c62828;
+        }
+
+        .activity-text {
+            font-size: 11px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .activity-time {
+            font-size: 9px;
+            color: #aaa;
+            margin-top: 1px;
+        }
+
+        /* ===== STAFF LIST IN CARDS ===== */
+        .staff-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid #f0f1f3;
+        }
+
+        .staff-mini:last-child {
+            border-bottom: none;
+        }
+
+        .staff-mini-photo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e8eaf6;
+        }
+
+        .staff-mini-info {
+            flex: 1;
+        }
+
+        .staff-mini-info .sm-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0d1b4a;
+        }
+
+        .staff-mini-info .sm-role {
+            font-size: 9px;
+            color: #888;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .welcome-banner {
+                padding: 16px 20px;
+            }
+
+            .welcome-banner h4 {
+                font-size: 14px !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .welcome-banner .welcome-date {
+                display: none;
+            }
+
+            .stat-info .stat-number {
+                font-size: 15px;
+            }
+
+            .stat-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+
+            .stat-card {
+                padding: 10px 8px;
+                gap: 8px;
+            }
+
+            .chart-card-body {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-banner h4 {
+                font-size: 13px !important;
+            }
+
+            .stat-info .stat-number {
+                font-size: 14px;
+            }
+
+            .stat-info .stat-label {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Dashboard</h3>
+                    <ul>
+                        <li><a href="/dashboard">Home</a></li>
+                        <li>Overview</li>
+                    </ul>
+                </div>
+
+                <!-- ======================== ADMIN DASHBOARD ======================== -->
+                <div id="admin-dashboard">
+                    <!-- Welcome Banner -->
+                    <div class="welcome-banner">
+                        <h4 class="dashboard-welcome-text"><i class="fas fa-sun"
+                                style="margin-right:6px;color:#ffd54f;"></i> Welcome back, Admin!</h4>
+                        <p><span id="schoolNameBanner">School Management System</span></p>
+                        <div class="welcome-date" id="todayDate"></div>
+                    </div>
+
+                    <!-- Stat Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fas fa-user-graduate"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Students</div>
+                                <div class="stat-number" id="totalStudents">0</div>
+                                <div class="stat-sub" id="activeStudentsSub"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Staff</div>
+                                <div class="stat-number" id="totalStaff">0</div>
+                                <div class="stat-sub" id="teachersSub"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon teal"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Collected</div>
+                                <div class="stat-number" id="feeCollected">₹0</div>
+                                <div class="stat-sub" id="feeCollectedSub"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Pending</div>
+                                <div class="stat-number" id="feePending">₹0</div>
+                                <div class="stat-sub" id="feePendingSub"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><i class="fas fa-school"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Classes</div>
+                                <div class="stat-number" id="totalClasses">0</div>
+                                <div class="stat-sub" id="classesSub"></div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i class="fas fa-book"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Subjects</div>
+                                <div class="stat-number" id="totalSubjects">0</div>
+                                <div class="stat-sub">All classes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row">
+                        <!-- Students by Class -->
+                        <div class="col-lg-6 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-chart-bar"></i> Students by Class</div>
+                                <div class="chart-card-body">
+                                    <canvas id="studentsByClassChart" height="220"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Monthly Fee Collection -->
+                        <div class="col-lg-6 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee
+                                    Collection
+                                </div>
+                                <div class="chart-card-body">
+                                    <canvas id="monthlyFeeChart" height="220"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Fee Overview Doughnut -->
+                        <div class="col-lg-3 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-chart-pie"></i> Fee Overview</div>
+                                <div class="chart-card-body"
+                                    style="display:flex;align-items:center;justify-content:center;">
+                                    <canvas id="feeOverviewChart" height="180" style="max-width:200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Category Distribution -->
+                        <div class="col-lg-3 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-chart-pie"></i> Category Dist.</div>
+                                <div class="chart-card-body"
+                                    style="display:flex;align-items:center;justify-content:center;">
+                                    <canvas id="categoryChart" height="180" style="max-width:200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Gender Distribution -->
+                        <div class="col-lg-3 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-venus-mars"></i> Gender Dist.</div>
+                                <div class="chart-card-body"
+                                    style="display:flex;align-items:center;justify-content:center;">
+                                    <canvas id="genderChart" height="180" style="max-width:200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Staff by Designation -->
+                        <div class="col-lg-3 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-users-cog"></i> Staff Roles</div>
+                                <div class="chart-card-body">
+                                    <canvas id="staffDesigChart" height="180"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Recent Admissions -->
+                        <div class="col-lg-6 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-user-plus"></i> Recent Admissions</div>
+                                <div class="chart-card-body" style="padding:8px 16px;">
+                                    <table class="recent-table" id="recentAdmissions"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Active Staff -->
+                        <div class="col-lg-6 col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header"><i class="fas fa-user-tie"></i> Active Staff Members
+                                </div>
+                                <div class="chart-card-body" style="padding:8px 16px;" id="activeStaffList"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Access -->
+                    <div class="chart-card">
+                        <div class="chart-card-header"><i class="fas fa-th-large"></i> Quick Access</div>
+                        <div class="chart-card-body">
+                            <div class="quick-grid">
+                                <a href="/new-admission" class="quick-item"><i class="fas fa-user-plus"></i><span>New
+                                        Admission</span></a>
+                                <a href="/student-list" class="quick-item"><i
+                                        class="fas fa-user-graduate"></i><span>Student
+                                        List</span></a>
+                                <a href="/attendance" class="quick-item"><i
+                                        class="fas fa-clipboard-check"></i><span>Attendance</span></a>
+                                <a href="/view-staff" class="quick-item"><i
+                                        class="fas fa-users"></i><span>Staff</span></a>
+                                <a href="/fee-deposit" class="quick-item"><i class="fas fa-wallet"></i><span>Fee
+                                        Collection</span></a>
+                                <a href="/salary-settings" class="quick-item"><i
+                                        class="fas fa-money-bill-wave"></i><span>Payroll</span></a>
+                                <a href="/account-expenses" class="quick-item"><i
+                                        class="fas fa-file-invoice-dollar"></i><span>Accounts</span></a>
+                                <a href="/library-books" class="quick-item"><i
+                                        class="fas fa-book"></i><span>Library</span></a>
+                                <a href="/master-class" class="quick-item"><i
+                                        class="fas fa-sitemap"></i><span>Masters</span></a>
+                                <a href="/settings-users" class="quick-item"><i
+                                        class="fas fa-cog"></i><span>Settings</span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- end admin-dashboard -->
+
+                <div id='footer-container'></div>
+            </div>
+        </div>
+        <script src="js/jquery-3.3.1.min.js"></script>
+        <script src="js/plugins.js"></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/jquery.scrollUp.min.js"></script>
+        <script src="js/api.js"></script>
+        
+        <script src="js/app.js"></script>
+        <script src="js/main.js"></script>
+        <script>
+            $(function () {
+                initPage('dashboard');
+                buildDashboard();
+            });
+
+            async function buildDashboard() {
+                // Today's date
+                var now = new Date();
+                var dateStr = now.getDate() + ' ' + now.toLocaleString('en-IN', { month: 'long' }) + ' ' + now.getFullYear();
+
+                // Role-based dashboard switching
+                var user = typeof getUser === 'function' ? getUser() : null;
+                var role = user ? user.role : 'super_admin';
+
+                if (role === 'teacher') { window.location.href = '/teacher-dashboard'; return; }
+                if (role === 'parent') { window.location.href = '/parent-dashboard'; return; }
+                if (role === 'student') { window.location.href = '/student-dashboard'; return; }
+
+                document.getElementById('todayDate').textContent = dateStr;
+
+                // Welcome message
+                var welcomeEl = document.querySelector('#admin-dashboard .dashboard-welcome-text');
+                if (welcomeEl && user) {
+                    var roleNames = { super_admin: 'Super Admin', branch_admin: 'Admin' };
+                    welcomeEl.innerHTML = '<i class="fas fa-sun" style="margin-right:6px;color:#ffd54f;"></i> Welcome back, ' + (roleNames[user.role] || 'Admin') + '!';
+                }
+                var bannerEl = document.getElementById('schoolNameBanner');
+                if (bannerEl) {
+                    // Fetch school name from active branch
+                    try {
+                        var branches = await getBranches();
+                        var branchId = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
+                        if (Array.isArray(branches) && branches.length) {
+                            var activeBranch = branchId ? branches.find(function(b){ return String(b.id) === String(branchId); }) : branches[0];
+                            if (activeBranch && activeBranch.school_name) {
+                                bannerEl.textContent = activeBranch.school_name + ' — School Management System';
+                            } else if (user && user.school_name) {
+                                bannerEl.textContent = user.school_name + ' — School Management System';
+                            }
+                        } else if (user && user.school_name) {
+                            bannerEl.textContent = user.school_name + ' — School Management System';
+                        }
+                    } catch(e) {
+                        if (user && user.school_name) bannerEl.textContent = user.school_name + ' — School Management System';
+                    }
+                }
+
+                // Fetch dashboard stats from API
+                var branchId = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
+                var data;
+                try {
+                    data = await getDashboardStats(branchId);
+                    if (data.error) throw new Error(data.error);
+                } catch (e) {
+                    console.error('Dashboard API error:', e);
+                    showToast && showToast('Failed to load dashboard data', 'error');
+                    return;
+                }
+
+                // ===== STAT CARDS =====
+                var totalStudents = data.students ? data.students.total : 0;
+                var activeStudents = data.students ? (data.students.active || 0) : 0;
+                var totalStaff = data.staff ? data.staff.total : 0;
+                var teachersCount = data.staff ? (data.staff.teachers || 0) : 0;
+                var totalCollected = data.feeTotals ? data.feeTotals.total_paid : 0;
+                var totalExpected = data.feeTotals ? data.feeTotals.total_expected : 0;
+                var pendingFee = totalExpected - totalCollected;
+                var collectionPct = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+                var dueCount = data.studentsDue || 0;
+
+                document.getElementById('totalStudents').textContent = totalStudents;
+                document.getElementById('activeStudentsSub').textContent = activeStudents + ' active';
+                document.getElementById('totalStaff').textContent = totalStaff;
+                document.getElementById('teachersSub').textContent = teachersCount + ' teachers';
+                document.getElementById('feeCollected').textContent = '₹' + totalCollected.toLocaleString('en-IN');
+                document.getElementById('feeCollectedSub').textContent = collectionPct + '% collected';
+                document.getElementById('feePending').textContent = '₹' + pendingFee.toLocaleString('en-IN');
+                document.getElementById('feePendingSub').textContent = dueCount + ' students due';
+                document.getElementById('totalClasses').textContent = data.classes || 0;
+                document.getElementById('classesSub').textContent = (data.byClass ? data.byClass.length : 0) + ' groups';
+                document.getElementById('totalSubjects').textContent = data.subjects || 0;
+
+                // ===== STUDENTS BY CLASS CHART =====
+                var classLabels = [];
+                var classCounts = [];
+                var classColors = [];
+                var palette = ['#0d1b4a', '#1a3a7a', '#2952a3', '#3f6bc5', '#6b8fd4', '#97b3e3', '#bfcfed'];
+                (data.byClass || []).forEach(function (c, i) {
+                    classLabels.push('Class ' + c.class_name);
+                    classCounts.push(c.count);
+                    classColors.push(palette[i % palette.length]);
+                });
+
+                new Chart(document.getElementById('studentsByClassChart'), {
+                    type: 'bar',
+                    data: { labels: classLabels, datasets: [{ label: 'Students', data: classCounts, backgroundColor: classColors, borderRadius: 4, barThickness: 18 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
+                            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f1f3' } }
+                        }
+                    }
+                });
+
+                // ===== FEE OVERVIEW DOUGHNUT =====
+                new Chart(document.getElementById('feeOverviewChart'), {
+                    type: 'doughnut',
+                    data: { labels: ['Collected', 'Pending'], datasets: [{ data: [totalCollected, pendingFee], backgroundColor: ['#2e7d32', '#c62828'], borderWidth: 0, cutout: '65%' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' }, padding: 16, usePointStyle: true } } } }
+                });
+
+                // ===== MONTHLY FEE COLLECTION BAR CHART =====
+                var shortMonths = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+                var monthlyCollected = [];
+                var monthlyPending = [];
+                (data.monthlyFee || []).forEach(function (m) {
+                    monthlyCollected.push(m.collected);
+                    monthlyPending.push(m.pending);
+                });
+
+                new Chart(document.getElementById('monthlyFeeChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: shortMonths,
+                        datasets: [
+                            { label: 'Collected', data: monthlyCollected, backgroundColor: '#2e7d32', borderRadius: 3, barThickness: 10 },
+                            { label: 'Pending', data: monthlyPending, backgroundColor: '#c62828', borderRadius: 3, barThickness: 10 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, padding: 12, usePointStyle: true } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } },
+                            y: { beginAtZero: true, ticks: { font: { size: 9 }, callback: function (v) { return '₹' + (v / 1000) + 'k'; } }, grid: { color: '#f0f1f3' } }
+                        }
+                    }
+                });
+
+                // ===== CATEGORY DISTRIBUTION =====
+                var catLabels = (data.category || []).map(function (c) { return c.category || 'Unknown'; });
+                var catData = (data.category || []).map(function (c) { return c.count; });
+                var catColors = ['#0d1b4a', '#1a3a7a', '#ef6c00', '#2e7d32', '#6a1b9a'];
+                new Chart(document.getElementById('categoryChart'), {
+                    type: 'doughnut',
+                    data: { labels: catLabels, datasets: [{ data: catData, backgroundColor: catColors.slice(0, catLabels.length), borderWidth: 0, cutout: '60%' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, padding: 12, usePointStyle: true } } } }
+                });
+
+                // ===== GENDER DISTRIBUTION =====
+                var genderMap = {};
+                (data.gender || []).forEach(function (g) { genderMap[g.gender] = g.count; });
+                new Chart(document.getElementById('genderChart'), {
+                    type: 'doughnut',
+                    data: { labels: ['Male', 'Female'], datasets: [{ data: [genderMap['Male'] || 0, genderMap['Female'] || 0], backgroundColor: ['#1a3a7a', '#e91e63'], borderWidth: 0, cutout: '60%' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, padding: 12, usePointStyle: true } } } }
+                });
+
+                // ===== STAFF BY DESIGNATION =====
+                var desigLabels = (data.staffDesig || []).map(function (d) { return d.designation; });
+                var desigData = (data.staffDesig || []).map(function (d) { return d.count; });
+                var desigColors = ['#0d1b4a', '#1a3a7a', '#2952a3', '#3f6bc5', '#6b8fd4', '#97b3e3', '#ef6c00', '#2e7d32', '#c62828', '#6a1b9a', '#00695c', '#e91e63'];
+                new Chart(document.getElementById('staffDesigChart'), {
+                    type: 'bar',
+                    data: { labels: desigLabels, datasets: [{ label: 'Count', data: desigData, backgroundColor: desigColors.slice(0, desigLabels.length), borderRadius: 4, barThickness: 16 }] },
+                    options: {
+                        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f0f1f3' } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+                        }
+                    }
+                });
+
+                // ===== RECENT ADMISSIONS TABLE =====
+                var tableHtml = '<thead><tr><th>Name</th><th>Adm No</th><th>Class</th><th>Date</th></tr></thead><tbody>';
+                (data.recentStudents || []).forEach(function (s) {
+                    tableHtml += '<tr>' +
+                        '<td class="name-cell">' + escapeHtml(s.name) + '</td>' +
+                        '<td>' + escapeHtml(s.admission_no || '-') + '</td>' +
+                        '<td>Class ' + escapeHtml(s.class_name || '-') + '-' + escapeHtml(s.section || '') + '</td>' +
+                        '<td>' + formatDate(s.admission_date) + '</td>' +
+                        '</tr>';
+                });
+                tableHtml += '</tbody>';
+                document.getElementById('recentAdmissions').innerHTML = tableHtml;
+
+                // ===== ACTIVE STAFF LIST =====
+                var staffHtml = '';
+                (data.activeStaff || []).forEach(function (s) {
+                    staffHtml += '<div class="staff-mini">' +
+                        '<div class="staff-mini-photo" style="width:32px;height:32px;border-radius:50%;background:#e8eaf6;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0d1b4a;font-size:13px;">' + (s.name ? s.name.charAt(0).toUpperCase() : '?') + '</div>' +
+                        '<div class="staff-mini-info">' +
+                        '<div class="sm-name">' + escapeHtml(s.name) + '</div>' +
+                        '<div class="sm-role">' + escapeHtml(s.designation || '') + ' · ' + escapeHtml(s.employee_id || '') + '</div>' +
+                        '</div>' +
+                        '<span class="status-badge status-active" style="font-size:9px;padding:2px 8px;">Active</span>' +
+                        '</div>';
+                });
+                document.getElementById('activeStaffList').innerHTML = staffHtml || '<p class="text-muted text-center py-3" style="font-size:11px;">No active staff found</p>';
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+            function formatDate(d) { if (!d) return '—'; var dt = new Date(d); if (isNaN(dt)) return d; return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
+        </script>
+</body>
+
+</html>

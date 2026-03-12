@@ -1,0 +1,81 @@
+@page {
+    size: auto;
+    margin: 10mm;
+}
+
+html,
+body {
+    background: #fff !important;
+}
+
+body.print-window-body {
+    margin: 0;
+    padding: 10mm;
+    color: #111;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+img,
+svg,
+canvas {
+    max-width: 100%;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+img {
+    image-rendering: auto;
+}
+
+.table,
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    display: table-header-group;
+}
+
+tfoot {
+    display: table-footer-group;
+}
+
+tr,
+td,
+th,
+.print-block,
+.print-card,
+.no-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.print-sheet {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.print-hidden,
+.no-print {
+    display: none !important;
+}
+
+@media print {
+    html,
+    body {
+        background: #fff !important;
+    }
+
+    a[href]:not(.btn) {
+        text-decoration: none;
+    }
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Date Sheet — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Date Sheet</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Academics > Date Sheet</li></ul>
+                </div>
+            
+        <div class="chart-card" style="margin-bottom:16px;">
+            <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
+            <div class="chart-card-body" style="padding:12px 16px;">
+                <select id="childSelect" onchange="loadDatesheet()" class="form-control" style="max-width:350px;"><option value="">— loading —</option></select>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Exam Date Sheet</div>
+            <div class="chart-card-body">
+    <div id="dsArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+            </div>
+        </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    $(async function(){
+        initPage('p-datesheet');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect').empty();
+            children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
+            if(children.length) loadDatesheet();
+        } catch(e){ console.error(e); }
+    });
+    async function loadDatesheet(){
+        const opt = $('#childSelect option:selected');
+        const classId = opt.data('class');
+        if(!classId){ $('#dsArea').html('<p style="text-align:center;color:#888;">Select a child</p>'); return; }
+        try {
+            const ds = await getDatesheets({class_id: classId}) || [];
+            if(!ds.length){ $('#dsArea').html('<p style="text-align:center;color:#888;">No datesheet available.</p>'); return; }
+            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Date</th><th>Day</th><th>Subject</th><th>Time</th></tr></thead><tbody>';
+            ds.forEach(d => {
+                const dt = (d.date || d.exam_date) ? new Date(d.date || d.exam_date) : null;
+                const dateStr = dt ? dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : (d.date || d.exam_date || '-');
+                const dayStr = dt ? days[dt.getDay()] : '';
+                const startTime = d.start_time || d.time_from || '';
+                const endTime = d.end_time || d.time_to || '';
+                html += `<tr><td><strong>${dateStr}</strong></td><td>${dayStr}</td><td><strong>${d.subject_name||''}</strong></td><td>${startTime} – ${endTime}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            $('#dsArea').html(html);
+        } catch(e){ console.error(e); }
+    }
+    </script>
+</body>
+</html>

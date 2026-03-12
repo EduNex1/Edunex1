@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My Profile — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .profile-form .form-section-title {
+            background: #0d1b4a; color: #fff; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            padding: 8px 16px; border-radius: 6px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .profile-form .form-section-title i { font-size: 12px; opacity: 0.7; }
+        .profile-form .form-group { margin-bottom: 12px; }
+        .profile-form label {
+            font-size: 11px; font-weight: 700; color: #444;
+            text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+        }
+        .profile-form .form-control {
+            font-size: 12px; height: 34px; padding: 4px 10px;
+            border: 1px solid #d0d5dd; border-radius: 5px;
+        }
+        .profile-form textarea.form-control { height: auto; min-height: 34px; }
+        .profile-form .form-control[readonly] { background: #f5f6fa; color: #666; }
+        .photo-box {
+            width: 100px; height: 120px; border: 2px dashed #c5cae9;
+            border-radius: 8px; background: #f8f9ff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; transition: all 0.2s; margin: 0 auto;
+        }
+        .photo-box:hover { border-color: #304ffe; background: #eef0ff; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-box .ph-placeholder { text-align: center; color: #aaa; }
+        .photo-box .ph-placeholder i { font-size: 20px; color: #304ffe; display: block; margin-bottom: 2px; }
+        .photo-box .ph-placeholder span { font-size: 9px; }
+        .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+        .form-actions .btn-submit {
+            background: #0d1b4a; color: #fff; border: none; border-radius: 6px;
+            padding: 10px 28px; font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .form-actions .btn-submit:hover { opacity: 0.9; }
+        @media (max-width: 576px) {
+            .profile-form label { font-size: 10px; }
+            .profile-form .form-control { font-size: 11px; height: 32px; }
+            .photo-box { width: 80px; height: 96px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>My Profile</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>My Profile</li></ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title"><h3><i class="fas fa-user-circle"></i> My Profile</h3></div>
+                        </div>
+                        <div id="profileState"><p style="text-align:center;color:#888;padding:20px;">Loading profile...</p></div>
+                        <form class="profile-form" id="profileForm" style="display:none;" autocomplete="off">
+
+                            <!-- ═══════════ PERSONAL INFORMATION ═══════════ -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user"></i> Personal Information</div>
+                                <div class="row">
+                                    <!-- Photo -->
+                                    <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center" style="min-width:120px;">
+                                        <label>Photo</label>
+                                        <div class="photo-box" id="photoUploadArea" onclick="document.getElementById('photoInput').click()">
+                                            <div class="ph-placeholder" id="uploadPlaceholder">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Upload</span>
+                                            </div>
+                                            <img id="photoPreview" src="" alt="" style="display:none;">
+                                        </div>
+                                        <small style="color:#aaa;font-size:9px;margin-top:3px;display:block;">Passport size</small>
+                                        <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                                    </div>
+                                    <!-- Fields beside photo -->
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                                <label>Full Name</label>
+                                                <input type="text" id="pfName" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                                <label>Father's Name</label>
+                                                <input type="text" id="pfFatherName" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                                <label>Employee ID</label>
+                                                <input type="text" id="pfEmployeeId" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Designation</label>
+                                                <input type="text" id="pfDesignation" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Date of Birth</label>
+                                                <input type="text" id="pfDob" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Gender</label>
+                                                <input type="text" id="pfGender" class="form-control" readonly>
+                                            </div>
+                                            <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
+                                                <label>Qualification</label>
+                                                <input type="text" id="pfQualification" class="form-control" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════ CONTACT & ADDRESS ═══════════ -->
+                            <div class="form-section" style="margin-top:10px;">
+                                <div class="form-section-title"><i class="fas fa-phone-alt"></i> Contact & Address</div>
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Phone</label>
+                                        <input type="text" id="pfPhone" class="form-control" placeholder="Phone number">
+                                    </div>
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Email</label>
+                                        <input type="email" id="pfEmail" class="form-control" placeholder="Email address">
+                                    </div>
+                                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
+                                        <label>Joining Date</label>
+                                        <input type="text" id="pfJoiningDate" class="form-control" readonly>
+                                    </div>
+                                    <div class="col-12 form-group">
+                                        <label>Address</label>
+                                        <textarea id="pfAddress" class="form-control" rows="2" placeholder="Address"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Save Button -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Profile</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="card height-auto" id="pwCard" style="display:none;">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title"><h3><i class="fas fa-key"></i> Change Password</h3></div>
+                        </div>
+                        <form class="profile-form" id="pwForm">
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>Current Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwCurrent" class="form-control" required>
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>New Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwNew" class="form-control" required minlength="4">
+                                </div>
+                                <div class="col-lg-4 col-md-6 col-12 form-group">
+                                    <label>Confirm New Password <span style="color:red;">*</span></label>
+                                    <input type="password" id="pwConfirm" class="form-control" required minlength="4">
+                                </div>
+                                <div class="col-12 form-group">
+                                    <div class="form-actions" style="margin-top:4px;">
+                                        <button type="submit" class="btn-submit"><i class="fas fa-lock"></i> Update Password</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <script>
+    $(async function(){
+        initPage('t-my-profile');
+        const user = getUser();
+        if (!user || !user.linked_id) {
+            $('#profileState').html('<p style="text-align:center;color:#c62828;padding:20px;">Teacher account not linked.</p>');
+            return;
+        }
+
+        let currentPhotoUrl = '';
+
+        try {
+            const staff = await getStaffMember(user.linked_id);
+            currentPhotoUrl = staff.photo_url || '';
+
+            // Personal Info
+            $('#pfName').val(staff.name || '');
+            $('#pfFatherName').val(staff.father_name || '');
+            $('#pfEmployeeId').val(staff.employee_id || staff.login_id || '');
+            $('#pfDesignation').val(staff.designation || '');
+            $('#pfDob').val(staff.dob || '');
+            $('#pfGender').val(staff.gender || '');
+            $('#pfQualification').val(staff.qualification || '');
+
+            // Contact
+            $('#pfPhone').val(staff.phone || '');
+            $('#pfEmail').val(staff.email || '');
+            $('#pfJoiningDate').val(staff.joining_date || '');
+            $('#pfAddress').val(staff.address || '');
+
+            // Photo
+            if (currentPhotoUrl) {
+                $('#photoPreview').attr('src', currentPhotoUrl).show();
+                $('#uploadPlaceholder').hide();
+            }
+
+            $('#profileState').hide();
+            $('#profileForm').show();
+            $('#pwCard').show();
+        } catch (e) {
+            console.error(e);
+            $('#profileState').html('<p style="text-align:center;color:#c62828;padding:20px;">Failed to load profile.</p>');
+        }
+
+        /* ─── Photo Upload & Crop ─── */
+        $('#photoInput').on('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = function (ev) { openCropModal(ev.target.result); };
+            r.readAsDataURL(file);
+        });
+
+        function openCropModal(imgSrc) {
+            $('.crop-modal-overlay').remove();
+            const html = `
+            <div class="crop-modal-overlay" id="cropOverlay">
+                <div class="crop-modal-box">
+                    <div class="crop-modal-header"><i class="fas fa-crop-alt"></i> Crop Photo</div>
+                    <div class="crop-modal-body">
+                        <img id="cropImage" src="${imgSrc}" alt="Crop">
+                    </div>
+                    <div class="crop-modal-footer">
+                        <button type="button" class="btn-crop-cancel" id="btnCropCancel">Cancel</button>
+                        <button type="button" class="btn-crop-save" id="btnCropSave"><i class="fas fa-check mg-r-5"></i>Crop & Save</button>
+                    </div>
+                </div>
+            </div>`;
+            $('body').append(html);
+            const image = document.getElementById('cropImage');
+            window._cropper = new Cropper(image, {
+                aspectRatio: 5 / 6, viewMode: 1, dragMode: 'move',
+                autoCropArea: 0.85, responsive: true, guides: true, center: true, background: false,
+            });
+            $('#btnCropCancel').on('click', closeCropModal);
+            $('#btnCropSave').on('click', applyCrop);
+        }
+
+        function closeCropModal() {
+            if (window._cropper) { window._cropper.destroy(); window._cropper = null; }
+            $('#cropOverlay').remove();
+            $('#photoInput').val('');
+        }
+
+        function applyCrop() {
+            if (!window._cropper) return;
+            const canvas = window._cropper.getCroppedCanvas({ width: 300, height: 360, imageSmoothingQuality: 'high' });
+            const croppedData = canvas.toDataURL('image/jpeg', 0.9);
+            $('#photoPreview').attr('src', croppedData).show();
+            $('#uploadPlaceholder').hide();
+            closeCropModal();
+        }
+
+        /* ─── Save Profile ─── */
+        $('#profileForm').on('submit', async function (event) {
+            event.preventDefault();
+            try {
+                const photoUrl = $('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : currentPhotoUrl;
+                await updateStaffMember(user.linked_id, {
+                    photo_url: photoUrl,
+                    phone: $('#pfPhone').val().trim(),
+                    email: $('#pfEmail').val().trim(),
+                    address: $('#pfAddress').val().trim()
+                });
+                currentPhotoUrl = photoUrl;
+                showToast('Profile updated successfully', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Failed to update profile', 'error');
+            }
+        });
+
+        /* ─── Change Password ─── */
+        $('#pwForm').on('submit', async function (event) {
+            event.preventDefault();
+            var cur = $('#pwCurrent').val(), nw = $('#pwNew').val(), cf = $('#pwConfirm').val();
+            if (nw !== cf) { showToast('New passwords do not match', 'error'); return; }
+            if (nw.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+            try {
+                await changePassword(cur, nw);
+                showToast('Password changed successfully', 'success');
+                $('#pwCurrent').val(''); $('#pwNew').val(''); $('#pwConfirm').val('');
+            } catch (e) {
+                console.error(e);
+                showToast(e.message || 'Failed to change password', 'error');
+            }
+        });
+    });
+    </script>
+</body>
+</html>

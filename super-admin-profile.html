@@ -1,0 +1,288 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Super Admin Profile — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .profile-card{background:#fff;border-radius:14px;border:1px solid #f0f0f0;padding:28px 30px;margin-bottom:18px}
+        .profile-title{font-size:15px;font-weight:700;color:#0d1b4a;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e8eaf6;display:flex;align-items:center;gap:8px}
+        .profile-title i{font-size:16px;color:#4fc3f7}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0d1b4a,#1a3a7a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;margin:0 auto 12px}
+        .role-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+        .role-badge.admin{background:#e3f2fd;color:#1565c0}
+        .info-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+        .info-row:last-child{border-bottom:none}
+        .info-row .lbl{width:140px;font-weight:600;color:#666;flex-shrink:0}
+        .info-row .val{color:#333;font-weight:500}
+        .pw-strength{font-size:10px;margin-top:4px;font-weight:600}
+        .admin-table{width:100%;font-size:12px;border-collapse:separate;border-spacing:0}
+        .admin-table th{background:#f8f9ff;color:#555;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;border-bottom:2px solid #e8eaf6}
+        .admin-table td{padding:10px 14px;border-bottom:1px solid #f5f5f5;color:#333;vertical-align:middle}
+        .admin-table tr:hover td{background:#fafbff}
+        .status-active{color:#43a047;font-weight:600}
+        .status-inactive{color:#e53935;font-weight:600}
+        .cred-box{background:#e8f5e9;border:1px solid #c8e6c9;border-radius:10px;padding:16px 20px;margin-top:12px;display:none}
+        .cred-box .cred-label{font-size:10px;font-weight:700;color:#666;text-transform:uppercase}
+        .cred-box .cred-val{font-size:14px;font-weight:600;color:#1b5e20;font-family:monospace}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>My Profile</h3><ul><li><a href="/dashboard">Home</a></li><li>My Profile</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-user-shield"></i> Super Admin Profile</h3></div></div>
+
+                    <div class="row">
+                        <!-- Profile Info -->
+                        <div class="col-lg-5 col-md-6 col-12">
+                            <div class="profile-card">
+                                <div class="profile-title"><i class="fas fa-id-badge"></i> Account Information</div>
+                                <div class="text-center mb-3">
+                                    <div class="profile-avatar" id="avatarInitials">—</div>
+                                    <span class="role-badge admin" id="roleBadge">—</span>
+                                </div>
+                                <div class="info-row"><span class="lbl">Login ID</span><span class="val" id="infoLoginId">—</span></div>
+                                <div class="info-row"><span class="lbl">Name</span><span class="val" id="infoName">—</span></div>
+                                <div class="info-row"><span class="lbl">Email</span><span class="val" id="infoEmail">—</span></div>
+                                <div class="info-row"><span class="lbl">Role</span><span class="val" id="infoRole">—</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Profile + Change Password -->
+                        <div class="col-lg-7 col-md-6 col-12">
+                            <!-- Edit Name/Email -->
+                            <div class="profile-card">
+                                <div class="profile-title"><i class="fas fa-edit"></i> Edit Profile</div>
+                                <div class="row">
+                                    <div class="col-lg-6 col-12 form-group">
+                                        <label class="form-label-sm">Name</label>
+                                        <input type="text" class="form-control" id="editName" placeholder="Your name">
+                                    </div>
+                                    <div class="col-lg-6 col-12 form-group">
+                                        <label class="form-label-sm">Email</label>
+                                        <input type="email" class="form-control" id="editEmail" placeholder="your@email.com">
+                                    </div>
+                                </div>
+                                <div class="text-end mt-1">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="saveProfile()"><i class="fas fa-save" style="margin-right:5px;"></i>Save Changes</button>
+                                </div>
+                            </div>
+
+                            <!-- Change Password -->
+                            <div class="profile-card">
+                                <div class="profile-title"><i class="fas fa-key"></i> Change Password</div>
+                                <div class="row">
+                                    <div class="col-lg-12 col-12 form-group">
+                                        <label class="form-label-sm">Current Password</label>
+                                        <input type="password" class="form-control" id="currentPw" placeholder="Enter current password">
+                                    </div>
+                                    <div class="col-lg-6 col-12 form-group">
+                                        <label class="form-label-sm">New Password</label>
+                                        <input type="password" class="form-control" id="newPw" placeholder="Min 4 characters" oninput="checkPwStrength()">
+                                        <div class="pw-strength" id="pwStrength"></div>
+                                    </div>
+                                    <div class="col-lg-6 col-12 form-group">
+                                        <label class="form-label-sm">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirmPw" placeholder="Re-enter new password">
+                                    </div>
+                                </div>
+                                <div class="text-end mt-1">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="doChangePassword()"><i class="fas fa-lock" style="margin-right:5px;"></i>Change Password</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manage Super Admins Section -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="profile-card">
+                                <div class="profile-title"><i class="fas fa-users-cog"></i> Manage Super Admins</div>
+
+                                <!-- Add New Super Admin -->
+                                <div style="background:#f8f9ff;border-radius:10px;padding:18px 20px;margin-bottom:18px">
+                                    <div style="font-size:12px;font-weight:700;color:#0d1b4a;margin-bottom:12px"><i class="fas fa-plus-circle" style="color:#4fc3f7;margin-right:6px"></i>Add New Super Admin</div>
+                                    <div class="row">
+                                        <div class="col-lg-3 col-md-4 col-12 form-group">
+                                            <label class="form-label-sm">Login ID</label>
+                                            <input type="text" class="form-control" id="newAdminLoginId" placeholder="e.g. admin2">
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-12 form-group">
+                                            <label class="form-label-sm">Name</label>
+                                            <input type="text" class="form-control" id="newAdminName" placeholder="Full name">
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 col-12 form-group">
+                                            <label class="form-label-sm">Email</label>
+                                            <input type="email" class="form-control" id="newAdminEmail" placeholder="email@example.com">
+                                        </div>
+                                        <div class="col-lg-3 col-12 form-group d-flex align-items-end">
+                                            <button class="btn btn-sm w-100" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;border-radius:6px;font-weight:600;" onclick="createAdmin()"><i class="fas fa-user-plus" style="margin-right:5px;"></i>Create</button>
+                                        </div>
+                                    </div>
+                                    <div class="cred-box" id="credBox">
+                                        <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:8px"><i class="fas fa-check-circle"></i> Super Admin Created Successfully</div>
+                                        <div class="row">
+                                            <div class="col-6"><div class="cred-label">Login ID</div><div class="cred-val" id="credLoginId">—</div></div>
+                                            <div class="col-6"><div class="cred-label">Password</div><div class="cred-val" id="credPassword">—</div></div>
+                                        </div>
+                                        <div style="font-size:10px;color:#888;margin-top:8px"><i class="fas fa-info-circle"></i> Save these credentials — the password cannot be retrieved later.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Super Admins List -->
+                                <div class="table-responsive">
+                                    <table class="admin-table" id="adminsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Login ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminsBody">
+                                            <tr><td colspan="6" class="text-center" style="padding:30px;color:#999;">Loading...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin'])) return;
+        initPage('super-admin-profile');
+
+        // ── Load Profile ──
+        let profile = {};
+        try { profile = await getMyProfile(); } catch(e) { showToast('Failed to load profile','error'); }
+
+        const initials = (profile.name || '?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+        $('#avatarInitials').text(initials);
+        const roleLabel = (profile.role||'').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+        $('#roleBadge').text(roleLabel);
+        $('#infoLoginId').text(profile.login_id || '—');
+        $('#infoName').text(profile.name || '—');
+        $('#infoEmail').text(profile.email || '—');
+        $('#infoRole').text(roleLabel);
+        $('#editName').val(profile.name || '');
+        $('#editEmail').val(profile.email || '');
+
+        // ── Load Super Admins List ──
+        await loadAdmins();
+
+        // ── Save Profile ──
+        window.saveProfile = async function(){
+            const name = $('#editName').val().trim();
+            const email = $('#editEmail').val().trim();
+            if(!name){ showToast('Name is required','error'); return; }
+            try {
+                await updateMyProfile({ name, email });
+                profile.name = name; profile.email = email;
+                $('#infoName').text(name);
+                $('#infoEmail').text(email || '—');
+                const ni = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                $('#avatarInitials').text(ni);
+                const u = getUser(); if(u){ u.name = name; u.email = email; setUser(u); }
+                showToast('Profile updated','success');
+            } catch(e){ showToast(e.message||'Failed to update','error'); }
+        };
+
+        // ── Password Strength ──
+        window.checkPwStrength = function(){
+            const pw = $('#newPw').val();
+            const el = $('#pwStrength');
+            if(pw.length < 4){ el.html('<span style="color:#e53935;">Too short</span>'); }
+            else if(pw.length < 6){ el.html('<span style="color:#ff9800;">Weak</span>'); }
+            else if(pw.length < 8){ el.html('<span style="color:#2196f3;">Fair</span>'); }
+            else { el.html('<span style="color:#43a047;">Strong</span>'); }
+        };
+
+        // ── Change Password ──
+        window.doChangePassword = async function(){
+            const current = $('#currentPw').val().trim();
+            const newPw = $('#newPw').val().trim();
+            const confirm = $('#confirmPw').val().trim();
+            if(!current){ showToast('Enter current password','error'); return; }
+            if(newPw.length < 4){ showToast('New password must be at least 4 characters','error'); return; }
+            if(newPw !== confirm){ showToast('Passwords do not match','error'); return; }
+            try {
+                const res = await changePassword(current, newPw);
+                if(res.error){ showToast(res.error,'error'); return; }
+                showToast('Password changed successfully','success');
+                $('#currentPw, #newPw, #confirmPw').val('');
+                $('#pwStrength').html('');
+            } catch(e){ showToast(e.message||'Failed to change password','error'); }
+        };
+
+        // ── Create Super Admin ──
+        window.createAdmin = async function(){
+            const login_id = $('#newAdminLoginId').val().trim();
+            const name = $('#newAdminName').val().trim();
+            const email = $('#newAdminEmail').val().trim();
+            if(!login_id){ showToast('Login ID is required','error'); return; }
+            if(!name){ showToast('Name is required','error'); return; }
+            try {
+                const res = await createSuperAdmin({ login_id, name, email });
+                if(res.error){ showToast(res.error,'error'); return; }
+                // Show credentials
+                $('#credLoginId').text(res.login_id || login_id);
+                $('#credPassword').text(res.password || '—');
+                $('#credBox').slideDown(200);
+                // Clear form
+                $('#newAdminLoginId, #newAdminName, #newAdminEmail').val('');
+                showToast('Super Admin created','success');
+                await loadAdmins();
+            } catch(e){ showToast(e.message||'Failed to create admin','error'); }
+        };
+    });
+
+    async function loadAdmins(){
+        try {
+            const admins = await getSuperAdmins();
+            const body = $('#adminsBody');
+            if(!admins || !admins.length){
+                body.html('<tr><td colspan="6" class="text-center" style="padding:30px;color:#999;">No super admins found</td></tr>');
+                return;
+            }
+            let html = '';
+            admins.forEach((a, i) => {
+                const created = a.created_at ? new Date(a.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+                const statusClass = a.is_active ? 'status-active' : 'status-inactive';
+                const statusText = a.is_active ? 'Active' : 'Inactive';
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td style="font-weight:600">${$('<span>').text(a.login_id).html()}</td>
+                    <td>${$('<span>').text(a.name || '—').html()}</td>
+                    <td>${$('<span>').text(a.email || '—').html()}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>${created}</td>
+                </tr>`;
+            });
+            body.html(html);
+        } catch(e){
+            $('#adminsBody').html('<tr><td colspan="6" class="text-center" style="padding:30px;color:#e53935;">Failed to load admins</td></tr>');
+        }
+    }
+    </script>
+</body>
+</html>

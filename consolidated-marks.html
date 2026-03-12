@@ -1,0 +1,324 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Consolidated Marks List — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        /* Multi-select dropdown */
+        .ms-dropdown{position:relative;width:100%}
+        .ms-trigger{font-size:12px;height:36px;border:1px solid #ced4da;border-radius:4px;padding:6px 30px 6px 10px;background:#fff;cursor:pointer;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#495057;user-select:none}
+        .ms-trigger::after{content:'\f078';font-family:'Font Awesome 6 Free';font-weight:900;font-size:10px;position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#999}
+        .ms-trigger.open{border-color:#1565c0;box-shadow:0 0 0 2px rgba(21,101,192,.15)}
+        .ms-panel{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ced4da;border-top:none;border-radius:0 0 6px 6px;z-index:1050;max-height:240px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+        .ms-panel.show{display:block}
+        .ms-item{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s}
+        .ms-item:hover{background:#f5f7ff}
+        .ms-item.select-all{font-weight:700;color:#1565c0;background:#f8f9ff;border-bottom:2px solid #e0e0e0}
+        .ms-item input[type="checkbox"]{margin:0;cursor:pointer;accent-color:#0d1b4a}
+        .ms-item label{margin:0;cursor:pointer;flex:1}
+
+        /* Print area */
+        .print-area{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;display:none;margin-top:16px}
+        .print-container{padding:24px 30px}
+        .school-header-print{text-align:center;margin-bottom:16px;border-bottom:3px double #0d1b4a;padding-bottom:12px}
+        .school-header-print img{height:60px;margin-bottom:6px}
+        .school-header-print h2{font-size:18px;font-weight:800;color:#0d1b4a;margin:0;text-transform:uppercase;letter-spacing:1px}
+        .school-header-print p{font-size:11px;color:#555;margin:2px 0}
+        .school-header-print .exam-title{font-size:14px;font-weight:700;color:#333;margin-top:8px;text-transform:uppercase}
+        .table-scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .cons-table{width:100%;border-collapse:collapse;margin-top:10px}
+        .cons-table th,.cons-table td{border:1px solid #bbb;padding:4px 5px;text-align:center;white-space:nowrap}
+        .cons-table thead th{background:#0d1b4a;color:#fff;font-weight:700;text-transform:uppercase}
+        .cons-table tbody tr:nth-child(even){background:#f9f9ff}
+        .cons-table .name-col{text-align:left;font-weight:600;white-space:nowrap}
+        .cons-table .pass-badge{color:#1b5e20;font-weight:700}
+        .cons-table .fail-badge{color:#c62828;font-weight:700}
+        .print-btn-bar{padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}
+
+        @media print {
+            @page{size:landscape;margin:10mm}
+            body *{visibility:hidden}
+            .print-area,.print-area *{visibility:visible}
+            .print-area{position:absolute;left:0;top:0;width:100%;border:none;border-radius:0;margin:0}
+            .print-btn-bar{display:none!important}
+            .print-container{padding:10px!important}
+            .table-scroll-wrap{overflow:visible!important}
+            .cons-table{table-layout:auto;width:100%}
+            .cons-table th,.cons-table td{padding:3px 4px!important}
+            .cons-table th{background:#0d1b4a!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Result</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Consolidated Marks List</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-table"></i> Consolidated Marks List</h3></div></div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Class *</label>
+                                    <select class="form-control" id="fClass" onchange="onClassChange()"><option value="">— Class —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Section *</label>
+                                    <select class="form-control" id="fSection"><option value="">— Section —</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Exam *</label>
+                                    <select class="form-control" id="fExam"><option value="">— Exam —</option></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Subjects *</label>
+                                    <div class="ms-dropdown" id="subjectDropdown">
+                                        <div class="ms-trigger" onclick="togglePanel('subjectDropdown')">Select Subjects</div>
+                                        <div class="ms-panel" id="subjectPanel"></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-12 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchMarks()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetAll()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Print Area -->
+                        <div class="print-area" id="printArea">
+                            <div class="print-btn-bar">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 18px;" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                                <span style="font-size:11px;color:#888;">Consolidated Marks List</span>
+                            </div>
+                            <div class="print-container" id="printContainer"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function () {
+            initPage('consolidated-marks');
+
+            let classCache = [], examCache = [], subjectCache = [], branches = [], studentCache = [];
+            try { [classCache, examCache, subjectCache, branches] = await Promise.all([getClasses(), getExamNames(), getSubjects(), getBranches()]); } catch(e) {}
+            const school = branches[0] || {};
+
+            classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
+            examCache.forEach(e => document.getElementById('fExam').innerHTML += `<option value="${e.id}">${e.name}</option>`);
+
+            // Build subject multi-select
+            function togglePanel(dropdownId) {
+                const dd = document.getElementById(dropdownId);
+                const panel = dd.querySelector('.ms-panel');
+                const trigger = dd.querySelector('.ms-trigger');
+                const isOpen = panel.classList.contains('show');
+                document.querySelectorAll('.ms-panel.show').forEach(p => { p.classList.remove('show'); p.parentElement.querySelector('.ms-trigger').classList.remove('open'); });
+                if (!isOpen) { panel.classList.add('show'); trigger.classList.add('open'); }
+            }
+            window.togglePanel = togglePanel;
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.ms-dropdown')) {
+                    document.querySelectorAll('.ms-panel.show').forEach(p => { p.classList.remove('show'); p.parentElement.querySelector('.ms-trigger').classList.remove('open'); });
+                }
+            });
+            function buildMultiSelect(panelId, items) {
+                const panel = document.getElementById(panelId);
+                panel.innerHTML = '';
+                const saDiv = document.createElement('div');
+                saDiv.className = 'ms-item select-all';
+                saDiv.innerHTML = '<input type="checkbox" class="ms-select-all"> <label>Select All</label>';
+                panel.appendChild(saDiv);
+                const saCheck = saDiv.querySelector('input');
+                saCheck.addEventListener('change', function() { panel.querySelectorAll('.ms-cb').forEach(cb => { cb.checked = this.checked; }); updateTriggerText(panelId); });
+                saDiv.addEventListener('click', function(e) { if (e.target !== saCheck) { saCheck.checked = !saCheck.checked; saCheck.dispatchEvent(new Event('change')); } });
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'ms-item';
+                    div.innerHTML = `<input type="checkbox" class="ms-cb" value="${item.value}"> <label>${item.label}</label>`;
+                    panel.appendChild(div);
+                    const cb = div.querySelector('input');
+                    cb.addEventListener('change', function() {
+                        const allC = panel.querySelectorAll('.ms-cb');
+                        const chk = panel.querySelectorAll('.ms-cb:checked');
+                        saCheck.checked = allC.length === chk.length;
+                        updateTriggerText(panelId);
+                    });
+                    div.addEventListener('click', function(e) { if (e.target !== cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); } });
+                });
+            }
+            function updateTriggerText(panelId) {
+                const panel = document.getElementById(panelId);
+                const trigger = panel.closest('.ms-dropdown').querySelector('.ms-trigger');
+                const checked = Array.from(panel.querySelectorAll('.ms-cb:checked'));
+                const all = panel.querySelectorAll('.ms-cb');
+                if (checked.length === 0) trigger.textContent = 'Select Subjects';
+                else if (checked.length === all.length) trigger.textContent = 'All Subjects';
+                else if (checked.length <= 3) trigger.textContent = checked.map(cb => cb.nextElementSibling.textContent).join(', ');
+                else trigger.textContent = checked.length + ' subjects selected';
+            }
+            function getCheckedValues(panelId) {
+                return Array.from(document.getElementById(panelId).querySelectorAll('.ms-cb:checked')).map(cb => parseInt(cb.value));
+            }
+            function clearMultiSelect(panelId) {
+                document.getElementById(panelId).querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                updateTriggerText(panelId);
+            }
+
+            buildMultiSelect('subjectPanel', subjectCache.map(s => ({ value: s.id, label: s.name })));
+
+            window.onClassChange = async function () {
+                const classId = parseInt(document.getElementById('fClass').value);
+                const secSel = document.getElementById('fSection');
+                secSel.innerHTML = '<option value="">— Section —</option>';
+                if (!classId) return;
+                try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
+                const sections = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
+                sections.forEach(s => secSel.innerHTML += `<option value="${s}">${s}</option>`);
+            };
+
+            window.searchMarks = async function () {
+                const classId = parseInt(document.getElementById('fClass').value);
+                const section = document.getElementById('fSection').value;
+                const examId = parseInt(document.getElementById('fExam').value);
+                const subjectIds = getCheckedValues('subjectPanel');
+                if (!classId || !section || !examId || subjectIds.length === 0) { alert('Please select all filters'); return; }
+
+                const cls = classCache.find(c => c.id === classId);
+                const exam = examCache.find(e => e.id === examId);
+                const selectedSubjects = subjectIds.map(sid => subjectCache.find(s => s.id === sid)).filter(Boolean);
+                const students = studentCache.filter(s => s.section === section && s.status === 'Active').sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
+
+                if (students.length === 0) { alert('No students found'); return; }
+
+                let allResults = [];
+                try { allResults = await getExamResults({ exam_id: examId }); } catch(e) {}
+
+                const passPercent = 33;
+
+                let subHeaders = selectedSubjects.map(s => `<th>${s.name}</th>`).join('');
+                let html = `
+                    <div class="school-header-print">
+                        <img src="${school.logo_url || 'img/figure/school-logo.png'}" alt="" onerror="this.style.display='none'">
+                        <h2>${school.school_name || ''}</h2>
+                        <p>${school.address || ''}</p>
+                        <p>Phone: ${school.phone || ''} | Email: ${school.email || ''}</p>
+                        <div class="exam-title">${exam.name} — Consolidated Marks List</div>
+                        <p style="font-size:12px;margin-top:4px;">Class: <b>${cls ? cls.name : ''}</b> | Section: <b>${section}</b> | Session: <b>${exam.session || ''}</b></p>
+                    </div>
+                    <div class="table-scroll-wrap">
+                    <table class="cons-table">
+                        <thead>
+                            <tr>
+                                <th>Adm No.</th>
+                                <th>Roll No.</th>
+                                <th>Student Name</th>
+                                <th>Father Name</th>
+                                ${subHeaders}
+                                <th>Discipline</th>
+                                <th>Yoga</th>
+                                <th>Total</th>
+                                <th>Result</th>
+                                <th>Parent's Sign</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                students.forEach(stu => {
+                    let totalObt = 0, totalMax = 0, allPass = true;
+                    let subCells = selectedSubjects.map(sub => {
+                        const r = allResults.find(x => x.student_id === stu.id && x.subject_id === sub.id);
+                        if (r) {
+                            const obt = (r.theory_marks || 0) + (r.practical_marks || 0);
+                            totalObt += obt;
+                            totalMax += (r.max_marks || 0);
+                            const pct = (obt / (r.max_marks || 1)) * 100;
+                            if (pct < passPercent) allPass = false;
+                            return `<td>${obt}</td>`;
+                        }
+                        return '<td>—</td>';
+                    }).join('');
+
+                    const pct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(1) : 0;
+                    const result = totalMax > 0 ? (allPass ? pct + '% Pass' : 'Fail') : '—';
+                    const resultClass = (allPass && totalMax > 0) ? 'pass-badge' : 'fail-badge';
+
+                    html += `<tr>
+                        <td>${stu.admission_no || ''}</td>
+                        <td>${stu.roll_no || ''}</td>
+                        <td class="name-col">${stu.name}</td>
+                        <td class="name-col">${stu.father_name || ''}</td>
+                        ${subCells}
+                        <td>A</td>
+                        <td>A</td>
+                        <td style="font-weight:700;">${totalObt}/${totalMax}</td>
+                        <td class="${resultClass}">${result}</td>
+                        <td style="min-width:80px;"></td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+
+                document.getElementById('printContainer').innerHTML = html;
+                document.getElementById('printArea').style.display = 'block';
+
+                const totalCols = selectedSubjects.length + 9;
+                let tblFont = 11;
+                if(totalCols > 14) tblFont = 7;
+                else if(totalCols > 12) tblFont = 8;
+                else if(totalCols > 10) tblFont = 9;
+                else if(totalCols > 8) tblFont = 10;
+                const tbl = document.querySelector('.cons-table');
+                if(tbl) { tbl.style.fontSize = tblFont + 'px'; tbl.querySelectorAll('th').forEach(th => th.style.fontSize = (tblFont - 1) + 'px'); }
+            };
+
+            window.resetAll = function () {
+                document.getElementById('fClass').value = '';
+                document.getElementById('fSection').innerHTML = '<option value="">— Section —</option>';
+                document.getElementById('fExam').value = '';
+                clearMultiSelect('subjectPanel');
+                document.getElementById('printArea').style.display = 'none';
+            };
+        })();
+    </script>
+</body>
+</html>

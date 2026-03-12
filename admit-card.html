@@ -1,0 +1,883 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Admit Card</title>
+    <meta name="description" content="Generate and print student admit cards">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ============ PAGE UI ============ */
+
+        /* Checkbox alignment fix */
+        #studentTable td:first-child,
+        #studentTable th:first-child {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #studentTable .form-check-input {
+            position: static;
+            margin: 0 auto;
+            display: block;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .select-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-all-row .form-check-input {
+            position: static;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        #studentTable td {
+            vertical-align: middle;
+        }
+
+        .id-card-preview-area {
+            display: none;
+            padding: 24px;
+            background: #e8eaf6;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .id-card-preview-area.visible {
+            display: block;
+        }
+
+        .preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* ============================================================
+           ADMIT CARD — Simple Formal Indian School Style
+           ============================================================ */
+        .admit-card {
+            --ac-dark: #1a1a1a;
+            width: 680px;
+            background: #fff;
+            border: 2px solid #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            page-break-inside: avoid;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .admit-card .ac-header {
+            text-align: center;
+            padding: 14px 20px 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        .admit-card .ac-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .admit-card .ac-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #333;
+            font-weight: 900;
+            flex-shrink: 0;
+            background: #f5f5f5;
+        }
+
+        .admit-card .ac-school-text {
+              text-align: left;
+        }
+
+        .admit-card .ac-school-text h4 {
+            font-size: 16px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #111;
+        }
+
+        .admit-card .ac-tagline {
+            font-size: 8px;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .admit-card .ac-contact {
+            font-size: 8.5px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* Badge */
+        .admit-card .ac-badge {
+            text-align: center;
+            padding: 6px 0 4px;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #111;
+            border-bottom: 1.5px solid #333;
+        }
+
+        /* Body */
+        .admit-card .ac-body {
+            padding: 14px 20px;
+        }
+
+        /* Student Info */
+        .admit-card .ac-student-info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 14px;
+            align-items: flex-start;
+        }
+
+        .admit-card .ac-photo {
+            width: 80px;
+            height: 95px;
+            border: 1.5px solid #333;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .admit-card .ac-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .admit-card .ac-details {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 20px;
+        }
+
+        .admit-card .ac-detail {
+            display: flex;
+            font-size: 10.5px;
+            padding: 3px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .admit-card .ac-detail .dt-lbl {
+            font-weight: 700;
+            color: #222;
+            white-space: nowrap;
+            min-width: 90px;
+            flex-shrink: 0;
+        }
+
+        .admit-card .ac-detail .dt-val {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Exam Info */
+        .admit-card .ac-exam-info {
+            border: 1px solid #ccc;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+
+        .admit-card .ac-exam-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admit-card .ac-exam-session {
+            font-size: 9px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        /* Date Sheet Table */
+        .admit-card .ac-datesheet {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9.5px;
+            margin-bottom: 10px;
+        }
+
+        .admit-card .ac-datesheet th {
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admit-card .ac-datesheet td {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .admit-card .ac-datesheet tr:nth-child(even) td {
+            background: #f9f9f9;
+        }
+
+        /* Footer - 3 Signatures */
+        .admit-card .ac-footer {
+            padding: 16px 20px 8px;
+            border-top: 1.5px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .admit-card .ac-sign-box {
+            text-align: center;
+            flex: 1;
+        }
+
+        .admit-card .ac-sign-box .ac-sign-line {
+            width: 80px;
+            border-top: 1px solid #333;
+            margin: 0 auto 3px;
+        }
+
+        .admit-card .ac-sign-box span {
+            font-size: 8px;
+            font-weight: 700;
+            color: #222;
+            display: block;
+        }
+
+        /* Precautions */
+        .admit-card .ac-precautions {
+            padding: 8px 20px 10px;
+            border-top: 1px dashed #aaa;
+            background: #fdfdfd;
+        }
+
+        .admit-card .ac-precautions h6 {
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 4px;
+        }
+
+        .admit-card .ac-precautions ol {
+            margin: 0;
+            padding-left: 16px;
+            font-size: 7.5px;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .admit-card .ac-precautions ol li {
+            padding-left: 2px;
+        }
+
+        /* ===== RESPONSIVE: TABLET ===== */
+        @media (max-width: 767px) {
+            .admit-card {
+                width: 100%;
+                max-width: 100%;
+                font-size: 9px;
+            }
+
+            .admit-card .ac-header {
+                padding: 10px 12px 8px;
+            }
+
+            .admit-card .ac-logo {
+                width: 40px;
+                height: 40px;
+                font-size: 11px;
+            }
+
+            .admit-card .ac-school-text h4 {
+                font-size: 13px;
+            }
+
+            .admit-card .ac-body {
+                padding: 10px 12px;
+            }
+
+            .admit-card .ac-details {
+                grid-template-columns: 1fr;
+                gap: 1px 0;
+            }
+
+            .admit-card .ac-photo {
+                width: 60px;
+                height: 72px;
+            }
+
+            .admit-card .ac-detail .dt-lbl {
+                min-width: 75px;
+                font-size: 9.5px;
+            }
+
+            .admit-card .ac-detail .dt-val {
+                font-size: 9.5px;
+            }
+
+            .admit-card .ac-datesheet th,
+            .admit-card .ac-datesheet td {
+                padding: 4px 6px;
+                font-size: 8.5px;
+            }
+
+            .admit-card .ac-footer {
+                padding: 10px 12px 6px;
+            }
+
+            .admit-card .ac-precautions {
+                padding: 6px 12px 8px;
+            }
+
+            .admit-card .ac-precautions ol {
+                font-size: 7px;
+            }
+
+            .preview-grid {
+                gap: 12px;
+            }
+        }
+
+        /* ===== RESPONSIVE: MOBILE ===== */
+        @media (max-width: 575px) {
+            .admit-card .ac-student-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .admit-card .ac-details {
+                width: 100%;
+            }
+
+            .admit-card .ac-footer {
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+
+            .admit-card .ac-sign-box {
+                flex: 0 0 auto;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            .admit-card {
+                max-width: 680px;
+                width: 100%;
+                box-shadow: none;
+                margin: 10px auto;
+                page-break-inside: avoid;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+
+        /* Custom checkbox for datesheet toggle */
+        .datesheet-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .datesheet-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #304ffe;
+        }
+
+        .datesheet-toggle label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Admit Card</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Admit Card</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>
+                                    <i class="fas fa-id-badge"></i> Generate Admit Cards
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Filters Row -->
+                        <div class="row mg-b-15 align-items-end">
+                            <div class="col-lg-2 col-md-6 col-6 form-group">
+                                <label class="form-label-sm">Class *</label>
+                                <select class="form-control" id="filterClass">
+                                    <option value="">— Select Class —</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-6 col-6 form-group">
+                                <label class="form-label-sm">Section</label>
+                                <select class="form-control" id="filterSection">
+                                    <option value="All">All Sections</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-6 col-6 form-group">
+                                <label class="form-label-sm">Exam *</label>
+                                <select class="form-control" id="filterExam">
+                                    <option value="">— Select Exam —</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-6 col-6 form-group">
+                                <label class="form-label-sm">Order By</label>
+                                <select class="form-control" id="orderBy">
+                                    <option value="rollNo">Roll No.</option>
+                                    <option value="admNo">Adm. No.</option>
+                                    <option value="nameAZ">Name (A-Z)</option>
+                                    <option value="nameZA">Name (Z-A)</option>
+                                </select>
+                            </div>
+                            <div class="col-auto form-group d-flex align-items-center flex-wrap" style="gap:10px;">
+                                <div class="datesheet-toggle" style="margin:0;">
+                                    <input type="checkbox" id="withDateSheet" checked>
+                                    <label for="withDateSheet"><i class="fas fa-calendar-alt mg-r-5"
+                                            style="color:#304ffe;"></i>Date Sheet</label>
+                                </div>
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnSearch"
+                                    style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <button type="button" class="btn-fill-lg bg-blue-dark btn-hover-yellow" id="btnReset"
+                                    style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Student List -->
+                        <div id="studentListArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10">
+                                <div class="select-all-row">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                    <label for="selectAll"
+                                        style="font-weight:600;font-size:13px;margin:0;cursor:pointer;">Select
+                                        All</label>
+                                </div>
+                                <span id="recordCount" style="font-size:12px;font-weight:600;color:#555;"></span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="studentTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px;"></th>
+                                            <th>Photo</th>
+                                            <th>Admission No.</th>
+                                            <th>Student Name</th>
+                                            <th>Father Name</th>
+                                            <th>Gender</th>
+                                            <th>Class</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Generate Button -->
+                            <div class="mg-t-15">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnPreview"
+                                    style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                    <i class="fas fa-eye"></i> Preview Admit Cards
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preview & Print -->
+                        <div id="previewArea" class="id-card-preview-area mg-t-16">
+                            <div class="d-flex align-items-center justify-content-between mg-b-15">
+                                <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
+                                    <i class="fas fa-eye mg-r-5" style="color:#304ffe;"></i> Admit Card Preview
+                                </h6>
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnPrint"
+                                    style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                    <i class="fas fa-print"></i> Print / Download PDF
+                                </button>
+                            </div>
+                            <div id="printHelpInfo"
+                                style="background:#fff;border:1px solid #c5cae9;border-radius:8px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                                <div style="font-size:12px;font-weight:700;color:#304ffe;white-space:nowrap;">
+                                    <i class="fas fa-info-circle"></i> Print Settings:
+                                </div>
+                                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#555;">
+                                    <span><i class="fas fa-file" style="color:#0d1b4a;margin-right:3px;"></i>
+                                        <b>Paper:</b> A4</span>
+                                    <span><i class="fas fa-expand" style="color:#0d1b4a;margin-right:3px;"></i>
+                                        <b>Scale:</b> 90%</span>
+                                    <span><i class="fas fa-mobile-alt" style="color:#0d1b4a;margin-right:3px;"></i>
+                                        <b>Orientation:</b> Portrait</span>
+                                    <span style="color:#b71c1c;font-weight:600;"><i class="fas fa-exclamation-triangle"
+                                            style="margin-right:3px;"></i> Enable "Background Graphics" in print
+                                        settings</span>
+                                </div>
+                            </div>
+                            <div class="preview-grid" id="printArea"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('admit-card');
+
+            let selectedStudents = [];
+            let currentExam = null;
+            let showDateSheet = true;
+            let studentCache = [], classCache = [], examCache = [], subjectCache = [], branches = [], sessions = [], datesheetCache = [];
+
+            try { [classCache, examCache, subjectCache, branches, sessions] = await Promise.all([getClasses(), getExamNames(), getSubjects(), getBranches(), getAcademicSessions()]); } catch(e) {}
+            const school = branches[0] || {};
+            const currentSession = sessions.find(s => s.status === 'Active') || {};
+
+            classCache.forEach(c => $('#filterClass').append(`<option value="${c.id}">${c.name}</option>`));
+            examCache.forEach(e => $('#filterExam').append(`<option value="${e.id}">${e.name} (${e.session || ''})</option>`));
+
+            $('#filterClass').on('change', async function () {
+                const classId = parseInt($(this).val());
+                $('#filterSection').html('<option value="All">All Sections</option>');
+                if (!classId) return;
+                try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
+                const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
+                secs.forEach(sec => $('#filterSection').append(`<option value="${sec}">${sec}</option>`));
+            });
+
+            $('#withDateSheet').on('change', function () { showDateSheet = $(this).is(':checked'); });
+
+            $('#btnSearch').on('click', async function () {
+                const classId = parseInt($('#filterClass').val());
+                const section = $('#filterSection').val();
+                const examId = parseInt($('#filterExam').val());
+                if (!classId) { showToast('Please select a class', 'error'); return; }
+                if (!examId) { showToast('Please select an exam', 'error'); return; }
+
+                currentExam = examCache.find(e => e.id === examId);
+                try { datesheetCache = await getDatesheets({ exam_id: examId, class_id: classId }); } catch(e) { datesheetCache = []; }
+
+                let students = studentCache.filter(s => s.status === 'Active');
+                if (section && section !== 'All') students = students.filter(s => s.section === section);
+                const orderBy = $('#orderBy').val();
+                if (orderBy === 'rollNo') students.sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
+                else if (orderBy === 'name') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                else if (orderBy === 'admissionNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
+                renderStudentList(students);
+            });
+
+            $('#btnReset').on('click', function () {
+                $('#filterClass').val(''); $('#filterSection').val('All'); $('#filterExam').val('');
+                $('#studentListArea').hide();
+                $('#previewArea').removeClass('visible'); selectedStudents = [];
+            });
+
+            function renderStudentList(students) {
+                const tbody = $('#studentTableBody'); tbody.empty();
+                if (!students.length) {
+                    tbody.append(`<tr><td colspan="7" class="text-center" style="padding:30px;color:#999;font-size:13px;">
+                    <i class="fas fa-user-slash" style="font-size:24px;display:block;margin-bottom:8px;"></i>No students found</td></tr>`);
+                    $('#studentListArea').show(); $('#recordCount').text('0 Records'); return;
+                }
+                students.forEach(s => {
+                    const cls = classCache.find(c => c.id === s.class_id);
+                    tbody.append(`
+                    <tr class="student-check-row" data-id="${s.id}">
+                        <td><input type="checkbox" class="form-check-input student-cb" value="${s.id}"></td>
+                        <td><img src="${s.photo_url || 'img/figure/student2.png'}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;"></td>
+                        <td style="font-weight:600;font-size:12px;">${s.admission_no || ''}</td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        <td>${s.father_name || ''}</td>
+                        <td><span class="badge badge-${s.gender === 'Male' ? 'primary' : 'danger'}" style="font-size:10px;">${s.gender || ''}</span></td>
+                        <td>${cls ? cls.name : '-'} / ${s.section || ''}</td>
+                    </tr>`);
+                });
+                $('#recordCount').text(`${students.length} Record${students.length > 1 ? 's' : ''}`);
+                $('#studentListArea').show(); $('#selectAll').prop('checked', false);
+            }
+
+            $('#selectAll').on('change', function () {
+                const c = $(this).is(':checked');
+                $('.student-cb').prop('checked', c); $('.student-check-row').toggleClass('selected', c);
+            });
+            $(document).on('change', '.student-cb', function () {
+                $(this).closest('.student-check-row').toggleClass('selected', $(this).is(':checked'));
+                const t = $('.student-cb').length, c = $('.student-cb:checked').length;
+                $('#selectAll').prop('checked', t === c);
+            });
+            $(document).on('click', '.student-check-row', function (e) {
+                if ($(e.target).is('input')) return;
+                const cb = $(this).find('.student-cb'); cb.prop('checked', !cb.is(':checked')).trigger('change');
+            });
+
+            $('#btnPreview').on('click', function () {
+                const ids = $('.student-cb:checked').map(function () { return parseInt($(this).val()); }).get();
+                if (!ids.length) { showToast('Please select at least one student', 'error'); return; }
+                selectedStudents = studentCache.filter(s => ids.includes(s.id));
+                renderPreview();
+            });
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            function renderPreview() {
+                const container = $('#printArea'); container.empty();
+                if (!currentExam) return;
+
+                selectedStudents.forEach(s => {
+                    const cls = classCache.find(c => c.id === s.class_id);
+                    const cn = cls ? cls.name : '-';
+                    const dob = formatDate(s.dob);
+                    const sess = s.session || currentSession.name || '';
+
+                    const stuSubjects = s.subjects ? (typeof s.subjects === 'string' ? JSON.parse(s.subjects) : s.subjects) : [];
+                    const filteredDateSheet = datesheetCache.filter(d => stuSubjects.includes(d.subject_id));
+
+                    // Compute start/end from datesheet entries
+                    const dates = filteredDateSheet.map(d => d.date).filter(Boolean).sort();
+                    const startDate = dates[0] || '';
+                    const endDate = dates[dates.length - 1] || '';
+
+                    let dateSheetHtml = '';
+                    if (showDateSheet && filteredDateSheet.length) {
+                        let rows = '';
+                        filteredDateSheet.forEach((d, i) => {
+                            const subj = subjectCache.find(sub => sub.id === d.subject_id);
+                            const timeStr = [d.time_from, d.time_to].filter(Boolean).join(' — ') || d.time || '';
+                            rows += `<tr>
+                                <td style="font-weight:600;">${i + 1}</td>
+                                <td>${formatDate(d.date)}</td>
+                                <td style="font-weight:600;">${subj ? subj.name : d.subject_name || '-'} (${subj ? (subj.code || '') : '-'})</td>
+                                <td>${timeStr}</td>
+                            </tr>`;
+                        });
+                        dateSheetHtml = `
+                            <table class="ac-datesheet">
+                                <thead><tr><th style="width:30px;">S.No</th><th>Date</th><th>Subject</th><th>Time</th></tr></thead>
+                                <tbody>${rows}</tbody>
+                            </table>`;
+                    }
+
+                    const shortName = (school.school_name || '').split(' ').map(w => w[0]).join('').substring(0, 4);
+
+                    container.append(`
+                    <div class="admit-card">
+                        <div class="ac-header">
+                            <div class="ac-header-row">
+                                <div class="ac-logo">${school.logo_url ? '<img src="'+school.logo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : shortName}</div>
+                                <div class="ac-school-text">
+                                    <h4>${school.school_name || ''}</h4>
+                                    <div class="ac-tagline">${school.board || ''}</div>
+                                    <div class="ac-contact">
+                                        <i class="fas fa-map-marker-alt"></i> ${school.address || ''} &nbsp;|&nbsp;
+                                        <i class="fas fa-phone-alt"></i> ${school.phone || ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ac-badge">Admit Card</div>
+                        <div class="ac-body">
+                            <div class="ac-student-info">
+                                <div class="ac-photo"><img src="${s.photo_url || 'img/figure/student2.png'}" alt="${s.name}"></div>
+                                <div class="ac-details">
+                                    <div class="ac-detail"><span class="dt-lbl">Student Name</span><span class="dt-val">${s.name}</span></div>
+                                    <div class="ac-detail"><span class="dt-lbl">Adm. No.</span><span class="dt-val">${s.admission_no || ''}</span></div>
+                                    <div class="ac-detail"><span class="dt-lbl">Father's Name</span><span class="dt-val">${s.father_name || ''}</span></div>
+                                    <div class="ac-detail"><span class="dt-lbl">Class / Sec</span><span class="dt-val">${cn} / ${s.section || ''}</span></div>
+                                    <div class="ac-detail"><span class="dt-lbl">Roll No.</span><span class="dt-val">${s.roll_no || '-'}</span></div>
+                                    <div class="ac-detail"><span class="dt-lbl">Date of Birth</span><span class="dt-val">${dob}</span></div>
+                                </div>
+                            </div>
+                            <div class="ac-exam-info">
+                                <div class="ac-exam-title"><i class="fas fa-file-alt mg-r-5"></i>${currentExam.name}</div>
+                                <div class="ac-exam-session">Session: ${sess} &nbsp;|&nbsp; ${formatDate(startDate)} — ${formatDate(endDate)}</div>
+                            </div>
+                            ${dateSheetHtml}
+                        </div>
+                        <div class="ac-footer">
+                            <div class="ac-sign-box"><div class="ac-sign-line"></div><span>School Seal</span></div>
+                            <div class="ac-sign-box"><div class="ac-sign-line"></div><span>Exam Controller</span></div>
+                            <div class="ac-sign-box">${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:30px;max-width:80px;object-fit:contain;display:block;margin:0 auto;">' : ''}<div class="ac-sign-line"></div><span>${school.signing_authority_designation || 'Principal'}</span></div>
+                        </div>
+                        <div class="ac-precautions">
+                            <h6><i class="fas fa-exclamation-circle"></i> Important Instructions</h6>
+                            <ol>
+                                <li>Students must bring this admit card to the examination hall. Entry without admit card is strictly prohibited.</li>
+                                <li>Mobile phones, smartwatches, and any electronic devices are not allowed inside the exam hall.</li>
+                                <li>Students must reach the exam centre at least 30 minutes before the commencement of the examination.</li>
+                                <li>Students must carry their own stationery (pen, pencil, eraser, scale, etc.). Sharing is not allowed.</li>
+                                <li>Any student found using unfair means will be immediately disqualified and disciplinary action will be taken.</li>
+                            </ol>
+                        </div>
+                    </div>`);
+                });
+
+                $('#previewArea').addClass('visible');
+                $('html, body').animate({ scrollTop: $('#previewArea').offset().top - 80 }, 400);
+            }
+
+            // Print
+            $('#btnPrint').on('click', function () {
+                const printContent = document.getElementById('printArea').innerHTML;
+                const printWin = window.open('', '_blank');
+                printWin.document.write(`<!DOCTYPE html><html><head><title>Admit Cards</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 10mm; }
+                    .admit-card {
+                        --ac-dark: #1a1a1a;
+                        width: 100%; max-width: 680px; margin: 0 auto 20px;
+                        border: 2px solid #333; page-break-inside: avoid;
+                    }
+                    .ac-header { text-align: center; padding: 14px 20px 10px; border-bottom: 2px solid #333; }
+                    .ac-header-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+                    .ac-logo {
+                        width: 56px; height: 56px; border-radius: 50%; background: #f5f5f5;
+                        display: flex; align-items: center; justify-content: center;
+                        font-size: 14px; color: #333; font-weight: 900;
+                        border: 2px solid #333; flex-shrink: 0;
+                    }
+                        .ac-school-text { text-align: left; }
+                    .ac-school-text h4 { font-size: 16px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 0.8px; color: #111; }
+                    .ac-tagline { font-size: 8px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+                    .ac-contact { font-size: 8.5px; color: #555; margin-top: 4px; }
+                    .ac-badge { text-align: center; padding: 6px 0 4px; font-size: 13px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #111; border-bottom: 1.5px solid #333; }
+                    .ac-body { padding: 14px 20px; }
+                    .ac-student-info { display: flex; gap: 16px; margin-bottom: 14px; align-items: flex-start; }
+                    .ac-photo { width: 80px; height: 95px; border: 1.5px solid #333; flex-shrink: 0; overflow: hidden; }
+                    .ac-photo img { width: 100%; height: 100%; object-fit: cover; }
+                    .ac-details { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; }
+                    .ac-detail { display: flex; font-size: 10.5px; padding: 3px 0; border-bottom: 1px dotted #ccc; }
+                    .ac-detail .dt-lbl { font-weight: 700; color: #222; white-space: nowrap; min-width: 90px; flex-shrink: 0; }
+                    .ac-detail .dt-val { color: #333; font-weight: 500; }
+                    .ac-exam-info { border: 1px solid #ccc; padding: 8px 14px; margin-bottom: 12px; background: #fafafa; }
+                    .ac-exam-title { font-size: 11px; font-weight: 800; color: #111; text-transform: uppercase; letter-spacing: 0.5px; }
+                    .ac-exam-session { font-size: 9px; color: #555; font-weight: 600; }
+                    .ac-datesheet { width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 10px; }
+                    .ac-datesheet th { background: #333; color: #fff; padding: 5px 10px; text-align: left; font-weight: 600; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .ac-datesheet td { padding: 5px 10px; border: 1px solid #ddd; font-weight: 500; color: #333; }
+                    .ac-datesheet tr:nth-child(even) td { background: #f9f9f9; }
+                    .ac-footer { padding: 16px 20px 8px; border-top: 1.5px solid #333; display: flex; justify-content: space-between; align-items: flex-end; }
+                    .ac-sign-box { text-align: center; flex: 1; }
+                    .ac-sign-box .ac-sign-line { width: 80px; border-top: 1px solid #333; margin: 0 auto 3px; }
+                    .ac-sign-box span { font-size: 8px; font-weight: 700; color: #222; display: block; }
+                    .ac-precautions { padding: 8px 20px 10px; border-top: 1px dashed #aaa; background: #fdfdfd; }
+                    .ac-precautions h6 { font-size: 8.5px; font-weight: 800; color: #111; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px; }
+                    .ac-precautions ol { margin: 0; padding-left: 16px; font-size: 7.5px; color: #444; line-height: 1.7; }
+                    .ac-precautions ol li { padding-left: 2px; }
+                    @page { size: A4 portrait; margin: 10mm; }
+                </style></head><body>${printContent}</body></html>`);
+                printWin.document.close();
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 500);
+            });
+        });
+    </script>
+</body>
+
+</html>

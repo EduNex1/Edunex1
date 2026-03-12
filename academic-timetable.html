@@ -1,0 +1,383 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Time Table — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .quick-links { display: flex; gap: 8px; margin-bottom: 16px; }
+        .ql-btn { padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 2px solid #304ffe; cursor: pointer; transition: all 0.15s; background: #fff; color: #304ffe; }
+        .ql-btn.active, .ql-btn:hover { background: #304ffe; color: #fff; }
+        .record-count { background: #e3f2fd; color: #1565c0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+        .tt-table td, .tt-table th { font-size: 12px; vertical-align: middle; padding: 7px 10px; }
+        .tt-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.3px; }
+        .tt-table tbody tr:hover { background: #f8f9ff; }
+        .action-btn { border: none; background: none; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; transition: background 0.15s; }
+        .action-btn.edit { color: #1565c0; } .action-btn.edit:hover { background: #e3f2fd; }
+        .action-btn.delete { color: #c62828; } .action-btn.delete:hover { background: #ffebee; }
+        .day-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #e8eaf6; color: #304ffe; }
+        .form-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        @media (max-width:767px) { .tt-table td, .tt-table th { font-size: 11px; padding: 5px 6px; } }
+        @media (max-width:575px) { .tt-table td, .tt-table th { font-size: 10px; padding: 4px 5px; } }
+        @media (max-width:1199px) { .col-hide-xl { display: none !important; } }
+        @media (max-width:991px)  { .col-hide-lg { display: none !important; } }
+        @media (max-width:767px)  { .col-hide-md { display: none !important; } }
+        @media (max-width:575px)  { .col-hide-sm { display: none !important; } }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Time Table</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-calendar-week"></i> Time Table</h3>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div class="quick-links">
+                            <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Time Table</button>
+                            <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Entry</button>
+                        </div>
+
+                        <!-- ADD FORM -->
+                        <div class="form-card" id="addSection" style="display:none;">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Day *</label>
+                                    <select class="form-control" id="addDay" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Period *</label>
+                                    <select class="form-control" id="addPeriod" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select class="form-control" id="addClass" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Section *</label>
+                                    <select class="form-control" id="addSection2" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Subject *</label>
+                                    <select class="form-control" id="addSubject" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Teacher *</label>
+                                    <select class="form-control" id="addTeacher" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Start Time *</label>
+                                    <input type="time" class="form-control" id="addStartTime" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">End Time *</label>
+                                    <input type="time" class="form-control" id="addEndTime" style="font-size:12px;height:36px;">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center" style="gap:8px;margin-top:8px;">
+                                <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSave" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                                <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnCancelAdd" style="border-radius:6px;height:36px;font-size:12px;padding:0 20px;width:auto;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                            <input type="hidden" id="editId" value="">
+                        </div>
+
+                        <!-- VIEW SECTION -->
+                        <div id="viewSection">
+                            <!-- Filters -->
+                            <div class="row gutters-8 align-items-end mg-b-12">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Day</label>
+                                    <select class="form-control" id="filterDay" style="font-size:12px;height:36px;">
+                                        <option value="">All Days</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="filterClass" style="font-size:12px;height:36px;">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="filterSection" style="font-size:12px;height:36px;">
+                                        <option value="All">All</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Subject</label>
+                                    <select class="form-control" id="filterSubject" style="font-size:12px;height:36px;">
+                                        <option value="">All Subjects</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Teacher</label>
+                                    <select class="form-control" id="filterTeacher" style="font-size:12px;height:36px;">
+                                        <option value="">All Teachers</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto form-group d-flex" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-search"></i> SEARCH
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnReset" style="border-radius:6px;height:36px;font-size:11px;padding:0 16px;white-space:nowrap;width:auto;">
+                                        <i class="fas fa-redo"></i> RESET
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Results -->
+                            <div class="d-flex align-items-center justify-content-between mg-b-10" style="flex-wrap:wrap;gap:8px;">
+                                <span class="record-count" id="recordCount">0 Records</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered tt-table" id="ttTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Day</th>
+                                            <th>Period / Time</th>
+                                            <th>Class / Sec</th>
+                                            <th>Subject</th>
+                                            <th class="col-hide-md">Teacher</th>
+                                            <th style="width:70px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ttBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-timetable');
+
+            const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            let classCache = [], sectionCache = [], subjectCache = [], periodCache = [], staffCache = [], ttCache = [];
+            try {
+                [classCache, sectionCache, subjectCache, periodCache, staffCache] = await Promise.all([
+                    getClasses(), getSections(), getSubjects(), getPeriods(), getStaff()
+                ]);
+            } catch(e) { console.error('Load error', e); }
+
+            // Populate dropdowns
+            DAYS.forEach(d => { $('#filterDay, #addDay').append(`<option value="${d}">${d}</option>`); });
+            classCache.forEach(c => { $('#filterClass, #addClass').append(`<option value="${c.id}">${c.name}</option>`); });
+            sectionCache.forEach(s => { $('#filterSection, #addSection2').append(`<option value="${s.name}">${s.name}</option>`); });
+            subjectCache.forEach(s => { $('#filterSubject, #addSubject').append(`<option value="${s.id}">${s.name}</option>`); });
+            periodCache.forEach(p => { $('#addPeriod').append(`<option value="${p.no || p.id}">Period ${p.no || p.id}</option>`); });
+            const teachers = staffCache.filter(s => (s.designation||'').toLowerCase() === 'teacher' && (s.status||'Active') === 'Active');
+            teachers.forEach(t => { $('#filterTeacher, #addTeacher').append(`<option value="${t.id}">${t.name}</option>`); });
+
+            // Auto-fill time when period is selected
+            $('#addPeriod').on('change', function () {
+                const pNo = parseInt($(this).val());
+                const period = periodCache.find(p => (p.no || p.id) === pNo);
+                if (period && period.time) {
+                    const parts = period.time.split(' - ');
+                    if (parts.length === 2) {
+                        $('#addStartTime').val(to24h(parts[0].trim()));
+                        $('#addEndTime').val(to24h(parts[1].trim()));
+                    }
+                }
+            });
+
+            function to24h(t) {
+                const m = t.match(/(\d{1,2}):(\d{2})/);
+                if (!m) return '';
+                return m[1].padStart(2, '0') + ':' + m[2];
+            }
+            function fmt12(t24) {
+                if (!t24) return '';
+                const [h, m] = t24.split(':');
+                return h + ':' + m;
+            }
+
+            // Pre-select Class 5 and auto-load
+            if (classCache.length) { $('#filterClass').val(classCache[0].id); }
+            await loadTable();
+
+            // Tab switching
+            $('#tabView').on('click', function () {
+                $(this).addClass('active'); $('#tabAdd').removeClass('active');
+                $('#viewSection').show(); $('#addSection').hide();
+            });
+            $('#tabAdd').on('click', function () {
+                $(this).addClass('active'); $('#tabView').removeClass('active');
+                $('#addSection').show(); $('#viewSection').hide();
+                resetAddForm();
+            });
+
+            // Search / Reset
+            $('#btnSearch').on('click', function () { loadTable(); });
+            $('#btnReset').on('click', function () {
+                $('#filterDay, #filterClass, #filterSubject, #filterTeacher').val('');
+                $('#filterSection').val('All');
+                loadTable();
+            });
+
+            async function loadTable() {
+                const filters = {};
+                const day = $('#filterDay').val();
+                const classId = $('#filterClass').val();
+                const section = $('#filterSection').val();
+                const subjectId = $('#filterSubject').val();
+                const teacherId = $('#filterTeacher').val();
+                if (day) filters.day = day;
+                if (classId) filters.class_id = classId;
+                if (section && section !== 'All') filters.section = section;
+                if (subjectId) filters.subject_id = subjectId;
+                if (teacherId) filters.staff_id = teacherId;
+
+                try { ttCache = await getTimetable(filters); } catch(e) { ttCache = []; }
+
+                const tbody = $('#ttBody');
+                tbody.empty();
+                $('#recordCount').text(ttCache.length + ' Record' + (ttCache.length !== 1 ? 's' : ''));
+
+                if (!ttCache.length) {
+                    tbody.html('<tr><td colspan="6" class="text-center" style="padding:30px;color:#bbb;"><i class="fas fa-calendar-times" style="font-size:24px;display:block;margin-bottom:8px;"></i>No entries found</td></tr>');
+                    return;
+                }
+
+                ttCache.forEach(e => {
+                    const cls = classCache.find(c => c.id === e.class_id);
+                    const sub = subjectCache.find(s => s.id === e.subject_id);
+                    tbody.append(`<tr>
+                        <td><span class="day-badge">${(e.day||'').substring(0, 3)}</span></td>
+                        <td><strong>P${e.period}</strong> <span style="color:#888;font-size:11px;">${e.time || ''}</span></td>
+                        <td>${cls ? cls.name : '-'} / ${e.section || '-'}</td>
+                        <td style="font-weight:600;">${sub ? sub.name : (e.subject_name || '-')}</td>
+                        <td class="col-hide-md">${e.teacher_name || '-'}</td>
+                        <td>
+                            <button class="action-btn edit" onclick="editEntry(${e.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn delete" onclick="deleteEntry(${e.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`);
+                });
+            }
+
+            // Save
+            $('#btnSave').on('click', async function () {
+                const startTime = $('#addStartTime').val();
+                const endTime = $('#addEndTime').val();
+                const data = {
+                    day: $('#addDay').val(),
+                    period: parseInt($('#addPeriod').val()),
+                    class_id: parseInt($('#addClass').val()),
+                    section: $('#addSection2').val(),
+                    subject_id: parseInt($('#addSubject').val()),
+                    staff_id: parseInt($('#addTeacher').val()),
+                    time: startTime && endTime ? fmt12(startTime) + ' - ' + fmt12(endTime) : ''
+                };
+                if (!data.day || !data.period || !data.class_id || !data.section || !data.subject_id || !data.staff_id || !startTime || !endTime) {
+                    showToast('Please fill all fields', 'error'); return;
+                }
+                try {
+                    const editId = parseInt($('#editId').val());
+                    if (editId) {
+                        await updateTimetableEntry(editId, data);
+                        showToast('Entry updated', 'success');
+                    } else {
+                        await createTimetableEntry(data);
+                        showToast('Entry added', 'success');
+                    }
+                    $('#tabView').click();
+                    await loadTable();
+                } catch(e) { showToast('Error saving entry', 'error'); }
+            });
+
+            $('#btnCancelAdd').on('click', function () { $('#tabView').click(); });
+
+            function resetAddForm() {
+                $('#addDay, #addPeriod, #addClass, #addSection2, #addSubject, #addTeacher').val('');
+                $('#addStartTime, #addEndTime').val('');
+                $('#editId').val('');
+                $('#btnSave').html('<i class="fas fa-save"></i> Save');
+            }
+
+            window.editEntry = function (id) {
+                const e = ttCache.find(x => x.id === id);
+                if (!e) return;
+                $('#tabAdd').click();
+                setTimeout(function () {
+                    $('#addDay').val(e.day);
+                    $('#addPeriod').val(e.period);
+                    $('#addClass').val(e.class_id);
+                    $('#addSection2').val(e.section);
+                    $('#addSubject').val(e.subject_id);
+                    $('#addTeacher').val(e.staff_id);
+                    if (e.time) {
+                        const parts = e.time.split(' - ');
+                        if (parts.length === 2) {
+                            $('#addStartTime').val(to24h(parts[0].trim()));
+                            $('#addEndTime').val(to24h(parts[1].trim()));
+                        }
+                    }
+                    $('#editId').val(id);
+                    $('#btnSave').html('<i class="fas fa-save"></i> Update');
+                }, 50);
+            };
+
+            window.deleteEntry = async function (id) {
+                if (!confirm('Delete this entry?')) return;
+                try {
+                    await deleteTimetableEntry(id);
+                    showToast('Entry deleted', 'success');
+                    await loadTable();
+                } catch(e) { showToast('Error deleting entry', 'error'); }
+            };
+        });
+    </script>
+</body>
+
+</html>

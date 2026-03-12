@@ -1,0 +1,844 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Staff ID Card — EduNex1</title>
+    <meta name="description" content="Generate and print staff ID cards">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        #staffTable td:first-child,
+        #staffTable th:first-child {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #staffTable .form-check-input {
+            position: static;
+            margin: 0 auto;
+            display: block;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .select-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-all-row .form-check-input {
+            position: static;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        #staffTable td {
+            vertical-align: middle;
+        }
+
+        .design-grid {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .design-card {
+            width: 140px;
+            padding: 14px 10px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .design-card:hover {
+            border-color: #7986cb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(48, 79, 254, 0.12);
+        }
+
+        .design-card.active {
+            border-color: #304ffe;
+            background: #f5f7ff;
+        }
+
+        .design-card.active::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            color: #304ffe;
+            font-size: 12px;
+        }
+
+        .design-card i {
+            font-size: 28px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .design-card h6 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .design-card p {
+            font-size: 10px;
+            color: #888;
+            margin: 2px 0 0;
+        }
+
+        .orientation-toggle {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .orient-btn {
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 1px solid #c5cae9;
+            background: #f5f7ff;
+            color: #304ffe;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .orient-btn.active,
+        .orient-btn:hover {
+            background: #304ffe;
+            color: #fff;
+            border-color: #304ffe;
+        }
+
+        .id-card-preview-area {
+            display: none;
+            padding: 24px;
+            background: #e8eaf6;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .id-card-preview-area.visible {
+            display: block;
+        }
+
+        .preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* ===== ID CARD STYLES (same as student) ===== */
+        .id-card-portrait {
+            width: 255px;
+            min-height: 410px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 2.5px solid var(--card-dark, #0d1b4a);
+        }
+
+        .id-card-portrait .card-header-area {
+            background: var(--card-dark, #0d1b4a);
+            color: #fff;
+            padding: 10px 12px 30px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .id-card-portrait .header-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .id-card-portrait .school-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: var(--card-dark, #0d1b4a);
+            font-weight: 900;
+            flex-shrink: 0;
+            border: 2.5px solid var(--card-light, #4fc3f7);
+        }
+
+        .id-card-portrait .school-text {
+              text-align: left;
+        }
+
+        .id-card-portrait .school-text h4 {
+            font-size: 10.5px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            line-height: 1.25;
+            color: #fff !important;
+        }
+
+        .id-card-portrait .school-tagline {
+            font-size: 6px;
+            opacity: 0.7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .id-card-portrait .school-contact {
+            font-size: 6.5px;
+            opacity: 0.8;
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+        .wave-sep {
+            position: relative;
+            margin-top: -24px;
+            z-index: 1;
+            line-height: 0;
+        }
+
+        .wave-sep svg {
+            display: block;
+            width: 100%;
+            height: 24px;
+        }
+
+        .id-badge {
+            background: var(--card-light, #4fc3f7);
+            color: var(--card-dark, #0d1b4a);
+            text-align: center;
+            padding: 3px 0;
+            font-size: 7.5px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-top: -1px;
+        }
+
+        .id-card-portrait .card-body-area {
+            flex: 1;
+            padding: 6px 14px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .photo-frame {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 3px solid var(--card-dark, #0d1b4a);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .id-card-portrait .photo-frame {
+            width: 74px;
+            height: 86px;
+            margin-bottom: 4px;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .student-name-tag {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--card-dark, #0d1b4a);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .info-rows {
+            width: 100%;
+        }
+
+        .info-row {
+            display: flex;
+            font-size: 7.5px;
+            padding: 1.5px 0;
+            border-bottom: 1px dotted #d0d0d0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .lbl {
+            width: 38%;
+            font-weight: 700;
+            color: var(--card-dark, #0d1b4a);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .info-row .val {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .wave-foot {
+            position: relative;
+            line-height: 0;
+        }
+
+        .wave-foot svg {
+            display: block;
+            width: 100%;
+            height: 18px;
+        }
+
+        .card-footer-bar {
+            background: var(--card-dark, #0d1b4a);
+            color: #fff;
+            padding: 4px 12px 6px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .sign-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .sign-box span {
+            font-size: 6.5px;
+            font-weight: 700;
+            opacity: 0.9;
+            white-space: nowrap;
+        }
+
+        .sign-box .sign-line {
+            width: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Landscape */
+        .id-card-landscape {
+            width: 400px;
+            min-height: 255px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 2.5px solid var(--card-dark, #0d1b4a);
+        }
+
+        .id-card-landscape .card-header-area {
+            background: var(--card-dark, #0d1b4a);
+            color: #fff;
+            padding: 6px 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .id-card-landscape .school-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--card-dark, #0d1b4a);
+            font-weight: 900;
+            flex-shrink: 0;
+            border: 2px solid var(--card-light, #4fc3f7);
+        }
+
+        .id-card-landscape .school-text {
+            flex: 1;
+        }
+
+        .id-card-landscape .school-text h4 {
+            font-size: 10px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fff !important;
+        }
+
+        .id-card-landscape .school-tagline {
+            font-size: 5.5px;
+            opacity: 0.7;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .id-card-landscape .school-contact {
+            font-size: 6px;
+            opacity: 0.8;
+            margin-top: 1px;
+        }
+
+        .id-card-landscape .card-body-area {
+            flex: 1;
+            padding: 4px 14px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .photo-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .id-card-landscape .photo-frame {
+            width: 60px;
+            height: 72px;
+            border-width: 2.5px;
+            border-radius: 6px;
+        }
+
+        .id-card-landscape .student-name-tag {
+            font-size: 8.5px;
+            margin-top: 2px;
+        }
+
+        .info-col {
+            flex: 1;
+        }
+
+        .id-card-landscape .info-row {
+            font-size: 7px;
+        }
+
+        .id-card-landscape .info-row .lbl {
+            width: 35%;
+        }
+
+        .id-card-landscape .card-footer-bar {
+            padding: 1px 14px 5px;
+            align-items: center;
+        }
+
+        .design-2 {
+            --card-dark: #7b1fa2;
+            --card-light: #ce93d8;
+        }
+
+        .design-3 {
+            --card-dark: #1b5e20;
+            --card-light: #81c784;
+        }
+
+        .design-4 {
+            --card-dark: #bf360c;
+            --card-light: #ffab91;
+        }
+
+        .design-5 {
+            --card-dark: #b71c1c;
+            --card-light: #ef9a9a;
+        }
+
+        .design-6 {
+            --card-dark: #263238;
+            --card-light: #90a4ae;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .preview-grid {
+                gap: 10px !important;
+            }
+
+            .id-card-portrait,
+            .id-card-landscape {
+                box-shadow: none !important;
+                break-inside: avoid;
+            }
+        }
+
+        @media (max-width:767px) {
+            .design-card {
+                width: 100px;
+                padding: 10px 6px;
+            }
+
+            .design-card i {
+                font-size: 20px;
+            }
+
+            .design-card h6 {
+                font-size: 10px;
+            }
+
+            .orient-btn {
+                padding: 5px 12px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width:575px) {
+            .id-card-landscape {
+                width: 100% !important;
+                max-width: 100%;
+                transform-origin: top left;
+            }
+
+            .preview-grid {
+                padding: 0 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Staff ID Card</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Staff ID Card</li>
+                    </ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-id-card"></i> Generate Staff ID Cards</h3>
+                            </div>
+                        </div>
+
+                        <div class="row mg-b-15">
+                            <div class="col-lg-4 col-md-4 col-12 form-group">
+                                <label class="form-label-sm">Designation</label>
+                                <select class="form-control" id="filterDesignation">
+                                    <option value="All">All Designations</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-12 form-group">
+                                <label class="form-label-sm">Status</label>
+                                <select class="form-control" id="filterStatus">
+                                    <option value="Active">Active</option>
+                                    <option value="All">All</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnSearch" style="border-radius:8px;"><i class="fas fa-search"></i>
+                                    Search</button>
+                                <button type="button" class="btn-fill-lg bg-blue-dark btn-hover-yellow" id="btnReset"
+                                    style="border-radius:8px;"><i class="fas fa-redo"></i> Reset</button>
+                            </div>
+                        </div>
+
+                        <div id="staffListArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10">
+                                <div class="select-all-row">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                    <label for="selectAll"
+                                        style="font-weight:600;font-size:13px;margin:0;cursor:pointer;">Select
+                                        All</label>
+                                </div>
+                                <span id="recordCount" style="font-size:12px;font-weight:600;color:#555;"></span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="staffTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px;"></th>
+                                            <th>Photo</th>
+                                            <th>Employee ID</th>
+                                            <th>Name</th>
+                                            <th>Designation</th>
+                                            <th>Phone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staffTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="designArea" style="display:none;" class="mg-t-20">
+                            <hr>
+                            <h6 style="font-weight:700;font-size:14px;color:#333;margin-bottom:8px;"><i
+                                    class="fas fa-palette mg-r-5" style="color:#304ffe;"></i> Select Card Design</h6>
+                            <label class="form-label-sm">Orientation</label>
+                            <div class="orientation-toggle">
+                                <button class="orient-btn active" data-orient="portrait"><i
+                                        class="fas fa-mobile-alt mg-r-5"></i>Portrait</button>
+                                <button class="orient-btn" data-orient="landscape"><i
+                                        class="fas fa-tablet-alt mg-r-5"></i>Landscape</button>
+                            </div>
+                            <label class="form-label-sm mg-t-12">Choose Design</label>
+                            <div class="design-grid">
+                                <div class="design-card active" data-design="1"><i class="fas fa-id-card"
+                                        style="color:#0d1b4a;"></i>
+                                    <h6>Navy & Sky</h6>
+                                    <p>Classic</p>
+                                </div>
+                                <div class="design-card" data-design="2"><i class="fas fa-id-card"
+                                        style="color:#7b1fa2;"></i>
+                                    <h6>Royal Purple</h6>
+                                    <p>Purple</p>
+                                </div>
+                                <div class="design-card" data-design="3"><i class="fas fa-id-card"
+                                        style="color:#1b5e20;"></i>
+                                    <h6>Forest Green</h6>
+                                    <p>Green</p>
+                                </div>
+                                <div class="design-card" data-design="4"><i class="fas fa-id-card"
+                                        style="color:#bf360c;"></i>
+                                    <h6>Burnt Orange</h6>
+                                    <p>Orange</p>
+                                </div>
+                                <div class="design-card" data-design="5"><i class="fas fa-id-card"
+                                        style="color:#b71c1c;"></i>
+                                    <h6>Royal Maroon</h6>
+                                    <p>Red</p>
+                                </div>
+                                <div class="design-card" data-design="6"><i class="fas fa-id-card"
+                                        style="color:#263238;"></i>
+                                    <h6>Charcoal</h6>
+                                    <p>Grey</p>
+                                </div>
+                            </div>
+                            <div class="mg-t-15">
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnPreview" style="border-radius:8px;"><i class="fas fa-eye mg-r-5"></i> Preview
+                                    ID Cards</button>
+                            </div>
+                        </div>
+
+                        <div id="previewArea" class="id-card-preview-area mg-t-16">
+                            <div class="d-flex align-items-center justify-content-between mg-b-15">
+                                <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;"><i
+                                        class="fas fa-eye mg-r-5" style="color:#304ffe;"></i> Staff ID Card Preview</h6>
+                                <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                    id="btnPrint" style="border-radius:8px;"><i class="fas fa-print mg-r-5"></i> Print /
+                                    Download PDF</button>
+                            </div>
+                            <div class="preview-grid" id="printArea"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('staff-id-card');
+            let selectedStaff = [], currentOrientation = 'portrait', currentDesign = '1';
+            let staffCache = [], designationCache = [], branches = [];
+
+            try { [staffCache, designationCache, branches] = await Promise.all([getStaff(), getDesignations(), getBranches()]); } catch(e) {}
+            const school = branches[0] || {};
+            const shortName = (school.school_name || '').split(' ').map(w => w[0]).join('').substring(0, 4);
+
+            function waveSvgTop(light) { return `<svg viewBox="0 0 500 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 C80,22 160,30 250,24 C340,18 420,26 500,8 L500,28 L0,28 Z" fill="#fff"/><path d="M0,0 C80,22 160,30 250,24 C340,18 420,26 500,8" fill="none" stroke="${light}" stroke-width="2.5" opacity="0.6"/></svg>`; }
+            function waveSvgBottom(dark) { return `<svg viewBox="0 0 500 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,20 C80,4 160,-2 250,6 C340,14 420,2 500,12 L500,0 L0,0 Z" fill="#fff"/><path d="M0,20 C80,4 160,-2 250,6 C340,14 420,2 500,12" fill="none" stroke="${dark}" stroke-width="1.5" opacity="0.4"/></svg>`; }
+
+            const designColors = { '1': { dark: '#0d1b4a', light: '#4fc3f7' }, '2': { dark: '#7b1fa2', light: '#ce93d8' }, '3': { dark: '#1b5e20', light: '#81c784' }, '4': { dark: '#bf360c', light: '#ffab91' }, '5': { dark: '#b71c1c', light: '#ef9a9a' }, '6': { dark: '#263238', light: '#90a4ae' } };
+
+            let dHtml = '<option value="All">All Designations</option>';
+            designationCache.forEach(d => { dHtml += `<option value="${d.name}">${d.name}</option>`; });
+            $('#filterDesignation').html(dHtml);
+
+            $('#btnSearch').on('click', async function () {
+                const desg = $('#filterDesignation').val();
+                const status = $('#filterStatus').val();
+                const filters = {};
+                if (status !== 'All') filters.status = status;
+                try { staffCache = await getStaff(filters); } catch(e) { staffCache = []; }
+                let staff = staffCache;
+                if (desg !== 'All') staff = staff.filter(s => s.designation === desg);
+                renderStaffList(staff);
+            });
+            $('#btnReset').on('click', function () { $('#filterDesignation').val('All'); $('#filterStatus').val('Active'); $('#staffListArea').hide(); $('#designArea').hide(); $('#previewArea').removeClass('visible'); selectedStaff = []; });
+
+            function renderStaffList(staff) {
+                const tbody = $('#staffTableBody'); tbody.empty();
+                if (!staff.length) { tbody.append(`<tr><td colspan="6" class="text-center" style="padding:30px;color:#999;font-size:13px;"><i class="fas fa-user-slash" style="font-size:24px;display:block;margin-bottom:8px;"></i>No staff found</td></tr>`); $('#staffListArea').show(); $('#designArea').hide(); $('#recordCount').text('0 Records'); return; }
+                staff.forEach(s => {
+                    tbody.append(`<tr class="staff-check-row" data-id="${s.id}">
+                        <td><input type="checkbox" class="form-check-input staff-cb" value="${s.id}"></td>
+                        <td><img src="${s.photo_url || 'img/figure/student2.png'}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;"></td>
+                        <td style="font-weight:600;font-size:12px;">${s.employee_id || ''}</td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        <td>${s.designation || ''}</td>
+                        <td>${s.phone || ''}</td>
+                    </tr>`);
+                });
+                $('#recordCount').text(`${staff.length} Record${staff.length > 1 ? 's' : ''}`);
+                $('#staffListArea').show(); $('#selectAll').prop('checked', false); updateDesignArea();
+            }
+
+            $('#selectAll').on('change', function () { const c = $(this).is(':checked'); $('.staff-cb').prop('checked', c); updateDesignArea(); });
+            $(document).on('change', '.staff-cb', function () { const t = $('.staff-cb').length, c = $('.staff-cb:checked').length; $('#selectAll').prop('checked', t === c); updateDesignArea(); });
+            $(document).on('click', '.staff-check-row', function (e) { if ($(e.target).is('input')) return; const cb = $(this).find('.staff-cb'); cb.prop('checked', !cb.is(':checked')).trigger('change'); });
+            function updateDesignArea() { if ($('.staff-cb:checked').length > 0) { $('#designArea').show(); } else { $('#designArea').hide(); $('#previewArea').removeClass('visible'); } }
+
+            $(document).on('click', '.design-card', function () { $('.design-card').removeClass('active'); $(this).addClass('active'); currentDesign = $(this).data('design').toString(); });
+            $(document).on('click', '.orient-btn', function () { $('.orient-btn').removeClass('active'); $(this).addClass('active'); currentOrientation = $(this).data('orient'); });
+
+            $('#btnPreview').on('click', function () {
+                const ids = $('.staff-cb:checked').map(function () { return parseInt($(this).val()); }).get();
+                if (!ids.length) { showToast('Select at least one staff', 'error'); return; }
+                selectedStaff = staffCache.filter(s => ids.includes(s.id));
+                renderPreview();
+            });
+
+            function renderPreview() {
+                const container = $('#printArea'); container.empty();
+                const colors = designColors[currentDesign] || designColors['1'];
+                const dc = currentDesign === '1' ? '' : ` design-${currentDesign}`;
+                const wTop = waveSvgTop(colors.light), wBot = waveSvgBottom(colors.dark);
+
+                selectedStaff.forEach(s => {
+                    const dob = s.dob ? new Date(s.dob).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+                    if (currentOrientation === 'portrait') {
+                        container.append(`
+                        <div class="id-card-portrait${dc}">
+                            <div class="card-header-area">
+                                <div class="header-row"><div class="school-logo">${school.logo_url ? '<img src="'+school.logo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : shortName}</div><div class="school-text"><h4>${school.school_name || ''}</h4><div class="school-tagline">${school.board || ''}</div></div></div>
+                                <div class="school-contact"><i class="fas fa-map-marker-alt"></i> ${school.address || ''}<br><i class="fas fa-phone-alt"></i> ${school.phone || ''} &nbsp;|&nbsp; <i class="fas fa-envelope"></i> ${school.email || ''}</div>
+                            </div>
+                            <div class="wave-sep">${wTop}</div>
+                            <div class="id-badge">— Staff Identity Card —</div>
+                            <div class="card-body-area">
+                                <div class="photo-frame"><img src="${s.photo_url || 'img/figure/student2.png'}" alt="${s.name}"></div>
+                                <div class="student-name-tag">${s.name}</div>
+                                <div class="info-rows">
+                                    <div class="info-row"><span class="lbl">Emp. ID</span><span class="val">${s.employee_id || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Father's Name</span><span class="val">${s.father_name || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Designation</span><span class="val">${s.designation || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Department</span><span class="val">${s.department || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Date of Birth</span><span class="val">${dob}</span></div>
+                                    <div class="info-row"><span class="lbl">Phone</span><span class="val">${s.phone || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Address</span><span class="val">${s.address || ''}</span></div>
+                                </div>
+                            </div>
+                            <div class="card-footer-area"><div class="wave-foot">${wBot}</div><div class="card-footer-bar"><div class="sign-box">${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:18px;max-width:56px;object-fit:contain;display:block;margin:0 auto 1px;">' : ''}<span>${school.signing_authority_designation || 'Principal'}</span><div class="sign-line"></div></div></div></div>
+                        </div>`);
+                    } else {
+                        container.append(`
+                        <div class="id-card-landscape${dc}">
+                            <div class="card-header-area">
+                                <div class="school-logo">${school.logo_url ? '<img src="'+school.logo_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">' : shortName}</div>
+                                <div class="school-text"><h4>${school.school_name || ''}</h4><div class="school-tagline">${school.board || ''}</div><div class="school-contact"><i class="fas fa-map-marker-alt"></i> ${school.address || ''} | <i class="fas fa-phone-alt"></i> ${school.phone || ''}</div></div>
+                            </div>
+                            <div class="wave-sep">${wTop}</div>
+                            <div class="id-badge">— Staff Identity Card —</div>
+                            <div class="card-body-area">
+                                <div class="photo-col"><div class="photo-frame"><img src="${s.photo_url || 'img/figure/student2.png'}" alt="${s.name}"></div><div class="student-name-tag">${s.name}</div></div>
+                                <div class="info-col"><div class="info-rows">
+                                    <div class="info-row"><span class="lbl">Emp. ID</span><span class="val">${s.employee_id || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Father's Name</span><span class="val">${s.father_name || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Designation</span><span class="val">${s.designation || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Department</span><span class="val">${s.department || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Date of Birth</span><span class="val">${dob}</span></div>
+                                    <div class="info-row"><span class="lbl">Phone</span><span class="val">${s.phone || ''}</span></div>
+                                    <div class="info-row"><span class="lbl">Address</span><span class="val">${s.address || ''}</span></div>
+                                </div></div>
+                            </div>
+                            <div class="card-footer-area"><div class="wave-foot">${wBot}</div><div class="card-footer-bar"><div class="sign-box">${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:18px;max-width:56px;object-fit:contain;display:block;margin:0 auto 1px;">' : ''}<span>${school.signing_authority_designation || 'Principal'}</span><div class="sign-line"></div></div></div></div>
+                        </div>`);
+                    }
+                });
+                $('#previewArea').addClass('visible');
+                $('html, body').animate({ scrollTop: $('#previewArea').offset().top - 80 }, 400);
+            }
+
+            $('#btnPrint').on('click', function () {
+                const content = document.getElementById('printArea').innerHTML;
+                const isL = currentOrientation === 'landscape';
+                const pw = window.open('', '_blank');
+                pw.document.write(`<!DOCTYPE html><html><head><title>Staff ID Cards - ${school.school_name || ''}</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/><style>@page{size:A4 ${isL ? 'landscape' : 'portrait'};margin:10mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;transform:scale(${isL ? 1 : 0.8});transform-origin:top left;width:${isL ? '100%' : '125%'}}.preview-grid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:8px}.id-card-portrait,.id-card-landscape{border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column;position:relative;border:2.5px solid var(--card-dark,#0d1b4a);break-inside:avoid}.id-card-portrait{width:255px;height:410px}.id-card-landscape{width:400px;height:255px}.card-header-area{background:var(--card-dark,#0d1b4a);color:#fff;position:relative;z-index:2}.id-card-portrait .card-header-area{padding:10px 12px 30px;text-align:center}.id-card-landscape .card-header-area{padding:6px 14px 22px;display:flex;align-items:center;gap:8px}.header-row{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:4px}.school-logo{border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--card-dark,#0d1b4a);font-weight:900;border:2.5px solid var(--card-light,#4fc3f7)}.id-card-portrait .school-logo{width:42px;height:42px;font-size:11px}.id-card-landscape .school-logo{width:34px;height:34px;font-size:10px}h4{font-size:10.5px;font-weight:900;margin:0;text-transform:uppercase;letter-spacing:.6px;line-height:1.25;color:#fff !important}.school-tagline{font-size:6px;opacity:.7;letter-spacing:2px;text-transform:uppercase}.school-contact{font-size:6.5px;opacity:.8;margin-top:3px}.wave-sep{position:relative;margin-top:-24px;z-index:1;line-height:0}.wave-sep svg{display:block;width:100%;height:24px}.id-badge{background:var(--card-light,#4fc3f7);color:var(--card-dark,#0d1b4a);text-align:center;padding:3px 0;font-size:7.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;margin-top:-1px}.card-body-area{flex:1;background:#fff}.id-card-portrait .card-body-area{padding:6px 14px 4px;display:flex;flex-direction:column;align-items:center}.id-card-landscape .card-body-area{padding:4px 14px;display:flex;gap:12px}.photo-col{display:flex;flex-direction:column;align-items:center}.photo-frame{border-radius:8px;overflow:hidden;border:3px solid var(--card-dark,#0d1b4a);box-shadow:0 3px 10px rgba(0,0,0,.15)}.id-card-portrait .photo-frame{width:74px;height:86px;margin-bottom:4px}.id-card-landscape .photo-frame{width:60px;height:72px;border-width:2.5px;border-radius:6px}.photo-frame img{width:100%;height:100%;object-fit:cover;display:block}.student-name-tag{font-weight:900;color:var(--card-dark,#0d1b4a);text-transform:uppercase;text-align:center}.id-card-portrait .student-name-tag{font-size:12px;margin-bottom:4px}.id-card-landscape .student-name-tag{font-size:8.5px;margin-top:2px}.info-rows{width:100%}.info-row{display:flex;padding:1.5px 0;border-bottom:1px dotted #d0d0d0}.info-row:last-child{border-bottom:none}.lbl{width:38%;font-weight:700;color:var(--card-dark,#0d1b4a);white-space:nowrap}.val{color:#333;font-weight:500}.id-card-portrait .info-row{font-size:7.5px}.id-card-landscape .info-row{font-size:7px}.id-card-landscape .lbl{width:35%}.info-col{flex:1}.wave-foot{line-height:0}.wave-foot svg{display:block;width:100%;height:18px}.card-footer-bar{background:var(--card-dark,#0d1b4a);color:#fff;padding:4px 12px 6px;display:flex;justify-content:flex-end;align-items:flex-end}.sign-box{display:flex;align-items:flex-end;gap:6px}.sign-line{width:60px;border-top:1px solid rgba(255,255,255,.5)}.sign-box span{font-size:6.5px;font-weight:700;opacity:.9}.design-2{--card-dark:#7b1fa2;--card-light:#ce93d8}.design-3{--card-dark:#1b5e20;--card-light:#81c784}.design-4{--card-dark:#bf360c;--card-light:#ffab91}.design-5{--card-dark:#b71c1c;--card-light:#ef9a9a}.design-6{--card-dark:#263238;--card-light:#90a4ae}</style></head><body><div class="preview-grid">${content}</div><script>setTimeout(function(){window.print();window.close();},800);<\/script></body></html>`);
+                pw.document.close();
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,345 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Activity Calendar — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .form-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 20px; margin-bottom: 16px; }
+        .record-count { background: #e3f2fd; color: #1565c0; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+        .a-table td, .a-table th { font-size: 12px; vertical-align: middle; padding: 8px 10px; }
+        .a-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.3px; }
+        .a-table tbody tr:hover { background: #f8f9ff; }
+        .action-btn { border: none; background: none; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; transition: background 0.15s; }
+        .action-btn.edit { color: #1565c0; } .action-btn.edit:hover { background: #e3f2fd; }
+        .action-btn.delete { color: #c62828; } .action-btn.delete:hover { background: #ffebee; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        .print-icon { color: #304ffe; font-size: 16px; cursor: pointer; transition: color 0.15s; }
+        .print-icon:hover { color: #1a237e; }
+        .group-badge { display: inline-block; background: #e8eaf6; color: #304ffe; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+        .cg-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .cg-modal { background: #fff; border-radius: 12px; width: 400px; max-width: 90vw; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+        .cg-modal h6 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: #0d1b4a; }
+        @media print {
+            #header-container, #sidebar-container, .breadcrumbs-area, #activityForm, .filter-section, .no-print { display: none !important; }
+            .dashboard-content-one { padding: 0 !important; margin: 0 !important; }
+            .card { box-shadow: none !important; border: none !important; }
+        }
+        @media (max-width:767px) { .a-table td, .a-table th { font-size: 11px; padding: 6px; } .col-hide-md { display: none !important; } }
+        @media (max-width:575px) { .a-table td, .a-table th { font-size: 10px; padding: 4px 5px; } }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Academics</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Activity Calendar</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-calendar-day"></i> Activity Calendar</h3>
+                            </div>
+                        </div>
+
+                        <!-- Add/Edit Form -->
+                        <div class="form-card" id="activityForm">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date *</label>
+                                    <input type="date" class="form-control" id="aDate" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class Group *</label>
+                                    <div class="d-flex" style="gap:4px;">
+                                        <select class="form-control" id="aGroup" style="font-size:12px;height:36px;flex:1;"></select>
+                                        <button type="button" class="btn btn-sm" id="btnNewGroup" style="background:#304ffe;color:#fff;border-radius:6px;height:36px;width:36px;font-size:14px;" title="Create Class Group"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Event *</label>
+                                    <input type="text" class="form-control" id="aEvent" placeholder="e.g. Sports Day" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-3 col-md-5 col-6 form-group">
+                                    <label class="form-label-sm">Description</label>
+                                    <input type="text" class="form-control" id="aDesc" placeholder="Short description (optional)" style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSave" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnFormReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                        <i class="fas fa-eraser"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="editId" value="">
+                        </div>
+
+                        <!-- Filter -->
+                        <div class="filter-section no-print" style="margin-bottom:14px;">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Month</label>
+                                    <select class="form-control" id="filterMonth" style="font-size:12px;height:36px;">
+                                        <option value="">All Months</option>
+                                        <option value="01">January</option><option value="02">February</option>
+                                        <option value="03">March</option><option value="04">April</option>
+                                        <option value="05">May</option><option value="06">June</option>
+                                        <option value="07">July</option><option value="08">August</option>
+                                        <option value="09">September</option><option value="10">October</option>
+                                        <option value="11">November</option><option value="12">December</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class Group</label>
+                                    <select class="form-control" id="filterGroup" style="font-size:12px;height:36px;"></select>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                        <i class="fas fa-undo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity List -->
+                        <div class="d-flex align-items-center justify-content-between mg-b-12 no-print" style="flex-wrap:wrap;gap:8px;">
+                            <h6 style="font-weight:700;font-size:14px;color:#0d1b4a;margin:0;"><i class="fas fa-list" style="color:#304ffe;margin-right:6px;"></i>Activities</h6>
+                            <div class="d-flex align-items-center" style="gap:12px;">
+                                <span class="record-count" id="recordCount">0 Records</span>
+                                <i class="fas fa-print print-icon" id="btnPrint" title="Print"></i>
+                            </div>
+                        </div>
+                        <div class="table-responsive" id="listContainer">
+                            <table class="table a-table table-bordered" style="margin-bottom:0;">
+                                <thead>
+                                    <tr style="background:#f5f7ff;">
+                                        <th style="width:30px;">#</th>
+                                        <th>Event Date</th>
+                                        <th>Class Group</th>
+                                        <th>Event</th>
+                                        <th class="col-hide-md">Description</th>
+                                        <th style="width:70px;" class="no-print">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Group Modal -->
+    <div id="cgModal" style="display:none;"></div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('academic-activity');
+
+            let groupCache = [], actCache = [], classCache = [];
+            try {
+                [groupCache, actCache, classCache] = await Promise.all([getClassGroups(), getActivities(), getClasses()]);
+            } catch(e) { console.error('Failed to load data', e); }
+
+            loadGroupDropdowns();
+            renderList();
+
+            function fmtDate(d) {
+                const dt = new Date(d);
+                return dt.getDate().toString().padStart(2, '0') + ' ' + dt.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + dt.getFullYear();
+            }
+
+            function getGroupName(id) {
+                const g = groupCache.find(x => x.id === parseInt(id));
+                return g ? g.name : '—';
+            }
+
+            function loadGroupDropdowns() {
+                const opts = '<option value="">Select Group</option>' + groupCache.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+                $('#aGroup').html(opts);
+                $('#filterGroup').html('<option value="">All Groups</option>' + groupCache.map(g => `<option value="${g.id}">${g.name}</option>`).join(''));
+            }
+
+            function renderList() {
+                const month = $('#filterMonth').val();
+                const group = $('#filterGroup').val();
+                let data = actCache.slice().sort((a, b) => (a.date||'').localeCompare(b.date||''));
+                if (month) data = data.filter(a => (a.date||'').split('-')[1] === month);
+                if (group) data = data.filter(a => a.class_group_id === parseInt(group));
+
+                const body = $('#aBody');
+                body.empty();
+                $('#recordCount').text(data.length + ' Record' + (data.length !== 1 ? 's' : ''));
+
+                if (!data.length) {
+                    body.html('<tr><td colspan="6" class="empty-state"><i class="fas fa-calendar-times"></i>No activities found</td></tr>');
+                    return;
+                }
+
+                data.forEach((a, i) => {
+                    body.append(`
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td style="white-space:nowrap;font-weight:600;">${fmtDate(a.date)}</td>
+                            <td><span class="group-badge">${getGroupName(a.class_group_id)}</span></td>
+                            <td>${a.event}</td>
+                            <td class="col-hide-md" style="color:#666;">${a.description || '—'}</td>
+                            <td class="no-print">
+                                <button class="action-btn edit" onclick="editActivity(${a.id})" title="Edit"><i class="fas fa-pen"></i></button>
+                                <button class="action-btn delete" onclick="removeActivity(${a.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            // Save Activity
+            $('#btnSave').on('click', async function () {
+                const date = $('#aDate').val();
+                const group = $('#aGroup').val();
+                const event = $('#aEvent').val().trim();
+                const desc = $('#aDesc').val().trim();
+                if (!date) { showToast('Please select a date', 'error'); return; }
+                if (!group) { showToast('Please select a class group', 'error'); return; }
+                if (!event) { showToast('Please enter an event name', 'error'); return; }
+
+                try {
+                    const editId = parseInt($('#editId').val());
+                    if (editId) {
+                        await updateActivity(editId, { date, class_group_id: group, event, description: desc });
+                        showToast('Activity updated', 'success');
+                    } else {
+                        await createActivity({ date, class_group_id: group, event, description: desc });
+                        showToast('Activity added', 'success');
+                    }
+                    actCache = await getActivities();
+                    clearForm();
+                    renderList();
+                } catch(e) { showToast('Error saving activity', 'error'); }
+            });
+
+            // Clear
+            $('#btnFormReset').on('click', clearForm);
+            function clearForm() {
+                $('#aDate').val(''); $('#aGroup').val(''); $('#aEvent').val(''); $('#aDesc').val(''); $('#editId').val('');
+                $('#btnSave').html('<i class="fas fa-save"></i> Save');
+            }
+
+            // Edit
+            window.editActivity = function (id) {
+                const a = actCache.find(x => x.id === id);
+                if (!a) return;
+                $('#aDate').val(a.date); $('#aGroup').val(a.class_group_id); $('#aEvent').val(a.event); $('#aDesc').val(a.description || '');
+                $('#editId').val(id);
+                $('#btnSave').html('<i class="fas fa-save"></i> Update');
+                $('html, body').animate({ scrollTop: 0 }, 300);
+            };
+
+            // Delete
+            window.removeActivity = async function (id) {
+                if (!confirm('Delete this activity?')) return;
+                try {
+                    await deleteActivity(id);
+                    actCache = actCache.filter(x => x.id !== id);
+                    showToast('Activity deleted', 'success');
+                    renderList();
+                } catch(e) { showToast('Error deleting activity', 'error'); }
+            };
+
+            // Filter
+            $('#btnSearch').on('click', renderList);
+            $('#btnReset').on('click', function () { $('#filterMonth').val(''); $('#filterGroup').val(''); renderList(); });
+
+            // Print
+            $('#btnPrint').on('click', function () { window.print(); });
+
+            // New Class Group modal
+            $('#btnNewGroup').on('click', function () {
+                const html = `
+                    <div class="cg-modal-overlay" id="cgOverlay">
+                        <div class="cg-modal">
+                            <h6><i class="fas fa-layer-group" style="color:#304ffe;margin-right:6px;"></i>Create Class Group</h6>
+                            <div class="form-group">
+                                <label class="form-label-sm">Group Name *</label>
+                                <input type="text" class="form-control" id="cgName" placeholder="e.g. Primary (1–5)" style="font-size:12px;height:36px;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Select Classes</label>
+                                <div id="cgClasses" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                                    ${classCache.map(c => `<label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;"><input type="checkbox" value="${c.id}" class="cg-cls" style="width:14px;height:14px;accent-color:#304ffe;"> ${c.name}</label>`).join('')}
+                                </div>
+                            </div>
+                            <div class="d-flex" style="gap:6px;margin-top:12px;">
+                                <button class="fw-btn-fill btn-gradient-yellow" id="cgSave" style="border-radius:6px;height:34px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-check"></i> Create</button>
+                                <button class="fw-btn-fill bg-blue-dark btn-hover-yellow" id="cgCancel" style="border-radius:6px;height:34px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-times"></i> Cancel</button>
+                            </div>
+                        </div>
+                    </div>`;
+                $('#cgModal').html(html).show();
+
+                $('#cgCancel, #cgOverlay').on('click', function (e) {
+                    if (e.target.id === 'cgOverlay' || e.target.id === 'cgCancel' || $(e.target).closest('#cgCancel').length) {
+                        $('#cgModal').hide().empty();
+                    }
+                });
+                $('.cg-modal').on('click', function (e) { e.stopPropagation(); });
+
+                $('#cgSave').on('click', async function () {
+                    const name = $('#cgName').val().trim();
+                    const classIds = [];
+                    $('.cg-cls:checked').each(function () { classIds.push(parseInt($(this).val())); });
+                    if (!name) { showToast('Enter a group name', 'error'); return; }
+                    try {
+                        await createClassGroup({ name, class_ids: JSON.stringify(classIds) });
+                        groupCache = await getClassGroups();
+                        showToast('Class group created', 'success');
+                        loadGroupDropdowns();
+                        $('#cgModal').hide().empty();
+                    } catch(e) { showToast('Error creating group', 'error'); }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

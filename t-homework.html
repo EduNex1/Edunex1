@@ -1,0 +1,418 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Homework — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+
+                <!-- Breadcrumbs -->
+                <div class="breadcrumbs-area">
+                    <h3>Homework</h3>
+                    <ul>
+                        <li><a href="/teacher-dashboard">Home</a></li>
+                        <li>Homework</li>
+                    </ul>
+                </div>
+
+                <!-- No Permission State (hidden by default) -->
+                <div id="noPermissionState" style="display:none;">
+                    <div class="chart-card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
+                        <h5 style="color:#0d1b4a;font-weight:700;margin-bottom:8px;">No Class Assigned</h5>
+                        <p style="color:#888;font-size:13px;max-width:400px;margin:0 auto;">You have not been assigned any class for Homework management. Please contact your administrator to get class and subject assignments.</p>
+                    </div>
+                </div>
+
+                <!-- Main Content (shown when permissions exist) -->
+                <div id="mainContent">
+                    <!-- Filter Bar -->
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-filter"></i> Filter & Add Homework</div>
+                        <div class="chart-card-body">
+                            <div class="row gutters-8">
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-12 form-group">
+                                    <label class="form-label-sm">Class *</label>
+                                    <select id="hwClass" class="form-control">
+                                        <option value="">— Select Class —</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-12 form-group">
+                                    <label class="form-label-sm">Section *</label>
+                                    <select id="hwSection" class="form-control">
+                                        <option value="">— Select Section —</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-12 form-group">
+                                    <label class="form-label-sm">Subject</label>
+                                    <input type="text" id="hwSubject" class="form-control" readonly style="background:#f5f5f5;cursor:not-allowed;" placeholder="Auto-filled from assignment">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-12 form-group" style="display:flex;align-items:flex-end;">
+                                    <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="loadHomework()" style="width:100%;font-size:12px;padding:9px 16px;">
+                                        <i class="fas fa-search mr-1"></i> Load Homework
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Homework Form (collapsible) -->
+                    <div id="addHwForm" style="display:none;">
+                        <div class="chart-card" style="margin-bottom:16px;">
+                            <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                <span><i class="fas fa-plus-circle"></i> <span id="formTitle">Add New Homework</span></span>
+                                <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,0.3);" onclick="toggleAddForm(false)"><i class="fas fa-times"></i> Cancel</button>
+                            </div>
+                            <div class="chart-card-body">
+                                <div class="row gutters-8">
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Homework Date *</label>
+                                        <input type="date" id="hwDate" class="form-control">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Submission Date *</label>
+                                        <input type="date" id="hwDueDate" class="form-control">
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Type *</label>
+                                        <select id="hwType" class="form-control">
+                                            <option value="">— Select —</option>
+                                            <option>Written</option>
+                                            <option>Oral</option>
+                                            <option>Project</option>
+                                            <option>Assignment</option>
+                                            <option>Practice</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 form-group">
+                                        <label class="form-label-sm">Title *</label>
+                                        <input type="text" id="hwTitle" class="form-control" placeholder="Enter homework title">
+                                    </div>
+                                    <div class="col-12 form-group">
+                                        <label class="form-label-sm">Description</label>
+                                        <textarea id="hwDesc" class="form-control" rows="3" placeholder="Enter homework details..."></textarea>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 col-12 form-group">
+                                        <label class="form-label-sm">Status</label>
+                                        <select id="hwStatus" class="form-control">
+                                            <option value="Active">Active</option>
+                                            <option value="Completed">Completed</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 form-group" style="margin-top:8px;">
+                                        <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="saveHomework()" style="font-size:12px;padding:9px 20px;">
+                                            <i class="fas fa-save mr-1"></i> <span id="saveBtnText">Save Homework</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Homework List -->
+                    <div class="chart-card">
+                        <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span><i class="fas fa-list-ul"></i> My Homework List</span>
+                            <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,0.3);" onclick="toggleAddForm(true)" id="addHwBtn">
+                                <i class="fas fa-plus mr-1"></i> Add Homework
+                            </button>
+                        </div>
+                        <div class="chart-card-body" style="padding:8px 16px;">
+
+                            <!-- Empty state for when class not selected yet -->
+                            <div id="selectClassPrompt">
+                                <div style="text-align:center;padding:40px 20px;">
+                                    <i class="fas fa-hand-pointer" style="font-size:36px;color:#c5cae9;margin-bottom:12px;"></i>
+                                    <p style="color:#888;font-size:13px;">Select a class and section above, then click <strong>"Load Homework"</strong> to view your homework.</p>
+                                </div>
+                            </div>
+
+                            <!-- Empty state for no homework -->
+                            <div id="noHomeworkState" style="display:none;">
+                                <div style="text-align:center;padding:40px 20px;">
+                                    <i class="fas fa-clipboard" style="font-size:36px;color:#c5cae9;margin-bottom:12px;"></i>
+                                    <h6 style="color:#0d1b4a;font-weight:700;">No Homework Posted Yet</h6>
+                                    <p style="color:#888;font-size:13px;">Click <strong>"+ Add Homework"</strong> to create your first homework for this class.</p>
+                                </div>
+                            </div>
+
+                            <!-- Homework Table -->
+                            <div id="hwTableWrap" style="display:none;">
+                                <div class="table-responsive">
+                                    <table class="recent-table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date</th>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Due Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="hwTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function () {
+            var teacherPermissions = [];
+            var currentHomework = [];
+            var editingId = null;
+            var sectionCache = [];
+            var currentPerm = null;
+
+            initPage('t-homework');
+
+            // Load sections for mapping section_id → name
+            try { sectionCache = await getSections(); } catch (e) { console.error('Failed to load sections', e); }
+
+            var user = getUser();
+            if (!user || !user.linked_id) return;
+
+            // Load teacher permissions from API
+            try {
+                var perms = await getTeacherPermissions(user.linked_id);
+                teacherPermissions = perms.map(function (p) {
+                    var sec = sectionCache.find(function (s) { return s.id === p.section_id; });
+                    return {
+                        class_id: p.class_id, class_name: p.class_name || '',
+                        section_id: p.section_id, section_name: sec ? sec.name : '',
+                        subject_id: p.subject_id, subject_name: p.subject_name || ''
+                    };
+                });
+            } catch (e) { console.error('Failed to load permissions', e); }
+
+            if (!teacherPermissions.length) {
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('noPermissionState').style.display = 'block';
+                return;
+            }
+
+            // Populate class dropdown with only assigned classes
+            var classSelect = document.getElementById('hwClass');
+            var addedClasses = {};
+            teacherPermissions.forEach(function (p) {
+                if (!addedClasses[p.class_id]) {
+                    var opt = document.createElement('option');
+                    opt.value = p.class_id;
+                    opt.textContent = p.class_name;
+                    classSelect.appendChild(opt);
+                    addedClasses[p.class_id] = true;
+                }
+            });
+
+            // On class change, populate sections
+            classSelect.addEventListener('change', function () {
+                var classId = parseInt(this.value);
+                var sectionSelect = document.getElementById('hwSection');
+                sectionSelect.innerHTML = '<option value="">— Select Section —</option>';
+                document.getElementById('hwSubject').value = '';
+
+                var sections = teacherPermissions.filter(function (p) { return p.class_id === classId; });
+                sections.forEach(function (p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.section_id;
+                    opt.textContent = p.section_name;
+                    sectionSelect.appendChild(opt);
+                });
+            });
+
+            // On section change, auto-fill subject
+            document.getElementById('hwSection').addEventListener('change', function () {
+                var classId = parseInt(document.getElementById('hwClass').value);
+                var sectionId = parseInt(this.value);
+                currentPerm = teacherPermissions.find(function (p) { return p.class_id === classId && p.section_id === sectionId; });
+                document.getElementById('hwSubject').value = currentPerm ? currentPerm.subject_name : '';
+            });
+
+            window.loadHomework = async function () {
+                var classId = document.getElementById('hwClass').value;
+                var sectionId = document.getElementById('hwSection').value;
+                if (!classId || !sectionId) {
+                    showToast('Please select both class and section', 'error');
+                    return;
+                }
+
+                document.getElementById('selectClassPrompt').style.display = 'none';
+                currentPerm = teacherPermissions.find(function (p) {
+                    return p.class_id === parseInt(classId) && p.section_id === parseInt(sectionId);
+                });
+
+                try {
+                    var sec = sectionCache.find(function (s) { return s.id === parseInt(sectionId); });
+                    var sectionName = sec ? sec.name : sectionId;
+                    currentHomework = await getHomework({ class_id: classId, section: sectionName });
+                } catch (e) {
+                    console.error('Failed to load homework', e);
+                    currentHomework = [];
+                }
+
+                renderHomeworkTable();
+            };
+
+            function renderHomeworkTable() {
+                if (!currentHomework.length) {
+                    document.getElementById('hwTableWrap').style.display = 'none';
+                    document.getElementById('noHomeworkState').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('noHomeworkState').style.display = 'none';
+                document.getElementById('hwTableWrap').style.display = 'block';
+
+                var html = '';
+                currentHomework.forEach(function (hw, idx) {
+                    var statusClass = hw.status === 'Active' ? 'status-active' : 'status-tc';
+                    var statusLabel = hw.status === 'Active' ? 'Active' : 'Completed';
+                    html += '<tr>' +
+                        '<td>' + (idx + 1) + '</td>' +
+                        '<td>' + (hw.date || '—') + '</td>' +
+                        '<td><strong>' + (hw.subject_name || '—') + '</strong></td>' +
+                        '<td>' + (hw.title || '—') + '</td>' +
+                        '<td><span class="category-badge cat-general">' + (hw.type || '—') + '</span></td>' +
+                        '<td>' + (hw.due_date || '—') + '</td>' +
+                        '<td><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></td>' +
+                        '<td style="white-space:nowrap;">' +
+                        '<button class="action-btn action-btn-edit" onclick="editHomework(' + hw.id + ')" title="Edit"><i class="fas fa-edit"></i></button>' +
+                        '<button class="action-btn action-btn-delete" onclick="removeHomework(' + hw.id + ')" title="Delete"><i class="fas fa-trash"></i></button>' +
+                        '</td></tr>';
+                });
+                document.getElementById('hwTableBody').innerHTML = html;
+            }
+
+            window.toggleAddForm = function (show) {
+                document.getElementById('addHwForm').style.display = show ? 'block' : 'none';
+                if (show && !editingId) {
+                    document.getElementById('formTitle').textContent = 'Add New Homework';
+                    document.getElementById('saveBtnText').textContent = 'Save Homework';
+                    document.getElementById('hwDate').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('hwDueDate').value = '';
+                    document.getElementById('hwType').value = '';
+                    document.getElementById('hwTitle').value = '';
+                    document.getElementById('hwDesc').value = '';
+                    document.getElementById('hwStatus').value = 'Active';
+                }
+                if (!show) editingId = null;
+            };
+
+            window.saveHomework = async function () {
+                var date = document.getElementById('hwDate').value;
+                var dueDate = document.getElementById('hwDueDate').value;
+                var type = document.getElementById('hwType').value;
+                var title = document.getElementById('hwTitle').value;
+                var desc = document.getElementById('hwDesc').value;
+                var status = document.getElementById('hwStatus').value;
+                var classId = document.getElementById('hwClass').value;
+                var sectionId = document.getElementById('hwSection').value;
+                var sec = sectionCache.find(function (s) { return s.id === parseInt(sectionId); });
+                var sectionName = sec ? sec.name : sectionId;
+
+                if (!date || !title || !type) {
+                    showToast('Please fill Date, Title and Type', 'error');
+                    return;
+                }
+
+                try {
+                    if (editingId) {
+                        var hw = currentHomework.find(function (h) { return h.id === editingId; });
+                        await updateHomework(editingId, {
+                            class_id: hw.class_id, section: hw.section, subject_id: hw.subject_id,
+                            type: type, title: title, description: desc, date: date, due_date: dueDate, status: status
+                        });
+                        showToast('Homework updated successfully!', 'success');
+                    } else {
+                        await createHomework({
+                            class_id: parseInt(classId), section: sectionName,
+                            subject_id: currentPerm ? currentPerm.subject_id : null,
+                            type: type, title: title, description: desc, date: date, due_date: dueDate, status: status
+                        });
+                        showToast('Homework added successfully!', 'success');
+                    }
+                    editingId = null;
+                    window.toggleAddForm(false);
+                    await window.loadHomework();
+                } catch (e) {
+                    console.error('Save homework failed', e);
+                    showToast('Failed to save homework', 'error');
+                }
+            };
+
+            window.editHomework = function (id) {
+                var hw = currentHomework.find(function (h) { return h.id === id; });
+                if (!hw) return;
+                editingId = id;
+                document.getElementById('formTitle').textContent = 'Edit Homework';
+                document.getElementById('saveBtnText').textContent = 'Update Homework';
+                document.getElementById('hwDate').value = hw.date || '';
+                document.getElementById('hwDueDate').value = hw.due_date || '';
+                document.getElementById('hwType').value = hw.type || '';
+                document.getElementById('hwTitle').value = hw.title || '';
+                document.getElementById('hwDesc').value = hw.description || '';
+                document.getElementById('hwStatus').value = hw.status || 'Active';
+                document.getElementById('addHwForm').style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            window.removeHomework = async function (id) {
+                if (typeof showConfirmModal === 'function') {
+                    showConfirmModal('Delete Homework', 'Are you sure you want to delete this homework?', async function () {
+                        try {
+                            await deleteHomework(id);
+                            currentHomework = currentHomework.filter(function (h) { return h.id !== id; });
+                            renderHomeworkTable();
+                            showToast('Homework deleted', 'success');
+                        } catch (e) { showToast('Failed to delete homework', 'error'); }
+                    });
+                } else {
+                    if (!confirm('Are you sure you want to delete this homework?')) return;
+                    try {
+                        await deleteHomework(id);
+                        currentHomework = currentHomework.filter(function (h) { return h.id !== id; });
+                        renderHomeworkTable();
+                        showToast('Homework deleted', 'success');
+                    } catch (e) { showToast('Failed to delete homework', 'error'); }
+                }
+            };
+        })();
+    </script>
+</body>
+</html>

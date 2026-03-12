@@ -1,0 +1,880 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Character Certificate — EduNex1</title>
+    <meta name="description" content="Generate character certificates">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* Tab styling — consistent with TC page */
+        .cc-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .cc-tab {
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .cc-tab:hover {
+            color: #304ffe;
+        }
+
+        .cc-tab.active {
+            color: #304ffe;
+            border-bottom-color: #304ffe;
+        }
+
+        .cc-panel {
+            display: none;
+        }
+
+        .cc-panel.active {
+            display: block;
+        }
+
+        /* Form */
+        .cc-form .form-label-sm {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .cc-form .form-control {
+            font-size: 12px;
+        }
+
+        /* Format cards */
+        .format-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .format-card:hover {
+            border-color: #304ffe;
+        }
+
+        .format-card.active {
+            border-color: #304ffe;
+            background: #f0f4ff;
+        }
+
+        .format-card i {
+            font-size: 20px;
+            color: #304ffe;
+            margin-bottom: 4px;
+        }
+
+        .format-card h6 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            margin: 4px 0 2px;
+        }
+
+        .format-card p {
+            font-size: 9px;
+            color: #888;
+            margin: 0;
+        }
+
+        /* Certificate Document — formal Indian style (same as TC) */
+        .cert-document {
+            width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            border: 2px solid #333;
+            font-family: 'Times New Roman', serif;
+            page-break-inside: avoid;
+        }
+
+        .cert-document .cert-border-inner {
+            border: 1px solid #333;
+            margin: 4px;
+            padding: 24px 30px;
+        }
+
+        .cert-doc-header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 1.5px solid #333;
+            padding-bottom: 12px;
+        }
+
+        .cert-doc-header .cert-school-name {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #111;
+            margin: 0;
+        }
+
+        .cert-doc-header .cert-tagline {
+            font-size: 9px;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .cert-doc-header .cert-address {
+            font-size: 9px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .cert-doc-header .cert-affiliation {
+            font-size: 8.5px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .cert-serial-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px dotted #aaa;
+        }
+
+        .cert-doc-title {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .cert-doc-title h3 {
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #111;
+            margin: 0;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .cert-doc-title .cert-hindi {
+            font-size: 16px;
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+
+        .cert-doc-body {
+            font-size: 12px;
+            color: #222;
+            line-height: 2;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .cert-doc-body strong {
+            color: #111;
+        }
+
+        .cert-doc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            padding-top: 10px;
+        }
+
+        .cert-doc-sign {
+            text-align: center;
+        }
+
+        .cert-doc-sign .cert-sign-line {
+            width: 90px;
+            border-top: 1px solid #333;
+            margin: 0 auto 3px;
+        }
+
+        .cert-doc-sign span {
+            font-size: 9px;
+            font-weight: 700;
+            color: #222;
+            display: block;
+        }
+
+        /* Preview area */
+        .cert-preview-area {
+            display: none;
+            padding: 24px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .cert-preview-area.visible {
+            display: block;
+        }
+
+        #ccTable tbody tr:hover {
+            background: #f0f4ff;
+            cursor: pointer;
+        }
+
+        #ccTable td {
+            vertical-align: middle;
+            font-size: 12px;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) { .col-hide-xl { display: none !important; } }
+        @media (max-width:991px)  { .col-hide-lg { display: none !important; } }
+        @media (max-width:767px)  { .col-hide-md { display: none !important; } }
+        @media (max-width:575px)  { .col-hide-sm { display: none !important; } }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #certPrintArea,
+            #certPrintArea * {
+                visibility: visible;
+            }
+
+            #certPrintArea {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            .cert-document {
+                box-shadow: none;
+                margin: 0 auto;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 15mm;
+            }
+        }
+
+        /* ===== RESPONSIVE: TABLET & MOBILE ===== */
+        @media (max-width: 767px) {
+            .cert-document {
+                width: 100%;
+                max-width: 100%;
+            }
+            .cert-document .cert-border-inner { padding: 16px 18px; }
+            .cert-school-name { font-size: 16px !important; }
+            .cert-doc-title h3 { font-size: 16px !important; letter-spacing: 1.5px !important; }
+            .cert-doc-body { font-size: 12px; line-height: 1.8; }
+            .cert-doc-footer { flex-direction: column; gap: 20px; align-items: center; margin-top: 20px; }
+            .cert-serial-bar { flex-direction: column; gap: 4px; }
+            .cc-tabs { flex-wrap: wrap; }
+        }
+
+        @media (max-width: 575px) {
+            .cert-document .cert-border-inner { padding: 12px 14px; }
+            .cert-school-name { font-size: 14px !important; }
+            .cert-doc-title h3 { font-size: 14px !important; }
+            .cert-doc-body { font-size: 11px; line-height: 1.7; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Character Certificate</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Character Certificate</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>
+                                    <i class="fas fa-certificate"></i> Character
+                                    Certificate Management
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="cc-tabs">
+                            <button class="cc-tab active" data-tab="add"><i class="fas fa-plus-circle mg-r-5"></i>Add
+                                Character Certificate</button>
+                            <button class="cc-tab" data-tab="view"><i class="fas fa-list mg-r-5"></i>View Character
+                                Certificates</button>
+                        </div>
+
+                        <!-- ADD Panel -->
+                        <div class="cc-panel active" id="panelAdd">
+                            <div class="cc-form">
+                                <!-- Step 1: Select Student (same as TC) -->
+                                <div class="row mg-b-15"
+                                    style="background:#f8f9ff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
+                                    <div class="col-12 mg-b-10">
+                                        <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0;">
+                                            <i class="fas fa-user-graduate mg-r-5"></i> Step 1: Select Student
+                                        </h6>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Class *</label>
+                                        <select class="form-control" id="ccClass">
+                                            <option value="">— Select Class —</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Section</label>
+                                        <select class="form-control" id="ccSection">
+                                            <option value="All">All Sections</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Student *</label>
+                                        <select class="form-control" id="ccStudent">
+                                            <option value="">— Select Student —</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Certificate Details (shown after student selected) -->
+                                <div id="ccFormFields" style="display:none;">
+                                    <div class="row mg-t-15"
+                                        style="background:#fff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
+                                        <div class="col-12 mg-b-10">
+                                            <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0;">
+                                                <i class="fas fa-edit mg-r-5"></i> Step 2: Certificate Details
+                                            </h6>
+                                        </div>
+                                        <!-- Auto-filled (readonly) -->
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Serial No. (Auto)</label>
+                                            <input type="text" class="form-control" id="fSerialNo" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Admission No.</label>
+                                            <input type="text" class="form-control" id="fAdmNo" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Student Name</label>
+                                            <input type="text" class="form-control" id="fName" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Father's Name</label>
+                                            <input type="text" class="form-control" id="fFather" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Gender</label>
+                                            <input type="text" class="form-control" id="fGender" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Class / Section</label>
+                                            <input type="text" class="form-control" id="fClassSec" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Session</label>
+                                            <input type="text" class="form-control" id="fSession" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+
+                                        <!-- Editable -->
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Conduct *</label>
+                                            <select class="form-control" id="fConduct">
+                                                <option value="Excellent">Excellent</option>
+                                                <option value="Very Good">Very Good</option>
+                                                <option value="Good" selected>Good</option>
+                                                <option value="Satisfactory">Satisfactory</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Issue Date *</label>
+                                            <input type="date" class="form-control" id="fIssueDate">
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 form-group">
+                                            <label class="form-label-sm">Purpose</label>
+                                            <input type="text" class="form-control" id="fPurpose"
+                                                value="General purpose" placeholder="e.g. Admission, Employment">
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 form-group">
+                                            <label class="form-label-sm">Remarks</label>
+                                            <input type="text" class="form-control" id="fRemarks" value="">
+                                        </div>
+
+                                        <!-- Format Selection -->
+                                        <div class="col-12 mg-t-10 mg-b-10">
+                                            <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0 0 10px;">
+                                                <i class="fas fa-file-alt mg-r-5"></i> Certificate Format
+                                            </h6>
+                                            <div class="row gutters-8">
+                                                <div class="col-sm-4 col-6">
+                                                    <div class="format-card active" data-format="cbse"
+                                                        onclick="selectFormat('cbse', this)">
+                                                        <i class="fas fa-stamp"></i>
+                                                        <h6>CBSE</h6>
+                                                        <p>Standard CBSE format</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4 col-6">
+                                                    <div class="format-card" data-format="state"
+                                                        onclick="selectFormat('state', this)">
+                                                        <i class="fas fa-scroll"></i>
+                                                        <h6>State Board</h6>
+                                                        <p>U.P. Board format</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4 col-6">
+                                                    <div class="format-card" data-format="bilingual"
+                                                        onclick="selectFormat('bilingual', this)">
+                                                        <i class="fas fa-language"></i>
+                                                        <h6>Bilingual</h6>
+                                                        <p>Hindi + English</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Buttons (same as TC) -->
+                                    <div class="mg-t-15 d-flex" style="gap:10px;">
+                                        <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                            id="btnSaveCC"
+                                            style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                            <i class="fas fa-save"></i> Save & Issue Certificate
+                                        </button>
+                                        <button type="button" class="btn-fill-lg bg-blue-dark btn-hover-yellow"
+                                            id="btnResetCC"
+                                            style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                            <i class="fas fa-redo"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VIEW Panel -->
+                        <div class="cc-panel" id="panelView">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="ccTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-hide-lg">Serial No.</th>
+                                            <th>Adm. No.</th>
+                                            <th>Student Name</th>
+                                            <th class="col-hide-md">Father Name</th>
+                                            <th>Class</th>
+                                            <th class="col-hide-xl">Format</th>
+                                            <th>Issue Date</th>
+                                            <th>View / Print</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ccTableBody"></tbody>
+                                </table>
+                            </div>
+                            <div id="ccRecordCount" style="font-size:12px;font-weight:600;color:#555;margin-top:8px;">
+                            </div>
+
+                            <!-- Preview -->
+                            <div class="cert-preview-area" id="certPreviewArea">
+                                <div class="d-flex align-items-center justify-content-between mg-b-15">
+                                    <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
+                                        <i class="fas fa-eye mg-r-5" style="color:#304ffe;"></i> Certificate Preview
+                                    </h6>
+                                    <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                        id="btnPrint"
+                                        style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                        <i class="fas fa-print"></i> Print / Download PDF
+                                    </button>
+                                </div>
+                                <div id="certPrintArea"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        let certFormat = 'cbse';
+        let editingCcId = null;
+
+        function selectFormat(fmt, el) {
+            certFormat = fmt;
+            $('.format-card').removeClass('active');
+            $(el).addClass('active');
+        }
+
+        $(async function () {
+            initPage('character-certificate');
+
+            let classCache = [], studentCache = [], certCache = [], branches = [], sessions = [];
+            try { [classCache, certCache, branches, sessions] = await Promise.all([getClasses(), getCharacterCertificates(), getBranches(), getAcademicSessions()]); } catch(e) {}
+            const school = branches[0] || {};
+            const currentSession = sessions.find(s => s.status === 'Active');
+
+            // Tabs
+            $('.cc-tab').on('click', function () {
+                const tab = $(this).data('tab');
+                $('.cc-tab').removeClass('active');
+                $(this).addClass('active');
+                $('.cc-panel').removeClass('active');
+                $(`#panel${tab === 'add' ? 'Add' : 'View'}`).addClass('active');
+                if (tab === 'view') renderCertList();
+                history.replaceState(null, '', '#' + tab);
+            });
+
+            if (window.location.hash === '#view') { $('.cc-tab[data-tab="view"]').click(); }
+
+            classCache.forEach(c => { $('#ccClass').append(`<option value="${c.id}">${c.name}</option>`); });
+
+            $('#ccClass').on('change', async function () {
+                const cid = parseInt($(this).val());
+                $('#ccSection').html('<option value="All">All Sections</option>');
+                $('#ccStudent').html('<option value="">— Select Student —</option>');
+                $('#ccFormFields').hide();
+                if (!cid) return;
+                try { studentCache = await getStudents({ class_id: cid }); } catch(e) { studentCache = []; }
+                const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
+                secs.forEach(sec => { $('#ccSection').append(`<option value="${sec}">${sec}</option>`); });
+                populateStudentDropdown();
+            });
+
+            $('#ccSection').on('change', function () { populateStudentDropdown(); });
+
+            function populateStudentDropdown() {
+                const sec = $('#ccSection').val();
+                let students = studentCache.filter(s => s.status === 'Active');
+                if (sec && sec !== 'All') students = students.filter(s => s.section === sec);
+                $('#ccStudent').html('<option value="">— Select Student —</option>');
+                students.forEach(s => { $('#ccStudent').append(`<option value="${s.id}">${s.name} (${s.admission_no})</option>`); });
+            }
+
+            $('#ccStudent').on('change', function () {
+                const sid = parseInt($(this).val());
+                if (!sid) { $('#ccFormFields').hide(); return; }
+                const s = studentCache.find(st => st.id === sid);
+                if (!s) return;
+                const cls = classCache.find(c => c.id === s.class_id);
+                const cn = cls ? cls.name : '-';
+                const ccNum = 'CC-' + new Date().getFullYear() + '-' + String(certCache.length + 1).padStart(3, '0');
+
+                $('#fSerialNo').val(ccNum);
+                $('#fAdmNo').val(s.admission_no);
+                $('#fName').val(s.name);
+                $('#fFather').val(s.father_name || '');
+                $('#fGender').val(s.gender || '');
+                $('#fClassSec').val(`${cn} / ${s.section || ''}`);
+                $('#fSession').val(s.session || (currentSession ? currentSession.name : '2025-2026'));
+                const today = new Date().toISOString().split('T')[0];
+                $('#fIssueDate').val(today);
+                $('#ccFormFields').slideDown(200);
+                editingCcId = null;
+            });
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            $('#btnSaveCC').on('click', async function () {
+                const sid = parseInt($('#ccStudent').val());
+                if (!sid) { showToast('Please select a student', 'error'); return; }
+                if (!$('#fIssueDate').val()) { showToast('Please enter Issue Date', 'error'); return; }
+
+                const cc = {
+                    student_id: sid,
+                    format: certFormat,
+                    date: $('#fIssueDate').val(),
+                    serial_no: $('#fSerialNo').val(),
+                    conduct: $('#fConduct').val(),
+                    purpose: $('#fPurpose').val().trim(),
+                    remarks: $('#fRemarks').val().trim()
+                };
+
+                try {
+                    if (editingCcId) {
+                        await updateCharacterCertificate(editingCcId, cc);
+                        showToast('Character Certificate updated successfully!', 'success');
+                    } else {
+                        await createCharacterCertificate(cc);
+                        showToast('Character Certificate issued successfully!', 'success');
+                    }
+                    certCache = await getCharacterCertificates();
+                } catch(e) { showToast('Error saving certificate', 'error'); return; }
+
+                resetForm();
+                $('.cc-tab').eq(1).click();
+            });
+
+            $('#btnResetCC').on('click', resetForm);
+
+            function resetForm() {
+                editingCcId = null;
+                $('#ccClass, #ccStudent').val('');
+                $('#ccSection').val('All');
+                $('#ccFormFields').hide();
+                $('#fConduct').val('Good');
+                $('#fPurpose').val('General purpose');
+                $('#fRemarks').val('');
+                certFormat = 'cbse';
+                $('.format-card').removeClass('active');
+                $('.format-card[data-format="cbse"]').addClass('active');
+            }
+
+            async function renderCertList() {
+                try { certCache = await getCharacterCertificates(); } catch(e) {}
+                const tbody = $('#ccTableBody'); tbody.empty();
+                if (!certCache.length) {
+                    tbody.append(`<tr><td colspan="9" class="text-center" style="padding:30px;color:#999;font-size:13px;">
+                    <i class="fas fa-certificate" style="font-size:24px;display:block;margin-bottom:8px;"></i>No certificates issued yet</td></tr>`);
+                    $('#ccRecordCount').text('0 Records'); return;
+                }
+                certCache.forEach(c => {
+                    tbody.append(`
+                    <tr>
+                        <td class="col-hide-lg" style="font-weight:700;">${c.serial_no || ''}</td>
+                        <td>${c.admission_no || ''}</td>
+                        <td style="font-weight:600;">${c.student_name || ''}</td>
+                        <td class="col-hide-md">${c.father_name || ''}</td>
+                        <td>${c.class_name || '-'} / ${c.section || '-'}</td>
+                        <td class="col-hide-xl"><span class="badge badge-info" style="font-size:10px;">${(c.format || 'cbse').toUpperCase()}</span></td>
+                        <td>${formatDate(c.date)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-cc" data-id="${c.id}" style="font-size:11px;padding:3px 10px;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning btn-edit-cc" data-id="${c.id}" style="font-size:11px;padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete-cc" data-id="${c.id}" style="font-size:11px;padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`);
+                });
+                $('#ccRecordCount').text(`${certCache.length} Record${certCache.length > 1 ? 's' : ''}`);
+            }
+
+            $(document).on('click', '.btn-view-cc', function () {
+                const id = parseInt($(this).data('id'));
+                const cert = certCache.find(c => c.id === id);
+                if (!cert) return;
+                renderCertDocument(cert);
+            });
+
+            $(document).on('click', '.btn-edit-cc', async function () {
+                const id = parseInt($(this).data('id'));
+                const cert = certCache.find(c => c.id === id);
+                if (!cert) return;
+                editingCcId = cert.id;
+                $('.cc-tab').eq(0).click();
+                $('#ccClass').val(cert.class_id).trigger('change');
+                setTimeout(() => {
+                    $('#ccSection').val(cert.section || 'All');
+                    populateStudentDropdown();
+                    setTimeout(() => {
+                        $('#ccStudent').val(cert.student_id).trigger('change');
+                        setTimeout(() => {
+                            $('#fSerialNo').val(cert.serial_no);
+                            $('#fConduct').val(cert.conduct || 'Good');
+                            $('#fIssueDate').val(cert.date);
+                            $('#fPurpose').val(cert.purpose || 'General purpose');
+                            $('#fRemarks').val(cert.remarks || '');
+                            certFormat = cert.format || 'cbse';
+                            $('.format-card').removeClass('active');
+                            $(`.format-card[data-format="${certFormat}"]`).addClass('active');
+                        }, 100);
+                    }, 100);
+                }, 100);
+            });
+
+            $(document).on('click', '.btn-delete-cc', function () {
+                const id = parseInt($(this).data('id'));
+                showConfirmModal('Delete Certificate', 'Are you sure you want to delete this certificate?', async function () {
+                    try {
+                        await deleteCharacterCertificate(id);
+                        certCache = await getCharacterCertificates();
+                        showToast('Certificate deleted', 'success');
+                        renderCertList();
+                        $('#certPreviewArea').removeClass('visible');
+                    } catch(e) { showToast('Error deleting certificate', 'error'); }
+                });
+            });
+
+            function renderCertDocument(cert) {
+                const pronoun = cert.gender === 'Male' ? 'He' : 'She';
+                const pronounLower = cert.gender === 'Male' ? 'his' : 'her';
+                const sonDaughter = cert.gender === 'Male' ? 'son' : 'daughter';
+                const conduct = cert.conduct || 'Good';
+                const fmt = cert.format || 'cbse';
+                const cn = cert.class_name || '-';
+                const sec = cert.section || '-';
+                const stuName = cert.student_name || '';
+                const fatherName = cert.father_name || '';
+                const sessionName = cert.session || (currentSession ? currentSession.name : '2025-2026');
+
+                let bodyHtml = '';
+                if (fmt === 'cbse') {
+                    bodyHtml = `
+                        <div class="cert-doc-body">
+                            <p>This is to certify that <strong>${stuName}</strong>, ${sonDaughter} of <strong>Shri ${fatherName}</strong>, is/was a bonafide student of this school. ${pronoun} was studying in <strong>Class ${cn} (Section ${sec})</strong> during the academic session <strong>${sessionName}</strong>.</p>
+                            <p>${pronoun} bears a good moral character and ${pronounLower} conduct has been found <strong>${conduct}</strong> during ${pronounLower} stay in this institution. ${pronoun} is not involved in any kind of ragging or indisciplinary activity.</p>
+                            <p>I wish ${pronoun.toLowerCase()} all the best for ${pronounLower} future endeavors.</p>
+                            <p>This certificate is being issued on ${pronounLower} request for the purpose it may serve.</p>
+                        </div>`;
+                } else if (fmt === 'state') {
+                    bodyHtml = `
+                        <div class="cert-doc-body">
+                            <p>This is to certify that <strong>${stuName}</strong>, ${sonDaughter} of <strong>Shri ${fatherName}</strong>, is/was a regular student of this institution. ${pronoun} was enrolled in <strong>Class ${cn} (Section ${sec})</strong> during the academic year <strong>${sessionName}</strong>.</p>
+                            <p>During ${pronounLower} stay in this school, ${pronounLower} character and conduct has been found <strong>${conduct}</strong>. ${pronoun} has not been involved in any type of anti-social or anti-national activities.</p>
+                            <p>This character certificate is issued to ${pronoun.toLowerCase()} as per ${pronounLower} request.</p>
+                        </div>`;
+                } else {
+                    bodyHtml = `
+                        <div class="cert-doc-body">
+                            <p>प्रमाणित किया जाता है कि <strong>${stuName}</strong>, पुत्र/पुत्री श्री <strong>${fatherName}</strong>, इस विद्यालय के/की <strong>कक्षा ${cn} (अनुभाग ${sec})</strong> का/की विद्यार्थी है/थे। शैक्षिक सत्र <strong>${sessionName}</strong> में इस विद्यालय में अध्ययनरत रहे।</p>
+                            <p style="margin-top:8px;">This is to certify that <strong>${stuName}</strong>, ${sonDaughter} of <strong>Shri ${fatherName}</strong>, is/was a bonafide student of <strong>Class ${cn} (Section ${sec})</strong> during the session <strong>${sessionName}</strong>.</p>
+                            <p>${pronoun} is of good moral character and no disciplinary action has been taken against ${pronoun.toLowerCase()} during ${pronounLower} stay in this institution.</p>
+                        </div>`;
+                }
+
+                const titleHtml = fmt === 'bilingual'
+                    ? `<div class="cert-doc-title"><h3 class="cert-hindi" style="text-decoration:none;">चरित्र प्रमाण पत्र</h3><h3>Character Certificate</h3></div>`
+                    : `<div class="cert-doc-title"><h3>Character Certificate</h3></div>`;
+
+                const fl = fmt === 'bilingual'
+                    ? { ct: 'वर्ग अध्यापक / Class Teacher', p: (school.signing_authority_designation ? school.signing_authority_designation : 'प्रधानाचार्य / Principal'), d: 'दिनांक / Date' }
+                    : { ct: 'Class Teacher', p: (school.signing_authority_designation || 'Principal'), d: 'Date' };
+
+                const container = $('#certPrintArea');
+                container.html(`
+                <div class="cert-document">
+                    <div class="cert-border-inner">
+                        <div class="cert-doc-header">
+                            ${school.logo_url ? '<img src="'+school.logo_url+'" style="height:52px;width:52px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
+                            <div class="cert-school-name">${school.school_name || ''}</div>
+                            <div class="cert-tagline">${school.board || ''}</div>
+                            <div class="cert-address"><i class="fas fa-map-marker-alt"></i> ${school.address || ''}</div>
+                            <div class="cert-affiliation">Affiliation No: ${school.affiliation_no || '-'} &nbsp;|&nbsp; School Code: ${school.school_code || '-'}</div>
+                        </div>
+                        <div class="cert-serial-bar">
+                            <span>Serial No.: <u>${cert.serial_no || ''}</u></span>
+                            <span>${fl.d}: <u>${formatDate(cert.date)}</u></span>
+                        </div>
+                        ${titleHtml}
+                        ${bodyHtml}
+                        <div class="cert-doc-footer">
+                            <div class="cert-doc-sign">
+                                <div class="cert-sign-line"></div>
+                                <span>${fl.ct}</span>
+                            </div>
+                            <div class="cert-doc-sign">
+                                ${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:35px;max-width:90px;object-fit:contain;display:block;margin:0 auto;">' : ''}
+                                <div class="cert-sign-line"></div>
+                                <span>${fl.p}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`);
+
+                $('#certPreviewArea').addClass('visible');
+                $('html, body').animate({ scrollTop: $('#certPreviewArea').offset().top - 80 }, 400);
+            }
+
+            // Print
+            $('#btnPrint').on('click', function () {
+                const printContent = document.getElementById('certPrintArea').innerHTML;
+                const printWin = window.open('', '_blank');
+                printWin.document.write(`<!DOCTYPE html><html><head><title>Character Certificate</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Times New Roman', serif; padding: 15mm; }
+                    .cert-document { width: 100%; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
+                    .cert-border-inner { border: 1px solid #333; margin: 4px; padding: 24px 30px; }
+                    .cert-doc-header { text-align: center; margin-bottom: 10px; border-bottom: 1.5px solid #333; padding-bottom: 12px; }
+                    .cert-school-name { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #111; margin: 0; }
+                    .cert-tagline { font-size: 9px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+                    .cert-address { font-size: 9px; color: #555; margin-top: 4px; }
+                    .cert-affiliation { font-size: 8.5px; color: #666; margin-top: 3px; }
+                    .cert-serial-bar { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; color: #333; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dotted #aaa; }
+                    .cert-doc-title { text-align: center; margin-bottom: 16px; }
+                    .cert-doc-title h3 { font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #111; margin: 0; text-decoration: underline; text-underline-offset: 4px; }
+                    .cert-doc-title .cert-hindi { font-size: 16px; margin-bottom: 4px; text-decoration: none; }
+                    .cert-doc-body { font-size: 12px; color: #222; line-height: 2; margin-bottom: 20px; text-align: justify; }
+                    .cert-doc-body strong { color: #111; }
+                    .cert-doc-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding-top: 10px; }
+                    .cert-doc-sign { text-align: center; }
+                    .cert-sign-line { width: 90px; border-top: 1px solid #333; margin: 0 auto 3px; }
+                    .cert-doc-sign span { font-size: 9px; font-weight: 700; color: #222; display: block; }
+                    @page { size: A4 portrait; margin: 15mm; }
+                </style></head><body>${printContent}</body></html>`);
+                printWin.document.close();
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 500);
+            });
+        });
+    </script>
+</body>
+
+</html>

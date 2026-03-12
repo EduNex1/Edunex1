@@ -1,0 +1,328 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>My Children — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .child-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e8eaf6;
+            padding: 24px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .child-card:hover {
+            box-shadow: 0 8px 24px rgba(13, 27, 74, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .child-card.active-child {
+            border: 2px solid #0d1b4a;
+            box-shadow: 0 4px 16px rgba(13, 27, 74, 0.12);
+        }
+
+        .child-card .child-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d1b4a, #2952a3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 auto 12px;
+        }
+
+        .child-card .child-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0d1b4a;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .child-card .child-class {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .child-card .child-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f1f3;
+            font-size: 12px;
+        }
+
+        .child-card .child-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .child-card .child-info-row .label {
+            color: #888;
+            font-weight: 600;
+        }
+
+        .child-card .child-info-row .value {
+            color: #0d1b4a;
+            font-weight: 700;
+        }
+
+        .active-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #2e7d32;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .child-detail-section {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e8eaf6;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .detail-item .d-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+
+        .detail-item .d-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0d1b4a;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+
+                <div class="breadcrumbs-area">
+                    <h3>My Children</h3>
+                    <ul>
+                        <li><a href="/parent-dashboard">Home</a></li>
+                        <li>My Children</li>
+                    </ul>
+                </div>
+
+                <!-- Children Cards Row -->
+                <div class="row" id="childrenCards" style="margin-bottom:20px;"></div>
+
+                <!-- Selected Child Detail -->
+                <div id="childDetail" style="display:none;">
+                    <!-- Stats -->
+                    <div class="stats-grid stats-grid-4" style="margin-bottom:16px;">
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Attendance</div>
+                                <div class="stat-number" id="cdAtt">—</div>
+                                <div class="stat-sub" id="cdAttSub">This month</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Fee Status</div>
+                                <div class="stat-number" id="cdFee">—</div>
+                                <div class="stat-sub" id="cdFeeSub">—</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i class="fas fa-star"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Last Exam</div>
+                                <div class="stat-number" id="cdExam">—</div>
+                                <div class="stat-sub" id="cdExamSub">—</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><i class="fas fa-book"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-label">Homework</div>
+                                <div class="stat-number" id="cdHw">—</div>
+                                <div class="stat-sub">Pending today</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-user"></i> Personal Information</div>
+                        <div class="chart-card-body">
+                            <div class="detail-grid" id="personalInfo"></div>
+                        </div>
+                    </div>
+
+                    <!-- Guardian Information -->
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-user-friends"></i> Guardian Information</div>
+                        <div class="chart-card-body">
+                            <div class="detail-grid" id="guardianInfo"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-bolt"></i> Quick Actions</div>
+                        <div class="chart-card-body">
+                            <div class="quick-grid" id="quickActions"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        var children = [];
+        var selectedChild = null;
+
+        $(function () {
+            initPage('p-my-children');
+            loadChildren();
+        });
+
+        async function loadChildren() {
+            try {
+                children = await getMyChildren();
+            } catch(e) { children = []; }
+
+            if (children.length === 0) {
+                document.getElementById('childrenCards').innerHTML = '<div class="col-12"><div class="chart-card" style="text-align:center;padding:40px 20px;"><i class="fas fa-child" style="font-size:40px;color:#ccc;"></i><p class="mt-2" style="color:#888;">No children found linked to your account.</p></div></div>';
+                return;
+            }
+            renderChildCards();
+            selectChild(children[0].id);
+        }
+
+        function renderChildCards() {
+            var html = '';
+            children.forEach(function (c) {
+                var displayName = c.name || 'Student';
+                var initials = displayName.split(' ').map(function (n) { return n[0]; }).join('');
+                var isActive = selectedChild && selectedChild.id === c.id;
+                var className = c.class_name || '';
+                html += '<div class="col-lg-4 col-md-6 col-12" style="margin-bottom:16px;">' +
+                    '<div class="child-card' + (isActive ? ' active-child' : '') + '" onclick="selectChild(' + c.id + ')" id="childCard_' + c.id + '">' +
+                    (isActive ? '<span class="active-badge">Selected</span>' : '') +
+                    '<div class="child-avatar">' + initials + '</div>' +
+                    '<div class="child-name">' + displayName + '</div>' +
+                    '<div class="child-class">' + className + ' — ' + (c.section || '') + ' | Roll: ' + (c.roll_no || '') + '</div>' +
+                    '<div class="child-info-row"><span class="label">Admission No</span><span class="value">' + (c.admission_no || '') + '</span></div>' +
+                    '<div class="child-info-row"><span class="label">Gender</span><span class="value">' + (c.gender || '') + '</span></div>' +
+                    '<div class="child-info-row"><span class="label">Phone</span><span class="value">' + (c.phone || '') + '</span></div>' +
+                    '</div></div>';
+            });
+            document.getElementById('childrenCards').innerHTML = html;
+        }
+
+        function selectChild(id) {
+            selectedChild = children.find(function (c) { return c.id === id; });
+            if (!selectedChild) return;
+
+            renderChildCards();
+
+            var c = selectedChild;
+            // Stats — set some defaults since detailed stats require separate API calls
+            document.getElementById('cdAtt').textContent = '—';
+            document.getElementById('cdAttSub').textContent = 'View attendance';
+            document.getElementById('cdFee').textContent = '—';
+            document.getElementById('cdFeeSub').textContent = 'View fee status';
+            document.getElementById('cdExam').textContent = '—';
+            document.getElementById('cdExamSub').textContent = 'View results';
+            document.getElementById('cdHw').textContent = '—';
+
+            // Personal Info
+            document.getElementById('personalInfo').innerHTML = buildInfo([
+                ['Full Name', c.name || ''], ['Class', (c.class_name || '') + ' — ' + (c.section || '')],
+                ['Roll Number', c.roll_no || ''], ['Admission No', c.admission_no || ''],
+                ['Date of Birth', c.dob || ''], ['Gender', c.gender || ''],
+                ['Blood Group', c.blood_group || ''], ['Religion', c.religion || ''],
+                ['Category', c.category || ''], ['Address', c.address || '']
+            ]);
+
+            // Guardian Info
+            document.getElementById('guardianInfo').innerHTML = buildInfo([
+                ['Father\'s Name', c.father_name || ''], ['Father\'s Phone', c.father_phone || ''],
+                ['Father\'s Occupation', c.father_occupation || ''],
+                ['Mother\'s Name', c.mother_name || ''], ['Mother\'s Phone', c.mother_phone || ''],
+                ['Mother\'s Occupation', c.mother_occupation || '']
+            ]);
+
+            // Quick Actions
+            document.getElementById('quickActions').innerHTML =
+                '<a href="/p-fee-status" class="quick-item"><i class="fas fa-rupee-sign"></i><span>Fee Status</span></a>' +
+                '<a href="/p-results" class="quick-item"><i class="fas fa-chart-bar"></i><span>Results</span></a>' +
+                '<a href="/p-homework" class="quick-item"><i class="fas fa-book"></i><span>Homework</span></a>' +
+                '<a href="/p-timetable" class="quick-item"><i class="fas fa-clock"></i><span>Timetable</span></a>' +
+                '<a href="/p-transport" class="quick-item"><i class="fas fa-bus"></i><span>Transport</span></a>';
+
+            document.getElementById('childDetail').style.display = 'block';
+        }
+
+        function buildInfo(items) {
+            return items.map(function (item) {
+                return '<div class="detail-item"><div class="d-label">' + item[0] + '</div><div class="d-value">' + (item[1] || '—') + '</div></div>';
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>

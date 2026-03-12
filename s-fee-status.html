@@ -1,0 +1,280 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Status — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .fee-summary-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:16px; }
+        .fee-box { background:#fff; border-radius:10px; border:1px solid #e8eaf6; padding:18px 16px; text-align:center; }
+        .fee-box .fb-label { font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; }
+        .fee-box .fb-value { font-size:22px; font-weight:800; color:#0d1b4a; line-height:1.2; }
+        .fee-box .fb-sub { font-size:10px; color:#999; margin-top:4px; }
+        .fee-box.box-total { border-top:3px solid #0d1b4a; }
+        .fee-box.box-paid { border-top:3px solid #2e7d32; }
+        .fee-box.box-paid .fb-value { color:#2e7d32; }
+        .fee-box.box-pending { border-top:3px solid #c62828; }
+        .fee-box.box-pending .fb-value { color:#c62828; }
+        .fee-box.box-discount { border-top:3px solid #ef6c00; }
+        .fee-box.box-discount .fb-value { color:#ef6c00; }
+        .fee-box.box-oldbal { border-top:3px solid #6a1b9a; }
+        .fee-box.box-oldbal .fb-value { color:#6a1b9a; }
+
+        .month-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+        .month-tile { background:#fff; border:1px solid #e8eaf6; border-radius:10px; padding:14px 10px; text-align:center; }
+        .month-tile .mt-name { font-size:11px; font-weight:700; color:#0d1b4a; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:6px; }
+        .month-tile .mt-amount { font-size:15px; font-weight:800; }
+        .month-tile .mt-badge { display:inline-block; font-size:9px; font-weight:700; padding:2px 8px; border-radius:10px; margin-top:6px; text-transform:uppercase; }
+        .month-tile .mt-due { font-size:9px; color:#c62828; margin-top:4px; }
+        .month-tile.paid { border-left:4px solid #2e7d32; }
+        .month-tile.paid .mt-amount { color:#2e7d32; }
+        .month-tile.paid .mt-badge { background:#e8f5e9; color:#2e7d32; }
+        .month-tile.partial { border-left:4px solid #ef6c00; }
+        .month-tile.partial .mt-amount { color:#ef6c00; }
+        .month-tile.partial .mt-badge { background:#fff3e0; color:#ef6c00; }
+        .month-tile.due { border-left:4px solid #c62828; }
+        .month-tile.due .mt-amount { color:#c62828; }
+        .month-tile.due .mt-badge { background:#ffebee; color:#c62828; }
+        .month-tile.upcoming { border-left:4px solid #bdbdbd; opacity:.55; }
+        .month-tile.upcoming .mt-amount { color:#9e9e9e; }
+        .month-tile.upcoming .mt-badge { background:#f5f5f5; color:#757575; }
+
+        .bd-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #f0f1f3; font-size:13px; }
+        .bd-row:last-child { border-bottom:none; }
+        .bd-row .bd-name { color:#555; flex:1; min-width:0; }
+        .bd-row .bd-val { font-weight:700; color:#0d1b4a; white-space:nowrap; margin-left:12px; }
+        .bd-row.bd-total { border-top:2px solid #e8eaf6; margin-top:4px; padding-top:12px; }
+        .bd-row.bd-total .bd-name { font-weight:700; color:#0d1b4a; }
+        .bd-row.bd-total .bd-val { font-weight:800; font-size:15px; }
+
+        .pay-row { display:flex; align-items:center; padding:12px 0; border-bottom:1px solid #f0f1f3; gap:12px; }
+        .pay-row:last-child { border-bottom:none; }
+        .pay-icon { width:36px; height:36px; border-radius:8px; background:#e8f5e9; color:#2e7d32; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+        .pay-info { flex:1; min-width:0; }
+        .pay-info .pi-month { font-size:13px; font-weight:700; color:#0d1b4a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pay-info .pi-meta { font-size:10px; color:#888; }
+        .pay-amt { text-align:right; flex-shrink:0; }
+        .pay-amt .pa-val { font-size:14px; font-weight:700; color:#2e7d32; }
+        .pay-amt .pa-bal { font-size:10px; color:#c62828; }
+
+        @media (max-width:991px) {
+            .fee-summary-row { grid-template-columns:repeat(2,1fr); }
+            .month-grid { grid-template-columns:repeat(4,1fr); gap:8px; }
+            .fee-box .fb-value { font-size:20px; }
+        }
+        @media (max-width:767px) {
+            .fee-summary-row { grid-template-columns:repeat(2,1fr); gap:8px; }
+            .fee-box { padding:14px 10px; border-radius:8px; }
+            .fee-box .fb-value { font-size:18px; }
+            .fee-box .fb-label { font-size:9px; }
+            .month-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+            .month-tile { padding:10px 6px; border-radius:8px; }
+            .month-tile .mt-name { font-size:10px; }
+            .month-tile .mt-amount { font-size:13px; }
+            .month-tile .mt-badge { font-size:8px; padding:2px 6px; }
+            .bd-row { font-size:12px; padding:7px 0; }
+            .pay-row { flex-wrap:wrap; gap:8px; padding:10px 0; }
+            .pay-icon { width:30px; height:30px; font-size:12px; }
+        }
+        @media (max-width:480px) {
+            .fee-summary-row { grid-template-columns:1fr 1fr; gap:6px; }
+            .fee-box { padding:12px 8px; }
+            .fee-box .fb-value { font-size:16px; }
+            .month-grid { grid-template-columns:repeat(2,1fr); gap:6px; }
+            .month-tile { padding:8px 5px; }
+            .month-tile .mt-name { font-size:9px; }
+            .month-tile .mt-amount { font-size:12px; }
+            .pay-icon { width:26px; height:26px; font-size:11px; border-radius:6px; }
+            .pay-info .pi-month { font-size:11px; }
+            .pay-amt .pa-val { font-size:12px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee Status</h3>
+                    <ul>
+                        <li><a href="/student-dashboard">Home</a></li>
+                        <li>Fee</li>
+                        <li>Fee Status</li>
+                    </ul>
+                </div>
+
+                <!-- Student Info -->
+                <div id="stuInfo" class="chart-card" style="margin-bottom:16px;display:none;">
+                    <div class="chart-card-header"><i class="fas fa-user-graduate"></i> <span id="stuLabel"></span></div>
+                </div>
+
+                <!-- Fee Summary -->
+                <div class="fee-summary-row">
+                    <div class="fee-box box-total"><div class="fb-label">Annual Fee</div><div class="fb-value" id="fTotal">\u20B90</div><div class="fb-sub" id="fTotalSub">&nbsp;</div></div>
+                    <div class="fee-box box-paid"><div class="fb-label">Total Paid</div><div class="fb-value" id="fPaid">\u20B90</div><div class="fb-sub" id="fPaidSub">&nbsp;</div></div>
+                    <div class="fee-box box-pending"><div class="fb-label">Pending</div><div class="fb-value" id="fPending">\u20B90</div><div class="fb-sub" id="fPendingSub">&nbsp;</div></div>
+                    <div class="fee-box box-discount"><div class="fb-label">Discount</div><div class="fb-value" id="fDiscount">\u20B90</div><div class="fb-sub" id="fDiscountSub">&nbsp;</div></div>
+                    <div class="fee-box box-oldbal"><div class="fb-label">Old Balance</div><div class="fb-value" id="fOldBal">\u20B90</div><div class="fb-sub" id="fOldBalSub">&nbsp;</div></div>
+                </div>
+
+                <!-- Monthly Fee Breakdown -->
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee Breakdown</div>
+                    <div class="chart-card-body" id="feeBreakdownInfo"><p style="color:#888;text-align:center;">Loading...</p></div>
+                </div>
+
+                <!-- Month-wise Status -->
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-th-large"></i> Month-wise Status</div>
+                    <div class="chart-card-body">
+                        <div id="monthGrid" class="month-grid"><p style="color:#888;text-align:center;grid-column:1/-1;">Loading...</p></div>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-list-ol"></i> Payment History</div>
+                    <div class="chart-card-body">
+                        <div id="paymentList"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    const SCHOOL_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
+    const fmt = n => '\u20B9'+Number(n||0).toLocaleString('en-IN');
+
+    $(async function () {
+        initPage('s-fee-status');
+        try {
+            const children = await getMyChildren();
+            const stu = children && children[0];
+            if (!stu) { $('#feeBreakdownInfo').html('<p style="text-align:center;color:#888;">Student not found.</p>'); return; }
+            const sec = stu.section ? '-' + stu.section : '';
+            $('#stuLabel').text(stu.name + ' \u2014 Class ' + (stu.class_name || '') + sec + ' | Adm: ' + (stu.admission_no || '-'));
+            $('#stuInfo').show();
+
+            const [deps, discs, slabs] = await Promise.all([
+                getFeeDeposits({ student_id: stu.id }),
+                getFeeDiscounts(stu.id),
+                getFeeSlabs(stu.class_id)
+            ]);
+
+            const slabMonthly = (slabs||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+            const transportFee = Number(stu.transport_fee||0);
+            const oldBalance = Number(stu.old_balance||0);
+            const monthlyCharge = slabMonthly + transportFee;
+            const annualFee = monthlyCharge * 12;
+
+            // Breakdown
+            let bh = '';
+            if ((slabs||[]).length) {
+                (slabs||[]).forEach(s => {
+                    bh += '<div class="bd-row"><span class="bd-name">' + (s.particular_name||'Fee') + '</span><span class="bd-val">' + fmt(s.amount) + ' / mo</span></div>';
+                });
+                if (transportFee > 0) {
+                    bh += '<div class="bd-row"><span class="bd-name"><i class="fas fa-bus" style="color:#2e7d32;margin-right:4px;"></i>' + (stu.route_name||'Transport') + '</span><span class="bd-val">' + fmt(transportFee) + ' / mo</span></div>';
+                }
+                bh += '<div class="bd-row bd-total"><span class="bd-name">Total Monthly</span><span class="bd-val">' + fmt(monthlyCharge) + '</span></div>';
+            } else if (transportFee > 0) {
+                bh += '<div class="bd-row"><span class="bd-name"><i class="fas fa-bus" style="color:#2e7d32;margin-right:4px;"></i>' + (stu.route_name||'Transport') + '</span><span class="bd-val">' + fmt(transportFee) + ' / mo</span></div>';
+                bh += '<div class="bd-row bd-total"><span class="bd-name">Total Monthly</span><span class="bd-val">' + fmt(monthlyCharge) + '</span></div>';
+            } else {
+                bh = '<p style="color:#888;text-align:center;margin:0;">Fee structure not configured yet.</p>';
+            }
+            $('#feeBreakdownInfo').html(bh);
+
+            // Deposits by month
+            const depositsByMonth = {};
+            (deps||[]).forEach(d => { const m=d.month||''; if (!depositsByMonth[m]) depositsByMonth[m]=[]; depositsByMonth[m].push(d); });
+
+            const totalDisc = (discs||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+            const blanketDiscTotal = (discs||[]).filter(d=>!d.month||d.month==='').reduce((s,x)=>s+Number(x.amount||0),0);
+            const monthSpecificDiscs = {};
+            (discs||[]).forEach(d => { if (d.month && d.month!=='') { monthSpecificDiscs[d.month]=(monthSpecificDiscs[d.month]||0)+Number(d.amount||0); } });
+
+            const totalPaid = (deps||[]).reduce((s,x)=>s+Number(x.received_amount||0),0);
+            const pending = Math.max(0, annualFee + oldBalance - totalPaid - totalDisc);
+            const paidMonths = SCHOOL_MONTHS.filter(m => {
+                const md = depositsByMonth[m]||[];
+                return md.reduce((s,x)=>s+Number(x.received_amount||0),0) >= monthlyCharge;
+            }).length;
+
+            // Summary cards
+            $('#fTotal').text(fmt(annualFee));
+            $('#fTotalSub').text(fmt(monthlyCharge)+' \u00D7 12 months');
+            $('#fPaid').text(fmt(totalPaid));
+            $('#fPaidSub').text(paidMonths+' of 12 months paid');
+            $('#fPending').text(fmt(pending));
+            const pendingMonths = 12 - paidMonths;
+            $('#fPendingSub').html(pending <= 0 ? '<span style="color:#2e7d32;">All clear! \u2705</span>' : pendingMonths+' month(s) pending');
+            $('#fDiscount').text(fmt(totalDisc));
+            $('#fDiscountSub').text(totalDisc ? 'Discount applied' : 'No discount');
+            $('#fOldBal').text(fmt(oldBalance));
+            $('#fOldBalSub').text(oldBalance > 0 ? 'Previous session dues' : 'No old dues');
+
+            // Month grid
+            const now = new Date();
+            const currentMonth = now.toLocaleString('en-US',{month:'long'});
+            let gh = '';
+            SCHOOL_MONTHS.forEach(m => {
+                const md = depositsByMonth[m]||[];
+                const monthPaid = md.reduce((s,x)=>s+Number(x.received_amount||0),0);
+                const monthDisc = blanketDiscTotal + (monthSpecificDiscs[m]||0);
+                const effectiveCharge = Math.max(0, monthlyCharge - monthDisc);
+                const monthDue = Math.max(0, effectiveCharge - monthPaid);
+                const isCurrent = m === currentMonth;
+                let badge, cls;
+                if (monthPaid >= effectiveCharge && effectiveCharge > 0) { badge = '\u2713 Paid'; cls = 'paid'; }
+                else if (monthPaid > 0 && monthPaid < effectiveCharge) { badge = '\u26A0 Partial'; cls = 'partial'; }
+                else if (SCHOOL_MONTHS.indexOf(m) > SCHOOL_MONTHS.indexOf(currentMonth) && monthlyCharge > 0) { badge = 'Upcoming'; cls = 'upcoming'; }
+                else { badge = '\u2717 Due'; cls = 'due'; }
+                gh += '<div class="month-tile '+cls+'"><div class="mt-name">'+m+(isCurrent?' <i class="fas fa-circle" style="font-size:5px;color:#304ffe;vertical-align:middle;"></i>':'')+'</div><div class="mt-amount">'+(monthPaid > 0 ? fmt(monthPaid) : fmt(effectiveCharge))+'</div><div class="mt-badge">'+badge+'</div>'+(monthDue > 0 && cls !== 'upcoming' ? '<div class="mt-due">Due: '+fmt(monthDue)+'</div>' : '')+'</div>';
+            });
+            $('#monthGrid').html(gh);
+
+            // Payment history
+            if (!(deps||[]).length) {
+                $('#paymentList').html('<p style="text-align:center;color:#888;margin:0;">No payments recorded yet.</p>');
+            } else {
+                let ph = '';
+                (deps||[]).forEach(d => {
+                    ph += '<div class="pay-row"><div class="pay-icon"><i class="fas fa-check"></i></div><div class="pay-info"><div class="pi-month">'+(d.month||'Fee Payment')+'</div><div class="pi-meta">'+(d.date||'')+' &middot; #'+(d.receipt_no||d.id)+' &middot; '+(d.payment_mode||'Cash')+'</div></div><div class="pay-amt"><div class="pa-val">'+fmt(d.received_amount)+'</div>'+(Number(d.balance||0)>0?'<div class="pa-bal">Bal: '+fmt(d.balance)+'</div>':'')+'</div></div>';
+                });
+                $('#paymentList').html(ph);
+            }
+        } catch (e) { console.error(e); }
+    });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Online Fee Payment — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .layout-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; margin-bottom: 16px; }
+        .card-lite { background:#fff; border:1px solid #e8eaf6; border-radius:12px; overflow:hidden; }
+        .card-head { padding:14px 16px; border-bottom:1px solid #eef1f6; font-size:13px; font-weight:700; color:#0d1b4a; display:flex; align-items:center; gap:8px; }
+        .card-body-lite { padding:16px; }
+        .form-label-sm { font-size:11px; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:4px; display:block; letter-spacing:.3px; }
+        .form-control { font-size:12px; height:36px; }
+        .hint-box { background:#f8f9ff; border:1px solid #dce3ff; border-radius:10px; padding:12px 14px; font-size:11px; color:#54627a; margin-bottom:12px; }
+        .pay-grid { display:grid; grid-template-columns: 180px 1fr; gap:16px; align-items:start; }
+        .qr-box { background:#fafbff; border:1px dashed #c5cae9; border-radius:12px; min-height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+        .qr-box img { width:100%; height:100%; object-fit:contain; }
+        .qr-box.empty { color:#a0a8b8; font-size:28px; }
+        .detail-list { display:grid; gap:10px; }
+        .detail-item { background:#fafbff; border:1px solid #edf0f7; border-radius:10px; padding:10px 12px; }
+        .detail-item label { display:block; font-size:9px; font-weight:700; color:#8a91a0; text-transform:uppercase; margin-bottom:3px; }
+        .detail-item div { font-size:13px; font-weight:600; color:#10224d; word-break:break-word; }
+        .upload-box { border:2px dashed #d6dbeb; border-radius:12px; padding:18px; text-align:center; cursor:pointer; position:relative; background:#fbfcff; }
+        .upload-box input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+        .upload-box i { font-size:24px; color:#0d1b4a; margin-bottom:8px; display:block; }
+        .upload-preview { margin-top:12px; border:1px solid #e8eaf6; border-radius:10px; overflow:hidden; max-width:240px; }
+        .upload-preview img { width:100%; display:block; }
+        .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; padding:4px 9px; border-radius:999px; text-transform:uppercase; }
+        .status-requested { background:#fff3e0; color:#ef6c00; }
+        .status-accepted { background:#e8f5e9; color:#2e7d32; }
+        .status-rejected { background:#ffebee; color:#c62828; }
+        .request-table { width:100%; border-collapse:collapse; }
+        .request-table thead th { background:#0d1b4a; color:#fff; font-size:10px; font-weight:700; padding:8px 10px; text-transform:uppercase; }
+        .request-table tbody td { font-size:12px; padding:9px 10px; border-bottom:1px solid #eef1f6; vertical-align:middle; }
+        .empty-state { text-align:center; padding:34px; color:#a8afbd; }
+        .empty-state i { display:block; font-size:34px; margin-bottom:10px; }
+        .due-pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#ffebee; color:#c62828; font-size:10px; font-weight:700; }
+        @media (max-width: 991px) { .layout-grid { grid-template-columns: 1fr; } .pay-grid { grid-template-columns: 1fr; } .qr-box { min-height:220px; } }
+        @media (max-width: 767px) { .request-table thead { display:none; } .request-table, .request-table tbody, .request-table tr, .request-table td { display:block; width:100%; } .request-table tr { border-bottom:1px solid #eef1f6; padding:8px 0; } .request-table td { border:none; padding:4px 0; } .request-table td::before { content:attr(data-label); display:block; font-size:10px; color:#8a91a0; text-transform:uppercase; font-weight:700; margin-bottom:2px; } }
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Online Fee Payment</h3>
+                    <ul>
+                        <li><a href="/parent-dashboard">Home</a></li>
+                        <li>Fee</li>
+                        <li>Online Fee Payment</li>
+                    </ul>
+                </div>
+
+                <div class="card-lite" style="margin-bottom:16px;">
+                    <div class="card-head"><i class="fas fa-child"></i>Select Child</div>
+                    <div class="card-body-lite">
+                        <select id="childSelect" class="form-control" style="max-width:360px;"></select>
+                    </div>
+                </div>
+
+                <div class="layout-grid">
+                    <div class="card-lite">
+                        <div class="card-head"><i class="fas fa-university"></i>Branch Payment Details</div>
+                        <div class="card-body-lite">
+                            <div class="hint-box">Scan the branch QR or use the bank details below. These details are pulled branch-wise, so each parent sees only their own branch payment method.</div>
+                            <div class="pay-grid">
+                                <div>
+                                    <div class="qr-box empty" id="qrBox"><i class="fas fa-qrcode"></i></div>
+                                </div>
+                                <div>
+                                    <div class="detail-list">
+                                        <div class="detail-item"><label>Account Holder</label><div id="accName">Not configured</div></div>
+                                        <div class="detail-item"><label>Account Number</label><div id="accNo">Not configured</div></div>
+                                        <div class="detail-item"><label>IFSC Code</label><div id="accIfsc">Not configured</div></div>
+                                        <div class="detail-item"><label>Branch Name</label><div id="accBranch">Not configured</div></div>
+                                        <div class="detail-item"><label>UPI ID / Reference</label><div id="accUpi">Not configured</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-lite">
+                        <div class="card-head"><i class="fas fa-file-upload"></i>Submit Payment Request</div>
+                        <div class="card-body-lite">
+                            <div class="form-group">
+                                <label class="form-label-sm">Select Due Month</label>
+                                <select id="reqMonth" class="form-control"></select>
+                                <small id="monthHint" style="font-size:10px;color:#888;display:block;margin-top:6px;"></small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Amount Paid</label>
+                                <input type="number" id="reqAmount" class="form-control" min="0" step="0.01" placeholder="Enter paid amount">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Transaction ID / Reference No.</label>
+                                <input type="text" id="reqTxn" class="form-control" placeholder="Enter bank / UPI / QR transaction reference">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Payment Proof</label>
+                                <label class="upload-box" id="proofBox">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <strong style="font-size:12px;color:#0d1b4a;display:block;">Upload screenshot / payment proof</strong>
+                                    <span style="font-size:10px;color:#8a91a0;">PNG, JPG, PDF allowed</span>
+                                    <input type="file" id="reqProof" accept="image/*,.pdf">
+                                </label>
+                                <div class="upload-preview" id="proofPreview" style="display:none;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Note / Comment</label>
+                                <textarea id="reqNote" class="form-control" rows="3" style="height:auto;" placeholder="Optional note for admin"></textarea>
+                            </div>
+                            <div class="d-flex" style="gap:8px;">
+                                <button class="fw-btn-fill btn-gradient-yellow" id="btnSubmitReq" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                    <i class="fas fa-paper-plane"></i> Submit Request
+                                </button>
+                                <button class="fw-btn-fill" id="btnResetReq" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-lite">
+                    <div class="card-head"><i class="fas fa-list"></i>My Payment Requests</div>
+                    <div class="card-body-lite" id="requestListWrap">
+                        <div class="empty-state"><i class="fas fa-hourglass-half"></i>Loading requests...</div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let children = [];
+        let dueDetails = [];
+        let proofUpload = null;
+
+        $(async function () {
+            if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
+            initPage('p-online-payment');
+            try {
+                children = await getMyChildren() || [];
+                const select = $('#childSelect').empty();
+                if (!children.length) {
+                    select.append('<option value="">No child linked</option>');
+                    disableForm(true);
+                    renderRequestList([]);
+                    return;
+                }
+                children.forEach(child => {
+                    select.append(`<option value="${child.id}">${child.name} — Class ${child.class_name || ''}${child.section ? '-' + child.section : ''}</option>`);
+                });
+                $('#childSelect').on('change', loadChildContext);
+                $('#reqMonth').on('change', syncMonthAmount);
+                $('#btnSubmitReq').on('click', submitRequest);
+                $('#btnResetReq').on('click', resetForm);
+                $('#reqProof').on('change', previewProof);
+                await loadChildContext();
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load parent payment screen', 'error');
+            }
+        });
+
+        async function loadChildContext() {
+            const childId = $('#childSelect').val();
+            if (!childId) return;
+            disableForm(true);
+            resetForm(false);
+            try {
+                const [settings, requests, dueRows] = await Promise.all([
+                    getOptionSettings(),
+                    getPaymentRequests({ student_id: childId }),
+                    getFeeDueReport({ student_id: childId })
+                ]);
+                renderPaymentDetails(settings || {});
+                renderDueMonths((dueRows && dueRows[0] && dueRows[0].month_details) || []);
+                renderRequestList(requests || []);
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load child payment details', 'error');
+            } finally {
+                disableForm(false);
+            }
+        }
+
+        function renderPaymentDetails(settings) {
+            const qrUrl = settings.online_payment_qr_url || '';
+            $('#qrBox').toggleClass('empty', !qrUrl).html(qrUrl ? `<img src="${qrUrl}" alt="Payment QR">` : '<i class="fas fa-qrcode"></i>');
+            $('#accName').text(settings.online_payment_account_name || 'Not configured');
+            $('#accNo').text(settings.online_payment_account_no || 'Not configured');
+            $('#accIfsc').text(settings.online_payment_ifsc || 'Not configured');
+            $('#accBranch').text(settings.online_payment_branch_name || 'Not configured');
+            $('#accUpi').text(settings.online_payment_upi || 'Not configured');
+        }
+
+        function renderDueMonths(details) {
+            dueDetails = details || [];
+            const select = $('#reqMonth').empty();
+            if (!dueDetails.length) {
+                select.append('<option value="">No due month available</option>');
+                $('#monthHint').text('No pending month found for this child.');
+                disableForm(true);
+                return;
+            }
+            select.append('<option value="">Select due month</option>');
+            dueDetails.forEach(item => {
+                select.append(`<option value="${item.month}">${item.month} — ₹${Number(item.due_amount || 0).toLocaleString('en-IN')}</option>`);
+            });
+            $('#monthHint').text('Select the pending month for which payment was made.');
+            disableForm(false);
+        }
+
+        function syncMonthAmount() {
+            const month = $('#reqMonth').val();
+            const detail = dueDetails.find(item => item.month === month);
+            $('#reqAmount').val(detail ? Number(detail.due_amount || 0) : '');
+            $('#monthHint').html(detail ? `Expected due for <strong>${detail.month}</strong>: <span class="due-pill">₹${Number(detail.due_amount || 0).toLocaleString('en-IN')}</span>` : '');
+        }
+
+        function previewProof() {
+            const file = $('#reqProof')[0].files[0];
+            proofUpload = file || null;
+            if (!file) {
+                $('#proofPreview').hide().empty();
+                return;
+            }
+            if (file.type === 'application/pdf') {
+                $('#proofPreview').show().html('<div style="padding:12px;font-size:12px;color:#0d1b4a;"><i class="fas fa-file-pdf" style="color:#c62828;margin-right:6px;"></i>' + file.name + '</div>');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#proofPreview').show().html('<img src="' + e.target.result + '" alt="Proof Preview">');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function submitRequest() {
+            const childId = $('#childSelect').val();
+            const month = $('#reqMonth').val();
+            const amount = parseFloat($('#reqAmount').val()) || 0;
+            const transactionId = ($('#reqTxn').val() || '').trim();
+            const note = ($('#reqNote').val() || '').trim();
+            if (!childId) { showToast('Select a child', 'error'); return; }
+            if (!month) { showToast('Select a due month', 'error'); return; }
+            if (amount <= 0) { showToast('Enter valid paid amount', 'error'); return; }
+            if (!transactionId) { showToast('Enter transaction ID', 'error'); return; }
+            if (!proofUpload) { showToast('Upload payment proof', 'error'); return; }
+
+            const btn = $('#btnSubmitReq');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+            try {
+                const uploaded = await uploadFile(proofUpload);
+                if (!uploaded || !uploaded.url) throw new Error(uploaded && uploaded.error ? uploaded.error : 'Proof upload failed');
+                await createPaymentRequest({
+                    student_id: Number(childId),
+                    month: month,
+                    requested_amount: amount,
+                    transaction_id: transactionId,
+                    payment_proof_url: uploaded.url,
+                    parent_note: note,
+                    session: typeof getSelectedSession === 'function' ? (getSelectedSession() || '') : ''
+                });
+                showToast('Payment request submitted successfully', 'success');
+                resetForm();
+                await loadChildContext();
+            } catch (error) {
+                showToast(error.message || 'Failed to submit request', 'error');
+            } finally {
+                btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Submit Request');
+            }
+        }
+
+        function resetForm(clearMonth = true) {
+            if (clearMonth) $('#reqMonth').val('');
+            $('#reqAmount').val('');
+            $('#reqTxn').val('');
+            $('#reqNote').val('');
+            $('#reqProof').val('');
+            proofUpload = null;
+            $('#proofPreview').hide().empty();
+            $('#monthHint').text(dueDetails.length ? 'Select the pending month for which payment was made.' : '');
+        }
+
+        function disableForm(disabled) {
+            $('#reqMonth, #reqAmount, #reqTxn, #reqProof, #reqNote, #btnSubmitReq, #btnResetReq').prop('disabled', disabled);
+        }
+
+        function renderRequestList(rows) {
+            if (!rows || !rows.length) {
+                $('#requestListWrap').html('<div class="empty-state"><i class="fas fa-inbox"></i>No payment request submitted yet</div>');
+                return;
+            }
+            const table = rows.map(row => {
+                const statusClass = row.status === 'Accepted' ? 'status-accepted' : row.status === 'Rejected' ? 'status-rejected' : 'status-requested';
+                return `<tr>
+                    <td data-label="Request Date">${formatDate(row.request_date)}</td>
+                    <td data-label="Month">${row.month}</td>
+                    <td data-label="Amount">₹${Number(row.requested_amount || 0).toLocaleString('en-IN')}</td>
+                    <td data-label="Transaction ID" style="font-weight:600;color:#0d1b4a;">${row.transaction_id || '-'}</td>
+                    <td data-label="Proof">${row.payment_proof_url ? `<a href="${row.payment_proof_url}" target="_blank" style="font-weight:700;color:#1565c0;">View Proof</a>` : '-'}</td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${row.status}</span></td>
+                    <td data-label="Receipt">${row.receipt_no ? `<span style="font-weight:700;color:#2e7d32;">${row.receipt_no}</span>` : '-'}</td>
+                </tr>`;
+            }).join('');
+            $('#requestListWrap').html(`<div style="overflow-x:auto;"><table class="request-table"><thead><tr><th>Request Date</th><th>Month</th><th>Amount</th><th>Transaction ID</th><th>Proof</th><th>Status</th><th>Receipt</th></tr></thead><tbody>${table}</tbody></table></div>`);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Expenses &amp; Income Report — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .report-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .report-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;text-align:center}
+        .report-header h5{margin:0;font-size:15px;font-weight:700;color:#0d1b4a}
+        .report-header p{margin:4px 0 0;font-size:11px;color:#888}
+        .bill-table{width:100%;border-collapse:collapse}
+        .bill-table th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 14px;text-align:left}
+        .bill-table td{font-size:12px;padding:7px 14px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+        .bill-table .head-row td{font-weight:700;background:#f0f2ff;font-size:11px;text-transform:uppercase;color:#0d1b4a;letter-spacing:.3px}
+        .bill-table .total-row td{font-weight:700;background:#f8f9ff;border-top:2px solid #0d1b4a;font-size:13px}
+        .profit-box{padding:16px 20px;text-align:center;border-radius:10px;margin-top:16px;font-size:18px;font-weight:700}
+        .profit-box.profit{background:#e8f5e9;color:#2e7d32;border:2px solid #a5d6a7}
+        .profit-box.loss{background:#fce4ec;color:#c62828;border:2px solid #ef9a9a}
+        .profit-box.neutral{background:#f5f5f5;color:#555;border:2px solid #e0e0e0}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        @media print {
+            .filter-card,.breadcrumbs-area,.no-print,#header-container,#sidebar-container,#preloader,.sidebar-main{display:none!important}
+            .dashboard-content-one{margin:0!important;padding:0!important}
+            .card{border:none!important;box-shadow:none!important}
+            .report-card{border:1px solid #333!important}
+            body{background:#fff!important}
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Accounts</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Expenses &amp; Income</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-balance-scale"></i> Expenses &amp; Income Report</h3></div></div>
+
+                        <!-- Filter -->
+                        <div class="filter-card no-print">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">From Date</label>
+                                    <input type="date" class="form-control" id="fFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">To Date</label>
+                                    <input type="date" class="form-control" id="fTo">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="buildReport()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-search"></i> Search</button>
+                                    <button class="fw-btn-fill" onclick="clearFilters()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-redo"></i> Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report -->
+                        <div class="report-card" id="reportCard">
+                            <div class="report-header">
+                                <h5 id="reportSchoolName">School</h5>
+                                <p id="reportPeriod">Expenses &amp; Income Statement</p>
+                            </div>
+                            <div style="display:flex;flex-wrap:wrap;">
+                                <!-- Expenses Side -->
+                                <div style="flex:1;min-width:280px;border-right:1px solid #e0e0e0;">
+                                    <table class="bill-table">
+                                        <thead><tr><th colspan="2" style="text-align:center;"><i class="fas fa-arrow-circle-down" style="margin-right:4px;"></i>Expenses</th></tr></thead>
+                                        <tbody id="expBody"></tbody>
+                                    </table>
+                                </div>
+                                <!-- Income Side -->
+                                <div style="flex:1;min-width:280px;">
+                                    <table class="bill-table">
+                                        <thead><tr><th colspan="2" style="text-align:center;"><i class="fas fa-arrow-circle-up" style="margin-right:4px;"></i>Income</th></tr></thead>
+                                        <tbody id="incBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profit / Loss -->
+                        <div id="profitBox"></div>
+
+                        <!-- Print -->
+                        <div style="text-align:center;margin-top:16px;" class="no-print">
+                            <button class="fw-btn-fill btn-gradient-yellow" onclick="window.print()" style="border-radius:6px;height:38px;font-size:12px;padding:0 24px;width:auto;"><i class="fas fa-print"></i> Print Report</button>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(function(){
+            if(typeof initPage==='function') initPage('expenses-income-report');
+            var _u = typeof getUser === 'function' ? getUser() : null;
+            if (_u && _u.school_name) document.getElementById('reportSchoolName').textContent = _u.school_name;
+            buildReport();
+        });
+
+        function clearFilters(){ $('#fFrom,#fTo').val(''); buildReport(); }
+
+        async function buildReport(){
+            const fFrom=$('#fFrom').val(), fTo=$('#fTo').val();
+
+            let expenses, incomes;
+            try {
+                [expenses, incomes] = await Promise.all([getExpenses(), getIncomes()]);
+            } catch(err){ showToast('Failed to load data','error'); return; }
+
+            if(fFrom){ expenses=expenses.filter(e=>e.date>=fFrom); incomes=incomes.filter(i=>i.date>=fFrom); }
+            if(fTo){ expenses=expenses.filter(e=>e.date<=fTo); incomes=incomes.filter(i=>i.date<=fTo); }
+
+            // Period label
+            if(fFrom && fTo){
+                $('#reportPeriod').text(`Period: ${formatDate(fFrom)} — ${formatDate(fTo)}`);
+            } else if(fFrom){
+                $('#reportPeriod').text(`From: ${formatDate(fFrom)}`);
+            } else if(fTo){
+                $('#reportPeriod').text(`Up to: ${formatDate(fTo)}`);
+            } else {
+                $('#reportPeriod').html('Expenses &amp; Income Statement — All Records');
+            }
+
+            // Group expenses by head_name
+            let expByHead = {};
+            expenses.forEach(e=>{
+                const key = e.head_name || 'Other';
+                if(!expByHead[key]) expByHead[key]=0;
+                expByHead[key]+=e.amount;
+            });
+
+            let expHtml='', totalExp=0;
+            Object.keys(expByHead).sort().forEach(name=>{
+                const amt=expByHead[name];
+                totalExp+=amt;
+                expHtml+=`<tr><td>${name}</td><td style="text-align:right;font-weight:600;color:#c62828;">₹${amt.toLocaleString('en-IN')}</td></tr>`;
+            });
+            if(!expHtml) expHtml='<tr><td colspan="2" style="text-align:center;color:#bbb;padding:20px;">No expenses</td></tr>';
+            expHtml+=`<tr class="total-row"><td>Total Expenses</td><td style="text-align:right;color:#c62828;">₹${totalExp.toLocaleString('en-IN')}</td></tr>`;
+            $('#expBody').html(expHtml);
+
+            // Group incomes by head_name
+            let incByHead = {};
+            incomes.forEach(i=>{
+                const key = i.head_name || 'Other';
+                if(!incByHead[key]) incByHead[key]=0;
+                incByHead[key]+=i.amount;
+            });
+
+            let incHtml='', totalInc=0;
+            Object.keys(incByHead).sort().forEach(name=>{
+                const amt=incByHead[name];
+                totalInc+=amt;
+                incHtml+=`<tr><td>${name}</td><td style="text-align:right;font-weight:600;color:#2e7d32;">₹${amt.toLocaleString('en-IN')}</td></tr>`;
+            });
+            if(!incHtml) incHtml='<tr><td colspan="2" style="text-align:center;color:#bbb;padding:20px;">No income</td></tr>';
+            incHtml+=`<tr class="total-row"><td>Total Income</td><td style="text-align:right;color:#2e7d32;">₹${totalInc.toLocaleString('en-IN')}</td></tr>`;
+            $('#incBody').html(incHtml);
+
+            // Profit / Loss
+            const diff=totalInc-totalExp;
+            let cls='neutral', label='Break Even', sign='';
+            if(diff>0){ cls='profit'; label='Profit'; sign='+'; }
+            else if(diff<0){ cls='loss'; label='Loss'; sign=''; }
+            $('#profitBox').html(`<div class="profit-box ${cls}"><i class="fas fa-${diff>=0?'arrow-up':'arrow-down'}" style="margin-right:6px;"></i>${label}: ${sign}₹${Math.abs(diff).toLocaleString('en-IN')}</div>`);
+        }
+
+        function formatDate(d){ if(!d) return '—'; const dt=new Date(d); return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+    </script>
+</body>
+</html>

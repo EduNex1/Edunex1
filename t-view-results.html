@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>View Results — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>View Results</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>Results > View Results</li></ul>
+                </div>
+            
+                <div id="noPermissionState" style="display:none;">
+                    <div class="chart-card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
+                        <h5 style="color:#0d1b4a;font-weight:700;margin-bottom:8px;">No Result Permission</h5>
+                        <p style="color:#888;font-size:13px;max-width:400px;margin:0 auto;">No subject assignment was found for result viewing.</p>
+                    </div>
+                </div>
+
+                <div id="mainContent">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-filter"></i> Select Assignment & Exam</div>
+                        <div class="chart-card-body">
+                            <div class="row gutters-8">
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label>Assignment</label>
+                                    <select id="viewAssignment" class="form-control"><option value="">Select assignment</option></select>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label>Exam</label>
+                                    <select id="viewExam" class="form-control"><option value="">Select exam</option></select>
+                                </div>
+                                <div class="col-12 form-group" style="margin-top:8px;">
+                                    <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="loadTeacherResults()" style="font-size:12px;padding:9px 20px;">
+                                        <i class="fas fa-chart-line mr-1"></i> View Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header"><i class="fas fa-list-ol"></i> Subject Results</div>
+                        <div class="chart-card-body" style="padding:8px 16px;">
+                            <div id="resultSummary" style="margin-bottom:16px;color:#555;font-size:13px;"></div>
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead><tr><th>#</th><th>Roll</th><th>Student</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th></tr></thead>
+                                    <tbody id="resultBody"><tr><td colspan="7" style="text-align:center;color:#888;padding:16px;">Select assignment and exam to view results.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let resultAssignments = [];
+
+    (async function(){
+        initPage('t-view-results');
+        const user = getUser();
+        if (!user || !user.linked_id) return;
+        try {
+            const [sections, perms, exams] = await Promise.all([
+                getSections(),
+                getTeacherPermissions(user.linked_id),
+                getExams()
+            ]);
+            resultAssignments = (perms || []).map(function (perm) {
+                const section = (sections || []).find(function (row) { return row.id === perm.section_id; });
+                return {
+                    class_id: perm.class_id,
+                    class_name: perm.class_name || '',
+                    section_name: section ? section.name : '',
+                    subject_id: perm.subject_id,
+                    subject_name: perm.subject_name || ''
+                };
+            }).filter(function (perm) { return perm.subject_id; });
+            if (!resultAssignments.length) {
+                $('#mainContent').hide();
+                $('#noPermissionState').show();
+                return;
+            }
+            resultAssignments.forEach(function (assignment, index) {
+                $('#viewAssignment').append(`<option value="${index}">${assignment.class_name} - ${assignment.section_name} - ${assignment.subject_name}</option>`);
+            });
+            (exams || []).forEach(function (exam) {
+                $('#viewExam').append(`<option value="${exam.id}">${exam.name || exam.title || ('Exam #' + exam.id)}</option>`);
+            });
+        } catch (e) {
+            console.error(e);
+            $('#resultBody').html('<tr><td colspan="7" style="text-align:center;color:#c62828;">Failed to load result setup.</td></tr>');
+        }
+    })();
+
+    async function loadTeacherResults() {
+        const assignment = resultAssignments[Number($('#viewAssignment').val())];
+        const examId = $('#viewExam').val();
+        if (!assignment || !examId) {
+            showToast('Select assignment and exam', 'error');
+            return;
+        }
+        try {
+            const [students, results] = await Promise.all([
+                getStudents({ class_id: assignment.class_id, section: assignment.section_name, status: 'Active' }),
+                getExamResults({ exam_id: examId })
+            ]);
+            const scopedResults = (results || []).filter(function (row) {
+                return Number(row.subject_id) === Number(assignment.subject_id);
+            });
+            if (!students.length || !scopedResults.length) {
+                $('#resultSummary').html('No result entries found for the selected assignment.');
+                $('#resultBody').html('<tr><td colspan="7" style="text-align:center;color:#888;">No results available.</td></tr>');
+                return;
+            }
+            let totalObtained = 0;
+            let totalMax = 0;
+            const html = students.map(function (student, index) {
+                const row = scopedResults.find(function (item) { return Number(item.student_id) === Number(student.id); });
+                if (!row) {
+                    return `<tr><td>${index + 1}</td><td>${student.roll_no || '-'}</td><td><strong>${student.name || '-'}</strong></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+                }
+                const obtained = Number(row.total_marks || 0);
+                const maxMarks = Number(row.max_marks || 0);
+                totalObtained += obtained;
+                totalMax += maxMarks;
+                const percentage = maxMarks ? ((obtained / maxMarks) * 100).toFixed(1) : '0.0';
+                return `<tr><td>${index + 1}</td><td>${student.roll_no || '-'}</td><td><strong>${student.name || '-'}</strong></td><td>${maxMarks}</td><td><strong>${obtained}</strong></td><td>${percentage}%</td><td>${row.grade || '-'}</td></tr>`;
+            }).join('');
+            const classAverage = totalMax ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
+            $('#resultSummary').html(`<strong>${assignment.class_name} - ${assignment.section_name} - ${assignment.subject_name}</strong> | Class average: <strong>${classAverage}%</strong>`);
+            $('#resultBody').html(html);
+        } catch (e) {
+            console.error(e);
+            $('#resultSummary').html('');
+            $('#resultBody').html('<tr><td colspan="7" style="text-align:center;color:#c62828;">Failed to load results.</td></tr>');
+        }
+    }
+    </script>
+</body>
+</html>

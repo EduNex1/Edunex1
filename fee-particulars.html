@@ -1,0 +1,279 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Particulars — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}
+        .action-btn-edit{background:#fff3e0;color:#ef6c00}.action-btn-edit:hover{background:#ef6c00;color:#fff}
+        .action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+        .month-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+        .month-check{display:flex;align-items:center;gap:4px;font-size:11px;color:#333;cursor:pointer;background:#f5f7ff;padding:4px 10px;border-radius:6px;border:1px solid #e0e0e0;transition:all .15s;user-select:none}
+        .month-check:hover{border-color:#0d1b4a}
+        .month-check input{margin:0;cursor:pointer}
+        .month-check.checked{background:#0d1b4a;color:#fff;border-color:#0d1b4a}
+        .transport-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:#e8f5e9;color:#1b5e20;margin-left:4px}
+        .mode-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#e3f2fd;color:#0d47a1}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee Master</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li>Fee Particulars</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-list-alt"></i> Fee Particulars</h3></div></div>
+
+                        <!-- Add / Edit Form -->
+                        <div class="filter-card" id="formSection">
+                            <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;" id="formTitle"><i class="fas fa-plus-circle"></i> Add Fee Particular</h6>
+                            <input type="hidden" id="editId">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-4 col-md-5 col-12 form-group">
+                                    <label class="form-label-sm">Fee Particular Name</label>
+                                    <input type="text" class="form-control" id="pName" placeholder="e.g. Tuition Fee, Exam Fee...">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">For Transport?</label>
+                                    <div style="padding-top:8px;">
+                                        <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                                            <input type="checkbox" id="pTransport" style="width:16px;height:16px;cursor:pointer;"> Yes, this is for transport
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Fee Mode</label>
+                                    <select class="form-control" id="pMode">
+                                        <option value="">— All —</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Months Selection (shown after mode) -->
+                            <div id="monthSection" style="display:none;">
+                                <label class="form-label-sm" style="margin-bottom:6px;">Select Months to Apply This Fee</label>
+                                <div style="margin-bottom:6px;">
+                                    <label class="month-check" id="selectAllLabel" style="background:#042954;color:#fff;border-color:#042954;font-weight:700;">
+                                        <input type="checkbox" id="selectAll"> Select All
+                                    </label>
+                                </div>
+                                <div class="month-grid" id="monthGrid"></div>
+                            </div>
+
+                            <div class="mt-3" style="display:flex;gap:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 26px;" onclick="submitForm()"><i class="fas fa-save"></i> Submit</button>
+                                <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:7px 20px;" onclick="cancelForm()"><i class="fas fa-times"></i> Cancel</button>
+                            </div>
+                        </div>
+
+                        <!-- List -->
+                        <div class="table-card">
+                            <div class="table-responsive" style="padding:0 2px 10px;">
+                                <table class="list-table">
+                                    <thead><tr>
+                                        <th style="width:50px">Sr No.</th><th>Particular</th><th>Fee Mode</th><th style="width:90px">Action</th>
+                                    </tr></thead>
+                                    <tbody id="listBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal not needed — using inline form -->
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('fee-particulars');
+
+        const FEE_MODES = ['Monthly','Quarterly','Half-Yearly','Yearly','Once'];
+        const ALL_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
+        let cache = [];
+
+        // Populate fee modes
+        FEE_MODES.forEach(m => $('#pMode').append(`<option value="${m}">${m}</option>`));
+
+        // Build month checkboxes
+        function buildMonthGrid() {
+            let html = '';
+            ALL_MONTHS.forEach(m => {
+                html += `<label class="month-check" data-month="${m}"><input type="checkbox" value="${m}"> ${m}</label>`;
+            });
+            $('#monthGrid').html(html);
+        }
+        buildMonthGrid();
+
+        // Show month section when mode selected
+        $('#pMode').on('change', function() {
+            if ($(this).val()) {
+                $('#monthSection').slideDown(150);
+            } else {
+                $('#monthSection').slideUp(150);
+            }
+        });
+
+        // Select All toggle
+        $('#selectAll').on('change', function() {
+            const checked = this.checked;
+            $('#monthGrid input[type="checkbox"]').prop('checked', checked);
+            updateMonthStyles();
+        });
+
+        // Individual month toggle
+        $(document).on('change', '#monthGrid input[type="checkbox"]', function() {
+            updateMonthStyles();
+            const total = $('#monthGrid input[type="checkbox"]').length;
+            const selected = $('#monthGrid input[type="checkbox"]:checked').length;
+            $('#selectAll').prop('checked', total === selected);
+        });
+
+        function updateMonthStyles() {
+            $('#monthGrid .month-check').each(function() {
+                if ($(this).find('input').is(':checked')) {
+                    $(this).addClass('checked');
+                } else {
+                    $(this).removeClass('checked');
+                }
+            });
+        }
+
+        function getSelectedMonths() {
+            const months = [];
+            $('#monthGrid input[type="checkbox"]:checked').each(function() { months.push($(this).val()); });
+            return months;
+        }
+
+        function setSelectedMonths(months) {
+            $('#monthGrid input[type="checkbox"]').each(function() {
+                $(this).prop('checked', months.includes($(this).val()));
+            });
+            const total = $('#monthGrid input[type="checkbox"]').length;
+            $('#selectAll').prop('checked', total === months.length);
+            updateMonthStyles();
+        }
+
+        // Load list
+        async function loadList() {
+            try { cache = await getFeeParticulars(); } catch(e){ cache = []; }
+            const rows = cache.map((p, i) => {
+                const label = p.name + (p.mode === 'Monthly' ? ' <span style="font-size:10px;color:#888;">(Monthly)</span>' :
+                    p.mode === 'Once' ? ' <span style="font-size:10px;color:#888;">(Once)</span>' :
+                    p.mode === 'Quarterly' ? ' <span style="font-size:10px;color:#888;">(Quarterly)</span>' :
+                    p.mode === 'Half-Yearly' ? ' <span style="font-size:10px;color:#888;">(Half-Yearly)</span>' :
+                    p.mode ? ' <span style="font-size:10px;color:#888;">(' + p.mode + ')</span>' : '');
+                const transport = p.is_transport ? '<span class="transport-badge">For Transport</span>' : '';
+                return `<tr>
+                    <td class="text-center">${i + 1}</td>
+                    <td>${label} ${transport}</td>
+                    <td><span class="mode-badge">${p.mode || '—'}</span></td>
+                    <td>
+                        <button class="action-btn action-btn-edit" title="Edit" onclick="editParticular(${p.id})"><i class="fas fa-pen"></i></button>
+                        <button class="action-btn action-btn-delete" title="Delete" onclick="removeParticular(${p.id})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+            $('#listBody').html(rows || '<tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No fee particulars added</td></tr>');
+        }
+
+        // Submit
+        window.submitForm = async function() {
+            const name = $('#pName').val().trim();
+            const is_transport = $('#pTransport').is(':checked') ? 1 : 0;
+            const mode = $('#pMode').val();
+            const months = getSelectedMonths();
+            const editId = parseInt($('#editId').val()) || 0;
+
+            if (!name) { showToast('Enter fee particular name', 'error'); return; }
+            if (!mode) { showToast('Select a fee mode', 'error'); return; }
+            if (months.length === 0) { showToast('Select at least one month', 'error'); return; }
+
+            try {
+                const data = { name, is_transport, mode, months: JSON.stringify(months) };
+                if (editId) await updateMasterData('fee_particulars', editId, data);
+                else await createMasterData('fee_particulars', data);
+                showToast(editId ? 'Fee particular updated' : 'Fee particular added', 'success');
+                cancelForm();
+                await loadList();
+            } catch(e){ showToast('Failed to save','error'); }
+        };
+
+        // Cancel
+        window.cancelForm = function() {
+            $('#editId').val('');
+            $('#pName').val('');
+            $('#pTransport').prop('checked', false);
+            $('#pMode').val('');
+            $('#monthSection').slideUp(150);
+            $('#monthGrid input[type="checkbox"]').prop('checked', false);
+            $('#selectAll').prop('checked', false);
+            updateMonthStyles();
+            $('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Fee Particular');
+        };
+
+        // Edit
+        window.editParticular = function(id) {
+            const p = cache.find(x=>x.id===id);
+            if (!p) return;
+            $('#editId').val(p.id);
+            $('#pName').val(p.name);
+            $('#pTransport').prop('checked', !!p.is_transport);
+            $('#pMode').val(p.mode);
+            if (p.mode) $('#monthSection').show();
+            const months = p.months ? (typeof p.months==='string' ? JSON.parse(p.months) : p.months) : [];
+            setSelectedMonths(months);
+            $('#formTitle').html('<i class="fas fa-edit"></i> Edit Fee Particular');
+            $('html, body').animate({ scrollTop: $('#formSection').offset().top - 80 }, 300);
+        };
+
+        // Delete
+        window.removeParticular = async function(id) {
+            if (!confirm('Delete this fee particular?')) return;
+            try { await deleteMasterData('fee_particulars', id); await loadList(); showToast('Fee particular deleted', 'success'); }
+            catch(e){ showToast('Failed','error'); }
+        };
+
+        await loadList();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Vehicle List — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .status-dot { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; white-space:nowrap; }
+        .status-dot .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .status-dot.active .dot { background:#2e7d32; box-shadow:0 0 5px rgba(46,125,50,0.4); }
+        .status-dot.active { color:#2e7d32; }
+        .status-dot.inactive .dot { background:#c62828; }
+        .status-dot.inactive { color:#c62828; }
+
+        .action-btn { width:26px; height:26px; border:none; border-radius:5px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:11px; transition:all .15s; margin:0 1px; }
+        .action-btn-edit { background:#fff3e0; color:#ef6c00; }
+        .action-btn-edit:hover { background:#ef6c00; color:#fff; }
+        .action-btn-delete { background:#ffebee; color:#c62828; }
+        .action-btn-delete:hover { background:#c62828; color:#fff; }
+
+        .cert-valid { color:#2e7d32; font-weight:600; font-size:11px; }
+        .cert-expired { color:#c62828; font-weight:600; font-size:11px; }
+
+        #vehicleTable { width:100% !important; }
+        #vehicleTable td { vertical-align:middle; font-size:12px; padding:6px 8px; }
+        #vehicleTable th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:#fff; background:#0d1b4a; padding:8px; white-space:nowrap; }
+        #vehicleTable tbody tr:hover { background:#f8f9ff; }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <!-- Breadcrumb -->
+                <div class="breadcrumbs-area">
+                    <h3>Transport</h3>
+                    <ul>
+                        <li><a href="/dashboard">Home</a></li>
+                        <li>Vehicle List</li>
+                    </ul>
+                </div>
+
+                <!-- Vehicle List Card -->
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1 mb-3">
+                            <div class="item-title"><h3>All Vehicles</h3></div>
+                            <div>
+                                <a href="/transport-registration" class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;"><i class="fas fa-plus mr-1"></i>Add Vehicle</a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="vehicleTable" class="table table-bordered display text-nowrap">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editVehicleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#0d1b4a;color:#fff;padding:10px 16px;">
+                    <h6 class="modal-title" style="font-size:13px;font-weight:700;">Edit Vehicle</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="editModalBody"></div>
+                <div class="modal-footer" style="padding:8px 16px;">
+                    <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;" id="btnSaveEdit">Save Changes</button>
+                    <button class="btn btn-sm btn-light" data-dismiss="modal" style="font-size:13px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('transport-vehicles');
+
+        let vehicleCache = [];
+        let editId = null;
+
+        async function loadTable() {
+            try { vehicleCache = await getVehicles(); } catch(e) { showToast('Failed to load vehicles', 'error'); vehicleCache = []; }
+            const rows = vehicleCache.map((v, i) => {
+                return `<tr>
+                    <td>${v.vehicle_no}</td>
+                    <td>${v.type || '—'}</td>
+                    <td class="text-center">${v.capacity || 0}</td>
+                    <td>${v.driver_name || '—'}<br><small class="text-muted">${v.driver_phone || ''}</small></td>
+                    <td>
+                        <button class="action-btn action-btn-edit" title="Edit" onclick="editVehicle(${v.id})"><i class="fas fa-pen"></i></button>
+                        <button class="action-btn action-btn-delete" title="Delete" onclick="removeVehicle(${v.id})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            if ($.fn.DataTable.isDataTable('#vehicleTable')) {
+                $('#vehicleTable').DataTable().destroy();
+            }
+            $('#vehicleTable thead').html(`<tr>
+                <th>Vehicle No</th><th>Type</th><th>Capacity</th><th>Driver</th><th>Action</th>
+            </tr>`);
+            $('#vehicleTable tbody').html(rows);
+            $('#vehicleTable').DataTable({
+                pageLength: 10,
+                language: { search: "", searchPlaceholder: "Search vehicles..." },
+                columnDefs: [{ orderable: false, targets: [4] }]
+            });
+        }
+
+        window.editVehicle = function(id) {
+            editId = id;
+            const v = vehicleCache.find(x => x.id === id);
+            if (!v) return;
+            $('#editModalBody').html(`
+                <div class="row">
+                    <div class="col-md-6 mb-2"><label class="mb-1" style="font-weight:600;">Vehicle No</label><input class="form-control" id="eVehicleNo" value="${v.vehicle_no}"></div>
+                    <div class="col-md-6 mb-2"><label class="mb-1" style="font-weight:600;">Type</label>
+                        <select class="form-control" id="eType">
+                            <option value="">— Select —</option>
+                            <option ${v.type==='Bus'?'selected':''}>Bus</option>
+                            <option ${v.type==='Mini Bus'?'selected':''}>Mini Bus</option>
+                            <option ${v.type==='Van'?'selected':''}>Van</option>
+                            <option ${v.type==='Auto'?'selected':''}>Auto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Capacity</label><input type="number" class="form-control" id="eCapacity" value="${v.capacity||0}"></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Driver Name</label><input class="form-control" id="eDriver" value="${v.driver_name||''}"></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Driver Phone</label><input class="form-control" id="eDriverPhone" value="${v.driver_phone||''}"></div>
+                </div>
+            `);
+            $('#editVehicleModal').modal('show');
+        };
+
+        $('#btnSaveEdit').on('click', async function() {
+            if (!editId) return;
+            try {
+                await updateMasterData('vehicles', editId, {
+                    vehicle_no: $('#eVehicleNo').val().trim(),
+                    type: $('#eType').val(),
+                    capacity: parseInt($('#eCapacity').val()) || 0,
+                    driver_name: $('#eDriver').val().trim(),
+                    driver_phone: $('#eDriverPhone').val().trim()
+                });
+                $('#editVehicleModal').modal('hide');
+                await loadTable();
+                showToast('Vehicle updated successfully', 'success');
+            } catch(e) { showToast('Failed to update vehicle', 'error'); }
+        });
+
+        window.removeVehicle = async function(id) {
+            if (!confirm('Delete this vehicle?')) return;
+            try {
+                await deleteMasterData('vehicles', id);
+                await loadTable();
+                showToast('Vehicle deleted', 'success');
+            } catch(e) { showToast('Failed to delete vehicle', 'error'); }
+        };
+
+        await loadTable();
+    });
+    </script>
+</body>
+</html>

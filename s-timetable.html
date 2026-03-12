@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Time Table — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Time Table</h3>
+                    <ul><li><a href="/student-dashboard">Home</a></li><li>Academics > Time Table</li></ul>
+                </div>
+            
+            
+<div class="chart-card" style="margin-bottom:16px;">
+    <div class="chart-card-header"><i class="fas fa-clock"></i> Class Timetable</div>
+    <div class="chart-card-body">
+    <div id="ttArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+    </div>
+</div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function () {
+        initPage('s-timetable');
+        try {
+            const children = await getMyChildren();
+            const stu = children && children[0];
+            const filters = stu ? { class_id: stu.class_id, section: stu.section } : {};
+            const data = await getTimetable(filters) || [];
+            if (!data.length) { $('#ttArea').html('<p style="text-align:center;color:#888;">No timetable available.</p>'); return; }
+            const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const periods = [...new Set(data.map(d => d.period))].sort((a,b) => a - b);
+            const periodMap = {};
+            data.forEach(d => {
+                const key = d.period + '_' + d.day;
+                periodMap[key] = d.subject_name || d.subject || '-';
+            });
+            let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Period</th>' + days.map(d => '<th>' + d + '</th>').join('') + '</tr></thead><tbody>';
+            periods.forEach(p => {
+                html += `<tr><td><strong>Period ${p}</strong></td>`;
+                days.forEach(d => {
+                    const sub = periodMap[p + '_' + d] || '-';
+                    html += `<td>${sub}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            $('#ttArea').html(html);
+        } catch (e) { console.error(e); }
+    });
+    </script>
+</body>
+</html>

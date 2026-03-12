@@ -1,0 +1,115 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>User Permission — Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}.list-table{width:100%;border-collapse:collapse}.list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}.list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.list-table tbody tr:hover td{background:#f5f7ff}.table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .perm-check{width:16px;height:16px;cursor:pointer}
+        .desc-text{font-size:10px;color:#888;line-height:1.3}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>User Permission</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-user-shield"></i> User Permission</h3></div></div>
+                    <div class="filter-card">
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-4 col-md-5 col-8 form-group mb-0">
+                                <label class="form-label-sm">Select User</label>
+                                <select class="form-control" id="selUser"><option value="">— Select User —</option></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="permSection" style="display:none;">
+                        <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
+                            <table class="list-table"><thead><tr><th style="width:40px">Sr</th><th>Module</th><th style="width:70px;text-align:center">Access</th><th style="width:70px;text-align:center">Modify</th><th style="width:70px;text-align:center">Delete</th><th>Description</th></tr></thead><tbody id="permBody"></tbody></table>
+                        </div></div>
+                        <div style="display:flex;gap:10px;margin-top:6px;">
+                            <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updatePerms()"><i class="fas fa-save"></i> Update</button>
+                            <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:13px;padding:8px 22px;" onclick="cancelPerms()"><i class="fas fa-times"></i> Cancel</button>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    const PLATFORM_MODULES = [
+        { key: 'dashboard', name: 'Dashboard', desc: 'Overview, statistics, charts, quick links' },
+        { key: 'students', name: 'Students', desc: 'Student list, admission, promotion, assign subjects' },
+        { key: 'attendance', name: 'Attendance', desc: 'Student attendance, reports, statistics' },
+        { key: 'cards_certs', name: 'Cards & Certificates', desc: 'ID cards, admit cards, character & transfer certificates' },
+        { key: 'academics', name: 'Academics', desc: 'Notice, timetable, schedule, syllabus, datesheet, homework, gallery' },
+        { key: 'staff', name: 'Staff', desc: 'Staff list, attendance, permissions' },
+        { key: 'fee', name: 'Fee', desc: 'Fee deposit, receipt, reports, due, demand bill, discount' },
+        { key: 'fee_master', name: 'Fee Master', desc: 'Fee particulars, amount slab configuration' },
+        { key: 'payroll', name: 'Payroll', desc: 'Deduction/allowance heads, salary settings, generate, list' },
+        { key: 'accounts', name: 'Accounts', desc: 'Expenses, income, heads, cash deposit/withdraw, reports, vendors, bank' },
+        { key: 'messaging', name: 'Messaging', desc: 'SMS to students, staff, SMS reports' },
+        { key: 'result', name: 'Result', desc: 'Student-wise, subject-wise, consolidated, single/multiple exam results' },
+        { key: 'transport', name: 'Transport', desc: 'Vehicles, registration, routes, route mapping' },
+        { key: 'library', name: 'Library', desc: 'Books, issue, return, book types, settings' },
+        { key: 'masters', name: 'Masters', desc: 'Academic session, designation, class, section, subject, exam, period, house, stream' },
+        { key: 'settings', name: 'Settings', desc: 'Users, permissions, branches, options, exam settings' }
+    ];
+
+    $(async function(){
+        initPage('settings-user-permission');
+        let usersCache = [];
+        try { usersCache = await getUsers(); } catch(e) {}
+        usersCache.forEach(u=>$('#selUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
+
+        $('#selUser').on('change', async function(){
+            const uid=parseInt($(this).val())||0;
+            if(!uid){$('#permSection').slideUp(200);return;}
+            let dbPerms = [];
+            try { dbPerms = await getUserPermissions(uid); } catch(e) {}
+            const rows = PLATFORM_MODULES.map((m,i)=>{
+                const p = dbPerms.find(x => x.module === m.key);
+                return `<tr>
+                <td class="text-center">${i+1}</td>
+                <td><strong>${m.name}</strong></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="access" ${p && p.access?'checked':''}></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="modify" ${p && p.modify?'checked':''}></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="delete" ${p && p.can_delete?'checked':''}></td>
+                <td><span class="desc-text">${m.desc}</span></td>
+            </tr>`;
+            }).join('');
+            $('#permBody').html(rows);
+            $('#permSection').slideDown(200);
+        });
+
+        window.updatePerms = async function(){
+            const uid=parseInt($('#selUser').val())||0;
+            if(!uid){showToast('Select a user','error');return;}
+            const perms=[];
+            PLATFORM_MODULES.forEach(m=>{
+                perms.push({
+                    module:m.key,
+                    access:$(`input[data-mod="${m.key}"][data-type="access"]`).is(':checked'),
+                    modify:$(`input[data-mod="${m.key}"][data-type="modify"]`).is(':checked'),
+                    delete:$(`input[data-mod="${m.key}"][data-type="delete"]`).is(':checked')
+                });
+            });
+            try {
+                await saveUserPermissions(uid, perms);
+                showToast('Permissions updated','success');
+            } catch(e) { showToast('Error saving permissions','error'); }
+        };
+        window.cancelPerms=function(){ $('#selUser').val(''); $('#permSection').slideUp(200); };
+    });
+    </script>
+</body>
+</html>

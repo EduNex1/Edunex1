@@ -1,0 +1,594 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Student Details � EduNex1</title>
+    <meta name="description" content="View complete student profile">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ===== SECTION HEADERS (Same as admit-form) ===== */
+        .section-header {
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header i {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* ===== DETAIL CARDS ===== */
+        .detail-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 16px;
+            border: 1px solid #e8eaf6;
+            overflow: hidden;
+        }
+
+        .detail-card-body {
+            padding: 16px 20px;
+        }
+
+        /* ===== FIELD DISPLAY ===== */
+        .detail-field {
+            margin-bottom: 12px;
+        }
+
+        .detail-field label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+        }
+
+        .field-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #222;
+            background: #f8f9fb;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 7px 10px;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-value.field-muted {
+            color: #aaa;
+            font-weight: 400;
+        }
+
+        /* ===== PHOTO BOX (Same as admit-form) ===== */
+        .photo-box {
+            width: 100px;
+            height: 120px;
+            border: 2px dashed #c5cae9;
+            border-radius: 8px;
+            background: #f8f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-box .ph-placeholder {
+            text-align: center;
+            color: #aaa;
+        }
+
+        .photo-box .ph-placeholder i {
+            font-size: 20px;
+            color: #0d1b4a;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .photo-box .ph-placeholder span {
+            font-size: 9px;
+        }
+
+        /* ===== ACTION BUTTONS (top right) ===== */
+        .page-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .page-actions .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-action-edit {
+            background: #0d1b4a;
+            color: #fff;
+        }
+
+        .btn-action-edit:hover {
+            background: #1a3a7a;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-action-print {
+            background: #e8eaf6;
+            color: #0d1b4a;
+        }
+
+        .btn-action-print:hover {
+            background: #c5cae9;
+            color: #0d1b4a;
+            text-decoration: none;
+        }
+
+        .btn-action-back {
+            background: #f5f5f5;
+            color: #555;
+        }
+
+        .btn-action-back:hover {
+            background: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+        }
+
+        /* ===== SUBJECT BADGES ===== */
+        .subjects-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .subject-badge {
+            background: #e8eaf6;
+            color: #0d1b4a;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #detailsContent, #detailsContent * { visibility: visible; }
+            #detailsContent {
+                position: absolute; left: 0; top: 0; width: 100%;
+                display: block !important;
+            }
+            .page-actions, .btn-action-back { display: none !important; }
+            .photo-box img {
+                display: inline-block !important;
+                visibility: visible !important;
+                max-width: 100px;
+            }
+            .detail-card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 10px; }
+            .section-header { background: #f5f6fa !important; color: #0d1b4a !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="all-student.html">Student List</a></li>
+                        <li>Student Details</li>
+                    </ul>
+                </div>
+
+                <!-- Details Grid -->
+                <div id="detailsContent" style="display:none;">
+
+                    <!-- Top Section: Photo + Scholar Details + Action Buttons -->
+                    <div class="detail-card">
+                        <div class="section-header">
+                            <i class="fas fa-user-graduate"></i> Scholar Details
+                            <div class="ml-auto page-actions" id="actionButtons"></div>
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="row">
+                                <!-- Photo -->
+                                <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 text-center"
+                                    style="min-width:120px;">
+                                    <label
+                                        style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Photo</label>
+                                    <div class="photo-box" id="dPhoto">
+                                        <div class="ph-placeholder"><i class="fas fa-user"></i><span>No Photo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Basic Fields beside photo -->
+                                <div class="col">
+                                    <div class="row">
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Student Name</label>
+                                                <div class="field-value" id="dName"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Admission No</label>
+                                                <div class="field-value" id="dAdmNo" style="color:#0d1b4a;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Class</label>
+                                                <div class="field-value" id="dClass"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Section</label>
+                                                <div class="field-value" id="dSection"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Roll No</label>
+                                                <div class="field-value" id="dRoll"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Session</label>
+                                                <div class="field-value" id="dSession"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Admission Date</label>
+                                                <div class="field-value" id="dAdmDate"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Status</label>
+                                                <div class="field-value" id="dStatus"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Personal Information -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-user"></i> Personal Details</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Father's Name</label>
+                                                <div class="field-value" id="dFather"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Mother's Name</label>
+                                                <div class="field-value" id="dMother"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Date of Birth</label>
+                                                <div class="field-value" id="dDob"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Gender</label>
+                                                <div class="field-value" id="dGender"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Category</label>
+                                                <div class="field-value" id="dCategory"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Religion</label>
+                                                <div class="field-value" id="dReligion"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-phone-alt"></i> Contact Information</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Phone</label>
+                                                <div class="field-value" id="dPhone"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Email</label>
+                                                <div class="field-value" id="dEmail"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="detail-field"><label>Address</label>
+                                                <div class="field-value" id="dAddress"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="detail-field"><label>Bus Route</label>
+                                                <div class="field-value" id="dRoute"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fee & Login -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-rupee-sign"></i> Fee & Login Credentials
+                                </div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Total Fee</label>
+                                                <div class="field-value" id="dFeeTotal"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Fee Paid</label>
+                                                <div class="field-value" id="dFeePaid"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12" style="margin-top:8px;margin-bottom:4px;"><strong style="font-size:11px;color:#304ffe;"><i class="fas fa-user-graduate"></i> Student Login</strong></div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Student Login ID</label>
+                                                <div class="field-value" id="dLoginId"
+                                                    style="color:#0d1b4a;font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Student Password</label>
+                                                <div class="field-value" id="dPassword"
+                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
+                                                    title="Click to reveal"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12" style="margin-top:8px;margin-bottom:4px;"><strong style="font-size:11px;color:#00897b;"><i class="fas fa-user-friends"></i> Parent Login</strong></div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Parent Login ID</label>
+                                                <div class="field-value" id="dParentLoginId"
+                                                    style="color:#0d1b4a;font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Parent Password</label>
+                                                <div class="field-value" id="dParentPassword"
+                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
+                                                    title="Click to reveal"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subjects -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-book"></i> Assigned Subjects</div>
+                                <div class="detail-card-body">
+                                    <div class="subjects-grid" id="dSubjects"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Not Found -->
+                <div id="notFoundArea" style="display:none;">
+                    <div class="detail-card text-center" style="padding:60px 20px;">
+                        <i class="fas fa-user-slash"
+                            style="font-size:48px;color:#ddd;display:block;margin-bottom:16px;"></i>
+                        <h5 style="font-weight:700;color:#555;">Student Not Found</h5>
+                        <p style="color:#999;font-size:12px;">The student you are looking for does not exist or was
+                            deleted.</p>
+                        <a href="all-student.html" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                            style="text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-top:12px;">
+                            <i class="fas fa-arrow-left"></i> Back to Student List
+                        </a>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(document).ready(async function () {
+            initPage('student-list');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentId = parseInt(urlParams.get('id'));
+            if (!studentId) { showNotFound(); return; }
+
+            try {
+                const [s, routes, subjects] = await Promise.all([
+                    getStudent(studentId),
+                    getTransportRoutes(),
+                    getStudentSubjects(studentId)
+                ]);
+                if (!s || s.error) { showNotFound(); return; }
+                renderStudentProfile(s, routes || [], subjects || []);
+            } catch (e) { showNotFound(); }
+        });
+
+        function showNotFound() {
+            document.getElementById('notFoundArea').style.display = 'block';
+        }
+
+        async function renderStudentProfile(s, routes, subjects) {
+            const className = s.class_name || '-';
+            const statusBadge = s.status === 'Active'
+                ? '<span class="status-badge status-active">Active</span>'
+                : '<span class="status-badge status-tc">TC</span>';
+            const route = (routes || []).find(r => r.id === s.route_id);
+
+            document.getElementById('actionButtons').innerHTML =
+                '<a href="admit-form.html?edit=' + s.id + '" class="btn-action btn-action-edit"><i class="fas fa-pen"></i> Edit</a>' +
+                '<a href="#" class="btn-action btn-action-print" onclick="window.print();return false;"><i class="fas fa-print"></i> Print</a>' +
+                '<a href="all-student.html" class="btn-action btn-action-back"><i class="fas fa-arrow-left"></i> Back</a>';
+
+            var photoBox = document.getElementById('dPhoto');
+            if (s.photo_url) {
+                photoBox.innerHTML = '<img src="' + s.photo_url + '" alt="' + s.name + '">';
+            }
+
+            setText('dName', s.name);
+            setText('dAdmNo', s.admission_no);
+            setText('dClass', className);
+            setText('dSection', s.section);
+            setText('dRoll', s.roll_no || '-');
+            setText('dSession', s.session || '-');
+            setText('dAdmDate', formatDate(s.admission_date));
+            setHtml('dStatus', statusBadge);
+
+            setText('dFather', s.father_name);
+            setText('dMother', s.mother_name);
+            setText('dDob', formatDate(s.dob));
+            setText('dGender', s.gender);
+            setHtml('dCategory', '<span class="category-badge cat-' + (s.category || '').toLowerCase() + '">' + (s.category || '-') + '</span>');
+            setText('dReligion', s.religion);
+
+            setText('dPhone', s.phone);
+            setText('dEmail', s.email || '-', !s.email);
+            setText('dAddress', s.address || '-');
+            setText('dRoute', route ? route.name : (s.route_id ? ('Route #' + s.route_id) : 'No Route'));
+
+            setText('dFeeTotal', 'Slab-based (see details)');
+            var feePaidEl = document.getElementById('dFeePaid');
+            var feePaid = s.fee_paid || 0;
+            feePaidEl.innerHTML = '₹' + feePaid.toLocaleString('en-IN') + ' collected';
+            setText('dLoginId', s.admission_no || '-');
+
+            // Fetch actual credentials for admin view
+            try {
+                var creds = await getUserCredentials('student', s.id);
+                // Student password toggle
+                var pwEl = document.getElementById('dPassword');
+                var sPw = creds.student_password || '';
+                pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                pwEl.title = 'Click to reveal';
+                pwEl.style.cursor = 'pointer';
+                pwEl.onclick = function() {
+                    if (pwEl.dataset.revealed === '1') { pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; pwEl.dataset.revealed = '0'; }
+                    else { pwEl.textContent = sPw || '-'; pwEl.dataset.revealed = '1'; }
+                };
+                // Parent credentials
+                setText('dParentLoginId', creds.parent_login_id || 'No parent login');
+                var ppEl = document.getElementById('dParentPassword');
+                var pPw = creds.parent_password || '';
+                if (creds.parent_login_id) {
+                    ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                    ppEl.title = 'Click to reveal';
+                    ppEl.style.cursor = 'pointer';
+                    ppEl.onclick = function() {
+                        if (ppEl.dataset.revealed === '1') { ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; ppEl.dataset.revealed = '0'; }
+                        else { ppEl.textContent = pPw || '-'; ppEl.dataset.revealed = '1'; }
+                    };
+                } else {
+                    ppEl.textContent = '-';
+                    ppEl.classList.add('field-muted');
+                }
+            } catch(e) {
+                document.getElementById('dPassword').textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                setText('dParentLoginId', '-');
+                document.getElementById('dParentPassword').textContent = '-';
+            }
+
+            var subjectContainer = document.getElementById('dSubjects');
+            if (subjects && subjects.length) {
+                subjectContainer.innerHTML = subjects.map(function (subject) {
+                    return '<span class="subject-badge">' + subject.subject_name + (subject.code ? ' (' + subject.code + ')' : '') + '</span>';
+                }).join('');
+            } else {
+                subjectContainer.innerHTML = '<span style="color:#999;font-size:11px;">No subjects assigned</span>';
+            }
+
+            document.getElementById('detailsContent').style.display = 'block';
+        }
+
+        function formatDate(d) { if (!d) return '-'; const dt = new Date(d); if (isNaN(dt)) return d; return String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0') + '/' + dt.getFullYear(); }
+
+        function setText(id, val, muted) {
+            var el = document.getElementById(id);
+            el.textContent = val;
+            if (muted || !val || val === '-') el.classList.add('field-muted');
+        }
+
+        function setHtml(id, html) {
+            document.getElementById(id).innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>

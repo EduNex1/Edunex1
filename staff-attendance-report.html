@@ -1,0 +1,401 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Staff Attendance Report — EduNex1</title>
+    <meta name="description" content="View staff attendance reports">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .status-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-dot .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.active .dot {
+            background: #2e7d32;
+        }
+
+        .status-dot.active {
+            color: #2e7d32;
+        }
+
+        .staff-photo-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+
+        .date-range-badge {
+            display: inline-block;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .pct-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #f0f0f0;
+            overflow: hidden;
+            width: 60px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .pct-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .pct-bar-fill.high {
+            background: #2e7d32;
+        }
+
+        .pct-bar-fill.mid {
+            background: #ef6c00;
+        }
+
+        .pct-bar-fill.low {
+            background: #c62828;
+        }
+
+        .present-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .absent-badge {
+            background: #ffebee;
+            color: #c62828;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.15s;
+        }
+
+        .action-btn-view {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .action-btn-view:hover {
+            background: #1565c0;
+            color: #fff;
+        }
+
+        #reportTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        #reportTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #555;
+            padding: 8px;
+        }
+
+        #reportTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) {
+            .col-hide-xl {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:991px) {
+            .col-hide-lg {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+            .col-hide-md {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:575px) {
+            .col-hide-sm {
+                display: none !important;
+            }
+        }
+
+        @media (max-width:767px) {
+
+            #reportTable td,
+            #reportTable th {
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+
+            .staff-photo-sm {
+                width: 28px;
+                height: 28px;
+            }
+
+            .pct-bar {
+                width: 40px;
+            }
+        }
+
+        @media (max-width:575px) {
+            .staff-photo-sm {
+                width: 24px;
+                height: 24px;
+            }
+
+            #reportTable td,
+            #reportTable th {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
+
+            .pct-bar {
+                width: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Staff</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Attendance Report</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-chart-bar"></i> Staff Attendance
+                                    Report</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <form class="filter-form mg-b-15" id="filterForm">
+                            <div class="row gutters-8">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">From Date</label>
+                                    <input type="date" class="form-control" id="fromDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">To Date</label>
+                                    <input type="date" class="form-control" id="toDate"
+                                        style="font-size:12px;height:36px;">
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-12 form-group d-flex align-items-end"
+                                    style="gap:6px;">
+                                    <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                        style="flex:1;border-radius:6px;height:36px;font-size:11px;"><i
+                                            class="fas fa-search"></i> SEARCH</button>
+                                    <button type="button" class="fw-btn-fill bg-blue-dark btn-hover-yellow"
+                                        id="btnReset" style="flex:1;border-radius:6px;height:36px;font-size:11px;"><i
+                                            class="fas fa-redo"></i> RESET</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Report -->
+                        <div id="reportArea" style="display:none;">
+                            <div class="d-flex align-items-center justify-content-between mg-b-10 flex-wrap"
+                                style="gap:8px;">
+                                <div class="date-range-badge" id="dateRangeBadge"></div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table display data-table" id="reportTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-hide-lg">Status</th>
+                                            <th class="col-hide-sm">Photo</th>
+                                            <th>Emp ID</th>
+                                            <th>Name</th>
+                                            <th class="col-hide-md">Father Name</th>
+                                            <th class="col-hide-xl">Designation</th>
+                                            <th>Present</th>
+                                            <th>Absent</th>
+                                            <th>%</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('staff-attendance-report');
+
+            let staffCache = [];
+            try { staffCache = await getStaff({ status: 'Active' }); } catch(e) {}
+
+            const today = new Date();
+            const from = new Date(today);
+            from.setDate(today.getDate() - 30);
+            $('#fromDate').val(from.toISOString().split('T')[0]);
+            $('#toDate').val(today.toISOString().split('T')[0]);
+
+            loadReport();
+
+            $('#btnSearch').on('click', loadReport);
+            $('#btnReset').on('click', function () {
+                const t = new Date(), f = new Date(t);
+                f.setDate(t.getDate() - 30);
+                $('#fromDate').val(f.toISOString().split('T')[0]);
+                $('#toDate').val(t.toISOString().split('T')[0]);
+                loadReport();
+            });
+
+            async function loadReport() {
+                const fromDate = $('#fromDate').val();
+                const toDate = $('#toDate').val();
+                if (!fromDate || !toDate) { showToast('Select both dates', 'error'); return; }
+
+                const fD = new Date(fromDate);
+                const tD = new Date(toDate);
+                const fmtFrom = fD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const fmtTo = tD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                $('#dateRangeBadge').html(`<i class="fas fa-calendar-alt mg-r-5"></i> Staff Attendance Report: ${fmtFrom} — ${fmtTo}`);
+
+                if ($.fn.DataTable.isDataTable('#reportTable')) { $('#reportTable').DataTable().destroy(); }
+
+                let records = [];
+                try { records = await getStaffAttendance({ from_date: fromDate, to_date: toDate }); } catch(e) {}
+
+                // Group by staff
+                const byStaff = {};
+                records.forEach(r => {
+                    if (!byStaff[r.staff_id]) byStaff[r.staff_id] = [];
+                    byStaff[r.staff_id].push(r);
+                });
+
+                let html = '';
+                staffCache.forEach(s => {
+                    const recs = byStaff[s.id] || [];
+                    const present = recs.filter(r => r.status === 'P').length;
+                    const absent = recs.filter(r => r.status === 'A').length;
+                    const leave = recs.filter(r => r.status === 'L').length;
+                    const total = recs.length;
+                    const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+                    const pctClass = percentage >= 80 ? 'high' : percentage >= 60 ? 'mid' : 'low';
+                    const pctColor = percentage >= 80 ? '#2e7d32' : percentage >= 60 ? '#ef6c00' : '#c62828';
+
+                    html += `<tr>
+                        <td class="col-hide-lg"><span class="status-dot active"><span class="dot"></span>Active</span></td>
+                        <td class="col-hide-sm"><img src="${s.photo_url || 'img/default-user.png'}" class="staff-photo-sm" alt="${s.name}"></td>
+                        <td style="font-weight:600;font-size:11px;">${s.employee_id || ''}</td>
+                        <td style="font-weight:600;">${s.name}</td>
+                        <td class="col-hide-md" style="color:#666;">${s.father_name || ''}</td>
+                        <td class="col-hide-xl"><span style="font-size:10px;font-weight:600;color:#304ffe;">${s.designation || ''}</span></td>
+                        <td><span class="present-badge">${present}</span></td>
+                        <td><span class="absent-badge">${absent + leave}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center" style="gap:5px;">
+                                <div class="pct-bar"><div class="pct-bar-fill ${pctClass}" style="width:${percentage}%;"></div></div>
+                                <span style="font-size:11px;font-weight:700;color:${pctColor};">${percentage}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="staff-attendance-detail.html?id=${s.id}&from=${fromDate}&to=${toDate}" class="action-btn action-btn-view" title="View Detail"><i class="fas fa-eye"></i></a>
+                        </td>
+                    </tr>`;
+                });
+
+                if (!staffCache.length) {
+                    html = `<tr><td colspan="10" class="text-center" style="padding:30px;color:#999;">No staff found</td></tr>`;
+                }
+
+                $('#reportTableBody').html(html);
+                $('#reportTable').DataTable({
+                    "pageLength": 15,
+                    "language": { "search": "<i class='fas fa-search'></i>", "searchPlaceholder": "Quick search..." },
+                    "columnDefs": [{ "orderable": false, "targets": [1, 9] }],
+                    "autoWidth": false
+                });
+                $('#reportArea').show();
+            }
+        });
+    </script>
+</body>
+
+</html>

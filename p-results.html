@@ -1,0 +1,281 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Exam Results — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .result-header {
+            background: linear-gradient(135deg, #0d1b4a 0%, #2952a3 100%);
+            border-radius: 12px;
+            padding: 24px;
+            color: #fff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .result-header .rh-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .result-header .rh-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .result-header .rh-info p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin: 2px 0 0;
+        }
+
+        .result-header .rh-stats {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .result-header .rh-stat {
+            text-align: center;
+        }
+
+        .result-header .rh-stat .val {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .result-header .rh-stat .lbl {
+            font-size: 9px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .grade-a {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .grade-b {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .grade-c {
+            background: #fff8e1;
+            color: #f9a825;
+        }
+
+        .grade-f {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #resultArea, #resultArea * { visibility: visible; }
+            #resultArea {
+                position: absolute; left: 0; top: 0; width: 100%;
+                display: block !important;
+            }
+            .chart-card-header .btn, .chart-card-header button { display: none !important; }
+            .result-header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Exam Results</h3>
+                    <ul>
+                        <li><a href="/parent-dashboard">Home</a></li>
+                        <li>Results</li>
+                        <li>Exam Results</li>
+                    </ul>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-child"></i> Select Child & Exam</div>
+                    <div class="chart-card-body" style="padding:12px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <select id="childSelect" onchange="onChildChange()" class="form-control" style="max-width:300px;">
+                            <option value="">— Select Child —</option>
+                        </select>
+                        <select id="examSelect" onchange="loadResult()" class="form-control" style="max-width:250px;">
+                            <option value="">— Select Exam —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="resultArea" style="display:none;">
+                    <div class="result-header">
+                        <div class="rh-avatar" id="rhAvatar"></div>
+                        <div class="rh-info">
+                            <h4 id="rhName"></h4>
+                            <p id="rhInfo"></p>
+                        </div>
+                        <div class="rh-stats">
+                            <div class="rh-stat"><div class="val" id="rhPct">—</div><div class="lbl">Percentage</div></div>
+                            <div class="rh-stat"><div class="val" id="rhGrade">—</div><div class="lbl">Grade</div></div>
+                            <div class="rh-stat"><div class="val" id="rhResult">—</div><div class="lbl">Result</div></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <span><i class="fas fa-list-ol"></i> Subject-wise Results</span>
+
+                        </div>
+                        <div class="chart-card-body">
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead><tr><th>#</th><th>Subject</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th></tr></thead>
+                                    <tbody id="resultBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" id="coScholasticCard" style="display:none;margin-top:16px;">
+                        <div class="chart-card-header"><i class="fas fa-star"></i> Co-Scholastic Assessment</div>
+                        <div class="chart-card-body">
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead><tr><th>#</th><th>Activity</th><th>Grade</th></tr></thead>
+                                    <tbody id="coScholasticBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="noResult" class="chart-card" style="text-align:center;padding:40px 20px;">
+                    <i class="fas fa-chart-bar" style="font-size:40px;color:#c5cae9;margin-bottom:12px;"></i>
+                    <p style="color:#888;font-size:13px;">Select a child and exam to view results.</p>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    $(async function () {
+        initPage('p-results');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect');
+            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} — Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
+            const exams = await getExamNames() || [];
+            const es = $('#examSelect');
+            exams.forEach(e => es.append(`<option value="${e.id}">${e.name}</option>`));
+        } catch (e) { console.error(e); }
+    });
+
+    function onChildChange() { loadResult(); }
+
+    async function loadResult() {
+        const studentId = $('#childSelect').val();
+        const examId = $('#examSelect').val();
+        if (!studentId || !examId) { $('#resultArea').hide(); $('#noResult').show(); return; }
+        const stu = children.find(c => c.id == studentId);
+        try {
+            const [results, details, coResults] = await Promise.all([
+                getExamResults({ student_id: studentId, exam_id: examId }),
+                getResultDetails({ student_id: studentId, exam_id: examId }),
+                getCoScholasticResults({ student_id: studentId, exam_id: examId })
+            ]);
+            if (!results || !results.length) {
+                $('#resultArea').hide();
+                $('#noResult').show().html('<i class="fas fa-exclamation-circle" style="font-size:40px;color:#ffb74d;margin-bottom:12px;"></i><p style="color:#888;">No results found for this exam.</p>');
+                return;
+            }
+            const detail = (details && details.length) ? details[0] : {};
+            const examName = $('#examSelect option:selected').text();
+            const initials = (stu.name || '').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            $('#rhAvatar').text(initials);
+            $('#rhName').text(stu.name);
+            const sec = stu.section ? ' — ' + stu.section : '';
+            $('#rhInfo').text(`Class ${stu.class_name || ''}${sec} | Roll: ${stu.roll_no || '-'} | ${examName}`);
+
+            let totalObt = 0, totalMax = 0, html = '';
+            results.forEach((r, i) => {
+                const obt = Number(r.total_marks) || 0, mx = Number(r.max_marks) || 0;
+                totalObt += obt; totalMax += mx;
+                const pct = mx ? ((obt / mx) * 100).toFixed(1) : '-';
+                html += `<tr><td>${i + 1}</td><td><strong>${r.subject_name}</strong></td><td>${mx}</td><td><strong>${obt}</strong></td><td>${pct}%</td><td>${r.grade || '-'}</td></tr>`;
+            });
+            const totalPct = totalMax ? ((totalObt / totalMax) * 100).toFixed(1) : '-';
+            html += `<tr style="font-weight:800;background:#f0f4ff;"><td></td><td><strong>TOTAL</strong></td><td><strong>${totalMax}</strong></td><td><strong>${totalObt}</strong></td><td><strong>${totalPct}%</strong></td><td></td></tr>`;
+            $('#resultBody').html(html);
+            $('#rhPct').text(totalPct + '%');
+            $('#rhGrade').text(detail.division || results[0].grade || '-');
+            $('#rhResult').text(detail.result || 'Declared');
+
+            if (Array.isArray(coResults) && coResults.length) {
+                let ch = '';
+                coResults.forEach((c, i) => ch += `<tr><td>${i + 1}</td><td><strong>${c.area_name || c.area_id || '-'}</strong></td><td>${c.grade || '-'}</td></tr>`);
+                $('#coScholasticBody').html(ch);
+                $('#coScholasticCard').show();
+            } else { $('#coScholasticCard').hide(); }
+
+            $('#noResult').hide();
+            $('#resultArea').show();
+        } catch (e) { console.error(e); alert('Error loading results'); }
+    }
+    </script>
+</body>
+
+</html>

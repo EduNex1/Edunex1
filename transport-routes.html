@@ -1,0 +1,289 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Vehicle Routes — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all .15s;
+            margin: 0 1px;
+        }
+
+        .action-btn-edit {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .action-btn-edit:hover {
+            background: #ef6c00;
+            color: #fff;
+        }
+
+        .action-btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .action-btn-delete:hover {
+            background: #c62828;
+            color: #fff;
+        }
+
+        #routeTable {
+            width: 100% !important;
+        }
+
+        #routeTable td {
+            vertical-align: middle;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        #routeTable th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #fff;
+            background: #0d1b4a;
+            padding: 8px 10px;
+            white-space: nowrap;
+        }
+
+        #routeTable tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .add-route-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .add-route-form label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .add-route-form .form-control {
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <!-- Breadcrumb -->
+                <div class="breadcrumbs-area">
+                    <h3>Transport</h3>
+                    <ul>
+                        <li><a href="/dashboard">Home</a></li>
+                        <li>Vehicle Routes</li>
+                    </ul>
+                </div>
+
+                <!-- Add Route -->
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1 mb-3">
+                            <div class="item-title">
+                                <h3>Add Route</h3>
+                            </div>
+                        </div>
+                        <div class="add-route-form" id="addRouteForm">
+                            <div style="flex:1;min-width:250px;">
+                                <label>Route Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="routeName"
+                                    placeholder="e.g. Route 6 — Rajajipuram → School">
+                            </div>
+                            <div style="flex:1;min-width:200px;">
+                                <label>Stops</label>
+                                <input type="text" class="form-control" id="routeStops"
+                                    placeholder="e.g. Stop1, Stop2, Stop3">
+                            </div>
+                            <div style="min-width:100px;">
+                                <label>Fee (₹)</label>
+                                <input type="number" class="form-control" id="routeFee" placeholder="800" min="0">
+                            </div>
+                            <div>
+                                <button class="btn btn-sm"
+                                    style="background:#042954;color:#fff;font-size:12px;height:36px;"
+                                    id="btnAddRoute"><i class="fas fa-plus mr-1"></i>Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route List -->
+                <div class="card height-auto mt-3">
+                    <div class="card-body">
+                        <div class="heading-layout1 mb-3">
+                            <div class="item-title">
+                                <h3>All Routes</h3>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="routeTable" class="table table-bordered display text-nowrap">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editRouteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#0d1b4a;color:#fff;padding:10px 16px;">
+                    <h6 class="modal-title" style="font-size:13px;font-weight:700;">Edit Route</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" style="font-size:12px;">
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Route Name</label>
+                        <input class="form-control" id="eRouteName" style="font-size:13px;">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Stops</label>
+                        <input class="form-control" id="eRouteStops" style="font-size:13px;">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label style="font-weight:600;font-size:12px;">Fee (₹)</label>
+                        <input type="number" class="form-control" id="eRouteFee" style="font-size:13px;" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding:8px 16px;">
+                    <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;"
+                        id="btnSaveRoute">Save</button>
+                    <button class="btn btn-sm btn-light" data-dismiss="modal" style="font-size:13px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            initPage('transport-routes');
+
+            let routeCache = [];
+            let editId = null;
+
+            async function loadTable() {
+                try { routeCache = await getTransportRoutes(); } catch(e) { showToast('Failed to load routes', 'error'); routeCache = []; }
+                const rows = routeCache.map((r, i) => `<tr>
+                <td class="text-center">${i + 1}</td>
+                <td>${r.name}</td>
+                <td>${r.stops || '—'}</td>
+                <td class="text-right">₹${r.fee || 0}</td>
+                <td class="text-center">
+                    <button class="action-btn action-btn-edit" title="Edit" onclick="editRoute(${r.id})"><i class="fas fa-pen"></i></button>
+                    <button class="action-btn action-btn-delete" title="Delete" onclick="removeRoute(${r.id})"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            </tr>`).join('');
+
+                if ($.fn.DataTable.isDataTable('#routeTable')) {
+                    $('#routeTable').DataTable().destroy();
+                }
+                $('#routeTable thead').html(`<tr><th style="width:60px;">Sr No</th><th>Route Name</th><th>Stops</th><th style="width:100px;">Fee</th><th style="width:90px;">Action</th></tr>`);
+                $('#routeTable tbody').html(rows);
+                $('#routeTable').DataTable({
+                    pageLength: 10,
+                    language: { search: "", searchPlaceholder: "Search routes..." },
+                    columnDefs: [{ orderable: false, targets: [4] }]
+                });
+            }
+
+            $('#btnAddRoute').on('click', async function () {
+                const name = $('#routeName').val().trim();
+                if (!name) { showToast('Route name is required', 'error'); return; }
+                try {
+                    await createMasterData('transport_routes', { name, stops: $('#routeStops').val().trim(), fee: parseInt($('#routeFee').val()) || 0 });
+                    $('#routeName').val(''); $('#routeStops').val(''); $('#routeFee').val('');
+                    await loadTable();
+                    showToast('Route added successfully', 'success');
+                } catch(e) { showToast('Failed to add route', 'error'); }
+            });
+
+            window.editRoute = function (id) {
+                editId = id;
+                const r = routeCache.find(x => x.id === id);
+                if (!r) return;
+                $('#eRouteName').val(r.name);
+                $('#eRouteStops').val(r.stops || '');
+                $('#eRouteFee').val(r.fee || 0);
+                $('#editRouteModal').modal('show');
+            };
+
+            $('#btnSaveRoute').on('click', async function () {
+                if (!editId) return;
+                const name = $('#eRouteName').val().trim();
+                if (!name) { showToast('Route name is required', 'error'); return; }
+                try {
+                    await updateMasterData('transport_routes', editId, { name, stops: $('#eRouteStops').val().trim(), fee: parseInt($('#eRouteFee').val()) || 0 });
+                    $('#editRouteModal').modal('hide');
+                    await loadTable();
+                    showToast('Route updated', 'success');
+                } catch(e) { showToast('Failed to update route', 'error'); }
+            });
+
+            window.removeRoute = async function (id) {
+                if (!confirm('Delete this route?')) return;
+                try {
+                    await deleteMasterData('transport_routes', id);
+                    await loadTable();
+                    showToast('Route deleted', 'success');
+                } catch(e) { showToast('Failed to delete route', 'error'); }
+            };
+
+            await loadTable();
+        });
+    </script>
+</body>
+
+</html>

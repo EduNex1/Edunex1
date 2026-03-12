@@ -1,0 +1,977 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Transfer Certificate</title>
+    <meta name="description" content="Manage student transfer certificates">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* Tab styling */
+        .tc-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tc-tab {
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tc-tab:hover {
+            color: #304ffe;
+        }
+
+        .tc-tab.active {
+            color: #304ffe;
+            border-bottom-color: #304ffe;
+        }
+
+        .tc-panel {
+            display: none;
+        }
+
+        .tc-panel.active {
+            display: block;
+        }
+
+        /* Form layout */
+        .tc-form .form-label-sm {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .tc-form .form-control {
+            font-size: 12px;
+        }
+
+        /* TC Print format */
+        .tc-document {
+            width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            border: 2px solid #333;
+            font-family: 'Times New Roman', serif;
+            page-break-inside: avoid;
+            padding: 0;
+        }
+
+        .tc-document .tc-border-inner {
+            border: 1px solid #333;
+            margin: 4px;
+            padding: 20px 24px;
+        }
+
+        .tc-doc-header {
+            text-align: center;
+            margin-bottom: 14px;
+            border-bottom: 1.5px solid #333;
+            padding-bottom: 12px;
+        }
+
+        .tc-doc-header .tc-school-name {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #111;
+            margin: 0;
+        }
+
+        .tc-doc-header .tc-tagline {
+            font-size: 9px;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .tc-doc-header .tc-address {
+            font-size: 9px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .tc-doc-header .tc-doc-title {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            color: #111;
+        }
+
+        .tc-doc-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10.5px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #aaa;
+        }
+
+        .tc-doc-meta span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tc-doc-rows {
+            margin-bottom: 16px;
+        }
+
+        .tc-doc-row {
+            display: flex;
+            font-size: 11px;
+            padding: 4px 0;
+            border-bottom: 1px dotted #ccc;
+            line-height: 1.6;
+        }
+
+        .tc-doc-row .tc-sno {
+            width: 28px;
+            font-weight: 700;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        .tc-doc-row .tc-label {
+            width: 240px;
+            font-weight: 600;
+            color: #222;
+            flex-shrink: 0;
+        }
+
+        .tc-doc-row .tc-value {
+            flex: 1;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .tc-doc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            padding-top: 10px;
+        }
+
+        .tc-doc-sign {
+            text-align: center;
+        }
+
+        .tc-doc-sign .tc-sign-line {
+            width: 90px;
+            border-top: 1px solid #333;
+            margin: 0 auto 3px;
+        }
+
+        .tc-doc-sign span {
+            font-size: 9px;
+            font-weight: 700;
+            color: #222;
+            display: block;
+        }
+
+        .tc-doc-date {
+            font-size: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .tc-doc-note {
+            font-size: 8px;
+            color: #555;
+            text-align: center;
+            margin-top: 12px;
+            font-style: italic;
+            border-top: 1px dashed #aaa;
+            padding-top: 6px;
+        }
+
+        /* Preview area */
+        .tc-preview-area {
+            display: none;
+            padding: 24px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .tc-preview-area.visible {
+            display: block;
+        }
+
+        /* Table hover */
+        #tcTable tbody tr:hover {
+            background: #f0f4ff;
+            cursor: pointer;
+        }
+
+        #tcTable td {
+            vertical-align: middle;
+            font-size: 12px;
+        }
+
+        /* Responsive column hiding */
+        @media (max-width:1199px) { .col-hide-xl { display: none !important; } }
+        @media (max-width:991px)  { .col-hide-lg { display: none !important; } }
+        @media (max-width:767px)  { .col-hide-md { display: none !important; } }
+        @media (max-width:575px)  { .col-hide-sm { display: none !important; } }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #tcPrintArea,
+            #tcPrintArea * {
+                visibility: visible;
+            }
+
+            #tcPrintArea {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            .tc-document {
+                box-shadow: none;
+                margin: 0 auto;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+        }
+
+        /* ===== RESPONSIVE: TABLET & MOBILE ===== */
+        @media (max-width: 767px) {
+            .tc-document {
+                width: 100%;
+                max-width: 100%;
+            }
+            .tc-document .tc-border-inner { padding: 14px 16px; }
+            .tc-school-name { font-size: 16px !important; }
+            .tc-doc-title { font-size: 14px !important; letter-spacing: 1.5px !important; }
+            .tc-doc-meta { flex-direction: column; gap: 4px; }
+            .tc-doc-row { font-size: 10px; }
+            .tc-doc-row .tc-label { width: 180px; }
+            .tc-doc-footer { flex-wrap: wrap; gap: 16px; justify-content: center; }
+            .tc-tabs { flex-wrap: wrap; }
+        }
+
+        @media (max-width: 575px) {
+            .tc-document .tc-border-inner { padding: 10px 12px; }
+            .tc-school-name { font-size: 14px !important; }
+            .tc-doc-row .tc-label { width: 140px; font-size: 9.5px; }
+            .tc-doc-row .tc-value { font-size: 9.5px; }
+            .tc-doc-row .tc-sno { width: 22px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Transfer Certificate</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Transfer Certificate</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>
+                                    <i class="fas fa-file-export"></i> Transfer
+                                    Certificate Management
+                                </h3>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="tc-tabs">
+                            <button class="tc-tab active" data-tab="add"><i class="fas fa-plus-circle mg-r-5"></i>Add
+                                Transfer Certificate</button>
+                            <button class="tc-tab" data-tab="view"><i class="fas fa-list mg-r-5"></i>View Transfer
+                                Certificates</button>
+                        </div>
+
+                        <!-- ADD TC Panel -->
+                        <div class="tc-panel active" id="panelAdd">
+                            <div class="tc-form">
+                                <!-- Step 1: Select Student -->
+                                <div class="row mg-b-15"
+                                    style="background:#f8f9ff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
+                                    <div class="col-12 mg-b-10">
+                                        <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0;">
+                                            <i class="fas fa-user-graduate mg-r-5"></i> Step 1: Select Student
+                                        </h6>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Class *</label>
+                                        <select class="form-control" id="tcClass">
+                                            <option value="">— Select Class —</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Section</label>
+                                        <select class="form-control" id="tcSection">
+                                            <option value="All">All Sections</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 form-group">
+                                        <label class="form-label-sm">Student *</label>
+                                        <select class="form-control" id="tcStudent">
+                                            <option value="">— Select Student —</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: TC Details -->
+                                <div id="tcFormFields" style="display:none;">
+                                    <div class="row mg-t-15"
+                                        style="background:#fff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
+                                        <div class="col-12 mg-b-10">
+                                            <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0;">
+                                                <i class="fas fa-edit mg-r-5"></i> Step 2: Transfer Certificate Details
+                                            </h6>
+                                        </div>
+                                        <!-- Auto-filled fields -->
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">TC No. (Auto)</label>
+                                            <input type="text" class="form-control" id="fTcNo" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Admission No.</label>
+                                            <input type="text" class="form-control" id="fAdmNo" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Student Name</label>
+                                            <input type="text" class="form-control" id="fName" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Father's Name</label>
+                                            <input type="text" class="form-control" id="fFather" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Mother's Name</label>
+                                            <input type="text" class="form-control" id="fMother" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Date of Birth</label>
+                                            <input type="text" class="form-control" id="fDob" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Date of Birth (in words) — Auto</label>
+                                            <input type="text" class="form-control" id="fDobWords" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Nationality</label>
+                                            <input type="text" class="form-control" id="fNationality" value="Indian">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Category</label>
+                                            <input type="text" class="form-control" id="fCategory" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Religion</label>
+                                            <input type="text" class="form-control" id="fReligion" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Gender</label>
+                                            <input type="text" class="form-control" id="fGender" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Last Class Studied</label>
+                                            <input type="text" class="form-control" id="fLastClass" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Date of Admission</label>
+                                            <input type="text" class="form-control" id="fAdmDate" readonly
+                                                style="background:#f0f0f0;">
+                                        </div>
+
+                                        <!-- Editable fields -->
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Date of Leaving *</label>
+                                            <input type="date" class="form-control" id="fLeaveDate">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Qualified for Promotion *</label>
+                                            <select class="form-control" id="fPromotion">
+                                                <option value="Yes">Yes</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Fees Paid Up to Date *</label>
+                                            <select class="form-control" id="fFees">
+                                                <option value="Yes">Yes</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Scholarship / Concession</label>
+                                            <input type="text" class="form-control" id="fScholarship" value="None">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">General Conduct *</label>
+                                            <select class="form-control" id="fConduct">
+                                                <option value="Excellent">Excellent</option>
+                                                <option value="Very Good">Very Good</option>
+                                                <option value="Good" selected>Good</option>
+                                                <option value="Satisfactory">Satisfactory</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Character *</label>
+                                            <select class="form-control" id="fCharacter">
+                                                <option value="Excellent">Excellent</option>
+                                                <option value="Very Good">Very Good</option>
+                                                <option value="Good" selected>Good</option>
+                                                <option value="Satisfactory">Satisfactory</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 form-group">
+                                            <label class="form-label-sm">Reason for Leaving *</label>
+                                            <input type="text" class="form-control" id="fReason"
+                                                placeholder="e.g. Father transferred to another city">
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 form-group">
+                                            <label class="form-label-sm">Remarks</label>
+                                            <input type="text" class="form-control" id="fRemarks"
+                                                value="No dues pending">
+                                        </div>
+                                        <div class="col-lg-4 col-md-6 form-group">
+                                            <label class="form-label-sm">Issue Date *</label>
+                                            <input type="date" class="form-control" id="fIssueDate">
+                                        </div>
+                                    </div>
+
+                                    <!-- Buttons -->
+                                    <div class="mg-t-15 d-flex" style="gap:10px;">
+                                        <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                            id="btnSaveTC"
+                                            style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                            <i class="fas fa-save"></i> Save & Issue TC
+                                        </button>
+                                        <button type="button" class="btn-fill-lg bg-blue-dark btn-hover-yellow"
+                                            id="btnResetTC"
+                                            style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                            <i class="fas fa-redo"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VIEW TC Panel -->
+                        <div class="tc-panel" id="panelView">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="tcTable">
+                                    <thead>
+                                        <tr>
+                                            <th>TC No.</th>
+                                            <th class="col-hide-lg">Adm. No.</th>
+                                            <th>Student Name</th>
+                                            <th class="col-hide-md">Father Name</th>
+                                            <th>Last Class</th>
+                                            <th>Issue Date</th>
+                                            <th>View / Print</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tcTableBody"></tbody>
+                                </table>
+                            </div>
+                            <div id="tcRecordCount" style="font-size:12px;font-weight:600;color:#555;margin-top:8px;">
+                            </div>
+
+                            <!-- TC Preview -->
+                            <div class="tc-preview-area" id="tcPreviewArea">
+                                <div class="d-flex align-items-center justify-content-between mg-b-15">
+                                    <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
+                                        <i class="fas fa-eye mg-r-5" style="color:#304ffe;"></i> TC Preview
+                                    </h6>
+                                    <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                        id="btnPrintTC"
+                                        style="border-radius:8px;display:inline-flex;align-items:center;gap:5px;">
+                                        <i class="fas fa-print"></i> Print / Download PDF
+                                    </button>
+                                </div>
+                                <div id="tcPrintArea"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('transfer-certificate');
+            let editingTcId = null;
+            let classCache = [], studentCache = [], tcCache = [], branches = [], sessions = [];
+
+            try { [classCache, branches, sessions, tcCache] = await Promise.all([getClasses(), getBranches(), getAcademicSessions(), getTransferCertificates()]); } catch(e) {}
+            const school = branches[0] || {};
+            const currentSession = sessions.find(s => s.status === 'Active') || {};
+            let tcCounter = tcCache.length + 1;
+
+            // ========== Date to Words Converter ==========
+            function dateToWords(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '';
+                const day = d.getDate();
+                const month = d.getMonth();
+                const year = d.getFullYear();
+                const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                    'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
+                    'Eighteen', 'Nineteen'];
+                const tens = ['', '', 'Twenty', 'Thirty'];
+                const ordinals = ['', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh',
+                    'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth', 'Thirteenth', 'Fourteenth',
+                    'Fifteenth', 'Sixteenth', 'Seventeenth', 'Eighteenth', 'Nineteenth', 'Twentieth',
+                    'Twenty First', 'Twenty Second', 'Twenty Third', 'Twenty Fourth', 'Twenty Fifth',
+                    'Twenty Sixth', 'Twenty Seventh', 'Twenty Eighth', 'Twenty Ninth', 'Thirtieth',
+                    'Thirty First'];
+                const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+                function yearToWords(y) {
+                    if (y >= 2000 && y <= 2099) {
+                        const remainder = y - 2000;
+                        if (remainder === 0) return 'Two Thousand';
+                        if (remainder < 20) return 'Two Thousand ' + ones[remainder];
+                        const t = Math.floor(remainder / 10);
+                        const o = remainder % 10;
+                        return 'Two Thousand ' + tens[t] + (o ? ' ' + ones[o] : '');
+                    }
+                    if (y >= 1900 && y <= 1999) {
+                        const remainder = y - 1900;
+                        let prefix = 'Nineteen';
+                        if (remainder === 0) return prefix + ' Hundred';
+                        if (remainder < 20) return prefix + ' ' + ones[remainder];
+                        const t = Math.floor(remainder / 10);
+                        const o = remainder % 10;
+                        return prefix + ' ' + tens[t] + (o ? ' ' + ones[o] : '');
+                    }
+                    return String(y);
+                }
+                const dayWord = ordinals[day] || String(day);
+                const monthWord = months[month];
+                const yearWord = yearToWords(year);
+                return `${dayWord} ${monthWord} ${yearWord}`;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+
+            // Tabs
+            $('.tc-tab').on('click', function () {
+                const tab = $(this).data('tab');
+                $('.tc-tab').removeClass('active');
+                $(this).addClass('active');
+                $('.tc-panel').removeClass('active');
+                $(`#panel${tab === 'add' ? 'Add' : 'View'}`).addClass('active');
+                if (tab === 'view') renderTcList();
+                history.replaceState(null, '', '#' + tab);
+            });
+
+            if (window.location.hash === '#view') { $('.tc-tab[data-tab="view"]').click(); }
+
+            classCache.forEach(c => { $('#tcClass').append(`<option value="${c.id}">${c.name}</option>`); });
+
+            $('#tcClass').on('change', async function () {
+                const cid = parseInt($(this).val());
+                $('#tcSection').html('<option value="All">All Sections</option>');
+                $('#tcStudent').html('<option value="">— Select Student —</option>');
+                $('#tcFormFields').hide();
+                if (!cid) return;
+                try { studentCache = await getStudents({ class_id: cid }); } catch(e) { studentCache = []; }
+                const activeStudents = studentCache.filter(s => s.status === 'Active');
+                const secs = [...new Set(activeStudents.map(s => s.section))].sort();
+                secs.forEach(sec => { $('#tcSection').append(`<option value="${sec}">${sec}</option>`); });
+                populateStudentDropdown();
+            });
+
+            $('#tcSection').on('change', function () { populateStudentDropdown(); });
+
+            function populateStudentDropdown() {
+                const cid = parseInt($('#tcClass').val());
+                const sec = $('#tcSection').val();
+                if (!cid || isNaN(cid)) return;
+                let students = studentCache.filter(s => s.status === 'Active');
+                if (sec && sec !== 'All') students = students.filter(s => s.section === sec);
+                $('#tcStudent').html('<option value="">— Select Student —</option>');
+                students.forEach(s => { $('#tcStudent').append(`<option value="${s.id}">${s.name} (${s.admission_no || ''})</option>`); });
+            }
+
+            $('#tcStudent').on('change', function () {
+                const sid = parseInt($(this).val());
+                if (!sid) { $('#tcFormFields').hide(); return; }
+                const s = studentCache.find(st => st.id === sid);
+                if (!s) return;
+                const cls = classCache.find(c => c.id === s.class_id);
+                const cn = cls ? cls.name : '-';
+                const sess = currentSession.name || '';
+                const tcNum = `TC/${sess}/${String(tcCounter).padStart(3, '0')}`;
+
+                $('#fTcNo').val(tcNum);
+                $('#fAdmNo').val(s.admission_no || '');
+                $('#fName').val(s.name);
+                $('#fFather').val(s.father_name || '');
+                $('#fMother').val(s.mother_name || '');
+                $('#fDob').val(formatDate(s.dob));
+                $('#fDobWords').val(dateToWords(s.dob));
+                $('#fCategory').val(s.category || '');
+                $('#fReligion').val(s.religion || 'Hindu');
+                $('#fGender').val(s.gender || '');
+                $('#fLastClass').val(`${cn} / ${s.section || ''}`);
+                $('#fAdmDate').val(formatDate(s.admission_date));
+                $('#fNationality').val('Indian');
+                const today = new Date().toISOString().split('T')[0];
+                $('#fLeaveDate').val(today);
+                $('#fIssueDate').val(today);
+                $('#tcFormFields').slideDown(200);
+                editingTcId = null;
+            });
+
+            // Save TC
+            $('#btnSaveTC').on('click', async function () {
+                const sid = parseInt($('#tcStudent').val());
+                if (!sid) { showToast('Please select a student', 'error'); return; }
+                if (!$('#fLeaveDate').val()) { showToast('Please enter Date of Leaving', 'error'); return; }
+                if (!$('#fReason').val().trim()) { showToast('Please enter Reason for Leaving', 'error'); return; }
+                if (!$('#fIssueDate').val()) { showToast('Please enter Issue Date', 'error'); return; }
+
+                const s = studentCache.find(st => st.id === sid);
+                const cls = classCache.find(c => c.id === (s ? s.class_id : 0));
+
+                const tcData = {
+                    student_id: sid,
+                    tc_no: $('#fTcNo').val(),
+                    admission_no: s ? (s.admission_no || '') : '',
+                    student_name: s ? s.name : '',
+                    father_name: s ? (s.father_name || '') : '',
+                    mother_name: s ? (s.mother_name || '') : '',
+                    dob: s ? s.dob : '',
+                    dob_words: $('#fDobWords').val().trim(),
+                    nationality: $('#fNationality').val(),
+                    category: s ? (s.category || '') : '',
+                    religion: s ? (s.religion || 'Hindu') : '',
+                    gender: s ? (s.gender || '') : '',
+                    class_id: s ? s.class_id : null,
+                    section: s ? (s.section || '') : '',
+                    last_class_studied: `${cls ? cls.name : '-'} / ${s ? (s.section || '') : ''}`,
+                    date_of_admission: s ? (s.admission_date || '') : '',
+                    date_of_leaving: $('#fLeaveDate').val(),
+                    qualified_for_promotion: $('#fPromotion').val(),
+                    fees_paid_up_to_date: $('#fFees').val(),
+                    scholarship: $('#fScholarship').val(),
+                    general_conduct: $('#fConduct').val(),
+                    character: $('#fCharacter').val(),
+                    reason_for_leaving: $('#fReason').val().trim(),
+                    remarks: $('#fRemarks').val().trim(),
+                    issue_date: $('#fIssueDate').val(),
+                    status: 'Issued'
+                };
+
+                try {
+                    if (editingTcId) {
+                        await updateTransferCertificate(editingTcId, tcData);
+                        showToast('Transfer Certificate updated successfully!', 'success');
+                    } else {
+                        await createTransferCertificate(tcData);
+                        tcCounter++;
+                        showToast('Transfer Certificate issued successfully!', 'success');
+                    }
+                    tcCache = await getTransferCertificates();
+                } catch(e) { showToast('Error saving TC: ' + e.message, 'error'); return; }
+
+                resetForm();
+                $('.tc-tab').eq(1).click();
+            });
+
+            $('#btnResetTC').on('click', resetForm);
+
+            function resetForm() {
+                editingTcId = null;
+                $('#tcClass, #tcStudent').val('');
+                $('#tcSection').val('All');
+                $('#tcFormFields').hide();
+                $('#fDobWords, #fReason').val('');
+                $('#fScholarship').val('None');
+                $('#fRemarks').val('No dues pending');
+                $('#fConduct, #fCharacter').val('Good');
+                $('#fPromotion, #fFees').val('Yes');
+            }
+
+            function renderTcList() {
+                const tbody = $('#tcTableBody'); tbody.empty();
+                if (!tcCache.length) {
+                    tbody.append(`<tr><td colspan="8" class="text-center" style="padding:30px;color:#999;font-size:13px;">
+                    <i class="fas fa-file-excel" style="font-size:24px;display:block;margin-bottom:8px;"></i>No transfer certificates found</td></tr>`);
+                    $('#tcRecordCount').text('0 Records'); return;
+                }
+                tcCache.forEach(tc => {
+                    tbody.append(`
+                    <tr>
+                        <td style="font-weight:700;">${tc.tc_no || ''}</td>
+                        <td class="col-hide-lg">${tc.admission_no || ''}</td>
+                        <td style="font-weight:600;">${tc.student_name || ''}</td>
+                        <td class="col-hide-md">${tc.father_name || ''}</td>
+                        <td>${tc.last_class_studied || ''}</td>
+                        <td>${formatDate(tc.issue_date)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-tc" data-id="${tc.id}" style="font-size:11px;padding:3px 10px;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning btn-edit-tc" data-id="${tc.id}" style="font-size:11px;padding:3px 8px;" title="Edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-delete-tc" data-id="${tc.id}" style="font-size:11px;padding:3px 8px;" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`);
+                });
+                $('#tcRecordCount').text(`${tcCache.length} Record${tcCache.length > 1 ? 's' : ''}`);
+            }
+
+            $(document).on('click', '.btn-view-tc', function () {
+                const id = parseInt($(this).data('id'));
+                const tc = tcCache.find(t => t.id === id);
+                if (!tc) return;
+                renderTcDocument(tc);
+            });
+
+            $(document).on('click', '.btn-edit-tc', async function () {
+                const id = parseInt($(this).data('id'));
+                const tc = tcCache.find(t => t.id === id);
+                if (!tc) return;
+                editingTcId = tc.id;
+                $('.tc-tab').eq(0).click();
+                if (tc.class_id) {
+                    $('#tcClass').val(tc.class_id);
+                    try { studentCache = await getStudents({ class_id: tc.class_id }); } catch(e) { studentCache = []; }
+                    const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section))].sort();
+                    $('#tcSection').html('<option value="All">All Sections</option>');
+                    secs.forEach(sec => { $('#tcSection').append(`<option value="${sec}">${sec}</option>`); });
+                    if (tc.section) $('#tcSection').val(tc.section);
+                    populateStudentDropdown();
+                    if (tc.student_id) {
+                        $('#tcStudent').val(tc.student_id);
+                        $('#tcFormFields').slideDown(200);
+                    }
+                }
+                setTimeout(() => {
+                    $('#fTcNo').val(tc.tc_no || '');
+                    $('#fAdmNo').val(tc.admission_no || '');
+                    $('#fName').val(tc.student_name || '');
+                    $('#fFather').val(tc.father_name || '');
+                    $('#fMother').val(tc.mother_name || '');
+                    $('#fDob').val(formatDate(tc.dob));
+                    $('#fDobWords').val(tc.dob_words || '');
+                    $('#fCategory').val(tc.category || '');
+                    $('#fReligion').val(tc.religion || '');
+                    $('#fGender').val(tc.gender || '');
+                    $('#fLastClass').val(tc.last_class_studied || '');
+                    $('#fAdmDate').val(formatDate(tc.date_of_admission));
+                    $('#fNationality').val(tc.nationality || 'Indian');
+                    $('#fLeaveDate').val(tc.date_of_leaving || '');
+                    $('#fIssueDate').val(tc.issue_date || '');
+                    $('#fPromotion').val(tc.qualified_for_promotion || 'Yes');
+                    $('#fFees').val(tc.fees_paid_up_to_date || 'Yes');
+                    $('#fScholarship').val(tc.scholarship || 'None');
+                    $('#fConduct').val(tc.general_conduct || 'Good');
+                    $('#fCharacter').val(tc.character || 'Good');
+                    $('#fReason').val(tc.reason_for_leaving || '');
+                    $('#fRemarks').val(tc.remarks || '');
+                }, 200);
+            });
+
+            $(document).on('click', '.btn-delete-tc', function () {
+                const id = parseInt($(this).data('id'));
+                showConfirmModal('Delete Transfer Certificate', 'Are you sure you want to delete this TC? This cannot be undone.', async function () {
+                    try {
+                        await deleteTransferCertificate(id);
+                        tcCache = tcCache.filter(t => t.id !== id);
+                        showToast('Transfer Certificate deleted', 'success');
+                        renderTcList();
+                        $('#tcPreviewArea').removeClass('visible');
+                    } catch(e) { showToast('Error deleting TC', 'error'); }
+                });
+            });
+
+            function renderTcDocument(tc) {
+                const container = $('#tcPrintArea'); container.empty();
+
+                container.html(`
+                <div class="tc-document">
+                    <div class="tc-border-inner">
+                        <div class="tc-doc-header">
+                            ${school.logo_url ? '<img src="'+school.logo_url+'" style="height:52px;width:52px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
+                            <div class="tc-school-name">${school.school_name || ''}</div>
+                            <div class="tc-tagline">${school.board || ''}</div>
+                            <div class="tc-address"><i class="fas fa-map-marker-alt"></i> ${school.address || ''} &nbsp;|&nbsp; <i class="fas fa-phone-alt"></i> ${school.phone || ''}</div>
+                            <div class="tc-doc-title">Transfer Certificate</div>
+                        </div>
+
+                        <div class="tc-doc-meta">
+                            <span>TC No.: <u>${tc.tc_no || ''}</u></span>
+                            <span>Adm. No.: <u>${tc.admission_no || ''}</u></span>
+                            <span>Date: <u>${formatDate(tc.issue_date)}</u></span>
+                        </div>
+
+                        <div class="tc-doc-rows">
+                            <div class="tc-doc-row"><span class="tc-sno">1.</span><span class="tc-label">Name of the Student</span><span class="tc-value">${tc.student_name || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">2.</span><span class="tc-label">Father's Name</span><span class="tc-value">${tc.father_name || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">3.</span><span class="tc-label">Mother's Name</span><span class="tc-value">${tc.mother_name || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">4.</span><span class="tc-label">Date of Birth (in figures)</span><span class="tc-value">${formatDate(tc.dob)}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">5.</span><span class="tc-label">Date of Birth (in words)</span><span class="tc-value">${tc.dob_words || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">6.</span><span class="tc-label">Nationality</span><span class="tc-value">${tc.nationality || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">7.</span><span class="tc-label">Category (SC/ST/OBC/General)</span><span class="tc-value">${tc.category || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">8.</span><span class="tc-label">Religion</span><span class="tc-value">${tc.religion || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">9.</span><span class="tc-label">Gender</span><span class="tc-value">${tc.gender || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">10.</span><span class="tc-label">Class in which last studied</span><span class="tc-value">${tc.last_class_studied || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">11.</span><span class="tc-label">Date of Admission</span><span class="tc-value">${formatDate(tc.date_of_admission)}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">12.</span><span class="tc-label">Date of Leaving</span><span class="tc-value">${formatDate(tc.date_of_leaving)}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">13.</span><span class="tc-label">Whether qualified for promotion</span><span class="tc-value">${tc.qualified_for_promotion || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">14.</span><span class="tc-label">Whether fees paid up to date</span><span class="tc-value">${tc.fees_paid_up_to_date || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">15.</span><span class="tc-label">Scholarship / Concession availed</span><span class="tc-value">${tc.scholarship || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">16.</span><span class="tc-label">General Conduct</span><span class="tc-value">${tc.general_conduct || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">17.</span><span class="tc-label">Character</span><span class="tc-value">${tc.character || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">18.</span><span class="tc-label">Reason for Leaving</span><span class="tc-value">${tc.reason_for_leaving || ''}</span></div>
+                            <div class="tc-doc-row"><span class="tc-sno">19.</span><span class="tc-label">Remarks</span><span class="tc-value">${tc.remarks || ''}</span></div>
+                        </div>
+
+                        <div class="tc-doc-footer">
+                            <div>
+                                <div class="tc-doc-date">Date: ${formatDate(tc.issue_date)}</div>
+                            </div>
+                            <div class="tc-doc-sign">
+                                <div class="tc-sign-line"></div>
+                                <span>Class Teacher</span>
+                            </div>
+                            <div class="tc-doc-sign">
+                                <div class="tc-sign-line"></div>
+                                <span>Exam Controller</span>
+                            </div>
+                            <div class="tc-doc-sign">
+                                ${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:30px;max-width:80px;object-fit:contain;display:block;margin:0 auto;">' : ''}
+                                <div class="tc-sign-line"></div>
+                                <span>${school.signing_authority_designation || 'Principal'}</span>
+                            </div>
+                        </div>
+
+                        <div class="tc-doc-note">
+                            Note: This Transfer Certificate is valid only with the school seal and authorized signatures. No correction / overwriting is permitted.
+                        </div>
+                    </div>
+                </div>`);
+
+                $('#tcPreviewArea').addClass('visible');
+                $('html, body').animate({ scrollTop: $('#tcPreviewArea').offset().top - 80 }, 400);
+            }
+
+            $('#btnPrintTC').on('click', function () {
+                const printContent = document.getElementById('tcPrintArea').innerHTML;
+                const printWin = window.open('', '_blank');
+                printWin.document.write(`<!DOCTYPE html><html><head><title>Transfer Certificate - ${school.school_name || ''}</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Times New Roman', serif; padding: 12mm; }
+                    .tc-document { width: 100%; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
+                    .tc-border-inner { border: 1px solid #333; margin: 4px; padding: 20px 24px; }
+                    .tc-doc-header { text-align: center; margin-bottom: 14px; border-bottom: 1.5px solid #333; padding-bottom: 12px; }
+                    .tc-school-name { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #111; margin: 0; }
+                    .tc-tagline { font-size: 9px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+                    .tc-address { font-size: 9px; color: #555; margin-top: 4px; }
+                    .tc-doc-title { font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-top: 10px; color: #111; }
+                    .tc-doc-meta { display: flex; justify-content: space-between; font-size: 10.5px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px dotted #aaa; }
+                    .tc-doc-meta span { font-weight: 600; color: #333; }
+                    .tc-doc-row { display: flex; font-size: 11px; padding: 4px 0; border-bottom: 1px dotted #ccc; line-height: 1.6; }
+                    .tc-doc-row .tc-sno { width: 28px; font-weight: 700; color: #333; flex-shrink: 0; }
+                    .tc-doc-row .tc-label { width: 240px; font-weight: 600; color: #222; flex-shrink: 0; }
+                    .tc-doc-row .tc-value { flex: 1; color: #333; font-weight: 500; }
+                    .tc-doc-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding-top: 10px; }
+                    .tc-doc-sign { text-align: center; }
+                    .tc-sign-line { width: 90px; border-top: 1px solid #333; margin: 0 auto 3px; }
+                    .tc-doc-sign span { font-size: 9px; font-weight: 700; color: #222; display: block; }
+                    .tc-doc-date { font-size: 10px; color: #333; font-weight: 600; }
+                    .tc-doc-note { font-size: 8px; color: #555; text-align: center; margin-top: 12px; font-style: italic; border-top: 1px dashed #aaa; padding-top: 6px; }
+                    @page { size: A4 portrait; margin: 12mm; }
+                </style></head><body>${printContent}</body></html>`);
+                printWin.document.close();
+                printWin.focus();
+                setTimeout(() => { printWin.print(); }, 500);
+            });
+        });
+    </script>
+</body>
+
+</html>

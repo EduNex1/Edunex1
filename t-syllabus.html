@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Syllabus — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Syllabus</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>Academics > Syllabus</li></ul>
+                </div>
+            
+            
+<div class="chart-card">
+    <div class="chart-card-header"><i class="fas fa-book-open"></i> Syllabus</div>
+    <div class="chart-card-body">
+        <div id="syllabusArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+    </div>
+</div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('t-syllabus');
+        try {
+            const syllabi = await getSyllabi() || [];
+            if (!syllabi.length) { $('#syllabusArea').html('<p style="text-align:center;color:#888;">No syllabus available.</p>'); return; }
+            const colors = ['#ef6c00','#1565c0','#2e7d32','#283593','#00695c','#c62828','#7b1fa2'];
+            const bgs = ['#fff3e0','#e3f2fd','#e8f5e9','#e8eaf6','#e0f2f1','#ffebee','#f3e5f5'];
+            let html = '';
+            syllabi.forEach((item, index) => {
+                const color = colors[index % colors.length];
+                const bg = bgs[index % bgs.length];
+                html += `<div style="background:${bg};border-radius:8px;padding:14px 16px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:${color};font-size:14px;">${item.subject_name || item.title || '-'}</strong></div><div style="font-size:12px;color:#555;margin-top:6px;">${item.description || item.content || ''}</div></div>`;
+            });
+            $('#syllabusArea').html(html);
+        } catch (e) {
+            console.error(e);
+            $('#syllabusArea').html('<p style="text-align:center;color:#c62828;">Failed to load syllabus.</p>');
+        }
+    });
+    </script>
+</body>
+</html>

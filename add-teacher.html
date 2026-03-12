@@ -1,0 +1,174 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Add Teacher</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/datepicker.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Teacher</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Add New Teacher</li>
+                    </ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-chalkboard-teacher"></i> Add New Teacher</h3>
+                            </div>
+                        </div>
+                        <form class="new-added-form">
+                            <div class="row">
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>First Name *</label>
+                                    <input type="text" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Last Name *</label>
+                                    <input type="text" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Gender *</label>
+                                    <select class="select2">
+                                        <option value="">Please Select Gender *</option>
+                                        <option value="1">Male</option>
+                                        <option value="2">Female</option>
+                                        <option value="3">Others</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Date Of Birth *</label>
+                                    <input type="text" placeholder="dd/mm/yyyy" class="form-control air-datepicker">
+                                    <i class="far fa-calendar-alt"></i>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>ID No</label>
+                                    <input type="text" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Blood Group *</label>
+                                    <select class="select2">
+                                        <option value="">Please Select Group *</option>
+                                        <option value="1">A+</option>
+                                        <option value="2">A-</option>
+                                        <option value="3">B+</option>
+                                        <option value="3">B-</option>
+                                        <option value="3">O+</option>
+                                        <option value="3">O-</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Religion *</label>
+                                    <select class="select2">
+                                        <option value="">Please Select Religion *</option>
+                                        <option value="1">Islam</option>
+                                        <option value="2">Hindu</option>
+                                        <option value="3">Christian</option>
+                                        <option value="3">Buddish</option>
+                                        <option value="3">Others</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>E-Mail</label>
+                                    <input type="email" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Class *</label>
+                                    <select class="select2">
+                                        <option value="">Please Select Class *</option>
+                                        <option value="1">Play</option>
+                                        <option value="2">Nursery</option>
+                                        <option value="3">One</option>
+                                        <option value="3">Two</option>
+                                        <option value="3">Three</option>
+                                        <option value="3">Four</option>
+                                        <option value="3">Five</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Section *</label>
+                                    <select class="select2">
+                                        <option value="">Please Select Section *</option>
+                                        <option value="1">Pink</option>
+                                        <option value="2">Blue</option>
+                                        <option value="3">Bird</option>
+                                        <option value="3">Rose</option>
+                                        <option value="3">Red</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Address</label>
+                                    <input type="text" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                                    <label>Phone</label>
+                                    <input type="text" placeholder="" class="form-control">
+                                </div>
+                                <div class="col-lg-6 col-12 form-group">
+                                    <label>Short BIO</label>
+                                    <textarea class="textarea form-control" name="message" id="form-message" cols="10"
+                                        rows="9"></textarea>
+                                </div>
+                                <div class="col-lg-6 col-12 form-group mg-t-30">
+                                    <label class="text-dark-medium">Upload Student Photo (150px X 150px)</label>
+                                    <input type="file" class="form-control-file">
+                                </div>
+                                <div class="col-12 form-group mg-t-8">
+                                    <button type="submit"
+                                        class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+                                    <button type="reset"
+                                        class="btn-fill-lg bg-blue-dark btn-hover-yellow">Reset</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/datepicker.min.js"></script>
+    <script src="js/jquery.smoothscroll.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(document).ready(function () { initPage('add-teacher'); });
+    </script>
+</body>
+
+</html>

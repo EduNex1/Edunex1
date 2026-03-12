@@ -1,0 +1,235 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>All Books — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}
+        .action-btn-edit{background:#fff3e0;color:#ef6c00}.action-btn-edit:hover{background:#ef6c00;color:#fff}
+        .action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+        .type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block}
+        .type-course{background:#e3f2fd;color:#0d47a1}
+        .type-school{background:#e8f5e9;color:#1b5e20}
+        .type-comic{background:#fff3e0;color:#e65100}
+        .type-reference{background:#ede7f6;color:#311b92}
+        .type-magazine{background:#fce4ec;color:#880e4f}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Library</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li>All Books</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-book"></i> All Books</h3></div></div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Enter Keyword</label>
+                                    <input type="text" class="form-control" id="fKeyword" placeholder="Search by title, author, ISBN...">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Select Book Type</label>
+                                    <select class="form-control" id="fType"><option value="">— All Types —</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-5 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchBooks()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetFilter()"><i class="fas fa-redo"></i> Reset</button>
+                                    <a href="/library-add-book" class="btn btn-sm" style="background:#042954;color:#fff;font-size:12px;padding:7px 16px;"><i class="fas fa-plus"></i> Add Book</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Book List -->
+                        <div class="table-card">
+                            <div class="table-responsive" style="padding:0 2px 10px;">
+                                <table class="list-table" id="bookTable">
+                                    <thead><tr>
+                                        <th>Book ID/No.</th><th>Book Title</th><th>No. of Books</th><th>Issued</th>
+                                        <th>Book Type</th><th>Author/Writer</th><th>ISBN No.</th><th>Action</th>
+                                    </tr></thead>
+                                    <tbody id="bookBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editBookModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#0d1b4a;color:#fff;padding:10px 16px;">
+                    <h6 class="modal-title" style="font-size:13px;font-weight:700;">Edit Book</h6>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="editModalBody"></div>
+                <div class="modal-footer" style="padding:8px 16px;">
+                    <button class="btn btn-sm" style="background:#042954;color:#fff;font-size:13px;" id="btnSaveEdit">Save Changes</button>
+                    <button class="btn btn-sm btn-light" data-dismiss="modal" style="font-size:13px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function() {
+        initPage('library-books');
+
+        let bookTypes = [], booksCache = [];
+        try { [bookTypes, booksCache] = await Promise.all([getMasterData('book_types'), getBooks()]); } catch(e) { console.error('Failed to load data', e); }
+
+        // Populate type filter
+        bookTypes.forEach(t => $('#fType').append(`<option value="${t.id}">${t.name}</option>`));
+
+        let editId = null;
+
+        function getTypeName(typeId) {
+            const t = bookTypes.find(x => x.id === parseInt(typeId));
+            return t ? t.name : null;
+        }
+
+        function typeBadge(typeId) {
+            const name = getTypeName(typeId);
+            if (!name) return '—';
+            const cls = {'Course Book':'type-course','School Book':'type-school','Comic Book':'type-comic','Reference Book':'type-reference','Magazine':'type-magazine'}[name] || 'type-course';
+            return `<span class="type-badge ${cls}">${name}</span>`;
+        }
+
+        function loadTable(list) {
+            const data = list || booksCache;
+            const rows = data.map(b => {
+                return `<tr>
+                    <td><strong>${b.book_no || ''}</strong></td>
+                    <td>${b.title}</td>
+                    <td class="text-center">${b.quantity || 0}</td>
+                    <td class="text-center">${(b.quantity||0) - (b.available||0)}</td>
+                    <td>${typeBadge(b.type_id)}</td>
+                    <td>${b.author || ''}</td>
+                    <td><code style="font-size:11px;color:#555;">${b.isbn || ''}</code></td>
+                    <td>
+                        <button class="action-btn action-btn-edit" title="Edit" onclick="editBook(${b.id})"><i class="fas fa-pen"></i></button>
+                        <button class="action-btn action-btn-delete" title="Delete" onclick="removeBook(${b.id})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+            $('#bookBody').html(rows || '<tr><td colspan="8" class="text-center text-muted" style="padding:30px;">No books found</td></tr>');
+        }
+
+        window.searchBooks = function() {
+            const kw = $('#fKeyword').val().trim().toLowerCase();
+            const typeId = parseInt($('#fType').val()) || 0;
+            let filtered = booksCache;
+            if (kw) filtered = filtered.filter(b => (b.title||'').toLowerCase().includes(kw) || (b.author||'').toLowerCase().includes(kw) || (b.isbn||'').includes(kw) || (b.book_no||'').toLowerCase().includes(kw));
+            if (typeId) filtered = filtered.filter(b => b.type_id === typeId);
+            loadTable(filtered);
+        };
+
+        window.resetFilter = function() {
+            $('#fKeyword').val(''); $('#fType').val('');
+            loadTable();
+        };
+
+        window.editBook = function(id) {
+            editId = id;
+            const b = booksCache.find(x => x.id === id);
+            if (!b) return;
+            const typeOpts = bookTypes.map(t => `<option value="${t.id}" ${t.id===b.type_id?'selected':''}>${t.name}</option>`).join('');
+            $('#editModalBody').html(`
+                <div class="row">
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Book No.</label><input class="form-control" id="eBookNo" value="${b.book_no||''}"></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">ISBN</label><input class="form-control" id="eIsbn" value="${b.isbn||''}"></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Book Type</label><select class="form-control" id="eType"><option value="">— Select —</option>${typeOpts}</select></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Author</label><input class="form-control" id="eAuthor" value="${b.author||''}"></div>
+                    <div class="col-md-8 mb-2"><label class="mb-1" style="font-weight:600;">Title</label><input class="form-control" id="eTitle" value="${b.title}"></div>
+                    <div class="col-md-4 mb-2"><label class="mb-1" style="font-weight:600;">Publisher</label><input class="form-control" id="ePub" value="${b.publisher||''}"></div>
+                    <div class="col-md-3 mb-2"><label class="mb-1" style="font-weight:600;">Cost (₹)</label><input type="number" class="form-control" id="eCost" value="${b.cost||0}"></div>
+                    <div class="col-md-3 mb-2"><label class="mb-1" style="font-weight:600;">No. of Books</label><input type="number" class="form-control" id="eCopies" value="${b.quantity||0}"></div>
+                    <div class="col-md-2 mb-2"><label class="mb-1" style="font-weight:600;">Rack No.</label><input class="form-control" id="eRack" value="${b.rack_no||''}"></div>
+                </div>
+            `);
+            $('#editBookModal').modal('show');
+        };
+
+        $('#btnSaveEdit').on('click', async function() {
+            if (!editId) return;
+            try {
+                await updateBook(editId, {
+                    book_no: $('#eBookNo').val().trim(),
+                    isbn: $('#eIsbn').val().trim(),
+                    type_id: parseInt($('#eType').val()) || 0,
+                    author: $('#eAuthor').val().trim(),
+                    title: $('#eTitle').val().trim(),
+                    publisher: $('#ePub').val().trim(),
+                    cost: parseInt($('#eCost').val()) || 0,
+                    quantity: parseInt($('#eCopies').val()) || 0,
+                    rack_no: $('#eRack').val().trim()
+                });
+                booksCache = await getBooks();
+                $('#editBookModal').modal('hide');
+                loadTable();
+                showToast('Book updated successfully', 'success');
+            } catch(e) { showToast('Error updating book', 'error'); }
+        });
+
+        window.removeBook = async function(id) {
+            if (!confirm('Delete this book?')) return;
+            try {
+                await deleteBook(id);
+                booksCache = booksCache.filter(x => x.id !== id);
+                loadTable();
+                showToast('Book deleted', 'success');
+            } catch(e) { showToast('Error deleting book', 'error'); }
+        };
+
+        loadTable();
+    });
+    </script>
+</body>
+</html>

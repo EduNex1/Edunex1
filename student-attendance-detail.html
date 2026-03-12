@@ -1,0 +1,578 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Student Attendance Detail — EduNex1</title>
+    <meta name="description" content="Detailed student attendance report">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ===== BENTO GRID ===== */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .bento-cell {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: box-shadow 0.2s;
+        }
+
+        .bento-cell:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Profile cell — spans 2 cols */
+        .bento-profile {
+            grid-column: 1 / 3;
+            flex-direction: row;
+            align-items: center;
+            gap: 18px;
+            background: linear-gradient(135deg, #0d1b4a 0%, #1a3a7a 100%);
+            color: #fff;
+            border: none;
+        }
+
+        .bento-profile-photo {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .bento-profile-info h4 {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 4px;
+            color: #fff;
+        }
+
+        .bento-profile-info .bento-meta {
+            font-size: 12px;
+            opacity: 0.75;
+            margin: 0 0 6px;
+        }
+
+        .bento-profile-info .bento-contact {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .bento-profile-info .bento-contact i {
+            margin-right: 4px;
+            font-size: 10px;
+        }
+
+        /* Ring cell */
+        .bento-ring {
+            grid-column: 3 / 4;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px 16px;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .ring-label {
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        /* Stat cells */
+        .bento-stat {
+            text-align: center;
+            padding: 18px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bento-stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .bento-stat-label {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+        }
+
+        .bento-stat-icon {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 28px;
+            opacity: 0.06;
+        }
+
+        /* Calendar grid */
+        .att-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 12px;
+        }
+
+        .att-cal-head {
+            font-size: 10px;
+            font-weight: 700;
+            color: #888;
+            text-align: center;
+            padding: 4px 0;
+            text-transform: uppercase;
+        }
+
+        .att-cal-day {
+            text-align: center;
+            padding: 6px 2px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: default;
+            position: relative;
+        }
+
+        .att-cal-day.present {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .att-cal-day.absent {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .att-cal-day.leave {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .att-cal-day.empty {
+            background: transparent;
+        }
+
+        .att-cal-day.today {
+            border: 2px solid #304ffe;
+        }
+
+        /* Day log table */
+        .day-log-table td {
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+
+        .day-log-table th {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            padding: 6px 8px;
+            text-transform: uppercase;
+        }
+
+        .day-log-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .badge-present {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-absent {
+            background: #ffebee;
+            color: #c62828;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-leave {
+            background: #fff3e0;
+            color: #ef6c00;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Section heading */
+        .section-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d1b4a;
+            margin-bottom: 12px;
+        }
+
+        .section-heading i {
+            color: #304ffe;
+            margin-right: 5px;
+        }
+
+        /* Calendar legend */
+        .cal-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .cal-legend span {
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cal-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .bento-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .bento-profile {
+                grid-column: 1 / -1;
+            }
+
+            .bento-ring {
+                grid-column: auto;
+                grid-row: auto;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .bento-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .bento-profile {
+                grid-column: 1 / -1;
+                padding: 14px;
+                gap: 12px;
+            }
+
+            .bento-profile-photo {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+            }
+
+            .bento-profile-info h4 {
+                font-size: 15px;
+            }
+
+            .bento-ring {
+                grid-column: 1 / -1;
+                padding: 16px;
+            }
+
+            .progress-ring {
+                width: 90px;
+                height: 90px;
+            }
+
+            .progress-ring .ring-text {
+                font-size: 20px;
+            }
+
+            .bento-stat-number {
+                font-size: 24px;
+            }
+
+            .att-calendar {
+                gap: 2px;
+            }
+
+            .att-cal-day {
+                font-size: 9px;
+                padding: 4px 1px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="student-attendance-report.html">Attendance Report</a></li>
+                        <li>Detail</li>
+                    </ul>
+                </div>
+
+                <!-- Bento Grid: Profile + Stats -->
+                <div class="bento-grid" id="bentoGrid"></div>
+
+                <!-- Attendance Calendar -->
+                <div class="card height-auto mg-b-15">
+                    <div class="card-body">
+                        <h6 class="section-heading"><i class="fas fa-calendar-alt"></i> Attendance Calendar</h6>
+                        <div id="calendarArea"></div>
+                        <div class="cal-legend">
+                            <span><span class="cal-legend-dot" style="background:#e8f5e9;"></span> Present</span>
+                            <span><span class="cal-legend-dot" style="background:#ffebee;"></span> Absent</span>
+                            <span><span class="cal-legend-dot" style="background:#fff3e0;"></span> Leave</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day-by-Day Log -->
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <h6 class="section-heading"><i class="fas fa-list"></i> Day-by-Day Log</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered day-log-table" id="dayLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Day</th>
+                                        <th>Status</th>
+                                        <th>Remark</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dayLogBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mg-t-15 mg-b-20">
+                    <a href="#" id="backBtn" class="btn-fill-lg btn-outline-navy" style="border-radius:8px;">
+                        <i class="fas fa-arrow-left mg-r-5"></i> Back to Report
+                    </a>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('student-attendance-report');
+
+            const params = new URLSearchParams(window.location.search);
+            const studentId = parseInt(params.get('id'));
+            const classId = parseInt(params.get('class'));
+            const section = params.get('section');
+            const fromDate = params.get('from');
+            const toDate = params.get('to');
+
+            if (!studentId || !fromDate || !toDate) { showToast('Invalid parameters', 'error'); return; }
+
+            let classCache = [], records = [], students = [];
+            try {
+                [classCache, records, students] = await Promise.all([
+                    getClasses(),
+                    getStudentAttendance({ student_id: studentId, from_date: fromDate, to_date: toDate }),
+                    getStudents({ class_id: classId, status: 'Active' })
+                ]);
+            } catch(e) {}
+
+            const student = students.find(s => s.id === studentId);
+            if (!student) { showToast('Student not found', 'error'); return; }
+
+            $('#backBtn').attr('href', `student-attendance-report.html?class=${classId}&section=${section}`);
+
+            const cls = classCache.find(c => c.id === student.class_id);
+
+            // Compute summary
+            const present = records.filter(r => r.status === 'P').length;
+            const absent = records.filter(r => r.status === 'A').length;
+            const leave = records.filter(r => r.status === 'L').length;
+            const total = records.length;
+            const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+            const pctColor = percentage >= 80 ? '#2e7d32' : percentage >= 60 ? '#ef6c00' : '#c62828';
+            const circumference = 2 * Math.PI * 44;
+            const offset = circumference - (percentage / 100) * circumference;
+
+            $('#bentoGrid').html(`
+                <div class="bento-cell bento-profile">
+                    <img src="${student.photo_url || 'img/default-student.png'}" class="bento-profile-photo" alt="${student.name}">
+                    <div class="bento-profile-info">
+                        <h4>${student.name}</h4>
+                        <p class="bento-meta">${student.admission_no || ''} &bull; Class ${cls ? cls.name : ''} — ${student.section || ''} &bull; Roll No. ${student.roll_no || '-'}</p>
+                        <div class="bento-contact">
+                            <span><i class="fas fa-user"></i>${student.father_name || ''}</span>
+                            <span><i class="fas fa-phone"></i>${student.phone || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bento-cell bento-ring">
+                    <div class="progress-ring">
+                        <svg width="110" height="110">
+                            <circle cx="55" cy="55" r="44" stroke="#f0f0f0" stroke-width="8" fill="none"/>
+                            <circle cx="55" cy="55" r="44" stroke="${pctColor}" stroke-width="8" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+                        </svg>
+                        <div class="ring-text" style="color:${pctColor};">${percentage}%</div>
+                    </div>
+                    <div class="ring-label">Attendance</div>
+                </div>
+
+                <div class="bento-cell bento-stat stat-days">
+                    <div class="bento-stat-number" style="color:#304ffe;">${total}</div>
+                    <div class="bento-stat-label">Working Days</div>
+                    <i class="fas fa-calendar-day bento-stat-icon"></i>
+                </div>
+
+                <div class="bento-cell bento-stat stat-present">
+                    <div class="bento-stat-number" style="color:#2e7d32;">${present}</div>
+                    <div class="bento-stat-label">Present</div>
+                    <i class="fas fa-check-circle bento-stat-icon"></i>
+                </div>
+
+                <div class="bento-cell bento-stat stat-absent">
+                    <div class="bento-stat-number" style="color:#c62828;">${absent + leave}</div>
+                    <div class="bento-stat-label">Absent / Leave</div>
+                    <i class="fas fa-times-circle bento-stat-icon"></i>
+                </div>
+            `);
+
+            // Calendar
+            const statusMap = { P: 'present', A: 'absent', L: 'leave', HD: 'leave' };
+            const statusLabel = { P: 'Present', A: 'Absent', L: 'Leave', HD: 'Half Day' };
+            const recordMap = {};
+            records.forEach(r => { recordMap[r.date] = r; });
+
+            const fDate = new Date(fromDate);
+            const tDate = new Date(toDate);
+            let calHtml = '';
+            let currentMonth = new Date(fDate.getFullYear(), fDate.getMonth(), 1);
+
+            while (currentMonth <= tDate) {
+                const monthName = currentMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                calHtml += `<h6 style="font-weight:600;font-size:13px;color:#333;margin:12px 0 4px;">${monthName}</h6>`;
+                calHtml += '<div class="att-calendar">';
+                ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => { calHtml += `<div class="att-cal-head">${d}</div>`; });
+
+                const year = currentMonth.getFullYear();
+                const month = currentMonth.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const todayStr = new Date().toISOString().split('T')[0];
+
+                const dayOffset = firstDay === 0 ? 6 : firstDay - 1;
+                for (let i = 0; i < dayOffset; i++) { calHtml += '<div class="att-cal-day empty"></div>'; }
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const rec = recordMap[dateStr];
+                    let cls2 = 'empty';
+                    if (rec) cls2 = statusMap[rec.status] || 'empty';
+                    const isToday = dateStr === todayStr ? ' today' : '';
+                    const isInRange = dateStr >= fromDate && dateStr <= toDate;
+                    if (!isInRange) cls2 = 'empty';
+                    calHtml += `<div class="att-cal-day ${cls2}${isToday}" title="${dateStr}: ${rec ? (statusLabel[rec.status] || rec.status) : 'N/A'}">${d}</div>`;
+                }
+                calHtml += '</div>';
+                currentMonth = new Date(year, month + 1, 1);
+            }
+            $('#calendarArea').html(calHtml);
+
+            // Day-by-day log
+            let logHtml = '';
+            const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
+            sortedRecords.forEach(r => {
+                const d = new Date(r.date);
+                const dayStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const dayName = d.toLocaleDateString('en-IN', { weekday: 'short' });
+                const label = statusLabel[r.status] || r.status;
+                const badgeClass = r.status === 'P' ? 'present' : r.status === 'A' ? 'absent' : 'leave';
+                logHtml += `<tr>
+                    <td style="font-weight:600;">${dayStr}</td>
+                    <td>${dayName}</td>
+                    <td><span class="badge-${badgeClass}">${label}</span></td>
+                    <td style="color:#888;">${r.remark || '-'}</td>
+                </tr>`;
+            });
+            if (!sortedRecords.length) {
+                logHtml = '<tr><td colspan="4" class="text-center" style="padding:20px;color:#999;">No attendance records found</td></tr>';
+            }
+            $('#dayLogBody').html(logHtml);
+        });
+    </script>
+</body>
+
+</html>

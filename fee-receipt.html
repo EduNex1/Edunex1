@@ -1,0 +1,250 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Receipt — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control, .form-select { font-size: 12px; height: 36px; }
+        .r-table { width: 100%; border-collapse: collapse; }
+        .r-table thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 8px 10px; text-align: left; letter-spacing: 0.3px; white-space: nowrap; }
+        .r-table tbody td { font-size: 12px; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .r-table tbody tr:hover td { background: #f5f7ff; }
+        .r-table .text-right { text-align: right; }
+        .badge-mode { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+        .badge-cash { background: #e8f5e9; color: #2e7d32; }
+        .badge-online { background: #e3f2fd; color: #1565c0; }
+        .badge-bank { background: #fff3e0; color: #e65100; }
+        .badge-cheque { background: #f3e5f5; color: #7b1fa2; }
+        .badge-dd { background: #fce4ec; color: #c62828; }
+        .action-btn { border: none; background: none; cursor: pointer; font-size: 14px; padding: 4px 6px; border-radius: 4px; }
+        .action-btn:hover { background: #f0f0f0; }
+        .action-print { color: #0d1b4a; }
+        .action-delete { color: #e53935; }
+        .total-bar { background: #f5f7ff; border: 1px solid #e8eaf6; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 20px; }
+        .total-bar .t-item label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; display: block; }
+        .total-bar .t-item .t-val { font-size: 16px; font-weight: 700; color: #0d1b4a; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Fee Receipt</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-receipt"></i> Fee Receipt</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass"><option value="">All Classes</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">All Sections</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Fee Month</label>
+                                    <select class="form-control" id="fMonth"><option value="">All Months</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Payment Mode</label>
+                                    <select class="form-control" id="fMode"><option value="">All Modes</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date From</label>
+                                    <input type="date" class="form-control" id="fDateFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date To</label>
+                                    <input type="date" class="form-control" id="fDateTo">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Receipt No.</label>
+                                    <input type="text" class="form-control" id="fReceipt" placeholder="e.g. REC-1001">
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receipt List -->
+                        <div id="receiptList">
+                            <div class="empty-state"><i class="fas fa-filter"></i>Apply filters and click Search to view receipts</div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(document).ready(async function () {
+            if (typeof initPage === 'function') initPage('fee-receipt');
+
+            // Populate filters from API
+            try {
+                const classes = await getClasses();
+                classes.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+            } catch(e) {}
+            try {
+                const sections = await getSections();
+                sections.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+            } catch(e) {}
+            const FEE_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            FEE_MONTHS.forEach(m => $('#fMonth').append(`<option value="${m}">${m}</option>`));
+            const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
+            PAYMENT_MODES.forEach(m => $('#fMode').append(`<option value="${m}">${m}</option>`));
+
+            renderList();
+
+            $('#btnSearch').on('click', renderList);
+            $('#btnReset').on('click', function () {
+                $('#fClass, #fSection, #fMonth, #fMode, #fReceipt, #fDateFrom, #fDateTo').val('');
+                renderList();
+            });
+
+            async function renderList() {
+                try {
+                    const filters = {};
+                    const fMonth = $('#fMonth').val();
+                    if (fMonth) filters.month = fMonth;
+
+                    let deps = await getFeeDeposits(filters);
+
+                    const fReceipt = ($('#fReceipt').val() || '').trim().toLowerCase();
+                    const fMode = $('#fMode').val();
+                    const fDateFrom = $('#fDateFrom').val();
+                    const fDateTo = $('#fDateTo').val();
+                    const fClass = $('#fClass').val();
+                    const fSection = $('#fSection').val();
+
+                    if (fReceipt) deps = deps.filter(d => (d.receipt_no||'').toLowerCase().includes(fReceipt));
+                    if (fMode) deps = deps.filter(d => d.payment_mode === fMode);
+                    if (fDateFrom) deps = deps.filter(d => d.date >= fDateFrom);
+                    if (fDateTo) deps = deps.filter(d => d.date <= fDateTo);
+                    if (fClass) deps = deps.filter(d => d.class_id === parseInt(fClass));
+
+                    deps.sort((a, b) => (b.date||'').localeCompare(a.date||''));
+
+                    if (!deps.length) {
+                        $('#receiptList').html('<div class="empty-state"><i class="fas fa-inbox"></i>No receipts found</div>');
+                        return;
+                    }
+
+                    let totalReceived = 0;
+                    let rows = '';
+                    deps.forEach((d, i) => {
+                        totalReceived += d.received_amount || 0;
+                        const modeBadge = getBadgeClass(d.payment_mode);
+                        rows += `<tr>
+                            <td style="font-weight:600;">${i + 1}</td>
+                            <td>${fmtDate(d.date)}</td>
+                            <td style="font-weight:600;color:#0d1b4a;">${d.receipt_no||''}</td>
+                            <td>${d.admission_no || '-'}</td>
+                            <td><div style="font-weight:600;">${d.student_name || '-'}</div></td>
+                            <td>${d.class_id || '-'}</td>
+                            <td>${d.month||''}</td>
+                            <td><span style="font-size:10px;color:#888;">by Admin</span></td>
+                            <td><span class="badge-mode ${modeBadge}">${d.payment_mode||''}</span></td>
+                            <td class="text-right" style="font-weight:700;">₹${(d.received_amount||0).toLocaleString('en-IN')}</td>
+                            <td>
+                                <button class="action-btn action-print" title="Print" onclick="printReceipt(${d.id})"><i class="fas fa-print"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+
+                    let html = `
+                        <div style="overflow-x:auto;">
+                        <table class="r-table">
+                            <thead><tr>
+                                <th>#</th><th>Date</th><th>Receipt No.</th><th>Adm No.</th><th>Student</th><th>Class</th><th>Month</th><th>Deposited</th><th>Mode</th><th class="text-right">Received</th><th>Action</th>
+                            </tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                        </div>
+                        <div class="total-bar">
+                            <div class="t-item"><label>Total Receipts</label><div class="t-val">${deps.length}</div></div>
+                            <div class="t-item"><label>Total Received</label><div class="t-val">₹${totalReceived.toLocaleString('en-IN')}</div></div>
+                        </div>`;
+                    $('#receiptList').html(html);
+                } catch(e) { $('#receiptList').html('<div class="empty-state">Error loading receipts</div>'); }
+            }
+
+            function getBadgeClass(mode) {
+                if (mode === 'Cash') return 'badge-cash';
+                if (mode === 'Online / UPI' || mode === 'UPI') return 'badge-online';
+                if (mode === 'Bank Transfer') return 'badge-bank';
+                if (mode === 'Cheque') return 'badge-cheque';
+                if (mode === 'DD') return 'badge-dd';
+                return 'badge-cash';
+            }
+
+            function fmtDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr);
+                return d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+            }
+
+            window.printReceipt = function (id) {
+                sessionStorage.setItem('receiptPrintId', String(id));
+                window.open('/receipt-print', '_blank');
+            };
+        });
+    </script>
+</body>
+
+</html>

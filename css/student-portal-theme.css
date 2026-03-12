@@ -1,0 +1,350 @@
+:root {
+    --student-bg: #f4f7fb;
+    --student-surface: rgba(255, 255, 255, 0.92);
+    --student-border: #dfe6f2;
+    --student-border-strong: #c8d4e7;
+    --student-text: #10224d;
+    --student-muted: #6f7b91;
+    --student-accent: #0d1b4a;
+    --student-accent-strong: #244a95;
+    --student-accent-soft: #eef3ff;
+    --student-shadow: 0 14px 34px rgba(13, 27, 74, 0.08);
+    --student-radius: 16px;
+}
+
+body {
+    background:
+        radial-gradient(circle at top right, rgba(13, 27, 74, 0.08), transparent 28%),
+        radial-gradient(circle at top left, rgba(51, 92, 173, 0.08), transparent 24%),
+        linear-gradient(180deg, #f8fbff 0%, var(--student-bg) 100%);
+    color: var(--student-text);
+}
+
+.dashboard-content-one {
+    padding-bottom: 30px;
+}
+
+.breadcrumbs-area {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(243,247,255,0.92));
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius);
+    box-shadow: var(--student-shadow);
+    padding: 18px 22px;
+    margin-bottom: 18px;
+}
+
+.breadcrumbs-area h3 {
+    color: var(--student-text);
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+}
+
+.breadcrumbs-area ul li,
+.breadcrumbs-area ul li a {
+    font-size: 12px;
+    color: var(--student-muted);
+}
+
+.chart-card,
+.card-lite,
+.panel,
+.child-detail-section,
+.month-tile,
+.fee-box,
+.pay-row,
+.hw-item,
+.tp-item,
+.detail-box,
+.detail-item,
+.info-box,
+.final-box,
+.s-item {
+    background: var(--student-surface);
+    border: 1px solid var(--student-border);
+    border-radius: var(--student-radius);
+    box-shadow: var(--student-shadow);
+    overflow: hidden;
+}
+
+.chart-card-header,
+.card-head,
+.panel-head {
+    background: linear-gradient(135deg, #ffffff 0%, #f5f8ff 100%);
+    color: var(--student-text);
+    border-bottom: 1px solid var(--student-border);
+    padding: 15px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
+.chart-card-header i,
+.card-head i,
+.panel-head i {
+    color: var(--student-accent-strong);
+}
+
+.chart-card-body,
+.card-body-lite,
+.panel-body {
+    padding: 18px;
+}
+
+.form-control,
+.form-select,
+.att-input,
+.sal-input,
+select,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="password"],
+input[type="search"] {
+    min-height: 46px !important;
+    height: 46px !important;
+    padding: 0 16px !important;
+    font-size: 13px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--student-border-strong) !important;
+    background: rgba(255,255,255,0.96) !important;
+    color: var(--student-text) !important;
+    box-shadow: none;
+}
+
+select.form-control,
+select.form-select,
+select {
+    padding-right: 42px !important;
+    line-height: 44px !important;
+}
+
+textarea.form-control,
+textarea {
+    min-height: 120px !important;
+    height: auto;
+    padding: 12px 16px !important;
+    line-height: 1.5;
+    border-radius: 14px !important;
+    border: 1px solid var(--student-border-strong) !important;
+    background: rgba(255,255,255,0.96) !important;
+    color: var(--student-text) !important;
+}
+
+.form-control:focus,
+.form-select:focus,
+.att-input:focus,
+.sal-input:focus,
+select:focus,
+textarea:focus,
+input:focus {
+    border-color: #5fa8e0;
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.12);
+}
+
+.welcome-banner,
+.result-header,
+.final-box {
+    border-radius: 18px;
+    box-shadow: var(--student-shadow);
+}
+
+.welcome-banner {
+    background:
+        radial-gradient(circle at 88% 20%, rgba(255, 217, 102, 0.22), transparent 18%),
+        linear-gradient(135deg, #0d1b4a 0%, #17306f 48%, #2f5bb3 100%);
+}
+
+.result-header {
+    background:
+        radial-gradient(circle at 85% 25%, rgba(255,255,255,0.15), transparent 16%),
+        linear-gradient(135deg, #10224d 0%, #17306f 48%, #2f5bb3 100%);
+}
+
+.stat-card,
+.quick-item,
+.month-tile,
+.fee-box,
+.pay-row,
+.hw-item,
+.tp-item,
+.detail-box,
+.detail-item,
+.info-box,
+.s-item {
+    border-radius: 14px;
+    border: 1px solid var(--student-border);
+    box-shadow: none;
+}
+
+.stat-card,
+.quick-item,
+.month-tile,
+.fee-box,
+.pay-row,
+.hw-item,
+.tp-item,
+.detail-box,
+.detail-item,
+.info-box,
+.s-item {
+    background: rgba(255,255,255,0.95);
+}
+
+.stat-card:hover,
+.quick-item:hover,
+.month-tile:hover,
+.pay-row:hover,
+.hw-item:hover,
+.tp-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(13, 27, 74, 0.08);
+}
+
+.quick-item {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+    box-shadow: var(--student-shadow);
+}
+
+.quick-item:hover {
+    background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+}
+
+.badge,
+.grade-badge,
+.mt-badge {
+    border-radius: 999px;
+}
+
+.recent-table,
+.r-table,
+.request-table,
+.sal-table,
+.fee-tbl,
+.list-table,
+.due-table,
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.recent-table thead th,
+.r-table thead th,
+.request-table thead th,
+.sal-table thead th,
+.fee-tbl thead th,
+.list-table thead th,
+.due-table thead th,
+.table thead th {
+    background: linear-gradient(135deg, #ffffff 0%, #f5f8ff 100%);
+    color: var(--student-text);
+    border: none;
+    border-bottom: 1px solid var(--student-border);
+}
+
+.recent-table thead th:first-child,
+.r-table thead th:first-child,
+.request-table thead th:first-child,
+.sal-table thead th:first-child,
+.fee-tbl thead th:first-child,
+.list-table thead th:first-child,
+.due-table thead th:first-child,
+.table thead th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.recent-table thead th:last-child,
+.r-table thead th:last-child,
+.request-table thead th:last-child,
+.sal-table thead th:last-child,
+.fee-tbl thead th:last-child,
+.list-table thead th:last-child,
+.due-table thead th:last-child,
+.table thead th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.recent-table tbody td,
+.r-table tbody td,
+.request-table tbody td,
+.sal-table tbody td,
+.fee-tbl tbody td,
+.list-table tbody td,
+.due-table tbody td,
+.table tbody td {
+    background: rgba(255,255,255,0.94);
+    border-top: 1px solid #edf3fb;
+    color: var(--student-text);
+}
+
+.recent-table tbody tr:hover td,
+.r-table tbody tr:hover td,
+.request-table tbody tr:hover td,
+.sal-table tbody tr:hover td,
+.list-table tbody tr:hover td,
+.due-table tbody tr:hover td,
+.table tbody tr:hover td {
+    background: #f7faff;
+}
+
+.btn,
+.btn-fill-lg,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-primary,
+.btn-secondary {
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.btn-fill-lg.bg-blue-dark,
+.btn-primary {
+    background: linear-gradient(135deg, #0d1b4a 0%, #244a95 100%);
+    border-color: transparent;
+    color: #fff;
+}
+
+.btn-fill-lg.bg-blue-dark:hover,
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0a163d 0%, #173571 100%);
+    color: #fff;
+}
+
+.btn-outline-primary {
+    border-color: #9ab0d7;
+    color: var(--student-accent);
+}
+
+.btn-outline-primary:hover {
+    background: #0d1b4a;
+    border-color: #0d1b4a;
+    color: #fff;
+}
+
+@media (max-width: 991px) {
+    .breadcrumbs-area {
+        padding: 16px 18px;
+    }
+
+    .chart-card-body,
+    .card-body-lite,
+    .panel-body {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 767px) {
+    .breadcrumbs-area h3 {
+        font-size: 20px;
+    }
+
+    .welcome-banner,
+    .result-header,
+    .final-box,
+    .chart-card,
+    .quick-item,
+    .stat-card {
+        border-radius: 16px;
+    }
+}

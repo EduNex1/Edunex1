@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fee Receipts — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .receipt-card {
+            background: #fff;
+            border: 1px solid #e8eaf6;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+        .receipt-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .receipt-header:hover { background: #f8f9ff; }
+        .receipt-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .receipt-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .receipt-info { flex: 1; }
+        .receipt-info .receipt-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d1b4a;
+        }
+        .receipt-info .receipt-meta {
+            font-size: 11px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .receipt-right { text-align: right; }
+        .receipt-right .receipt-amount {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2e7d32;
+        }
+        .receipt-right .receipt-mode {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .receipt-detail {
+            display: none;
+            border-top: 1px solid #e8eaf6;
+            padding: 16px;
+            background: #fafbff;
+        }
+        .receipt-detail.open { display: block; }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .detail-label { color: #555; }
+        .detail-row .detail-value { font-weight: 600; color: #0d1b4a; }
+        .detail-row.total { border-top: 2px solid #0d1b4a; margin-top: 6px; padding-top: 8px; }
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 767px) {
+            .receipt-header {
+                padding: 12px;
+                gap: 8px;
+            }
+            .receipt-left {
+                min-width: 0;
+                gap: 8px;
+            }
+            .receipt-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+            .receipt-info .receipt-title {
+                font-size: 12px;
+                word-break: break-word;
+            }
+            .receipt-info .receipt-meta {
+                font-size: 10px;
+            }
+            .receipt-right .receipt-amount {
+                font-size: 14px;
+            }
+            .receipt-detail {
+                padding: 12px;
+            }
+            .detail-row {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .receipt-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .receipt-right {
+                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .receipt-info .receipt-title {
+                font-size: 11px;
+            }
+            .receipt-right .receipt-amount {
+                font-size: 16px;
+            }
+            .detail-row {
+                font-size: 11px;
+                flex-direction: column;
+                gap: 2px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee Receipts</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Fee > Receipts</li></ul>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
+                    <div class="chart-card-body" style="padding:12px 16px;">
+                        <select id="childSelect" onchange="loadReceipts()" class="form-control" style="max-width:350px;"><option value="">— loading —</option></select>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header"><i class="fas fa-receipt"></i> Fee Receipts <span id="receiptCount" style="font-size:11px;color:#888;font-weight:400;margin-left:8px;"></span></div>
+                    <div class="chart-card-body" style="padding:12px;">
+                        <div id="receiptArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    const fmt = n => '\u20B9'+Number(n||0).toLocaleString('en-IN');
+
+    $(async function(){
+        initPage('p-fee-receipts');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect').empty();
+            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
+            if(children.length) loadReceipts();
+        } catch(e){ console.error(e); }
+    });
+
+    async function loadReceipts(){
+        const sid = $('#childSelect').val();
+        if(!sid){ $('#receiptArea').html('<p style="text-align:center;color:#888;">Select a child</p>'); return; }
+        try {
+            const deps = await getFeeDeposits({student_id: sid}) || [];
+            $('#receiptCount').text(deps.length ? deps.length+' receipt(s)' : '');
+            if(!deps.length){ $('#receiptArea').html('<p style="text-align:center;color:#888;">No receipts found.</p>'); return; }
+
+            let html = '';
+            deps.forEach((d, i) => {
+                const hasBalance = Number(d.balance||0) > 0;
+                html += `<div class="receipt-card" id="rc${d.id}">
+                    <div class="receipt-header" onclick="toggleDetail(${d.id})">
+                        <div class="receipt-left">
+                            <div class="receipt-icon"><i class="fas fa-receipt"></i></div>
+                            <div class="receipt-info">
+                                <div class="receipt-title">${d.month||'Fee Payment'} — #${d.receipt_no||d.id}</div>
+                                <div class="receipt-meta"><i class="fas fa-calendar-alt" style="margin-right:3px;"></i>${d.date||d.created_at||''} <i class="fas fa-chevron-down" style="margin-left:8px;font-size:9px;color:#aaa;" id="arrow${d.id}"></i></div>
+                            </div>
+                        </div>
+                        <div class="receipt-right">
+                            <div class="receipt-amount">${fmt(d.received_amount)}</div>
+                            <div class="receipt-mode">${d.payment_mode||'Cash'}${hasBalance?' | Bal: '+fmt(d.balance):''}</div>
+                        </div>
+                    </div>
+                    <div class="receipt-detail" id="detail${d.id}">
+                        <div id="detailContent${d.id}"><p style="color:#888;font-size:12px;">Loading details...</p></div>
+
+                    </div>
+                </div>`;
+            });
+            $('#receiptArea').html(html);
+        } catch(e){ console.error(e); }
+    }
+
+    const loadedDetails = {};
+    async function toggleDetail(id){
+        const el = $('#detail'+id);
+        const arrow = $('#arrow'+id);
+        if(el.hasClass('open')){
+            el.removeClass('open');
+            arrow.css('transform','rotate(0deg)');
+            return;
+        }
+        // Close others
+        $('.receipt-detail.open').removeClass('open');
+        $('[id^=arrow]').css('transform','rotate(0deg)');
+        el.addClass('open');
+        arrow.css('transform','rotate(180deg)');
+
+        if(loadedDetails[id]) return;
+        try {
+            const detail = await getFeeDeposit(id);
+            loadedDetails[id] = true;
+            let h = '';
+            if(detail.items && detail.items.length){
+                h += '<div style="font-weight:700;color:#0d1b4a;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Fee Particulars</div>';
+                detail.items.forEach(item => {
+                    h += `<div class="detail-row"><span class="detail-label">${item.particular_name||'Fee Item'}</span><span class="detail-value">${fmt(item.amount)}</span></div>`;
+                });
+            }
+            h += '<div style="font-weight:700;color:#0d1b4a;font-size:12px;margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Summary</div>';
+            const summaryFields = [
+                ['Total Amount', detail.total_amount],
+                ['Late Fee', detail.late_fee],
+                ['Concession', detail.concession],
+                ['Grand Total', detail.grand_total],
+                ['Received', detail.received_amount],
+                ['Balance', detail.balance]
+            ];
+            summaryFields.forEach(([label, val]) => {
+                if(Number(val||0) > 0 || label === 'Grand Total' || label === 'Received' || label === 'Balance'){
+                    const isTotal = label === 'Grand Total';
+                    h += `<div class="detail-row${isTotal?' total':''}"><span class="detail-label">${label}</span><span class="detail-value"${isTotal?' style="font-size:14px;"':''}>${fmt(val)}</span></div>`;
+                }
+            });
+            if(detail.remarks) h += `<div class="detail-row"><span class="detail-label">Remarks</span><span class="detail-value" style="font-weight:400;">${detail.remarks}</span></div>`;
+            if(detail.session) h += `<div class="detail-row"><span class="detail-label">Session</span><span class="detail-value" style="font-weight:400;">${detail.session}</span></div>`;
+            $('#detailContent'+id).html(h);
+        } catch(e){
+            $('#detailContent'+id).html('<p style="color:#c62828;font-size:12px;">Failed to load details.</p>');
+        }
+    }
+
+
+    </script>
+</body>
+</html>

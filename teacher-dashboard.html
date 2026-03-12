@@ -1,0 +1,255 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Teacher Dashboard — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+
+                <!-- Breadcrumbs -->
+                <div class="breadcrumbs-area">
+                    <h3>Dashboard</h3>
+                    <ul>
+                        <li><a href="/teacher-dashboard">Home</a></li>
+                        <li>Teacher Panel</li>
+                    </ul>
+                </div>
+
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <h4 class="dashboard-welcome-text"><i class="fas fa-chalkboard-teacher"
+                            style="margin-right:6px;color:#ffd54f;"></i> Welcome, Teacher!</h4>
+                    <p><span id="schoolNameBanner">Teacher Panel</span></p>
+                    <div class="welcome-date" id="todayDate"></div>
+                </div>
+
+                <!-- Stat Cards -->
+                <div class="stats-grid stats-grid-4">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-book-open"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">My Classes</div>
+                            <div class="stat-number" id="tMyClasses">0</div>
+                            <div class="stat-sub">Assigned classes</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">My Students</div>
+                            <div class="stat-number" id="tMyStudents">0</div>
+                            <div class="stat-sub">Across all classes</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon teal"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-number" id="tAttendance">0/0</div>
+                            <div class="stat-sub">Classes marked today</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-tasks"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Pending Tasks</div>
+                            <div class="stat-number" id="tPendingTasks">0</div>
+                            <div class="stat-sub">Homework to review</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Row: Schedule + Notices -->
+                <div class="row">
+                    <div class="col-lg-7 col-12">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><i class="fas fa-calendar-day"></i> Today's Schedule</div>
+                            <div class="chart-card-body" style="padding:8px 16px;">
+                                <table class="recent-table" id="scheduleTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Time</th>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scheduleBody">
+                                        <tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">Loading schedule...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 col-12">
+                        <div class="chart-card">
+                            <div class="chart-card-header"><i class="fas fa-bell"></i> Recent Notices</div>
+                            <div class="chart-card-body" style="padding:8px 16px;">
+                                <div id="noticeList"><span style="color:#888;font-size:12px;">Loading notices...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Access -->
+                <div class="chart-card">
+                    <div class="chart-card-header"><i class="fas fa-th-large"></i> Quick Access</div>
+                    <div class="chart-card-body">
+                        <div class="quick-grid">
+                            <a href="/t-mark-attendance" class="quick-item"><i class="fas fa-clipboard-check"></i><span>Attendance</span></a>
+                            <a href="/t-homework" class="quick-item"><i class="fas fa-pencil-alt"></i><span>Homework</span></a>
+                            <a href="/t-enter-marks" class="quick-item"><i class="fas fa-edit"></i><span>Enter Marks</span></a>
+                            <a href="/t-timetable" class="quick-item"><i class="fas fa-calendar-alt"></i><span>Timetable</span></a>
+                            <a href="/t-datesheet" class="quick-item"><i class="fas fa-file-alt"></i><span>Datesheet</span></a>
+                            <a href="/t-notice" class="quick-item"><i class="fas fa-bullhorn"></i><span>Notices</span></a>
+                            <a href="/t-my-profile" class="quick-item"><i class="fas fa-user"></i><span>My Profile</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            initPage('dashboard');
+            var now = new Date();
+            document.getElementById('todayDate').textContent = now.getDate() + ' ' + now.toLocaleString('en-IN', { month: 'long' }) + ' ' + now.getFullYear();
+            var user = typeof getUser === 'function' ? getUser() : null;
+            if (user) {
+                var bannerEl = document.getElementById('schoolNameBanner');
+                if (bannerEl && user.school_name) bannerEl.textContent = user.school_name + ' \u2014 Teacher Panel';
+                // Fetch teacher name from staff record
+                if (user.linked_id) {
+                    try {
+                        var staff = await getStaffMember(user.linked_id);
+                        if (staff && staff.name) {
+                            document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + staff.name + '!';
+                        }
+                    } catch(e) {}
+                }
+                if (!document.querySelector('.dashboard-welcome-text').textContent.includes(',')) {
+                    document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + (user.login_id) + '!';
+                }
+            }
+            loadTeacherDashboard();
+        });
+
+        async function loadTeacherDashboard() {
+            var user = typeof getUser === 'function' ? getUser() : null;
+            if (!user || !user.linked_id) {
+                document.getElementById('scheduleBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c62828;padding:16px;">Teacher account not linked. Contact admin.</td></tr>';
+                document.getElementById('noticeList').innerHTML = '<div style="text-align:center;color:#c62828;padding:16px;font-size:12px;">Teacher account not linked.</div>';
+                return;
+            }
+            try {
+                var perms = await getTeacherPermissions(user.linked_id) || [];
+                var uniqueAssignments = {};
+                perms.forEach(function (perm) {
+                    uniqueAssignments[perm.class_id + '::' + (perm.section_id || '')] = perm;
+                });
+                var assignmentList = Object.values(uniqueAssignments);
+                document.getElementById('tMyClasses').textContent = assignmentList.length;
+
+                var studentMap = {};
+                for (var i = 0; i < assignmentList.length; i += 1) {
+                    var perm = assignmentList[i];
+                    var sectionName = perm.section_name || '';
+                    var students = await getStudents({ class_id: perm.class_id, section: sectionName, status: 'Active' }) || [];
+                    students.forEach(function (student) { studentMap[student.id] = student; });
+                }
+                var studentIds = Object.keys(studentMap);
+                document.getElementById('tMyStudents').textContent = studentIds.length;
+
+                var today = new Date().toISOString().slice(0, 10);
+                var attendance = await getStudentAttendance({ date: today }) || [];
+                var coveredAssignments = {};
+                attendance.forEach(function (row) {
+                    if (studentMap[row.student_id]) {
+                        coveredAssignments[row.class_id + '::' + (row.section || '')] = true;
+                    }
+                });
+                document.getElementById('tAttendance').textContent = Object.keys(coveredAssignments).length + '/' + assignmentList.length;
+
+                var homework = await getHomework() || [];
+                var activeHomework = homework.filter(function (item) { return String(item.status || 'Active').toLowerCase() === 'active'; });
+                document.getElementById('tPendingTasks').textContent = activeHomework.length;
+
+                var dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                var timetable = await getTimetable({ staff_id: user.linked_id, day: dayName }) || [];
+                renderSchedule(timetable);
+
+                var notices = await getNotices() || [];
+                renderNotices(notices.slice(0, 4));
+            } catch (error) {
+                console.error(error);
+                document.getElementById('scheduleBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c62828;padding:16px;">Failed to load schedule.</td></tr>';
+                document.getElementById('noticeList').innerHTML = '<div style="text-align:center;color:#c62828;padding:16px;font-size:12px;">Failed to load notices.</div>';
+            }
+        }
+
+        function renderSchedule(rows) {
+            if (!rows.length) {
+                document.getElementById('scheduleBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">No classes scheduled for today.</td></tr>';
+                return;
+            }
+            rows.sort(function (left, right) { return Number(left.period || 0) - Number(right.period || 0); });
+            document.getElementById('scheduleBody').innerHTML = rows.map(function (row) {
+                var classLabel = (row.class_name || 'Class') + (row.section ? '-' + row.section : '');
+                return '<tr>' +
+                    '<td><span style="background:#e8eaf6;color:#0d1b4a;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">' + (row.period || '-') + '</span></td>' +
+                    '<td>' + (row.time || '-') + '</td>' +
+                    '<td class="name-cell">' + classLabel + '</td>' +
+                    '<td>' + (row.subject_name || '-') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function renderNotices(rows) {
+            if (!rows.length) {
+                document.getElementById('noticeList').innerHTML = '<div style="text-align:center;color:#888;padding:16px;font-size:12px;">No notices posted yet.</div>';
+                return;
+            }
+            document.getElementById('noticeList').innerHTML = rows.map(function (row) {
+                return '<div class="activity-item">' +
+                    '<div class="activity-dot blue"></div>' +
+                    '<div><div class="activity-text">' + (row.title || 'Notice') + '</div>' +
+                    '<div class="activity-time">' + (row.date || row.created_at || '') + (row.description ? ' — ' + row.description : '') + '</div></div>' +
+                    '</div>';
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>

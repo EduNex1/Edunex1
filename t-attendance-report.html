@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Attendance Report — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Attendance Report</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>Attendance > Report</li></ul>
+                </div>
+            
+                <div id="noPermissionState" style="display:none;">
+                    <div class="chart-card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
+                        <h5 style="color:#0d1b4a;font-weight:700;margin-bottom:8px;">No Attendance Permission</h5>
+                        <p style="color:#888;font-size:13px;max-width:400px;margin:0 auto;">No class has been assigned to you for attendance reports.</p>
+                    </div>
+                </div>
+
+                <div id="mainContent">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-filter"></i> Filter Report</div>
+                        <div class="chart-card-body">
+                            <div class="row gutters-8">
+                                <div class="col-lg-4 col-md-4 col-12 form-group">
+                                    <label>Class</label>
+                                    <select id="repClass" class="form-control"><option value="">Select Class</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-12 form-group">
+                                    <label>Section</label>
+                                    <select id="repSection" class="form-control"><option value="">Select Section</option></select>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-12 form-group">
+                                    <label>Month</label>
+                                    <input type="month" id="repMonth" class="form-control">
+                                </div>
+                                <div class="col-12 form-group" style="margin-top:8px;">
+                                    <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="loadAttendanceReport()" style="font-size:12px;padding:9px 20px;">
+                                        <i class="fas fa-search mr-1"></i> Generate Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header"><i class="fas fa-chart-bar"></i> Monthly Attendance Summary</div>
+                        <div class="chart-card-body" style="padding:8px 16px;">
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead><tr><th>#</th><th>Roll</th><th>Student</th><th>Present</th><th>Absent</th><th>Late / Other</th><th>Attendance %</th></tr></thead>
+                                    <tbody id="reportBody"><tr><td colspan="7" style="text-align:center;color:#888;padding:16px;">Select class, section and month to view report.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    (async function(){
+        let teacherPermissions = [];
+        let sectionCache = [];
+        initPage('t-attendance-report');
+        $('#repMonth').val(new Date().toISOString().slice(0, 7));
+
+        try { sectionCache = await getSections(); } catch (e) { console.error(e); }
+        const user = getUser();
+        if (!user || !user.linked_id) { return; }
+        try {
+            const perms = await getTeacherPermissions(user.linked_id);
+            teacherPermissions = perms.map(function (perm) {
+                const section = sectionCache.find(function (item) { return item.id === perm.section_id; });
+                return {
+                    class_id: perm.class_id,
+                    class_name: perm.class_name || '',
+                    section_id: perm.section_id,
+                    section_name: section ? section.name : ''
+                };
+            });
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (!teacherPermissions.length) {
+            $('#mainContent').hide();
+            $('#noPermissionState').show();
+            return;
+        }
+
+        const classSelect = $('#repClass');
+        const seen = {};
+        teacherPermissions.forEach(function (perm) {
+            if (!seen[perm.class_id]) {
+                classSelect.append(`<option value="${perm.class_id}">${perm.class_name}</option>`);
+                seen[perm.class_id] = true;
+            }
+        });
+
+        classSelect.on('change', function () {
+            const classId = Number(this.value);
+            const sectionSelect = $('#repSection').empty().append('<option value="">Select Section</option>');
+            teacherPermissions.filter(function (perm) { return Number(perm.class_id) === classId; }).forEach(function (perm) {
+                sectionSelect.append(`<option value="${perm.section_name}">${perm.section_name}</option>`);
+            });
+        });
+    })();
+
+    async function loadAttendanceReport() {
+        const classId = $('#repClass').val();
+        const section = $('#repSection').val();
+        const month = $('#repMonth').val();
+        if (!classId || !section || !month) {
+            showToast('Select class, section and month', 'error');
+            return;
+        }
+        const startDate = month + '-01';
+        const endDate = new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth() + 1, 0).toISOString().slice(0, 10);
+        try {
+            const [students, attendance] = await Promise.all([
+                getStudents({ class_id: classId, section: section, status: 'Active' }),
+                getStudentAttendance({ class_id: classId, section: section, from_date: startDate, to_date: endDate })
+            ]);
+            if (!students.length) {
+                $('#reportBody').html('<tr><td colspan="7" style="text-align:center;color:#888;">No students found for the selected class.</td></tr>');
+                return;
+            }
+            const summary = {};
+            students.forEach(function (student) {
+                summary[student.id] = { student: student, present: 0, absent: 0, other: 0 };
+            });
+            (attendance || []).forEach(function (row) {
+                const bucket = summary[row.student_id];
+                if (!bucket) return;
+                const normalized = String(row.status || '').toUpperCase();
+                if (normalized === 'P' || normalized === 'PRESENT') bucket.present += 1;
+                else if (normalized === 'A' || normalized === 'ABSENT') bucket.absent += 1;
+                else bucket.other += 1;
+            });
+            const html = Object.values(summary).map(function (item, index) {
+                const total = item.present + item.absent + item.other;
+                const percentage = total ? Math.round((item.present / total) * 100) : 0;
+                return `<tr><td>${index + 1}</td><td>${item.student.roll_no || '-'}</td><td><strong>${item.student.name || '-'}</strong></td><td style="color:#2e7d32;font-weight:700;">${item.present}</td><td style="color:#c62828;font-weight:700;">${item.absent}</td><td style="color:#ef6c00;font-weight:700;">${item.other}</td><td>${percentage}%</td></tr>`;
+            }).join('');
+            $('#reportBody').html(html);
+        } catch (e) {
+            console.error(e);
+            $('#reportBody').html('<tr><td colspan="7" style="text-align:center;color:#c62828;">Failed to load attendance report.</td></tr>');
+        }
+    }
+    </script>
+</body>
+</html>

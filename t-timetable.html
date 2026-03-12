@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Time Table — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Time Table</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>Academics > Time Table</li></ul>
+                </div>
+            
+            
+<div class="chart-card">
+    <div class="chart-card-header"><i class="fas fa-clock"></i> My Timetable</div>
+    <div class="chart-card-body">
+        <div id="ttArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+    </div>
+</div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('t-timetable');
+        try {
+            const user = getUser();
+            if (!user || !user.linked_id) { $('#ttArea').html('<p style="text-align:center;color:#888;">Teacher account not linked.</p>'); return; }
+            const tt = await getTimetable({ staff_id: user.linked_id }) || [];
+            if (!tt.length) { $('#ttArea').html('<p style="text-align:center;color:#888;">No timetable available.</p>'); return; }
+            const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const periods = [...new Set(tt.map(t => String(t.period || '')))].sort((a, b) => Number(a) - Number(b));
+            const ttBgs = ['#fff3e0','#e3f2fd','#e8f5e9','#f3e5f5','#e0f2f1','#fce4ec','#e8eaf6','#fff8e1','#fbe9e7'];
+            const subMap = {};
+            tt.forEach(t => {
+                subMap[String(t.period || '') + '_' + t.day] = { subject: t.subject_name || '', time: t.time || '', classLabel: (t.class_name || '') + (t.section ? '-' + t.section : '') };
+            });
+            let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Period</th><th>Time</th>';
+            days.forEach(d => html += `<th>${d}</th>`);
+            html += '</tr></thead><tbody>';
+            periods.forEach((period, index) => {
+                html += `<tr><td><strong>${period}</strong></td><td>${(tt.find(t => String(t.period || '') === period) || {}).time || '-'}</td>`;
+                days.forEach(day => {
+                    const cell = subMap[period + '_' + day];
+                    const bg = cell && cell.subject ? ttBgs[index % ttBgs.length] : '';
+                    html += `<td style="background:${bg}">${cell && cell.subject ? '<strong>' + cell.subject + '</strong><br><small>' + cell.classLabel + '</small>' : ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+            $('#ttArea').html(html);
+        } catch (e) {
+            console.error(e);
+            $('#ttArea').html('<p style="text-align:center;color:#c62828;">Failed to load timetable.</p>');
+        }
+    });
+    </script>
+</body>
+</html>

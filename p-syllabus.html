@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Syllabus — Parent Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Syllabus</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Academics > Syllabus</li></ul>
+                </div>
+            
+        <div class="chart-card" style="margin-bottom:16px;">
+            <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
+            <div class="chart-card-body" style="padding:12px 16px;">
+                <select id="childSelect" onchange="loadSyllabus()" class="form-control" style="max-width:350px;"><option value="">— loading —</option></select>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-header"><i class="fas fa-book-open"></i> Syllabus</div>
+            <div class="chart-card-body">
+    <div id="syllabusArea"><p style="text-align:center;color:#888;padding:20px;">Loading...</p></div>
+            </div>
+        </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    const sylColors = ['#ef6c00','#1565c0','#2e7d32','#283593','#00695c','#7b1fa2','#c62828'];
+    const sylBgs   = ['#fff3e0','#e3f2fd','#e8f5e9','#e8eaf6','#e0f2f1','#f3e5f5','#ffebee'];
+    $(async function(){
+        initPage('p-syllabus');
+        try {
+            children = await getMyChildren() || [];
+            const cs = $('#childSelect').empty();
+            children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
+            if(children.length) loadSyllabus();
+        } catch(e){ console.error(e); }
+    });
+    async function loadSyllabus(){
+        const opt = $('#childSelect option:selected');
+        const classId = opt.data('class');
+        if(!classId){ return; }
+        try {
+            const all = await getSyllabi() || [];
+            const syl = all.filter(s => String(s.class_id) === String(classId));
+            if(!syl.length){ $('#syllabusArea').html('<p style="text-align:center;color:#888;">No syllabus uploaded.</p>'); return; }
+            let html = '';
+            syl.forEach((s,i) => {
+                const ci = i % sylColors.length;
+                html += `<div style="background:${sylBgs[ci]};border-radius:8px;padding:14px 16px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:${sylColors[ci]};font-size:14px;"><i class="fas fa-book" style="margin-right:6px;"></i>${s.subject_name||s.title||''}</strong></div><div style="font-size:12px;color:#555;margin-top:6px;">${s.description||s.content||''}</div></div>`;
+            });
+            $('#syllabusArea').html(html);
+        } catch(e){ console.error(e); }
+    }
+    </script>
+</body>
+</html>

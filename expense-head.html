@@ -1,0 +1,125 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Expense Heads — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .head-table{width:100%;border-collapse:collapse}
+        .head-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 14px;text-align:left}
+        .head-table tbody td{font-size:12px;padding:9px 14px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+        .head-table tbody tr:hover td{background:#f5f7ff}
+        .action-icon{width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+        .action-icon.edit{background:#e3f2fd;color:#1565c0}.action-icon.edit:hover{background:#1565c0;color:#fff}
+        .action-icon.delete{background:#fce4ec;color:#c62828}.action-icon.delete:hover{background:#c62828;color:#fff}
+        .add-form-card{background:#f8f9ff;border:2px dashed #c5cae9;border-radius:10px;padding:16px 20px;margin-bottom:16px;display:none}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .quick-link{font-size:12px;font-weight:600;color:#0d1b4a;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+        .quick-link:hover{color:#304ffe;text-decoration:underline}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Accounts</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Expense Heads</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-tags"></i> Expense Heads</h3></div></div>
+                        <div style="margin-bottom:12px;">
+                            <a class="quick-link" onclick="toggleAddForm()"><i class="fas fa-plus-circle"></i> Add Expense Head</a>
+                        </div>
+                        <div class="add-form-card" id="addFormCard">
+                            <div class="row align-items-end" style="gap:0;">
+                                <div class="col-lg-5 col-md-6 col-12 form-group mb-2">
+                                    <label class="form-label-sm">Expense Head Name *</label>
+                                    <input type="text" class="form-control" id="headName" placeholder="e.g. Stationery, Electricity Bill">
+                                </div>
+                                <div class="col-auto form-group mb-2 d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="saveHead()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;"><i class="fas fa-save"></i> Save</button>
+                                    <button class="fw-btn-fill" onclick="cancelAdd()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;"><i class="fas fa-times"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list" style="margin-right:6px;"></i>Expense Head List</h5>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="head-table"><thead><tr><th style="width:60px;">Sr.</th><th>Expense Head Name</th><th style="width:100px;">Action</th></tr></thead><tbody id="headBody"></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let editingId = null;
+        let cache = [];
+        $(document).ready(async function(){ if(typeof initPage==='function') initPage('expense-head'); await renderList(); });
+
+        async function renderList(){
+            try { cache = await getExpenseHeads(); } catch(e){ cache = []; }
+            const tb=$('#headBody');
+            if(!cache.length){ tb.html('<tr><td colspan="3"><div class="empty-state"><i class="fas fa-tags"></i>No expense heads added yet</div></td></tr>'); return; }
+            let h='';
+            cache.forEach((e,i)=>{
+                h+=`<tr><td style="font-weight:600;color:#555;">${i+1}</td><td style="font-weight:600;">${e.name}</td><td style="white-space:nowrap;"><button class="action-icon edit" title="Edit" onclick="editHead(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-icon delete" title="Delete" onclick="removeHead(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            });
+            tb.html(h);
+        }
+        function toggleAddForm(){ editingId=null; $('#headName').val(''); $('#addFormCard').slideDown(200); $('#headName').focus(); }
+        function cancelAdd(){ editingId=null; $('#headName').val(''); $('#addFormCard').slideUp(200); }
+        async function saveHead(){
+            const n=$('#headName').val().trim();
+            if(!n){ showToast('Please enter expense head name','error'); $('#headName').focus(); return; }
+            try {
+                if(editingId){ await updateMasterData('expense_heads', editingId, {name:n}); showToast('Expense head updated!','success'); editingId=null; }
+                else{ await createMasterData('expense_heads', {name:n}); showToast('Expense head added!','success'); }
+                $('#headName').val(''); $('#addFormCard').slideUp(200); await renderList();
+            } catch(e){ showToast('Failed to save','error'); }
+        }
+        function editHead(id){ const h=cache.find(e=>e.id===id); if(!h) return; editingId=id; $('#headName').val(h.name); $('#addFormCard').slideDown(200); $('#headName').focus(); }
+        function removeHead(id){
+            const h=cache.find(e=>e.id===id); if(!h) return;
+            showConfirmModal('Delete Expense Head',`Delete "<strong>${h.name}</strong>"?`,async function(){ try{ await deleteMasterData('expense_heads',id); showToast('Expense head deleted!','success'); await renderList(); }catch(e){showToast('Failed','error');} });
+        }
+        $(document).on('keydown','#headName',function(e){ if(e.key==='Enter'){e.preventDefault();saveHead();} });
+    </script>
+</body>
+</html>

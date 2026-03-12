@@ -1,0 +1,384 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Due Report — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control { font-size: 12px; height: 36px; }
+        .due-table { width: 100%; border-collapse: collapse; }
+        .due-table thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 8px 8px; text-align: left; letter-spacing: 0.3px; white-space: nowrap; }
+        .due-table tbody td { font-size: 12px; padding: 8px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .due-table tbody tr:hover td { background: #f5f7ff; }
+        .due-table tfoot td { font-size: 12px; font-weight: 700; padding: 10px 8px; border-top: 2px solid #0d1b4a; background: #f5f7ff; }
+        .due-table .text-right { text-align: right; }
+        .badge-paid { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #e8f5e9; color: #2e7d32; }
+        .badge-unpaid { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #ffebee; color: #c62828; }
+        .badge-partial { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: #fff3e0; color: #e65100; }
+        .sms-card { background: #fff; border: 2px solid #e8eaf6; border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .sms-card h6 { font-size: 13px; font-weight: 700; color: #0d1b4a; margin-bottom: 12px; }
+        .sms-preview { background: #f8f9ff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; font-size: 12px; line-height: 1.7; color: #333; min-height: 80px; }
+        #emailEditor{min-height:160px;background:#fff;font-size:13px}
+        .ql-toolbar.ql-snow{border-radius:8px 8px 0 0;background:#fff;border-color:#c5cae9}
+        .ql-container.ql-snow{border-radius:0 0 8px 8px;border-color:#c5cae9}
+        .placeholder-tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+        .placeholder-tags .tag{font-size:10px;background:#e3f2fd;color:#0d1b4a;border:1px solid #bbdefb;border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:600;transition:background .15s}
+        .placeholder-tags .tag:hover{background:#bbdefb}
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        .total-bar { background: #f5f7ff; border: 1px solid #e8eaf6; border-radius: 8px; padding: 12px 16px; margin-top: 12px; display: flex; flex-wrap: wrap; gap: 20px; }
+        .total-bar .t-item label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; display: block; }
+        .total-bar .t-item .t-val { font-size: 16px; font-weight: 700; color: #0d1b4a; }
+
+        @media print {
+            .filter-card, .breadcrumbs-area, .sms-card, #header-container, #sidebar-container { display: none !important; }
+            .dashboard-content-one { margin: 0 !important; padding: 0 !important; }
+            .card { border: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Fee Due Report</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Fee Due Report</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass"><option value="">All Classes</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">All Sections</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Fee Month</label>
+                                    <select class="form-control" id="fMonth"><option value="">All Months</option></select>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnSearch" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Due List -->
+                        <div id="dueList">
+                            <div class="empty-state"><i class="fas fa-filter"></i>Select class and click Search to view due report</div>
+                        </div>
+
+                        <!-- Email Template -->
+                        <div class="sms-card" id="emailCard" style="display:none;">
+                            <h6><i class="fas fa-envelope" style="color:#0d1b4a;margin-right:6px;"></i>Send Due Reminder Email</h6>
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-4 col-md-5 col-12 form-group">
+                                    <label class="form-label-sm">Email Subject *</label>
+                                    <input type="text" class="form-control" id="emailSubject" value="Fee Due Reminder">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Email Template (Rich Text Editor)</label>
+                                <div id="emailEditor"></div>
+                                <div class="placeholder-tags">
+                                    <span style="font-size:10px;color:#999;margin-right:4px;">Insert:</span>
+                                    <span class="tag" onclick="insertPlaceholder('{PARENT_NAME}')">{PARENT_NAME}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{STUDENT_NAME}')">{STUDENT_NAME}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{CLASS}')">{CLASS}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{SECTION}')">{SECTION}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{DUE_AMOUNT}')">{DUE_AMOUNT}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{MONTH}')">{MONTH}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{SCHOOL_NAME}')">{SCHOOL_NAME}</span>
+                                </div>
+                            </div>
+                            <div class="sms-preview" id="emailPreview"></div>
+                            <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+                                <button class="fw-btn-fill btn-gradient-yellow" id="btnPreview" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                                <button class="fw-btn-fill" id="btnSendEmail" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#2e7d32;">
+                                    <i class="fas fa-paper-plane"></i> Send Email to Selected
+                                </button>
+                                <span id="emailStatus" style="font-size:11px;font-weight:600;color:#2e7d32;display:none;"><i class="fas fa-check-circle"></i> Email sent successfully!</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script>
+        const FEE_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
+
+        let feeQuill;
+        let branchSchoolName = 'School';
+
+        function insertPlaceholder(tag) {
+            const range = feeQuill.getSelection(true);
+            feeQuill.insertText(range.index, tag);
+            feeQuill.setSelection(range.index + tag.length);
+        }
+
+        $(document).ready(async function () {
+            if (typeof initPage === 'function') initPage('fee-due-report');
+
+            // Fetch branch school_name
+            try {
+                const branches = await getBranches();
+                if (branches && Array.isArray(branches)) {
+                    const user = getUser();
+                    const branchId = (user && user.role === 'super_admin') ? (getSelectedBranch() || 1) : (user && user.branch_id ? user.branch_id : 1);
+                    const branch = branches.find(b => String(b.id) === String(branchId));
+                    if (branch && branch.school_name) branchSchoolName = branch.school_name;
+                }
+            } catch(e) { console.error('Branch fetch error:', e); }
+
+            feeQuill = new Quill('#emailEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Compose your fee reminder email template here...'
+            });
+            feeQuill.root.innerHTML = '<p>Dear {PARENT_NAME}, this is a reminder from {SCHOOL_NAME} that the fee of ₹{DUE_AMOUNT} for <strong>{STUDENT_NAME}</strong> (Class {CLASS}/{SECTION}) for the month of <strong>{MONTH}</strong> is pending. Kindly clear the dues at the earliest. Thank you.</p>';
+
+            await populateClassDropdown(document.getElementById('fClass'));
+            await populateSectionDropdown(document.getElementById('fSection'));
+            FEE_MONTHS.forEach(m => $('#fMonth').append(`<option value="${m}">${m}</option>`));
+
+            $('#btnSearch').on('click', renderDueList);
+            $('#btnReset').on('click', function () {
+                $('#fClass, #fSection, #fMonth').val('');
+                $('#dueList').html('<div class="empty-state"><i class="fas fa-filter"></i>Select class and click Search to view due report</div>');
+                $('#emailCard').hide();
+            });
+
+            // Email Preview
+            $('#btnPreview').on('click', function () {
+                const selected = getSelectedStudents();
+                if (!selected.length) { alert('Please select at least one student.'); return; }
+                const first = selected[0];
+                const htmlTpl = feeQuill.root.innerHTML;
+                const preview = fillTemplateHtml(htmlTpl, first);
+                $('#emailPreview').html(preview);
+            });
+
+            // Email Send via Zoho
+            $('#btnSendEmail').on('click', async function () {
+                const selected = getSelectedStudents();
+                if (!selected.length) { alert('Please select at least one student.'); return; }
+                const subject = $('#emailSubject').val().trim();
+                if (!subject) { alert('Please enter email subject'); return; }
+                const htmlTpl = feeQuill.root.innerHTML;
+                const textContent = feeQuill.getText().trim();
+                if (!textContent) { alert('Please enter email template'); return; }
+                const recipients = selected
+                    .filter(s => s.email || s.parent_email)
+                    .map(s => ({
+                        email: s.email || s.parent_email,
+                        name: s.name,
+                        recipient_id: s.id,
+                        html_body: '<div style="font-family:Arial,sans-serif;">' + fillTemplateHtml(htmlTpl, s) + '</div>'
+                    }));
+                if (!recipients.length) { alert('Selected students have no email addresses'); return; }
+
+                const btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Sending...');
+
+                try {
+                    await sendEmailApi({
+                        subject: subject,
+                        recipients: recipients,
+                        recipient_type: 'student',
+                        type: 'Fee Reminder',
+                        message: textContent,
+                        variables: { custom_message: textContent }
+                    });
+                    $('#emailStatus').fadeIn().delay(3000).fadeOut();
+                } catch(e) {
+                    alert('Error: ' + e.message);
+                } finally {
+                    btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Send Email to Selected');
+                }
+            });
+        });
+
+        async function renderDueList() {
+            const fClass = $('#fClass').val();
+            const fSection = $('#fSection').val();
+            const fMonth = $('#fMonth').val();
+
+            const filters = {};
+            if (fClass) filters.class_id = fClass;
+            if (fSection) filters.section = fSection;
+            if (fMonth) filters.month = fMonth;
+            if (typeof getSelectedSession === 'function') {
+                const session = getSelectedSession();
+                if (session) filters.session = session;
+            }
+
+            const btn = $('#btnSearch');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Searching...');
+            let dueRows = [];
+            try {
+                dueRows = await getFeeDueReport(filters);
+            } catch(err){ showToast('Failed to load due report','error'); return; } finally {
+                btn.prop('disabled', false).html('<i class="fas fa-search"></i> Search');
+            }
+
+            if (!dueRows.length) {
+                const hasFilters = fClass || fMonth;
+                const msg = hasFilters ? 'All students have cleared their fees!' : 'No results found. Please select a class and try again.';
+                $('#dueList').html('<div class="empty-state"><i class="fas fa-' + (hasFilters ? 'check-circle" style="color:#2e7d32;' : 'inbox" style="color:#bbb;') + '"></i>' + msg + '</div>');
+                $('#emailCard').hide();
+                return;
+            }
+
+            let grandTotal = 0;
+            let rows = '';
+            dueRows.forEach((r, i) => {
+                grandTotal += r.total_due || 0;
+                const statusBadge = r.status === 'paid' ? 'badge-paid' : r.status === 'partial' ? 'badge-partial' : 'badge-unpaid';
+                const statusText = r.status === 'paid' ? 'Paid' : r.status === 'partial' ? 'Partial' : 'Unpaid';
+
+                rows += `<tr>
+                    <td><input type="checkbox" class="stu-check" value="${r.student_id}" data-name="${r.student_name}" data-parent="${r.father_name||''}" data-class="${r.class_name || '-'}" data-section="${r.section || ''}" data-due="${r.total_due || 0}" data-months="${(r.due_months || []).join(', ')}" data-phone="${r.phone||''}" data-email="${r.email||r.parent_email||''}"></td>
+                    <td style="font-weight:600;">${i + 1}</td>
+                    <td>${r.admission_no}</td>
+                    <td>
+                        <div style="font-weight:600;">${r.student_name}</div>
+                        <div style="font-size:10px;color:#888;">${r.father_name||''}</div>
+                    </td>
+                    <td>${r.class_name || '-'} / ${r.section || ''}</td>
+                    <td>${r.category || 'General'}</td>
+                    <td>${r.phone||''}</td>
+                    <td style="font-size:11px;">${(r.due_months || []).join(', ')}</td>
+                    <td class="text-right">₹${(r.old_balance || 0).toLocaleString('en-IN')}</td>
+                    <td class="text-right">₹${(r.transport_fee || 0).toLocaleString('en-IN')}</td>
+                    <td class="text-right" style="font-weight:700;">₹${(r.total_due || 0).toLocaleString('en-IN')}</td>
+                    <td><span class="${statusBadge}">${statusText}</span></td>
+                </tr>`;
+            });
+
+            let html = `
+                <div style="overflow-x:auto;">
+                <table class="due-table">
+                    <thead><tr>
+                        <th><input type="checkbox" id="checkAll"></th>
+                        <th>#</th><th>Adm No.</th><th>Student / Father</th><th>Class</th><th>Category</th><th>Mobile</th><th>Due Month(s)</th><th class="text-right">Old Balance</th><th class="text-right">Transport</th><th class="text-right">Total Due</th><th>Status</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot><tr>
+                        <td colspan="10" style="text-align:right;">Grand Total Due</td>
+                        <td class="text-right">₹${grandTotal.toLocaleString('en-IN')}</td>
+                        <td></td>
+                    </tr></tfoot>
+                </table>
+                </div>
+                <div class="total-bar">
+                    <div class="t-item"><label>Students with Dues</label><div class="t-val">${dueRows.length}</div></div>
+                    <div class="t-item"><label>Total Due Amount</label><div class="t-val">₹${grandTotal.toLocaleString('en-IN')}</div></div>
+                    <div class="t-item" style="margin-left:auto;"><button class="fw-btn-fill" onclick="window.print()" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;background:#0d1b4a;"><i class="fas fa-print"></i> Print Report</button></div>
+                </div>`;
+
+            $('#dueList').html(html);
+            $('#emailCard').show();
+
+            $('#checkAll').on('change', function () {
+                $('.stu-check').prop('checked', $(this).prop('checked'));
+            });
+        }
+
+        function getSelectedStudents() {
+            const selected = [];
+            $('.stu-check:checked').each(function () {
+                selected.push({
+                    id: $(this).val(),
+                    name: $(this).data('name'),
+                    parent: $(this).data('parent'),
+                    cls: $(this).data('class'),
+                    section: $(this).data('section'),
+                    due: $(this).data('due'),
+                    months: $(this).data('months'),
+                    phone: $(this).data('phone'),
+                    email: $(this).data('email'),
+                    parent_email: $(this).data('email')
+                });
+            });
+            return selected;
+        }
+
+        function fillTemplateHtml(html, stu) {
+            return html
+                .replaceAll('{PARENT_NAME}', stu.parent)
+                .replaceAll('{SCHOOL_NAME}', branchSchoolName)
+                .replaceAll('{STUDENT_NAME}', stu.name)
+                .replaceAll('{CLASS}', stu.cls)
+                .replaceAll('{SECTION}', stu.section)
+                .replaceAll('{DUE_AMOUNT}', Number(stu.due).toLocaleString('en-IN'))
+                .replaceAll('{MONTH}', stu.months);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,482 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Demand Bill — Print</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="css/print-all.css">
+    <style>
+        * {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #fff;
+            padding: 20px;
+        }
+
+        .print-controls {
+            background: #f5f7ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .print-controls button {
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0 18px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-print {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .btn-back {
+            background: #0d1b4a;
+            color: #fff;
+        }
+
+        .btn-print:hover,
+        .btn-back:hover {
+            opacity: 0.85;
+        }
+
+        .print-controls span {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .bill-page {
+            background: #fff;
+            border: 2px solid #333;
+            padding: 30px;
+            margin-bottom: 30px;
+            page-break-after: always;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .bill-page:last-child {
+            page-break-after: auto;
+        }
+
+        .bill-header {
+            text-align: center;
+            border-bottom: 2px solid #0d1b4a;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .bill-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0d1b4a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .bill-header .tagline {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        .bill-header .address {
+            font-size: 10px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .bill-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #304ffe;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #304ffe;
+            display: inline-block;
+            padding: 4px 20px;
+            border-radius: 4px;
+        }
+
+        .bill-title-wrap {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .stu-info {
+            margin-bottom: 14px;
+        }
+
+        .stu-info table {
+            width: 100%;
+        }
+
+        .stu-info td {
+            font-size: 11px;
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        .stu-info .lbl {
+            font-weight: 700;
+            color: #555;
+            width: 120px;
+        }
+
+        .stu-info .val {
+            font-weight: 600;
+            color: #0d1b4a;
+        }
+
+        .dear-parent {
+            font-size: 12px;
+            line-height: 1.7;
+            color: #333;
+            margin-bottom: 14px;
+        }
+
+        .bill-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+
+        .bill-tbl th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 7px 10px;
+            text-align: left;
+        }
+
+        .bill-tbl th:last-child {
+            text-align: right;
+        }
+
+        .bill-tbl td {
+            font-size: 11px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .bill-tbl td:last-child {
+            text-align: right;
+        }
+
+        .bill-tbl tbody tr:nth-child(even) td {
+            background: #f8f9ff;
+        }
+
+        .bill-tbl tfoot td {
+            font-weight: 700;
+            border-top: 2px solid #0d1b4a;
+            font-size: 12px;
+        }
+
+        .bill-note {
+            font-size: 10px;
+            color: #888;
+            line-height: 1.6;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .bill-sig {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .bill-sig .sig-item {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+        }
+
+        .bill-sig .sig-item .line {
+            width: 120px;
+            border-top: 1px solid #333;
+            margin: 0 auto 4px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        @media print {
+            .print-controls {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .bill-page {
+                border: 2px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .bill-tbl th {
+                background: #333 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Controls (hidden in print) -->
+    <div class="print-controls" id="controls">
+        <button class="btn-print" id="btnPrint"><i class="fas fa-print"></i> Print PDF</button>
+        <button class="btn-back" onclick="window.close()"><i class="fas fa-arrow-left"></i> Close</button>
+        <span id="billCount"></span>
+    </div>
+
+    <!-- Bills Content -->
+    <div id="billContent"></div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        $(async function () {
+            const stored = sessionStorage.getItem('demandBill');
+            if (!stored) {
+                $('#billContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>No demand bill data found. Please go back and select students.</div>');
+                return;
+            }
+
+            let data;
+            try { data = JSON.parse(stored); } catch(e) {
+                $('#billContent').html('<div class="no-data">Invalid demand bill data.</div>');
+                return;
+            }
+            const { studentIds, months, particularIds, class_id, section, session: storedSession } = data;
+            if (!Array.isArray(studentIds) || !studentIds.length || !Array.isArray(months) || !months.length || !Array.isArray(particularIds) || !particularIds.length) {
+                $('#billContent').html('<div class="no-data">Missing required data. Please go back and select students, months and particulars.</div>');
+                return;
+            }
+
+            let particularCache = [], studentCache = [], sessions = [], slabCache = [], routeCache = [];
+            try {
+                const filters = {};
+                if (class_id) filters.class_id = class_id;
+                if (section) filters.section = section;
+                [particularCache, studentCache, sessions, slabCache, routeCache] = await Promise.all([
+                    getFeeParticulars(), getStudents(filters), getAcademicSessions(), getFeeSlabs(class_id), getTransportRoutes()
+                ]);
+            } catch(e) {
+                $('#billContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>Failed to load data. Please try again.</div>');
+                return;
+            }
+
+            const numericPartIds = particularIds.map(Number);
+            const parts = particularCache.filter(p => numericPartIds.includes(Number(p.id)));
+            const currentUser = typeof getUser === 'function' ? (getUser() || {}) : JSON.parse(localStorage.getItem('vkis_user') || '{}');
+
+            // Get school info from branch settings
+            let school = { school_name: currentUser.school_name || 'School', board: '', address: '', phone: '' };
+            try {
+                const branches = await getBranches();
+                const branchId = currentUser.branch_id || 1;
+                const branch = branches.find(b => Number(b.id) === Number(branchId)) || branches[0];
+                if (branch) {
+                    school = {
+                        school_name: branch.school_name || currentUser.school_name || 'School',
+                        board: branch.board || '',
+                        address: branch.address || '',
+                        phone: branch.phone || '',
+                        logo_url: branch.logo_url || '',
+                        signing_authority_designation: branch.signing_authority_designation || 'Principal',
+                        signing_authority_signature_url: branch.signing_authority_signature_url || ''
+                    };
+                }
+            } catch(e) {}
+
+            const currentSession = sessions.find(s => s.status === 'Active');
+            const sessionName = storedSession || (currentSession ? currentSession.name : '');
+
+            // Batch-fetch all discounts and deposits for selected students
+            let allDiscounts = {}, allDeposits = {};
+            try {
+                const discountPromises = studentIds.map(sid => getFeeDiscounts(sid).then(d => ({ sid, data: d })).catch(() => ({ sid, data: [] })));
+                const depositPromises = studentIds.map(sid => getFeeDeposits({ student_id: sid }).then(d => ({ sid, data: d })).catch(() => ({ sid, data: [] })));
+                const [discResults, depResults] = await Promise.all([
+                    Promise.all(discountPromises),
+                    Promise.all(depositPromises)
+                ]);
+                for (const r of discResults) allDiscounts[r.sid] = r.data;
+                for (const r of depResults) allDeposits[r.sid] = r.data;
+            } catch(e) {}
+
+            // Identify transport particular
+            const transportParticular = particularCache.find(p => Number(p.is_transport) === 1);
+            const transportPartId = transportParticular ? Number(transportParticular.id) : null;
+
+            let html = '';
+            for (const sid of studentIds) {
+                const stu = studentCache.find(s => Number(s.id) === Number(sid));
+                if (!stu) continue;
+
+                const selectedSlabs = [];
+                numericPartIds.forEach(particularId => {
+                    // Skip transport particular from slabs — it uses route fee instead
+                    if (transportPartId && particularId === transportPartId) return;
+
+                    const categoryMatch = slabCache.find(s => Number(s.particular_id) === particularId && String(s.category || 'Default') === String(stu.category || 'Default'));
+                    const defaultMatch = slabCache.find(s => Number(s.particular_id) === particularId && (String(s.category || 'Default') === 'Default'));
+                    if (categoryMatch) selectedSlabs.push(categoryMatch);
+                    else if (defaultMatch) selectedSlabs.push(defaultMatch);
+                });
+
+                let perMonthRows = [];
+
+                months.forEach(m => {
+                    selectedSlabs.forEach(slab => {
+                        const particular = particularCache.find(p => Number(p.id) === Number(slab.particular_id));
+                        perMonthRows.push({ month: m, particular: particular ? particular.name : 'Fee', amount: parseFloat(slab.amount) || 0 });
+                    });
+
+                    // Add transport from route fee (not slab) if transport particular is selected
+                    if (stu.route_id && transportPartId && numericPartIds.includes(transportPartId)) {
+                        const route = routeCache.find(r => Number(r.id) === Number(stu.route_id));
+                        const routeFee = parseFloat(route ? route.fee : 0);
+                        if (routeFee > 0) {
+                            perMonthRows.push({ month: m, particular: transportParticular.name, amount: routeFee });
+                        }
+                    }
+                });
+
+                let grandTotal = perMonthRows.reduce((sum, row) => sum + row.amount, 0);
+
+                // Apply discounts — filter by both month AND particular
+                const stuDiscounts = allDiscounts[sid] || [];
+                const applicableDiscounts = stuDiscounts.filter(d => {
+                    const monthMatch = !d.month || d.month === '' || months.includes(d.month);
+                    const partMatch = !d.particular_id || numericPartIds.includes(Number(d.particular_id));
+                    return monthMatch && partMatch;
+                });
+                const discountTotal = applicableDiscounts.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+                grandTotal -= discountTotal;
+
+                // Get old balance from student record (carry-forward balance), NOT from sum of deposit.balance
+                const oldBalance = parseFloat(stu.old_balance) || 0;
+
+                // Build fee table rows
+                let feeRows = '';
+                let sno = 1;
+                perMonthRows.forEach(row => {
+                    feeRows += `<tr>
+                            <td>${sno++}</td>
+                            <td>${row.month}</td>
+                            <td>${row.particular}</td>
+                            <td>₹${(parseFloat(row.amount) || 0).toLocaleString('en-IN')}</td>
+                        </tr>`;
+                });
+
+                // Show discount row if any
+                if (discountTotal > 0) {
+                    feeRows += `<tr><td>${sno++}</td><td>—</td><td style="color:#2e7d32;">Discount</td><td style="color:#2e7d32;">- ₹${discountTotal.toLocaleString('en-IN')}</td></tr>`;
+                }
+
+                // Add old balance row if any
+                if (oldBalance > 0) {
+                    feeRows += `<tr><td>${sno++}</td><td>—</td><td style="font-weight:600;color:#e65100;">Old Balance</td><td style="color:#e65100;">₹${oldBalance.toLocaleString('en-IN')}</td></tr>`;
+                    grandTotal += oldBalance;
+                }
+
+                // Ensure grand total is never negative
+                grandTotal = Math.max(0, grandTotal);
+
+                const today = new Date();
+                const dateStr = today.getDate().toString().padStart(2, '0') + ' ' + today.toLocaleString('en-US', { month: 'short' }) + ' ' + today.getFullYear();
+
+                html += `
+                <div class="bill-page">
+                    <div class="bill-header">
+                        ${school.logo_url ? '<img src="'+school.logo_url+'" style="height:48px;width:48px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
+                        <h3>${school.school_name || ''}</h3>
+                        <div class="tagline">${school.board || ''}</div>
+                        <div class="address">${school.address || ''}${school.address && school.phone ? ' &nbsp;|&nbsp; ' : ''}${school.phone || ''}</div>
+                    </div>
+                    <div class="bill-title-wrap"><span class="bill-title">Fee Demand Bill</span></div>
+
+                    <div class="stu-info">
+                        <table>
+                            <tr><td class="lbl">Student Name</td><td class="val">${stu.name}</td><td class="lbl">Adm No.</td><td class="val">${stu.admission_no}</td></tr>
+                            <tr><td class="lbl">Father's Name</td><td class="val">${stu.father_name || '-'}</td><td class="lbl">Class / Section</td><td class="val">${stu.class_name || '-'} / ${stu.section || '-'}</td></tr>
+                            <tr><td class="lbl">Date</td><td class="val">${dateStr}</td><td class="lbl">Session</td><td class="val">${sessionName || '—'}</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="dear-parent">
+                        Dear <strong>${stu.father_name || 'Parent'}</strong>,<br>
+                        This is to inform you that the following fee is due for your ward <strong>${stu.name}</strong> for the month(s) of <strong>${months.join(', ')}</strong>. Kindly clear the dues at the earliest to avoid any inconvenience.
+                    </div>
+
+                    <table class="bill-tbl">
+                        <thead><tr><th>S.No</th><th>Month</th><th>Particular</th><th>Amount (₹)</th></tr></thead>
+                        <tbody>${feeRows}</tbody>
+                        <tfoot>
+                            <tr><td colspan="3" style="text-align:right;">Grand Total</td><td style="text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td></tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="bill-note">
+                        <strong>Note:</strong> Please deposit the fee at the school office during working hours. For any queries, contact: ${school.phone || 'school office'}.
+                    </div>
+
+                    <div class="bill-sig">
+                        <div class="sig-item"><div class="line"></div>Parent's Signature</div>
+                        <div class="sig-item"><div class="line"></div>Accountant</div>
+                        <div class="sig-item">${school.signing_authority_signature_url ? '<img src="'+school.signing_authority_signature_url+'" style="max-height:35px;max-width:90px;object-fit:contain;display:block;margin:0 auto;">' : ''}<div class="line"></div>${school.signing_authority_designation || 'Principal'}</div>
+                    </div>
+                </div>`;
+            }
+
+            if (!html) {
+                html = '<div class="no-data"><i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:10px;"></i>No bills could be generated. Selected students may not be found.</div>';
+            }
+
+            $('#billContent').html(html);
+            $('#billCount').text(studentIds.length + ' demand bill(s) generated');
+
+            $('#btnPrint').on('click', function () { window.print(); });
+        });
+    </script>
+</body>
+
+</html>

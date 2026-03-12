@@ -1,0 +1,381 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Send Email to Staff — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .form-control{font-size:12px;height:36px}
+        .list-table{width:100%;border-collapse:collapse}
+        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
+        .list-table tbody td{font-size:12px;padding:8px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;white-space:nowrap}
+        .list-table tbody tr:hover td{background:#f5f7ff}
+        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden}
+        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
+        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
+        .staff-photo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0}
+        .email-compose-box{background:#f8f9ff;border:2px dashed #c5cae9;border-radius:10px;padding:16px 20px;margin-top:16px}
+        .email-compose-box h6{font-size:12px;font-weight:700;color:#0d1b4a;margin-bottom:8px;text-transform:uppercase}
+        #emailEditor{min-height:200px;background:#fff;font-size:14px}
+        .ql-toolbar.ql-snow{border-radius:8px 8px 0 0;background:#fff;border-color:#c5cae9}
+        .ql-container.ql-snow{border-radius:0 0 8px 8px;border-color:#c5cae9}
+        .placeholder-tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+        .placeholder-tags .tag{font-size:10px;background:#e3f2fd;color:#0d1b4a;border:1px solid #bbdefb;border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:600;transition:background .15s}
+        .placeholder-tags .tag:hover{background:#bbdefb}
+        .count-badge{font-size:10px;background:#0d1b4a;color:#fff;border-radius:10px;padding:2px 8px;margin-left:6px}
+        .ms-dropdown{position:relative;width:100%}
+        .ms-trigger{font-size:12px;height:36px;border:1px solid #ced4da;border-radius:4px;padding:6px 30px 6px 10px;background:#fff;cursor:pointer;display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#495057;user-select:none}
+        .ms-trigger::after{content:'\f078';font-family:'Font Awesome 6 Free';font-weight:900;font-size:10px;position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#999}
+        .ms-trigger.open{border-color:#1565c0;box-shadow:0 0 0 2px rgba(21,101,192,.15)}
+        .ms-panel{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ced4da;border-top:none;border-radius:0 0 6px 6px;z-index:1050;max-height:240px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+        .ms-panel.show{display:block}
+        .ms-item{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s}
+        .ms-item:hover{background:#f5f7ff}
+        .ms-item.select-all{font-weight:700;color:#1565c0;background:#f8f9ff;border-bottom:2px solid #e0e0e0}
+        .ms-item input[type="checkbox"]{margin:0;cursor:pointer;accent-color:#0d1b4a}
+        .ms-item label{margin:0;cursor:pointer;flex:1}
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Email</h3>
+                    <ul><li><a href="index.html">Home</a></li><li>Send Email to Staff</li></ul>
+                </div>
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-envelope"></i> Send Email to Staff</h3></div></div>
+
+                        <!-- Filter Card -->
+                        <div class="filter-card">
+                            <div class="row" style="gap:0;">
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Designation *</label>
+                                    <div class="ms-dropdown" id="desigDropdown">
+                                        <div class="ms-trigger" onclick="togglePanel('desigDropdown')">Select Designation</div>
+                                        <div class="ms-panel" id="desigPanel"></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-12 col-12 form-group d-flex align-items-end" style="gap:8px;">
+                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchStaff()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetFilters()"><i class="fas fa-redo"></i> Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Staff List -->
+                        <div class="table-card">
+                            <div class="table-header">
+                                <h5><i class="fas fa-list"></i> Staff List <span class="count-badge" id="countBadge" style="display:none;">0</span></h5>
+                                <label style="font-size:11px;font-weight:700;color:#1565c0;cursor:pointer;user-select:none">
+                                    <input type="checkbox" id="selectAllStaff" onchange="toggleAllStaff(this.checked)" style="margin-right:4px;"> Select All
+                                </label>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table class="list-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px;"><input type="checkbox" id="thCheckAll" onchange="toggleAllStaff(this.checked)"></th>
+                                            <th>Photo</th>
+                                            <th>Staff Name</th>
+                                            <th>Father Name</th>
+                                            <th>Designation</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staffTableBody">
+                                        <tr><td colspan="7" class="empty-state"><i class="fas fa-search"></i>Select filters & click Search</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Email Compose & Send -->
+                        <div class="email-compose-box" id="emailComposeBox" style="display:none;">
+                            <h6><i class="fas fa-envelope-open-text"></i> Compose Email</h6>
+                            <div class="form-group">
+                                <label class="form-label-sm">Subject *</label>
+                                <input type="text" class="form-control" id="emailSubject" placeholder="Enter email subject">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label-sm">Message * (Rich Text Editor)</label>
+                                <div id="emailEditor"></div>
+                                <div class="placeholder-tags">
+                                    <span style="font-size:10px;color:#999;margin-right:4px;">Insert:</span>
+                                    <span class="tag" onclick="insertPlaceholder('{staff_name}')">{staff_name}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{designation}')">{designation}</span>
+                                    <span class="tag" onclick="insertPlaceholder('{school_name}')">{school_name}</span>
+                                </div>
+                            </div>
+                            <div style="margin-top:14px;text-align:right;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 28px;" onclick="sendEmail()"><i class="fas fa-paper-plane"></i> Send Email</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script>
+        let staffCache = [];
+        let branchSchoolName = 'School';
+
+        const quill = new Quill('#emailEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['blockquote', 'code-block'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Compose your email here... Use the placeholder tags below to personalize.'
+        });
+
+        window.insertPlaceholder = function(tag) {
+            const range = quill.getSelection(true);
+            quill.insertText(range.index, tag);
+            quill.setSelection(range.index + tag.length);
+        };
+
+        (async function () {
+            initPage('email-staff');
+
+            try {
+                const [staff, branches] = await Promise.all([
+                    getStaff({ status: 'Active' }),
+                    getBranches()
+                ]);
+                staffCache = staff || [];
+                if (branches && Array.isArray(branches)) {
+                    const user = getUser();
+                    const branchId = (user && user.role === 'super_admin') ? (getSelectedBranch() || 1) : (user && user.branch_id ? user.branch_id : 1);
+                    const branch = branches.find(b => String(b.id) === String(branchId));
+                    if (branch && branch.school_name) branchSchoolName = branch.school_name;
+                }
+            } catch(e) { console.error(e); }
+
+            // ==================== Multi-Select Dropdown Engine ====================
+            window.togglePanel = function(dropdownId) {
+                const dd = document.getElementById(dropdownId);
+                const panel = dd.querySelector('.ms-panel');
+                const trigger = dd.querySelector('.ms-trigger');
+                const isOpen = panel.classList.contains('show');
+                document.querySelectorAll('.ms-panel.show').forEach(p => { p.classList.remove('show'); p.parentElement.querySelector('.ms-trigger').classList.remove('open'); });
+                if (!isOpen) { panel.classList.add('show'); trigger.classList.add('open'); }
+            };
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.ms-dropdown')) {
+                    document.querySelectorAll('.ms-panel.show').forEach(p => { p.classList.remove('show'); p.parentElement.querySelector('.ms-trigger').classList.remove('open'); });
+                }
+            });
+
+            function buildMultiSelect(panelId, items) {
+                const panel = document.getElementById(panelId);
+                panel.innerHTML = '';
+                const saDiv = document.createElement('div');
+                saDiv.className = 'ms-item select-all';
+                saDiv.innerHTML = '<input type="checkbox" class="ms-select-all"> <label>Select All</label>';
+                panel.appendChild(saDiv);
+                const saCheck = saDiv.querySelector('input');
+                saCheck.addEventListener('change', function() {
+                    panel.querySelectorAll('.ms-cb').forEach(cb => { cb.checked = this.checked; });
+                    updateTriggerText(panelId);
+                });
+                saDiv.addEventListener('click', function(e) { if (e.target !== saCheck) { saCheck.checked = !saCheck.checked; saCheck.dispatchEvent(new Event('change')); } });
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'ms-item';
+                    div.innerHTML = '<input type="checkbox" class="ms-cb" value="' + item.value + '"> <label>' + item.label + '</label>';
+                    panel.appendChild(div);
+                    const cb = div.querySelector('input');
+                    cb.addEventListener('change', function() {
+                        const allCbs = panel.querySelectorAll('.ms-cb');
+                        const checkedCbs = panel.querySelectorAll('.ms-cb:checked');
+                        saCheck.checked = allCbs.length === checkedCbs.length;
+                        updateTriggerText(panelId);
+                    });
+                    div.addEventListener('click', function(e) { if (e.target !== cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); } });
+                });
+            }
+
+            function updateTriggerText(panelId) {
+                const panel = document.getElementById(panelId);
+                const trigger = panel.closest('.ms-dropdown').querySelector('.ms-trigger');
+                const checked = Array.from(panel.querySelectorAll('.ms-cb:checked'));
+                const all = panel.querySelectorAll('.ms-cb');
+                if (checked.length === 0) {
+                    trigger.textContent = 'Select Designation';
+                } else if (checked.length === all.length) {
+                    trigger.textContent = 'All Selected';
+                } else if (checked.length <= 2) {
+                    trigger.textContent = checked.map(cb => cb.nextElementSibling ? cb.nextElementSibling.textContent : cb.value).join(', ');
+                } else {
+                    trigger.textContent = checked.length + ' selected';
+                }
+            }
+
+            function getCheckedValues(panelId) {
+                return Array.from(document.getElementById(panelId).querySelectorAll('.ms-cb:checked')).map(cb => cb.value);
+            }
+
+            function clearMultiSelect(panelId) {
+                document.getElementById(panelId).querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                updateTriggerText(panelId);
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str || '';
+                return div.innerHTML;
+            }
+
+            // ==================== Build Designation Dropdown ====================
+            const designations = [...new Set(staffCache.map(s => s.designation).filter(Boolean))].sort();
+            buildMultiSelect('desigPanel', designations.map(d => ({ value: d, label: d })));
+
+            // ==================== Search & Render ====================
+            let filteredStaff = [];
+
+            window.searchStaff = function() {
+                const desigs = getCheckedValues('desigPanel');
+                if (desigs.length === 0) { alert('Please select at least one designation'); return; }
+                filteredStaff = staffCache.filter(s => desigs.includes(s.designation));
+                renderStaffList();
+                document.getElementById('emailComposeBox').style.display = 'block';
+            };
+
+            function renderStaffList() {
+                const tbody = document.getElementById('staffTableBody');
+                if (filteredStaff.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-user-slash"></i>No staff found</td></tr>';
+                    document.getElementById('countBadge').style.display = 'none';
+                    return;
+                }
+                document.getElementById('countBadge').textContent = filteredStaff.length;
+                document.getElementById('countBadge').style.display = 'inline';
+
+                tbody.innerHTML = filteredStaff.map(s => {
+                    return '<tr>' +
+                        '<td><input type="checkbox" class="staff-cb" value="' + s.id + '" checked></td>' +
+                        '<td><img src="' + (s.photo_url || 'img/figure/teacher1.png') + '" class="staff-photo" alt=""></td>' +
+                        '<td style="font-weight:600;">' + escapeHtml(s.name) + '</td>' +
+                        '<td>' + escapeHtml(s.father_name || '') + '</td>' +
+                        '<td><span style="background:#e3f2fd;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;color:#0d1b4a;">' + escapeHtml(s.designation || '') + '</span></td>' +
+                        '<td style="color:#1565c0;font-weight:600;">' + escapeHtml(s.email || '—') + '</td>' +
+                        '<td>' + escapeHtml(s.phone || '') + '</td>' +
+                    '</tr>';
+                }).join('');
+            }
+
+            window.toggleAllStaff = function(checked) {
+                document.querySelectorAll('.staff-cb').forEach(cb => cb.checked = checked);
+                document.getElementById('selectAllStaff').checked = checked;
+                document.getElementById('thCheckAll').checked = checked;
+            };
+
+            window.resetFilters = function() {
+                clearMultiSelect('desigPanel');
+                filteredStaff = [];
+                document.getElementById('staffTableBody').innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-search"></i>Select filters & click Search</td></tr>';
+                document.getElementById('emailComposeBox').style.display = 'none';
+                document.getElementById('countBadge').style.display = 'none';
+                document.getElementById('emailSubject').value = '';
+                quill.root.innerHTML = '';
+            };
+
+            window.sendEmail = async function() {
+                const selected = document.querySelectorAll('.staff-cb:checked');
+                if (selected.length === 0) { alert('Please select at least one staff member'); return; }
+                const subject = document.getElementById('emailSubject').value.trim();
+                if (!subject) { alert('Please enter email subject'); return; }
+                const htmlContent = quill.root.innerHTML.trim();
+                const textContent = quill.getText().trim();
+                if (!textContent) { alert('Please enter email message'); return; }
+
+                const staffIds = Array.from(selected).map(cb => parseInt(cb.value));
+                const staffMembers = staffCache.filter(s => staffIds.includes(s.id));
+                const recipients = staffMembers
+                    .filter(s => s.email)
+                    .map(s => {
+                        const personalizedHtml = htmlContent
+                            .replace(/\{staff_name\}/gi, s.name || '')
+                            .replace(/\{designation\}/gi, s.designation || '')
+                            .replace(/\{school_name\}/gi, branchSchoolName);
+                        return {
+                            email: s.email,
+                            name: s.name,
+                            recipient_id: s.id,
+                            html_body: '<div style="font-family:Arial,sans-serif;">' + personalizedHtml + '</div>'
+                        };
+                    });
+                if (!recipients.length) { alert('Selected staff have no email addresses'); return; }
+
+                const btn = document.querySelector('#emailComposeBox button');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                try {
+                    const result = await sendEmailApi({
+                        subject: subject,
+                        recipients: recipients,
+                        recipient_type: 'staff',
+                        type: 'Staff',
+                        message: textContent
+                    });
+                    alert('Email sent successfully to ' + (result.sent_count || recipients.length) + ' staff member(s)!' + (result.failed_count ? ' (' + result.failed_count + ' failed)' : ''));
+                    window.resetFilters();
+                } catch(e) {
+                    alert('Error: ' + e.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+                }
+            };
+        })();
+    </script>
+</body>
+
+</html>

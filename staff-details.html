@@ -1,0 +1,614 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Staff Details — EduNex1</title>
+    <meta name="description" content="View complete staff profile">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/print-all.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* ===== SECTION HEADERS (Same as add-staff) ===== */
+        .section-header {
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header i {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* ===== DETAIL CARDS ===== */
+        .detail-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 16px;
+            border: 1px solid #e8eaf6;
+            overflow: hidden;
+        }
+
+        .detail-card-body {
+            padding: 16px 20px;
+        }
+
+        /* ===== FIELD DISPLAY ===== */
+        .detail-field {
+            margin-bottom: 12px;
+        }
+
+        .detail-field label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+        }
+
+        .field-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #222;
+            background: #f8f9fb;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 7px 10px;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-value.field-muted {
+            color: #aaa;
+            font-weight: 400;
+        }
+
+        /* ===== PHOTO BOX (Same as add-staff form) ===== */
+        .photo-box {
+            width: 100px;
+            height: 120px;
+            border: 2px dashed #c5cae9;
+            border-radius: 8px;
+            background: #f8f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-box .ph-placeholder {
+            text-align: center;
+            color: #aaa;
+        }
+
+        .photo-box .ph-placeholder i {
+            font-size: 20px;
+            color: #0d1b4a;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .photo-box .ph-placeholder span {
+            font-size: 9px;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .page-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .page-actions .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-action-edit {
+            background: #0d1b4a;
+            color: #fff;
+        }
+
+        .btn-action-edit:hover {
+            background: #1a3a7a;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-action-print {
+            background: #e8eaf6;
+            color: #0d1b4a;
+        }
+
+        .btn-action-print:hover {
+            background: #c5cae9;
+            color: #0d1b4a;
+            text-decoration: none;
+        }
+
+        .btn-action-back {
+            background: #f5f5f5;
+            color: #555;
+        }
+
+        .btn-action-back:hover {
+            background: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #detailsContent, #detailsContent * { visibility: visible; }
+            #detailsContent {
+                position: absolute; left: 0; top: 0; width: 100%;
+                display: block !important;
+            }
+            .page-actions, .btn-action-back { display: none !important; }
+            .photo-box img {
+                display: inline-block !important;
+                visibility: visible !important;
+                max-width: 100px;
+            }
+            .detail-card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 10px; }
+            .section-header { background: #f5f6fa !important; color: #0d1b4a !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Staff</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="view-staff.html">Staff List</a></li>
+                        <li>Staff Details</li>
+                    </ul>
+                </div>
+
+                <!-- Details Grid -->
+                <div id="detailsContent" style="display:none;">
+
+                    <!-- Top Section: Photo + Basic Details + Action Buttons -->
+                    <div class="detail-card">
+                        <div class="section-header">
+                            <i class="fas fa-id-badge"></i> Staff Details
+                            <div class="ml-auto page-actions" id="actionButtons"></div>
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="row">
+                                <!-- Photo -->
+                                <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 text-center"
+                                    style="min-width:120px;">
+                                    <label
+                                        style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Photo</label>
+                                    <div class="photo-box" id="dPhoto">
+                                        <div class="ph-placeholder"><i class="fas fa-user"></i><span>No Photo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Basic Fields beside photo -->
+                                <div class="col">
+                                    <div class="row">
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Full Name</label>
+                                                <div class="field-value" id="dName"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Employee ID</label>
+                                                <div class="field-value" id="dEmpId" style="color:#0d1b4a;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Designation</label>
+                                                <div class="field-value" id="dDesignation"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Qualification</label>
+                                                <div class="field-value" id="dQual"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Joining Date</label>
+                                                <div class="field-value" id="dJoinDate"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Status</label>
+                                                <div class="field-value" id="dStatus"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Experience</label>
+                                                <div class="field-value" id="dExp"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-3 col-md-4 col-6">
+                                            <div class="detail-field"><label>Basic Salary</label>
+                                                <div class="field-value" id="dSalary"
+                                                    style="color:#2e7d32;font-weight:700;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Personal Information -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-user"></i> Personal Details</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Father's Name</label>
+                                                <div class="field-value" id="dFather"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Husband's Name</label>
+                                                <div class="field-value" id="dHusband"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Date of Birth</label>
+                                                <div class="field-value" id="dDob"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Gender</label>
+                                                <div class="field-value" id="dGender"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-phone-alt"></i> Contact Information</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Primary Mobile</label>
+                                                <div class="field-value" id="dPhone"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Secondary Mobile</label>
+                                                <div class="field-value" id="dPhone2"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Email</label>
+                                                <div class="field-value" id="dEmail"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="detail-field"><label>Address</label>
+                                                <div class="field-value" id="dAddress"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Teaching Subjects -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-book"></i> Teaching Subjects</div>
+                                <div class="detail-card-body">
+                                    <div class="field-value" id="dSubjects"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Government IDs -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-id-card"></i> Government IDs</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="detail-field"><label>PAN Number</label>
+                                                <div class="field-value" id="dPan"
+                                                    style="font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="detail-field"><label>PF Number</label>
+                                                <div class="field-value" id="dPf"
+                                                    style="font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="detail-field"><label>Aadhar Number</label>
+                                                <div class="field-value" id="dAadhar"
+                                                    style="font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-university"></i> Bank Details</div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Bank Name</label>
+                                                <div class="field-value" id="dBankName"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Branch</label>
+                                                <div class="field-value" id="dBranch"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Account Number</label>
+                                                <div class="field-value" id="dBank"
+                                                    style="font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>IFSC Code</label>
+                                                <div class="field-value" id="dIfsc"
+                                                    style="font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Account Type</label>
+                                                <div class="field-value" id="dAccType"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other Details & Login -->
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-info-circle"></i> Other Details & Login
+                                </div>
+                                <div class="detail-card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Last School</label>
+                                                <div class="field-value" id="dLastSchool"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="detail-field"><label>Comments</label>
+                                                <div class="field-value" id="dComments"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Login ID</label>
+                                                <div class="field-value" id="dLoginId"
+                                                    style="color:#0d1b4a;font-family:monospace;font-size:11px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-field"><label>Password</label>
+                                                <div class="field-value" id="dPassword"
+                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
+                                                    title="Click to reveal"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Not Found -->
+                <div id="notFoundArea" style="display:none;">
+                    <div class="detail-card text-center" style="padding:60px 20px;">
+                        <i class="fas fa-user-slash"
+                            style="font-size:48px;color:#ddd;display:block;margin-bottom:16px;"></i>
+                        <h5 style="font-weight:700;color:#555;">Staff Member Not Found</h5>
+                        <p style="color:#999;font-size:12px;">The staff member you are looking for does not exist or was
+                            deleted.</p>
+                        <a href="view-staff.html" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                            style="text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-top:12px;">
+                            <i class="fas fa-arrow-left"></i> Back to Staff List
+                        </a>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        $(async function () {
+            initPage('staff-list');
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var staffId = parseInt(urlParams.get('id'));
+            if (!staffId) { showNotFound(); return; }
+
+            var s;
+            try { s = await getStaffMember(staffId); } catch(e) { s = null; }
+            if (!s) { showNotFound(); return; }
+
+            var subjects = [];
+            try { subjects = await getSubjects(); } catch(e) {}
+
+            renderStaffProfile(s, subjects);
+        });
+
+        function formatDate(value) {
+            if (!value) return '-';
+            var d = new Date(value);
+            if (Number.isNaN(d.getTime())) return value;
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function showNotFound() {
+            document.getElementById('notFoundArea').style.display = 'block';
+        }
+
+        function getDesignationClass(d) {
+            var map = { 'Clerk': 'desig-clerk', 'Peon': 'desig-peon', 'Accountant': 'desig-accountant', 'Librarian': 'desig-librarian', 'Lab Assistant': 'desig-lab', 'Guard': 'desig-guard' };
+            return map[d] || 'desig-default';
+        }
+
+        async function renderStaffProfile(s, subjects) {
+            var statusBadge = s.status === 'Active'
+                ? '<span class="status-badge status-active">Active</span>'
+                : '<span class="status-badge status-inactive">Inactive</span>';
+            var desigBadge = '<span class="designation-badge ' + getDesignationClass(s.designation) + '">' + s.designation + '</span>';
+
+            document.getElementById('actionButtons').innerHTML =
+                '<a href="add-staff.html?edit=' + s.id + '" class="btn-action btn-action-edit"><i class="fas fa-pen"></i> Edit</a>' +
+                '<a href="#" class="btn-action btn-action-print" onclick="window.print();return false;"><i class="fas fa-print"></i> Print</a>' +
+                '<a href="view-staff.html" class="btn-action btn-action-back"><i class="fas fa-arrow-left"></i> Back</a>';
+
+            var photoBox = document.getElementById('dPhoto');
+            if (s.photo_url) {
+                photoBox.innerHTML = '<img src="' + s.photo_url + '" alt="' + s.name + '">';
+            }
+
+            setText('dName', s.name);
+            setText('dEmpId', s.employee_id);
+            setHtml('dDesignation', desigBadge);
+            setText('dQual', s.qualification);
+            setText('dJoinDate', formatDate(s.joining_date));
+            setHtml('dStatus', statusBadge);
+            setText('dExp', '-', true);
+            setText('dSalary', '\u20B9' + (s.basic_salary || 0).toLocaleString('en-IN'));
+
+            setText('dFather', s.father_name);
+            setText('dHusband', '-', true);
+            setText('dDob', formatDate(s.dob));
+            setText('dGender', s.gender);
+
+            setText('dPhone', s.phone);
+            setText('dPhone2', '-', true);
+            setText('dEmail', s.email || '-', !s.email);
+            setText('dAddress', s.address || '-');
+
+            setText('dSubjects', s.designation === 'Teacher' ? 'Assigned via timetable / teacher permissions' : '-', true);
+
+            setText('dPan', s.pan_no || '-', !s.pan_no);
+            setText('dPf', '-', true);
+            setText('dAadhar', s.aadhar_no || '-', !s.aadhar_no);
+
+            setText('dBankName', s.bank_name || '-', !s.bank_name);
+            setText('dBranch', '-', true);
+            setText('dBank', s.account_no || '-', !s.account_no);
+            setText('dIfsc', s.ifsc_code || '-', !s.ifsc_code);
+            setText('dAccType', '-', true);
+
+            setText('dLastSchool', '-', true);
+            setText('dComments', '-', true);
+            setText('dLoginId', s.login_id || '-');
+
+            // Fetch actual credentials for admin view
+            try {
+                var creds = await getUserCredentials('staff', s.id);
+                var pwEl = document.getElementById('dPassword');
+                var realPw = creds.password || '';
+                pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                pwEl.title = 'Click to reveal';
+                pwEl.style.cursor = 'pointer';
+                pwEl.onclick = function() {
+                    if (pwEl.dataset.revealed === '1') {
+                        pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                        pwEl.dataset.revealed = '0';
+                    } else {
+                        pwEl.textContent = realPw || '-';
+                        pwEl.dataset.revealed = '1';
+                    }
+                };
+            } catch(e) {
+                document.getElementById('dPassword').textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+            }
+
+            document.getElementById('detailsContent').style.display = 'block';
+        }
+
+        function setText(id, val, muted) {
+            var el = document.getElementById(id);
+            el.textContent = val;
+            if (muted || !val || val === '-') el.classList.add('field-muted');
+        }
+
+        function setHtml(id, html) {
+            document.getElementById(id).innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>

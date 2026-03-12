@@ -1,0 +1,282 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Assign Subjects — EduNex1</title>
+    <meta name="description" content="Assign subjects to students">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+    <div id="preloader"></div>
+
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Students</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Assign Subjects</li>
+                    </ul>
+                </div>
+
+                <div class="row">
+                    <!-- Left: Student Search -->
+                    <div class="col-lg-7 col-12">
+                        <div class="card height-auto">
+                            <div class="card-body">
+                                <div class="heading-layout1 mg-b-10">
+                                    <div class="item-title">
+                                        <h3><i class="fas fa-search"></i> Search Students</h3>
+                                    </div>
+                                    <div><span class="counter-badge" id="selectedCount">0</span> <span
+                                            style="font-size:12px;color:#888;">selected</span></div>
+                                </div>
+
+                                <form class="filter-form mg-b-10">
+                                    <div class="row gutters-8 align-items-end">
+                                        <div class="col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Class</label>
+                                            <select class="form-control" id="classFilter"></select>
+                                        </div>
+                                        <div class="col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Section</label>
+                                            <select class="form-control" id="sectionFilter"></select>
+                                        </div>
+                                        <div class="col-md-3 col-6 form-group">
+                                            <label class="form-label-sm">Order By</label>
+                                            <select class="form-control" id="orderBy" style="font-size:12px;">
+                                                <option value="rollNo">Roll No.</option>
+                                                <option value="admNo">Adm. No.</option>
+                                                <option value="nameAZ">Name (A-Z)</option>
+                                                <option value="nameZA">Name (Z-A)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-auto form-group">
+                                            <button type="button" class="fw-btn-fill btn-gradient-yellow" id="btnSearch"
+                                                style="border-radius:6px;height:36px;padding:0 20px;">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="table-responsive">
+                                    <table class="table" id="studentTable" style="display:none;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:36px;"><input type="checkbox" id="selectAll"></th>
+                                                <th>Photo</th>
+                                                <th>Name</th>
+                                                <th>Roll</th>
+                                                <th>Subjects</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="studentBody"></tbody>
+                                    </table>
+                                </div>
+
+                                <div id="emptyState" style="display:none;">
+                                    <div class="empty-state"><i class="fas fa-users-slash"></i>
+                                        <p>No students found in selected class/section</p>
+                                    </div>
+                                </div>
+                                <div id="initialState">
+                                    <div class="empty-state"><i class="fas fa-search"></i>
+                                        <p>Select class & section to search students</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Subject Assignment Panel -->
+                    <div class="col-lg-5 col-12">
+                        <div class="card height-auto">
+                            <div class="card-body">
+                                <div class="heading-layout1 mg-b-10">
+                                    <div class="item-title">
+                                        <h3><i class="fas fa-book"></i> Assign Subjects</h3>
+                                    </div>
+                                </div>
+
+                                <!-- Subject Multi-Select -->
+                                <div class="form-group">
+                                    <label class="form-label-sm">Select Subjects</label>
+                                    <select class="select2" id="subjectSelect" multiple="multiple"
+                                        style="width:100%;"></select>
+                                </div>
+
+                                <!-- Quick Presets -->
+                                <div class="mg-b-15">
+                                    <label class="form-label-sm mg-b-6">Quick Presets</label>
+                                    <div class="d-flex" style="gap:6px;flex-wrap:wrap;">
+                                        <button type="button" class="preset-btn" data-preset="primary">Primary
+                                            (1-5)</button>
+                                        <button type="button" class="preset-btn" data-preset="middle">Middle
+                                            (6-8)</button>
+                                        <button type="button" class="preset-btn" data-preset="senior">Senior
+                                            (9-12)</button>
+                                        <button type="button" class="preset-btn" data-preset="all">All</button>
+                                        <button type="button" class="preset-btn" data-preset="clear">Clear</button>
+                                    </div>
+                                </div>
+
+                                <!-- Assign Panel -->
+                                <div class="assign-panel">
+                                    <p style="font-size:12px;color:#666;margin-bottom:10px;">
+                                        <i class="fas fa-info-circle mg-r-5" style="color:#304ffe;"></i>
+                                        Selected subjects will be assigned to <strong><span
+                                                id="panelCount">0</span></strong> students
+                                    </p>
+                                    <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
+                                        id="btnAssign" style="width:100%;border-radius:8px;">
+                                        <i class="fas fa-check-double mg-r-5"></i> Assign Subjects
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        let selectedStudentIds = [];
+        let subjectsCache = [];
+
+        $(document).ready(async function () {
+            initPage('assign-subjects');
+            populateClassDropdown(document.getElementById('classFilter'), false);
+            populateSectionDropdown(document.getElementById('sectionFilter'), true);
+            populateSubjectDropdown(document.getElementById('subjectSelect'), false);
+
+            // Cache subjects for presets
+            try { subjectsCache = await getSubjects(); } catch(e) { console.error(e); }
+
+            $('.select2').select2();
+            $('#btnSearch').on('click', searchStudents);
+            $('#selectAll').on('change', function () {
+                const checked = $(this).is(':checked');
+                $('.student-assign-check').prop('checked', checked);
+                selectedStudentIds = checked ? $('.student-assign-check').map(function () { return parseInt($(this).val()); }).get() : [];
+                updateUI();
+            });
+
+            $('.preset-btn').on('click', function () {
+                const preset = $(this).data('preset');
+                let ids = [];
+                if (preset === 'all') ids = subjectsCache.map(s => s.id);
+                else if (preset === 'clear') ids = [];
+                else {
+                    // First N subjects based on preset type
+                    const counts = { primary: 5, middle: 7, senior: 9 };
+                    ids = subjectsCache.slice(0, counts[preset] || 5).map(s => s.id);
+                }
+                $('#subjectSelect').val(ids).trigger('change');
+                $('.preset-btn').removeClass('active'); $(this).addClass('active');
+            });
+
+            $('#btnAssign').on('click', assignSubjectsToStudents);
+        });
+
+        async function searchStudents() {
+            const classId = parseInt($('#classFilter').val());
+            const section = $('#sectionFilter').val();
+            if (!classId) { showToast('Select a class', 'error'); return; }
+
+            try {
+                const filters = { class_id: classId, status: 'Active' };
+                if (section && section !== 'All') filters.section = section;
+                const students = await getStudents(filters);
+                selectedStudentIds = [];
+                $('#selectAll').prop('checked', false);
+                $('#initialState').hide();
+
+                if (!students.length) { $('#studentTable').hide(); $('#emptyState').show(); updateUI(); return; }
+                $('#emptyState').hide(); $('#studentTable').show();
+
+                let html = '';
+                for (const s of students) {
+                    let subBadges = '';
+                    try {
+                        const subs = await getStudentSubjects(s.id);
+                        subBadges = subs.map(n => `<span class="subject-badge">${n.subject_name}</span>`).join('');
+                    } catch(e) { }
+                    const initial = (s.name || '?')[0].toUpperCase();
+                    html += `<tr class="student-check-row" data-id="${s.id}">
+                    <td><input type="checkbox" class="student-assign-check" value="${s.id}" onchange="toggleStudent(${s.id}, this.checked)"></td>
+                    <td><div style="width:28px;height:28px;border-radius:50%;background:#304ffe;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${initial}</div></td>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.roll_no || '-'}</td>
+                    <td><div style="display:flex;flex-wrap:wrap;gap:2px;">${subBadges || '<span style="color:#ccc;font-size:11px;">None</span>'}</div></td>
+                </tr>`;
+                }
+                document.getElementById('studentBody').innerHTML = html;
+                updateUI();
+            } catch(e) { showToast('Error: ' + e.message, 'error'); }
+        }
+
+        function toggleStudent(id, checked) {
+            if (checked && !selectedStudentIds.includes(id)) selectedStudentIds.push(id);
+            else selectedStudentIds = selectedStudentIds.filter(x => x !== id);
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('selectedCount').textContent = selectedStudentIds.length;
+            document.getElementById('panelCount').textContent = selectedStudentIds.length;
+            $('.student-check-row').each(function () { $(this).toggleClass('selected', selectedStudentIds.includes(parseInt($(this).data('id')))); });
+        }
+
+        async function assignSubjectsToStudents() {
+            if (!selectedStudentIds.length) { showToast('Select students first', 'error'); return; }
+            const subjectIds = ($('#subjectSelect').val() || []).map(Number);
+            if (!subjectIds.length) { showToast('Select subjects to assign', 'error'); return; }
+            const subjectNames = subjectIds.map(id => { const s = subjectsCache.find(x => x.id === id); return s ? s.name : ''; }).filter(Boolean);
+
+            showConfirmModal('Confirm Assignment', `Assign <strong>${subjectNames.join(', ')}</strong> to <strong>${selectedStudentIds.length}</strong> students?`, async function () {
+                try {
+                    for (const studentId of selectedStudentIds) {
+                        await saveStudentSubjects(studentId, subjectIds);
+                    }
+                    showToast(`${subjectNames.length} subjects assigned to ${selectedStudentIds.length} students!`, 'success');
+                    searchStudents();
+                } catch(e) { showToast('Error: ' + e.message, 'error'); }
+            });
+        }
+    </script>
+</body>
+
+</html>

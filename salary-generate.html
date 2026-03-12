@@ -1,0 +1,504 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Generate Salary — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/select2.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control { font-size: 12px; height: 36px; }
+        .gen-card { background: #fff; border: 2px solid #e0e0e0; border-radius: 14px; overflow: hidden; margin-top: 16px; }
+        .gen-header { background: #fff; color: #0d1b4a; padding: 14px 20px; border-bottom: 2px solid #0d1b4a; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+        .gen-header h5 { margin: 0; font-size: 14px; font-weight: 700; }
+        .gen-header small { font-size: 11px; color: #555; }
+        .gen-body { padding: 20px; }
+        .info-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .info-box { flex: 1; min-width: 140px; background: #f8f9ff; border: 1px solid #eee; border-radius: 8px; padding: 10px 12px; }
+        .info-box label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .info-box span { font-size: 13px; font-weight: 600; color: #0d1b4a; }
+        .section-divider { font-size: 12px; font-weight: 700; color: #0d1b4a; border-bottom: 2px solid #e8eaf6; padding-bottom: 6px; margin: 18px 0 12px; display: flex; align-items: center; gap: 6px; }
+        .att-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
+        .att-field { min-width: 120px; }
+        .att-field label { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .att-input { width: 80px; height: 34px; font-size: 12px; font-weight: 600; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 8px; text-align: center; }
+        .att-input:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .att-input[readonly] { background: #f5f5f5; color: #333; cursor: default; }
+        .set-rules-link { font-size: 11px; font-weight: 600; color: #0d1b4a; cursor: pointer; text-decoration: underline; display: inline-flex; align-items: center; gap: 3px; }
+        .set-rules-link:hover { color: #304ffe; }
+        .sal-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .sal-table thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 8px 14px; text-align: left; }
+        .sal-table tbody td { font-size: 12px; padding: 9px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .sal-table tbody tr:hover td { background: #f5f7ff; }
+        .sal-table tbody tr.total-row td { font-weight: 700; background: #f8f9ff; border-top: 2px solid #0d1b4a; font-size: 13px; }
+        .sal-table tbody tr.section-row td { font-weight: 700; color: #0d1b4a; background: #e8eaf6; font-size: 11px; text-transform: uppercase; }
+        .sal-input { width: 100px; height: 30px; font-size: 12px; font-weight: 600; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 8px; text-align: right; }
+        .sal-input:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .final-box { background: #0d1b4a; color: #fff; border-radius: 10px; padding: 16px 20px; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+        .final-box .fb-item { text-align: center; }
+        .final-box .fb-item label { font-size: 9px; text-transform: uppercase; opacity: 0.7; display: block; margin-bottom: 2px; }
+        .final-box .fb-item span { font-size: 18px; font-weight: 700; }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Payroll</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Generate Salary</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-calculator"></i> Generate Salary</h3>
+                            </div>
+                        </div>
+
+                        <!-- Filter -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Month *</label>
+                                    <select class="form-control" id="fMonth">
+                                        <option value="">Select Month</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Designation</label>
+                                    <select class="form-control" id="fDesignation">
+                                        <option value="">All Designations</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Select Staff *</label>
+                                    <select class="form-control" id="fStaff">
+                                        <option value="">Select Staff</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnProceed" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-arrow-right"></i> Proceed
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnCancel" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generation Area -->
+                        <div id="genArea">
+                            <div class="empty-state"><i class="fas fa-calculator"></i>Select month and staff to generate salary</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/select2.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        const SALARY_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        let selectedStaff = null;
+        let currentYear = new Date().getFullYear();
+        let staffCache = [];
+        let allowanceHeads = [];
+        let deductionHeads = [];
+        let salaryOpts = {};
+        let existingSalaries = [];
+
+        (async function () {
+            if (typeof initPage === 'function') initPage('salary-generate');
+
+            try {
+                [staffCache, allowanceHeads, deductionHeads, salaryOpts, existingSalaries] = await Promise.all([
+                    getStaff({ status: 'Active' }),
+                    getAllowanceHeads(),
+                    getDeductionHeads(),
+                    getOptionSettings().catch(() => ({})),
+                    getSalaries({ year: currentYear })
+                ]);
+            } catch(e) { console.error(e); }
+
+            if (!salaryOpts || typeof salaryOpts !== 'object') salaryOpts = {};
+
+            // Populate months
+            SALARY_MONTHS.forEach(m => $('#fMonth').append(`<option value="${m}">${m} ${currentYear}</option>`));
+
+            // Populate designations
+            const designations = [...new Set(staffCache.map(s => s.designation).filter(Boolean))].sort();
+            designations.forEach(d => $('#fDesignation').append(`<option value="${d}">${d}</option>`));
+
+            // Populate staff
+            populateStaffList();
+
+            // Filter staff by designation
+            $('#fDesignation').on('change', populateStaffList);
+
+            $('#btnProceed').on('click', generateSalary);
+            $('#btnCancel').on('click', function () {
+                $('#fMonth, #fDesignation, #fStaff').val('');
+                populateStaffList();
+                $('#genArea').html('<div class="empty-state"><i class="fas fa-calculator"></i>Select month and staff to generate salary</div>');
+            });
+        })();
+
+        function populateStaffList() {
+            const desig = $('#fDesignation').val();
+            let list = staffCache;
+            if (desig) list = list.filter(s => s.designation === desig);
+            $('#fStaff').html('<option value="">Select Staff</option>');
+            list.forEach(s => $('#fStaff').append(`<option value="${s.id}">${s.employee_id} — ${s.name}</option>`));
+        }
+
+        function getLeaveAllowed() { return parseInt(salaryOpts['salary_leave_per_month']) || 2; }
+        function getLatePenalty() { return salaryOpts['salary_late_penalty'] || 'quarter'; }
+
+        function getPenaltyFraction() {
+            switch (getLatePenalty()) {
+                case 'quarter': return 0.25;
+                case 'half': return 0.5;
+                case 'full': return 1;
+                default: return 0.25;
+            }
+        }
+
+        async function generateSalary() {
+            const month = $('#fMonth').val();
+            const staffId = $('#fStaff').val();
+            if (!month) { showToast('Please select a month', 'error'); return; }
+            if (!staffId) { showToast('Please select a staff member', 'error'); return; }
+
+            selectedStaff = staffCache.find(s => s.id === parseInt(staffId));
+            if (!selectedStaff) { showToast('Staff not found', 'error'); return; }
+
+            // Check if already generated
+            const existing = existingSalaries.find(g => g.staff_id === selectedStaff.id && g.month === month && g.year === currentYear);
+            if (existing) {
+                showToast('Salary already generated for this staff and month. Check Salary List.', 'error');
+                return;
+            }
+
+            const basicSalary = selectedStaff.basic_salary || 0;
+            const daysInMonth = 30;
+            const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
+            const penaltyFraction = getPenaltyFraction();
+            const leaveAllowed = getLeaveAllowed();
+            const penaltyLabels = { quarter: '1/4 Day', half: '1/2 Day', full: 'Full Day' };
+            let staffSalarySettings = [];
+            let attendanceRows = [];
+            try {
+                const monthIndex = SALARY_MONTHS.indexOf(month) + 1;
+                const monthNo = String(monthIndex).padStart(2, '0');
+                [staffSalarySettings, attendanceRows] = await Promise.all([
+                    getSalarySettings(selectedStaff.id),
+                    getStaffAttendance({ staff_id: selectedStaff.id, from_date: `${currentYear}-${monthNo}-01`, to_date: `${currentYear}-${monthNo}-31` })
+                ]);
+            } catch (e) {
+                console.error('Failed to load payroll defaults', e);
+            }
+
+            let html = `
+            <div class="gen-card">
+                <div class="gen-header">
+                    <div>
+                        <h5><i class="fas fa-calculator" style="margin-right:6px;"></i>Salary Generation — ${selectedStaff.name}</h5>
+                        <small>${selectedStaff.employee_id} &bull; ${selectedStaff.designation} &bull; ${month} ${currentYear}</small>
+                    </div>
+                </div>
+                <div class="gen-body">
+                    <!-- Staff Info -->
+                    <div class="info-row">
+                        <div class="info-box"><label>Employee</label><span>${selectedStaff.name}</span></div>
+                        <div class="info-box"><label>Emp ID</label><span>${selectedStaff.employee_id}</span></div>
+                        <div class="info-box"><label>Designation</label><span>${selectedStaff.designation}</span></div>
+                        <div class="info-box"><label>Month</label><span>${month} ${currentYear}</span></div>
+                    </div>
+
+                    <!-- Attendance Deductions -->
+                    <div class="section-divider"><i class="fas fa-calendar-times"></i> Attendance Deductions</div>
+                    <div class="att-row">
+                        <div class="att-field">
+                            <label>Absent Leave</label>
+                            <div class="d-flex align-items-center" style="gap:4px;">
+                                <input type="number" class="att-input" id="absentDays" value="0" min="0" max="30">
+                                <span style="font-size:10px;color:#888;">(Allowed: ${leaveAllowed})</span>
+                            </div>
+                        </div>
+                        <div class="att-field">
+                            <label>Late Days</label>
+                            <div class="d-flex align-items-center" style="gap:4px;">
+                                <input type="number" class="att-input" id="lateDays" value="0" min="0" max="30">
+                                <span style="font-size:10px;color:#888;">(1 = ${penaltyLabels[getLatePenalty()]} cut)</span>
+                            </div>
+                        </div>
+                        <div class="att-field">
+                            <label>Half Days</label>
+                            <div class="d-flex align-items-center" style="gap:4px;">
+                                <input type="number" class="att-input" id="halfDays" value="0" min="0" max="30">
+                                <span style="font-size:10px;color:#888;">(1 = 1/2 day cut)</span>
+                            </div>
+                        </div>
+                        <div class="att-field">
+                            <label>Total Deducted Days</label>
+                            <input type="text" class="att-input" id="totalDeducted" value="0" readonly style="font-weight:700;color:#c62828;">
+                        </div>
+                        <div style="align-self:flex-end;">
+                            <a href="/salary-settings" class="set-rules-link"><i class="fas fa-cog"></i> Set Rules</a>
+                        </div>
+                    </div>
+
+                    <!-- Basic Salary Calc -->
+                    <div class="section-divider"><i class="fas fa-rupee-sign"></i> Basic Salary Calculation</div>
+                    <div class="att-row">
+                        <div class="att-field">
+                            <label>Basic Salary</label>
+                            <input type="number" class="att-input" id="basicSalaryInput" value="${basicSalary}" style="width:110px;" onchange="recalc()">
+                        </div>
+                        <div class="att-field">
+                            <label>Salary Per Day</label>
+                            <input type="text" class="att-input" id="salaryPerDay" value="₹${salaryPerDay.toLocaleString('en-IN')}" readonly style="width:110px;">
+                        </div>
+                        <div class="att-field">
+                            <label>Total Basic Salary</label>
+                            <input type="text" class="att-input" id="totalBasicSalary" value="₹${basicSalary.toLocaleString('en-IN')}" readonly style="width:130px;font-weight:700;color:#2e7d32;">
+                        </div>
+                    </div>
+
+                    <!-- Total Salary Breakdown -->
+                    <div class="section-divider"><i class="fas fa-list-alt"></i> Total Salary Breakdown</div>
+                    <div style="overflow-x:auto;">
+                        <table class="sal-table" id="salaryTable">
+                            <thead><tr><th>Head</th><th style="width:140px;">Amount (₹)</th></tr></thead>
+                            <tbody id="salaryBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Final Salary -->
+                    <div class="final-box" id="finalBox">
+                        <div class="fb-item"><label>Final Salary</label><span id="finalSalaryDisplay">₹0</span></div>
+                    </div>
+
+                    <!-- Generate Date, Remark, Submit -->
+                    <div class="row mg-t-15 align-items-end">
+                        <div class="col-lg-3 col-md-4 col-6 form-group">
+                            <label class="form-label-sm">Generate Date</label>
+                            <input type="date" class="form-control" id="generateDate" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div class="col-lg-5 col-md-6 col-12 form-group">
+                            <label class="form-label-sm">Remark</label>
+                            <input type="text" class="form-control" id="remark" placeholder="Optional remark">
+                        </div>
+                        <div class="col-auto form-group d-flex" style="gap:6px;">
+                            <button class="fw-btn-fill btn-gradient-yellow" onclick="submitSalary()" style="border-radius:6px;height:36px;font-size:12px;padding:0 18px;width:auto;">
+                                <i class="fas fa-check"></i> Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+            $('#genArea').html(html);
+            buildSalaryTable();
+
+            if (Array.isArray(staffSalarySettings) && staffSalarySettings.length) {
+                staffSalarySettings.forEach(setting => {
+                    const selector = setting.component_type === 'allowance' ? '.allowance-input' : '.deduction-input';
+                    $(`${selector}[data-id="${setting.component_id}"]`).val(setting.amount || 0);
+                });
+            }
+
+            if (Array.isArray(attendanceRows) && attendanceRows.length) {
+                const counts = { A: 0, L: 0, HD: 0 };
+                attendanceRows.forEach(row => {
+                    if (counts[row.status] !== undefined) counts[row.status] += 1;
+                });
+                $('#absentDays').val(counts.A);
+                $('#lateDays').val(counts.L);
+                $('#halfDays').val(counts.HD);
+            }
+
+            // Bind attendance recalc
+            $('#absentDays, #lateDays, #halfDays').on('input change', recalc);
+            recalc();
+        }
+
+        function recalc() {
+            const absent = parseInt($('#absentDays').val()) || 0;
+            const late = parseInt($('#lateDays').val()) || 0;
+            const half = parseInt($('#halfDays').val()) || 0;
+            const allowed = getLeaveAllowed();
+            const penaltyFrac = getPenaltyFraction();
+
+            // Excess absent beyond allowed
+            const excessAbsent = Math.max(0, absent - allowed);
+            const totalDeducted = excessAbsent + (late * penaltyFrac) + (half * 0.5);
+            $('#totalDeducted').val(totalDeducted);
+
+            const basicSalary = parseInt($('#basicSalaryInput').val()) || 0;
+            const daysInMonth = 30;
+            const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
+            const totalBasic = Math.round((basicSalary - (totalDeducted * salaryPerDay)) * 100) / 100;
+
+            $('#salaryPerDay').val('₹' + salaryPerDay.toLocaleString('en-IN'));
+            $('#totalBasicSalary').val('₹' + Math.max(0, totalBasic).toLocaleString('en-IN'));
+
+            updateFinalSalary();
+        }
+
+        function buildSalaryTable() {
+            let html = '';
+
+            // Total Basic Salary row
+            html += `<tr><td style="font-weight:600;">Total Basic Salary</td><td><span id="basicSalaryCell" style="font-weight:700;">₹0</span></td></tr>`;
+
+            // Allowance section
+            if (allowanceHeads.length) {
+                html += `<tr class="section-row"><td colspan="2"><i class="fas fa-plus-circle" style="margin-right:4px;"></i> Allowances</td></tr>`;
+                allowanceHeads.forEach(a => {
+                    html += `<tr>
+                        <td>${a.name}</td>
+                        <td><input type="number" class="sal-input allowance-input" data-id="${a.id}" value="0" min="0" placeholder="0" onchange="updateFinalSalary()" oninput="updateFinalSalary()"></td>
+                    </tr>`;
+                });
+            }
+
+            // Deduction section
+            if (deductionHeads.length) {
+                html += `<tr class="section-row"><td colspan="2"><i class="fas fa-minus-circle" style="margin-right:4px;"></i> Deductions</td></tr>`;
+                deductionHeads.forEach(d => {
+                    html += `<tr>
+                        <td>${d.name}</td>
+                        <td><input type="number" class="sal-input deduction-input" data-id="${d.id}" value="0" min="0" placeholder="0" onchange="updateFinalSalary()" oninput="updateFinalSalary()"></td>
+                    </tr>`;
+                });
+            }
+
+            // Total row
+            html += `<tr class="total-row"><td>Final Salary</td><td id="totalCell">₹0</td></tr>`;
+
+            $('#salaryBody').html(html);
+            updateFinalSalary();
+        }
+
+        function updateFinalSalary() {
+            // Get total basic from the readonly field
+            const totalBasicStr = ($('#totalBasicSalary').val() || '0').replace(/[₹,]/g, '');
+            const totalBasic = parseFloat(totalBasicStr) || 0;
+            $('#basicSalaryCell').text('₹' + Math.max(0, totalBasic).toLocaleString('en-IN'));
+
+            let totalAllowance = 0;
+            $('.allowance-input').each(function () { totalAllowance += parseInt($(this).val()) || 0; });
+
+            let totalDeduction = 0;
+            $('.deduction-input').each(function () { totalDeduction += parseInt($(this).val()) || 0; });
+
+            const finalSalary = Math.max(0, Math.round((totalBasic + totalAllowance - totalDeduction) * 100) / 100);
+
+            $('#totalCell').text('₹' + finalSalary.toLocaleString('en-IN'));
+            $('#finalSalaryDisplay').text('₹' + finalSalary.toLocaleString('en-IN'));
+        }
+
+        async function submitSalary() {
+            const month = $('#fMonth').val();
+            if (!selectedStaff || !month) { showToast('Missing data', 'error'); return; }
+
+            const absent = parseInt($('#absentDays').val()) || 0;
+            const late = parseInt($('#lateDays').val()) || 0;
+            const half = parseInt($('#halfDays').val()) || 0;
+            const totalDeducted = parseFloat($('#totalDeducted').val()) || 0;
+            const basicSalary = parseInt($('#basicSalaryInput').val()) || 0;
+            const daysInMonth = 30;
+            const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
+            const totalBasicStr = ($('#totalBasicSalary').val() || '0').replace(/[₹,]/g, '');
+            const totalBasic = parseFloat(totalBasicStr) || 0;
+
+            const allowances = {};
+            let totalAllowance = 0;
+            $('.allowance-input').each(function () {
+                const id = $(this).data('id');
+                const val = parseInt($(this).val()) || 0;
+                if (val > 0) allowances[id] = val;
+                totalAllowance += val;
+            });
+
+            const deductions = {};
+            let totalDeduction = 0;
+            $('.deduction-input').each(function () {
+                const id = $(this).data('id');
+                const val = parseInt($(this).val()) || 0;
+                if (val > 0) deductions[id] = val;
+                totalDeduction += val;
+            });
+
+            const finalSalary = Math.max(0, Math.round((totalBasic + totalAllowance - totalDeduction) * 100) / 100);
+
+            const record = {
+                staff_id: selectedStaff.id,
+                month: month,
+                year: currentYear,
+                absent_days: absent,
+                late_days: late,
+                half_days: half,
+                total_deducted_days: totalDeducted,
+                basic: basicSalary,
+                salary_per_day: salaryPerDay,
+                total_basic_salary: totalBasic,
+                allowances: JSON.stringify(allowances),
+                deductions: JSON.stringify(deductions),
+                total_allowances: totalAllowance,
+                total_deductions: totalDeduction,
+                net_salary: finalSalary,
+                generated_date: $('#generateDate').val() || new Date().toISOString().split('T')[0],
+                remark: $('#remark').val().trim(),
+                status: 'Unpaid'
+            };
+
+            try {
+                await generateSalaries(record);
+                showToast('Salary generated successfully! Redirecting to Salary List...', 'success');
+                setTimeout(() => { window.location.href = '/salary-list'; }, 1500);
+            } catch(e) {
+                showToast('Error generating salary: ' + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

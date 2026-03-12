@@ -1,0 +1,160 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Salary Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control { font-size: 12px; height: 36px; }
+        .setting-card { background: #fff; border: 2px solid #e0e0e0; border-radius: 14px; overflow: hidden; }
+        .setting-header { background: #fff; color: #0d1b4a; padding: 14px 20px; border-bottom: 2px solid #0d1b4a; }
+        .setting-header h5 { margin: 0; font-size: 14px; font-weight: 700; }
+        .setting-header small { font-size: 11px; color: #555; }
+        .setting-body { padding: 20px; }
+        .rule-item { background: #f8f9ff; border: 1px solid #eee; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; }
+        .rule-item label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; display: block; }
+        .rule-item .rule-desc { font-size: 11px; color: #888; margin-top: 4px; }
+        .rule-input { width: 80px; height: 36px; font-size: 13px; font-weight: 700; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 10px; text-align: center; }
+        .rule-input:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .rule-select { height: 36px; font-size: 12px; font-weight: 600; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 10px; min-width: 180px; }
+        .rule-select:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .current-val { font-size: 12px; font-weight: 700; color: #0d1b4a; background: #e8eaf6; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-left: 8px; }
+        .success-msg { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 12px; font-weight: 600; color: #2e7d32; display: none; }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Payroll</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Salary Settings</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-cog"></i> Salary Settings</h3>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-header">
+                                <h5><i class="fas fa-sliders-h" style="margin-right:6px;"></i>Salary Deduction Rules</h5>
+                                <small>Configure leave and attendance rules that affect salary calculation</small>
+                            </div>
+                            <div class="setting-body">
+                                <!-- Leave Allowed -->
+                                <div class="rule-item">
+                                    <label><i class="fas fa-calendar-check" style="margin-right:4px;"></i> Leave Allowed in a Month</label>
+                                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                                        <input type="number" class="rule-input" id="leaveAllowed" min="0" max="30" value="2">
+                                        <span style="font-size:12px;color:#555;">days per month</span>
+                                        <span class="current-val" id="currentLeave">Current: 2</span>
+                                    </div>
+                                    <p class="rule-desc">Number of leaves allowed per month without salary deduction. Extra leaves will deduct full day's salary.</p>
+                                </div>
+
+                                <!-- Late Penalty -->
+                                <div class="rule-item">
+                                    <label><i class="fas fa-clock" style="margin-right:4px;"></i> 1 Day Late = Deduction of</label>
+                                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                                        <select class="rule-select" id="latePenalty">
+                                            <option value="quarter">1/4 Day Salary (Quarter Day)</option>
+                                            <option value="half">1/2 Day Salary (Half Day)</option>
+                                            <option value="full">Full Day Salary</option>
+                                        </select>
+                                        <span class="current-val" id="currentLate">Current: 1/4 Day</span>
+                                    </div>
+                                    <p class="rule-desc">How much salary will be deducted for each late marking in the attendance register.</p>
+                                </div>
+
+                                <!-- Save -->
+                                <div style="margin-top:20px; display:flex; gap:8px; flex-wrap:wrap;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" onclick="saveSettings()" style="border-radius:6px;height:40px;font-size:13px;padding:0 24px;width:auto;">
+                                        <i class="fas fa-save"></i> Save Settings
+                                    </button>
+                                    <a href="/salary-generate" class="fw-btn-fill" style="border-radius:6px;height:40px;font-size:13px;padding:0 24px;width:auto;background:#042954;text-decoration:none;display:inline-flex;align-items:center;">
+                                        <i class="fas fa-arrow-left" style="margin-right:4px;"></i> Back to Salary Generate
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="success-msg" id="successMsg"><i class="fas fa-check-circle"></i> Salary settings saved successfully!</div>
+
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let salaryOpts = {};
+        $(async function () {
+            if (typeof initPage === 'function') initPage('salary-settings');
+
+            try { salaryOpts = await getOptionSettings(); } catch(e) {}
+
+            $('#leaveAllowed').val(salaryOpts['salary_leave_per_month'] || 2);
+            $('#latePenalty').val(salaryOpts['salary_late_penalty'] || 'quarter');
+            updateCurrentLabels();
+        });
+
+        function updateCurrentLabels() {
+            $('#currentLeave').text('Current: ' + (salaryOpts['salary_leave_per_month'] || 2));
+            const penaltyLabels = { quarter: '1/4 Day', half: '1/2 Day', full: 'Full Day' };
+            $('#currentLate').text('Current: ' + (penaltyLabels[salaryOpts['salary_late_penalty'] || 'quarter'] || '1/4 Day'));
+        }
+
+        async function saveSettings() {
+            const leave = parseInt($('#leaveAllowed').val()) || 0;
+            const penalty = $('#latePenalty').val();
+
+            if (leave < 0 || leave > 30) { showToast('Leave allowed must be between 0 and 30', 'error'); return; }
+
+            try {
+                await saveOptionSettings({ salary_leave_per_month: leave, salary_late_penalty: penalty });
+                salaryOpts['salary_leave_per_month'] = leave;
+                salaryOpts['salary_late_penalty'] = penalty;
+                updateCurrentLabels();
+                $('#successMsg').fadeIn().delay(3000).fadeOut();
+                showToast('Salary settings saved!', 'success');
+            } catch(e) { showToast('Error saving settings', 'error'); }
+        }
+    </script>
+</body>
+
+</html>

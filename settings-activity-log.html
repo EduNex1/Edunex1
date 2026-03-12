@@ -1,0 +1,89 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Activity Log — Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="css/datepicker.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}.list-table{width:100%;border-collapse:collapse}.list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}.list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.list-table tbody tr:hover td{background:#f5f7ff}.table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
+        .ip-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f3e5f5;color:#6a1b9a;font-family:monospace}
+        .user-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#e8f5e9;color:#1b5e20}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>Activity Log</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-history"></i> Activity Log</h3></div></div>
+                    <div class="filter-card">
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">User</label>
+                                <select class="form-control" id="fUser"><option value="">— All Users —</option></select>
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-6 form-group mb-0">
+                                <label class="form-label-sm">Date From</label>
+                                <input type="date" class="form-control" id="fFrom">
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-6 form-group mb-0">
+                                <label class="form-label-sm">Date To</label>
+                                <input type="date" class="form-control" id="fTo">
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0 d-flex align-items-end" style="gap:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="doSearch()"><i class="fas fa-search"></i> Search</button>
+                                <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 16px;" onclick="doReset()"><i class="fas fa-redo"></i> Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
+                        <table class="list-table"><thead><tr><th style="width:40px">#</th><th>User</th><th>Activity</th><th>Date & Time</th><th>IP Address</th></tr></thead><tbody id="listBody"></tbody></table>
+                    </div></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/datepicker.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('settings-activity-log');
+        const currentUser = typeof getUser === 'function' ? getUser() : null;
+        const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
+        let usersCache = [];
+        try { usersCache = await getUsers(); } catch(e){}
+        // Branch admin: filter out super_admin and branch_admin from user dropdown
+        const filteredUsers = isSuperAdmin ? usersCache : usersCache.filter(u => !['super_admin','branch_admin'].includes(u.role));
+        filteredUsers.forEach(u=>$('#fUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
+
+        let logCache = [];
+        async function load(){
+            try { logCache = await getActivityLog(); } catch(e){ logCache = []; }
+            let list = [...logCache];
+            const uid=parseInt($('#fUser').val())||0;
+            if(uid) list=list.filter(l=>l.user_id===uid);
+            const from=$('#fFrom').val(), to=$('#fTo').val();
+            if(from) list=list.filter(l=>(l.created_at||'').substring(0,10)>=from);
+            if(to) list=list.filter(l=>(l.created_at||'').substring(0,10)<=to);
+            const rows = list.map((l,i)=>`<tr>
+                <td class="text-center">${i+1}</td>
+                <td><span class="user-tag">${l.user_name||('User #'+(l.user_id||'—'))}</span></td>
+                <td>${l.activity}</td>
+                <td style="white-space:nowrap;font-size:11px;">${l.created_at||''}</td>
+                <td><span class="ip-badge">${l.ip_address||'—'}</span></td>
+            </tr>`).join('');
+            $('#listBody').html(rows||'<tr><td colspan="5" class="text-center text-muted" style="padding:30px;">No activity found</td></tr>');
+        }
+        window.doSearch=function(){ load(); };
+        window.doReset=function(){ $('#fUser').val('');$('#fFrom').val('');$('#fTo').val(''); load(); };
+        await load();
+    });
+    </script>
+</body>
+</html>

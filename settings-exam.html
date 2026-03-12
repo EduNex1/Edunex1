@@ -1,0 +1,152 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Exam Settings — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}
+        .section-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:22px 26px;margin-bottom:16px}
+        .section-title{font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e8eaf6}
+        .list-table{width:100%;border-collapse:collapse}.list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}.list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.list-table tbody tr:hover td{background:#f5f7ff}.table-card{background:#fff;border:0;overflow:hidden;margin-top:10px}
+        .action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}.action-btn-edit{background:#fff3e0;color:#ef6c00}.action-btn-edit:hover{background:#ef6c00;color:#fff}.action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+        .instr-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px}
+        .instr-item:last-child{border-bottom:none}
+        .instr-num{width:24px;height:24px;border-radius:50%;background:#e8eaf6;color:#0d1b4a;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .grade-dot{width:32px;height:24px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+        .note-box{background:#fffde7;border:1px solid #fff9c4;border-radius:8px;padding:10px 14px;font-size:11px;color:#795548;margin-bottom:10px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>Exam Settings</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-clipboard-check"></i> Exam Settings</h3></div></div>
+
+                    <!-- Admit Card Instructions -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-id-card"></i> Admit Card Instructions</h5>
+                        <div class="note-box"><i class="fas fa-info-circle"></i> These instructions will be printed on the admit card.</div>
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-8 col-md-8 col-12 form-group mb-1">
+                                <input type="text" class="form-control" id="instrText" placeholder="Type instruction and click Add...">
+                                <input type="hidden" id="instrEditId">
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-6 form-group mb-1">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 18px;" onclick="addInstr()"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div id="instrList" style="border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;"></div>
+                    </div>
+
+                    <!-- Grading System -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="fas fa-graduation-cap"></i> Grading System</h5>
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-2 col-md-3 col-4 form-group mb-1">
+                                <label class="form-label-sm">Grade</label>
+                                <input type="text" class="form-control" id="gGrade" placeholder="e.g. A+">
+                                <input type="hidden" id="gEditId">
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-4 form-group mb-1">
+                                <label class="form-label-sm">Min Percentage</label>
+                                <input type="number" class="form-control" id="gMin" placeholder="0" min="0" max="100">
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-4 form-group mb-1">
+                                <label class="form-label-sm">Max Percentage</label>
+                                <input type="number" class="form-control" id="gMax" placeholder="100" min="0" max="100">
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-6 form-group mb-1 d-flex align-items-end" style="gap:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 18px;" onclick="saveGradeItem()"><i class="fas fa-save"></i> Save</button>
+                                <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 14px;" onclick="cancelGrade()"><i class="fas fa-times"></i> Cancel</button>
+                            </div>
+                        </div>
+                        <div class="table-card"><div class="table-responsive" style="padding:0;">
+                            <table class="list-table"><thead><tr><th style="width:70px">Grade</th><th>Percentage Range</th><th style="width:80px">Action</th></tr></thead><tbody id="gradeBody"></tbody></table>
+                        </div></div>
+                    </div>
+
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('settings-exam');
+
+        let instrCache = [];
+        let gradesCache = [];
+
+        // ---- Admit Card Instructions ----
+        async function loadInstr(){
+            try { instrCache = await getMasterData('admit_card_instructions'); } catch(e){ showToast('Failed to load instructions','error'); }
+            const items = instrCache.map((a,i)=>`<div class="instr-item"><span class="instr-num">${i+1}</span><span style="flex:1">${a.text}</span><button class="action-btn action-btn-edit" onclick="editInstr(${a.id})"><i class="fas fa-pen"></i></button><button class="action-btn action-btn-delete" onclick="delInstr(${a.id})"><i class="fas fa-trash-alt"></i></button></div>`).join('');
+            $('#instrList').html(items||'<div class="text-center text-muted" style="padding:20px;font-size:12px;">No instructions added</div>');
+        }
+        window.addInstr=async function(){
+            const text=$('#instrText').val().trim(), eid=parseInt($('#instrEditId').val())||0;
+            if(!text){showToast('Type an instruction','error');return;}
+            try {
+                if(eid) await updateMasterData('admit_card_instructions', eid, {text});
+                else await createMasterData('admit_card_instructions', {text});
+                $('#instrText').val(''); $('#instrEditId').val('');
+                await loadInstr(); showToast(eid?'Updated':'Instruction added','success');
+            } catch(e){ showToast('Failed to save','error'); }
+        };
+        window.editInstr=function(id){
+            const a=instrCache.find(x=>x.id===id); if(!a)return;
+            $('#instrText').val(a.text); $('#instrEditId').val(a.id); $('#instrText').focus();
+        };
+        window.delInstr=async function(id){
+            if(!confirm('Delete?'))return;
+            try { await deleteMasterData('admit_card_instructions', id); await loadInstr(); showToast('Deleted','success'); }
+            catch(e){ showToast('Failed to delete','error'); }
+        };
+        await loadInstr();
+
+        // ---- Grading System ----
+        const gradeColors = {'A+':'#1b5e20','A':'#2e7d32','B+':'#0d47a1','B':'#1565c0','C+':'#e65100','C':'#ef6c00','D':'#b71c1c','E':'#c62828'};
+        async function loadGrades(){
+            try { gradesCache = await getGradingSystem(); } catch(e){ showToast('Failed to load grades','error'); }
+            const sorted = [...gradesCache].sort((a,b)=>b.max_percentage-a.max_percentage);
+            const rows = sorted.map(g=>{
+                const bg = gradeColors[g.grade]||'#555';
+                return `<tr><td><span class="grade-dot" style="background:${bg}">${g.grade}</span></td><td>${g.min_percentage}% — ${g.max_percentage}%</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editGrade(${g.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="delGrade(${g.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            }).join('');
+            $('#gradeBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:20px;">No grades</td></tr>');
+        }
+        window.saveGradeItem=async function(){
+            const grade=$('#gGrade').val().trim(), min_percentage=parseInt($('#gMin').val()), max_percentage=parseInt($('#gMax').val()), eid=parseInt($('#gEditId').val())||0;
+            if(!grade){showToast('Enter grade','error');return;}
+            if(isNaN(min_percentage)||isNaN(max_percentage)){showToast('Enter percentage range','error');return;}
+            try {
+                const data={grade, min_percentage, max_percentage};
+                if(eid) await updateMasterData('grading_system', eid, data);
+                else await createMasterData('grading_system', data);
+                cancelGrade(); await loadGrades(); showToast(eid?'Updated':'Grade added','success');
+            } catch(e){ showToast('Failed to save grade','error'); }
+        };
+        window.editGrade=function(id){
+            const g=gradesCache.find(x=>x.id===id); if(!g)return;
+            $('#gEditId').val(g.id); $('#gGrade').val(g.grade); $('#gMin').val(g.min_percentage); $('#gMax').val(g.max_percentage);
+        };
+        window.cancelGrade=function(){ $('#gEditId').val('');$('#gGrade').val('');$('#gMin').val('');$('#gMax').val(''); };
+        window.delGrade=async function(id){
+            if(!confirm('Delete?'))return;
+            try { await deleteMasterData('grading_system', id); await loadGrades(); showToast('Deleted','success'); }
+            catch(e){ showToast('Failed to delete','error'); }
+        };
+        await loadGrades();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fee Discount — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .filter-card { background: #fff; border-radius: 12px; border: 1px solid #f0f0f0; padding: 18px 20px; margin-bottom: 16px; }
+        .form-label-sm { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 4px; display: block; letter-spacing: 0.3px; }
+        .form-control { font-size: 12px; height: 36px; }
+        .disc-card { background: #fff; border: 2px solid #e0e0e0; border-radius: 14px; padding: 0; margin-top: 16px; overflow: hidden; }
+        .disc-header { background: #fff; color: #0d1b4a; padding: 14px 20px; border-bottom: 2px solid #0d1b4a; }
+        .disc-header h5 { margin: 0; font-size: 14px; font-weight: 700; }
+        .disc-header small { font-size: 11px; color: #555; }
+        .disc-body { padding: 20px; }
+        .disc-info { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .disc-info .di { flex: 1; min-width: 150px; background: #f8f9ff; border: 1px solid #eee; border-radius: 8px; padding: 10px 12px; }
+        .disc-info .di label { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .disc-info .di span { font-size: 13px; font-weight: 600; color: #0d1b4a; }
+        .disc-table { width: 100%; border-collapse: collapse; }
+        .disc-table thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #0d1b4a; color: #fff; padding: 8px 12px; text-align: left; }
+        .disc-table tbody td { font-size: 12px; padding: 8px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .disc-table tbody tr:hover td { background: #f5f7ff; }
+        .disc-input { width: 100px; height: 32px; font-size: 12px; font-weight: 600; border: 1px solid #e0e0e0; border-radius: 6px; padding: 0 8px; text-align: right; }
+        .disc-input:focus { outline: none; border-color: #0d1b4a; box-shadow: 0 0 0 2px rgba(13,27,74,0.1); }
+        .empty-state { text-align: center; padding: 40px; color: #bbb; }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; }
+        .success-msg { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 12px; font-weight: 600; color: #2e7d32; display: none; }
+    </style>
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Fee</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li>Fee Discount</li>
+                    </ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-tags"></i> Fee Discount</h3>
+                            </div>
+                        </div>
+
+                        <!-- Student Selection -->
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Class</label>
+                                    <select class="form-control" id="fClass"><option value="">Select Class</option></select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Section</label>
+                                    <select class="form-control" id="fSection"><option value="">Select Section</option></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Student</label>
+                                    <select class="form-control" id="fStudent"><option value="">Select Student</option></select>
+                                </div>
+                                <div class="col-auto form-group d-flex align-items-end" style="gap:6px;">
+                                    <button class="fw-btn-fill btn-gradient-yellow" id="btnFetch" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;">
+                                        <i class="fas fa-search"></i> Fetch
+                                    </button>
+                                    <button class="fw-btn-fill" id="btnReset" style="border-radius:6px;height:36px;font-size:12px;padding:0 16px;width:auto;background:#042954;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Discount Form -->
+                        <div id="discountForm">
+                            <div class="empty-state"><i class="fas fa-tags"></i>Select class, section and student to apply discount</div>
+                        </div>
+
+                        <div class="success-msg" id="successMsg"><i class="fas fa-check-circle"></i> Discount saved successfully for the current session!</div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        $(async function () {
+            if (typeof initPage === 'function') initPage('fee-discount');
+
+            let classCache = [], sectionCache = [], studentCache = [], particularCache = [];
+            try { [classCache, sectionCache, particularCache] = await Promise.all([getClasses(), getSections(), getFeeParticulars()]); } catch(e) {}
+
+            classCache.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
+            sectionCache.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
+
+            $('#fClass, #fSection').on('change', async function () {
+                const cls = $('#fClass').val();
+                const sec = $('#fSection').val();
+                $('#fStudent').html('<option value="">Select Student</option>');
+                if (!cls || !sec) return;
+                try { studentCache = await getStudents({ class_id: cls, section: sec }); } catch(e) { studentCache = []; }
+                studentCache.forEach(s => $('#fStudent').append(`<option value="${s.id}">${s.admission_no} — ${s.name}</option>`));
+            });
+
+            $('#btnFetch').on('click', renderDiscount);
+            $('#btnReset').on('click', function () {
+                $('#fClass, #fSection, #fStudent').val('');
+                $('#fStudent').html('<option value="">Select Student</option>');
+                $('#discountForm').html('<div class="empty-state"><i class="fas fa-tags"></i>Select class, section and student to apply discount</div>');
+                $('#successMsg').hide();
+            });
+
+            async function renderDiscount() {
+                const stuId = $('#fStudent').val();
+                if (!stuId) { alert('Please select a student.'); return; }
+
+                const stu = studentCache.find(s => s.id === parseInt(stuId));
+                if (!stu) return;
+                const cls = classCache.find(c => c.id === stu.class_id);
+
+                // Fetch existing discounts for this student
+                let existingDiscounts = [];
+                try { existingDiscounts = await getFeeDiscounts(stuId); } catch(e) {}
+                // Build map: particularId → total discount amount
+                const discountMap = {};
+                existingDiscounts.forEach(d => { discountMap[d.particular_id] = (discountMap[d.particular_id] || 0) + d.amount; });
+
+                let rows = '';
+                particularCache.forEach((p, i) => {
+                    const disc = discountMap[p.id] || 0;
+                    const charge = p.charge || 0;
+                    rows += `<tr>
+                        <td style="font-weight:600;">${i + 1}</td>
+                        <td style="font-weight:600;">${p.name}</td>
+                        <td>₹${charge.toLocaleString('en-IN')}</td>
+                        <td><input type="number" class="disc-input" data-pid="${p.id}" value="${disc}" min="0" max="${charge}" placeholder="0"></td>
+                        <td class="net-val" style="font-weight:700;">₹${(charge - disc).toLocaleString('en-IN')}</td>
+                    </tr>`;
+                });
+
+                let html = `
+                    <div class="disc-card">
+                        <div class="disc-header">
+                            <h5><i class="fas fa-tags" style="margin-right:6px;"></i>Set Discount — ${stu.name}</h5>
+                        </div>
+                        <div class="disc-body">
+                            <div class="disc-info">
+                                <div class="di"><label>Student</label><span>${stu.name}</span></div>
+                                <div class="di"><label>Adm No.</label><span>${stu.admission_no}</span></div>
+                                <div class="di"><label>Father</label><span>${stu.father_name || '-'}</span></div>
+                                <div class="di"><label>Class / Section</label><span>${cls ? cls.name : '-'} / ${stu.section || '-'}</span></div>
+                            </div>
+
+                            <table class="disc-table">
+                                <thead><tr>
+                                    <th>#</th><th>Particular</th><th>Charge (₹)</th><th>Discount (₹)</th><th>Net (₹)</th>
+                                </tr></thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+
+                            <div style="margin-top:16px;text-align:right;">
+                                <button class="fw-btn-fill" id="btnSaveDiscount" style="border-radius:6px;height:40px;font-size:13px;padding:0 24px;width:auto;background:#042954;">
+                                    <i class="fas fa-save"></i> Save Discount
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+
+                $('#discountForm').html(html);
+                $('#successMsg').hide();
+
+                $(document).off('input', '.disc-input').on('input', '.disc-input', function () {
+                    const pid = $(this).data('pid');
+                    const part = particularCache.find(p => p.id === pid);
+                    const charge = part ? (part.charge || 0) : 0;
+                    let disc = parseInt($(this).val()) || 0;
+                    if (disc < 0) disc = 0;
+                    if (disc > charge) disc = charge;
+                    $(this).val(disc);
+                    $(this).closest('tr').find('.net-val').text('₹' + (charge - disc).toLocaleString('en-IN'));
+                });
+
+                $(document).off('click', '#btnSaveDiscount').on('click', '#btnSaveDiscount', async function () {
+                    try {
+                        await Promise.all(existingDiscounts.map(d => deleteFeeDiscount(d.id)));
+                        const promises = [];
+                        $('.disc-input').each(function () {
+                            const pid = $(this).data('pid');
+                            const amt = parseInt($(this).val()) || 0;
+                            if (amt > 0) {
+                                promises.push(createFeeDiscount({ student_id: parseInt(stuId), particular_id: pid, amount: amt, reason: 'Fee discount updated', category: 'General' }));
+                            }
+                        });
+                        await Promise.all(promises);
+                        existingDiscounts = await getFeeDiscounts(stuId);
+                        $('#successMsg').fadeIn().delay(3000).fadeOut();
+                    } catch(e) { alert('Error saving discount'); }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

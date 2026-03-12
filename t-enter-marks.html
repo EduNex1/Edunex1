@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Enter Marks — Teacher Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/teacher-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Enter Marks</h3>
+                    <ul><li><a href="/teacher-dashboard">Home</a></li><li>Results > Enter Marks</li></ul>
+                </div>
+            
+                <div id="noPermissionState" style="display:none;">
+                    <div class="chart-card" style="text-align:center;padding:60px 20px;">
+                        <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
+                        <h5 style="color:#0d1b4a;font-weight:700;margin-bottom:8px;">No Result Permission</h5>
+                        <p style="color:#888;font-size:13px;max-width:400px;margin:0 auto;">No subject assignment was found for marks entry.</p>
+                    </div>
+                </div>
+
+                <div id="mainContent">
+                    <div class="chart-card" style="margin-bottom:16px;">
+                        <div class="chart-card-header"><i class="fas fa-filter"></i> Select Assignment & Exam</div>
+                        <div class="chart-card-body">
+                            <div class="row gutters-8">
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label>Assignment</label>
+                                    <select id="marksAssignment" class="form-control"><option value="">Select assignment</option></select>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-12 form-group">
+                                    <label>Exam</label>
+                                    <select id="marksExam" class="form-control"><option value="">Select exam</option></select>
+                                </div>
+                                <div class="col-12 form-group" style="margin-top:8px;">
+                                    <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="loadMarksSheet()" style="font-size:12px;padding:9px 20px;">
+                                        <i class="fas fa-list mr-1"></i> Load Students
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header"><i class="fas fa-edit"></i> Marks Entry Sheet</div>
+                        <div class="chart-card-body" style="padding:8px 16px;">
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead><tr><th>#</th><th>Roll</th><th>Student</th><th>Min</th><th>Max</th><th>Theory</th><th>Practical</th><th>Total</th><th>Grade</th></tr></thead>
+                                    <tbody id="marksBody"><tr><td colspan="9" style="text-align:center;color:#888;padding:16px;">Select assignment and exam to load marks.</td></tr></tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top:16px;">
+                                <button class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="saveTeacherMarks()" style="font-size:12px;padding:9px 20px;">
+                                    <i class="fas fa-save mr-1"></i> Save Marks
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let teacherAssignments = [];
+    let currentStudents = [];
+
+    (async function(){
+        initPage('t-enter-marks');
+        const user = getUser();
+        if (!user || !user.linked_id) return;
+        try {
+            const [sections, perms, exams] = await Promise.all([
+                getSections(),
+                getTeacherPermissions(user.linked_id),
+                getExams()
+            ]);
+            teacherAssignments = (perms || []).map(function (perm) {
+                const section = (sections || []).find(function (row) { return row.id === perm.section_id; });
+                return {
+                    class_id: perm.class_id,
+                    class_name: perm.class_name || '',
+                    section_name: section ? section.name : '',
+                    subject_id: perm.subject_id,
+                    subject_name: perm.subject_name || ''
+                };
+            }).filter(function (perm) { return perm.subject_id; });
+
+            if (!teacherAssignments.length) {
+                $('#mainContent').hide();
+                $('#noPermissionState').show();
+                return;
+            }
+
+            teacherAssignments.forEach(function (assignment, index) {
+                $('#marksAssignment').append(`<option value="${index}">${assignment.class_name} - ${assignment.section_name} - ${assignment.subject_name}</option>`);
+            });
+            (exams || []).forEach(function (exam) {
+                $('#marksExam').append(`<option value="${exam.id}">${exam.name || exam.title || ('Exam #' + exam.id)}</option>`);
+            });
+        } catch (e) {
+            console.error(e);
+            $('#marksBody').html('<tr><td colspan="9" style="text-align:center;color:#c62828;">Failed to load marks setup.</td></tr>');
+        }
+    })();
+
+    async function loadMarksSheet() {
+        const assignment = teacherAssignments[Number($('#marksAssignment').val())];
+        const examId = $('#marksExam').val();
+        if (!assignment || !examId) {
+            showToast('Select assignment and exam', 'error');
+            return;
+        }
+        try {
+            const [students, existingResults] = await Promise.all([
+                getStudents({ class_id: assignment.class_id, section: assignment.section_name, status: 'Active' }),
+                getExamResults({ exam_id: examId })
+            ]);
+            currentStudents = students || [];
+            if (!currentStudents.length) {
+                $('#marksBody').html('<tr><td colspan="9" style="text-align:center;color:#888;">No students found for the selected assignment.</td></tr>');
+                return;
+            }
+            const filteredResults = (existingResults || []).filter(function (row) {
+                return Number(row.subject_id) === Number(assignment.subject_id);
+            });
+            const html = currentStudents.map(function (student, index) {
+                const existing = filteredResults.find(function (row) { return Number(row.student_id) === Number(student.id); }) || {};
+                const theory = Number(existing.theory_marks || 0);
+                const practical = Number(existing.practical_marks || 0);
+                const total = theory + practical;
+                return `<tr data-student-id="${student.id}"><td>${index + 1}</td><td>${student.roll_no || '-'}</td><td><strong>${student.name || '-'}</strong></td><td><input type="number" class="form-control min-mark" value="${existing.min_marks || 0}" min="0"></td><td><input type="number" class="form-control max-mark" value="${existing.max_marks || 100}" min="1"></td><td><input type="number" class="form-control theory-mark" value="${theory}" min="0" oninput="updateMarkRow(this)"></td><td><input type="number" class="form-control practical-mark" value="${practical}" min="0" oninput="updateMarkRow(this)"></td><td class="total-cell">${total}</td><td class="grade-cell">${existing.grade || calculateGrade(total, Number(existing.max_marks || 100))}</td></tr>`;
+            }).join('');
+            $('#marksBody').html(html);
+        } catch (e) {
+            console.error(e);
+            $('#marksBody').html('<tr><td colspan="9" style="text-align:center;color:#c62828;">Failed to load marks.</td></tr>');
+        }
+    }
+
+    function calculateGrade(total, maxMarks) {
+        const percentage = maxMarks > 0 ? (total / maxMarks) * 100 : 0;
+        if (percentage >= 90) return 'A+';
+        if (percentage >= 75) return 'A';
+        if (percentage >= 60) return 'B';
+        if (percentage >= 45) return 'C';
+        return 'D';
+    }
+
+    function updateMarkRow(input) {
+        const row = input.closest('tr');
+        const theory = Number($(row).find('.theory-mark').val() || 0);
+        const practical = Number($(row).find('.practical-mark').val() || 0);
+        const maxMarks = Number($(row).find('.max-mark').val() || 0);
+        const total = theory + practical;
+        $(row).find('.total-cell').text(total);
+        $(row).find('.grade-cell').text(calculateGrade(total, maxMarks));
+    }
+
+    async function saveTeacherMarks() {
+        const assignment = teacherAssignments[Number($('#marksAssignment').val())];
+        const examId = $('#marksExam').val();
+        if (!assignment || !examId) {
+            showToast('Select assignment and exam', 'error');
+            return;
+        }
+        const results = [];
+        $('#marksBody tr[data-student-id]').each(function () {
+            const studentId = Number($(this).data('student-id'));
+            const minMarks = Number($(this).find('.min-mark').val() || 0);
+            const maxMarks = Number($(this).find('.max-mark').val() || 0);
+            const theoryMarks = Number($(this).find('.theory-mark').val() || 0);
+            const practicalMarks = Number($(this).find('.practical-mark').val() || 0);
+            if (!maxMarks) return;
+            results.push({
+                student_id: studentId,
+                subject_id: assignment.subject_id,
+                min_marks: minMarks,
+                max_marks: maxMarks,
+                theory_marks: theoryMarks,
+                practical_marks: practicalMarks,
+                grade: calculateGrade(theoryMarks + practicalMarks, maxMarks)
+            });
+        });
+        if (!results.length) {
+            showToast('No marks to save', 'error');
+            return;
+        }
+        try {
+            await saveExamResults(Number(examId), results);
+            showToast('Marks saved successfully', 'success');
+            loadMarksSheet();
+        } catch (e) {
+            console.error(e);
+            showToast('Failed to save marks', 'error');
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Parent Dashboard — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+
+                <!-- Breadcrumbs -->
+                <div class="breadcrumbs-area">
+                    <h3>Dashboard</h3>
+                    <ul>
+                        <li><a href="/parent-dashboard">Home</a></li>
+                        <li>Parent Portal</li>
+                    </ul>
+                </div>
+
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <h4 class="dashboard-welcome-text"><i class="fas fa-home"
+                            style="margin-right:6px;color:#ffd54f;"></i> Welcome, Parent!</h4>
+                    <p><span id="schoolNameBanner">Parent Portal</span></p>
+                    <div class="welcome-date" id="todayDate"></div>
+                </div>
+
+                <!-- Child Selector -->
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-user-graduate"></i> Select Child</div>
+                    <div class="chart-card-body" style="padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                        <select id="childSelect" onchange="loadDash()" class="form-control" style="max-width:350px;"><option value="">-- loading --</option></select>
+                        <span style="font-size:13px;color:#666;" id="pChildClass">--</span>
+                        <span class="badge" style="background:#e8eaf6;color:#0d1b4a;font-size:11px;padding:5px 12px;" id="pChildAdmNo">--</span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid stats-grid-3" style="margin-bottom:16px;">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-number" id="pAttPercent">--</div>
+                            <div class="stat-sub" id="pAttSub"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon teal"><i class="fas fa-rupee-sign"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Fee Paid</div>
+                            <div class="stat-number" id="pFeePaid">--</div>
+                            <div class="stat-sub" id="pFeeSub"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-trophy"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-label">Last Exam</div>
+                            <div class="stat-number" id="pLastExam">--</div>
+                            <div class="stat-sub" id="pExamSub"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Homework + Exams -->
+                <div class="row mt-2">
+                    <div class="col-xl-6 col-lg-6 col-12 mb-4">
+                        <div class="chart-card h-100">
+                            <div class="chart-card-header"><i class="fas fa-book"></i> Today's Homework</div>
+                            <div class="chart-card-body">
+                                <div id="dashHw" style="font-size:13px;"><span style="color:#888;">Loading...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-12 mb-4">
+                        <div class="chart-card" style="margin-bottom:16px;">
+                            <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Upcoming Exams</div>
+                            <div class="chart-card-body">
+                                <div id="dashExams" style="font-size:13px;"><span style="color:#888;">Loading...</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header"><i class="fas fa-bolt"></i> Quick Access</div>
+                            <div class="chart-card-body">
+                                <div class="quick-grid">
+                                    <a href="/p-my-children" class="quick-item"><i class="fas fa-clipboard-list"></i><span>My Children</span></a>
+                                    <a href="/p-results" class="quick-item"><i class="fas fa-chart-bar"></i><span>Results</span></a>
+                                    <a href="/p-fee-status" class="quick-item"><i class="fas fa-receipt"></i><span>Fee Status</span></a>
+                                    <a href="/p-online-payment" class="quick-item"><i class="fas fa-qrcode"></i><span>Online Payment</span></a>
+                                    <a href="/p-notice" class="quick-item"><i class="fas fa-bullhorn"></i><span>Notices</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    let children = [];
+    $(async function(){
+        initPage('dashboard');
+        const now = new Date();
+        document.getElementById('todayDate').textContent = now.getDate()+' '+now.toLocaleString('en-IN',{month:'long'})+' '+now.getFullYear();
+        const user = typeof getUser==='function'?getUser():null;
+        if(user){
+            const parentName = user.name || 'Parent';
+            document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+parentName+'!';
+            const b=document.getElementById('schoolNameBanner'); if(b&&user.school_name) b.textContent=user.school_name+' \u2014 Parent Portal';
+        }
+        try {
+            children = await getMyChildren()||[];
+            if(user && !user.name && children.length){
+                const pn = children[0].father_name || children[0].mother_name || 'Parent';
+                document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+pn+'!';
+            }
+            const cs = $('#childSelect').empty();
+            children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}" data-sec="${c.section||''}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
+            if(children.length) loadDash();
+            else {
+                $('#dashHw').html('<span style="color:#888;">No child linked to this parent account.</span>');
+                $('#dashExams').html('<span style="color:#888;">No exams available.</span>');
+            }
+        } catch(e){ console.error(e); }
+    });
+    async function loadDash(){
+        const sid = $('#childSelect').val();
+        const child = children.find(c=>String(c.id)===String(sid));
+        if(!child) return;
+        $('#pChildClass').text('Class '+(child.class_name||'')+(child.section?'-'+child.section:'')+' | Roll No: '+(child.roll_no||''));
+        $('#pChildAdmNo').text(child.admission_no||'');
+        try {
+            const deps = await getFeeDeposits({student_id:child.id})||[];
+            const totalPaid = deps.reduce((sum,row)=>sum+Number(row.received_amount||0),0);
+            const slabs = await getFeeSlabs(child.class_id)||[];
+            const slabTotal = slabs.reduce((sum,row)=>sum+Number(row.amount||0),0);
+            const transportFee = Number(child.transport_fee||0);
+            const oldBalance = Number(child.old_balance||0);
+            const totalFee = (slabTotal + transportFee) * 12;
+            const pending = Math.max(0,totalFee + oldBalance - totalPaid);
+            $('#pFeePaid').text('\u20B9'+totalPaid.toLocaleString('en-IN'));
+            $('#pFeeSub').html(pending<=0?'<span style="color:#43a047;">No dues \u2705</span>':'<span style="color:#c62828;">\u20B9'+pending.toLocaleString('en-IN')+' pending</span>');
+
+            const hw = await getHomework({class_id:child.class_id,section:child.section})||[];
+            if(!hw.length) $('#dashHw').html('<span style="color:#888;">No homework today.</span>');
+            else {
+                let h='';
+                hw.slice(0,3).forEach(w=>{
+                    const dueDate = w.due_date || w.submission_date || '';
+                    h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${w.subject_name||''}</strong> \u2014 ${w.title||''}</span>${dueDate?'<span class="badge badge-warning" style="font-size:10px;">Due: '+dueDate+'</span>':''}</div>`;
+                });
+                $('#dashHw').html(h);
+            }
+
+            const exams = await getExams()||[];
+            if(!exams.length) $('#dashExams').html('<span style="color:#888;">No upcoming exams.</span>');
+            else { let h=''; exams.slice(0,3).forEach(e=>{ h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${e.name||''}</strong></span></div>`; }); $('#dashExams').html(h); }
+
+            try {
+                const att = await getStudentAttendance({student_id:child.id})||[];
+                const present=att.filter(a=>{ const status=String(a.status||'').toUpperCase(); return status==='P'||status==='PRESENT'; }).length;
+                const total=att.length;
+                const pct=total?Math.round(present*100/total):0;
+                $('#pAttPercent').text(pct+'%');
+                $('#pAttSub').text('Present: '+present+'/'+total+' days');
+            } catch(e) {}
+
+            try { const res = await getExamResults({student_id:child.id})||[]; if(res.length){ const total=res.reduce((sum,row)=>sum+Number(row.total_marks||0),0); const max=res.reduce((sum,row)=>sum+Number(row.max_marks||100),0); const pct=max?Math.round(total*100/max):0; const grade=pct>=90?'A+':pct>=75?'A':pct>=60?'B':pct>=45?'C':'D'; $('#pLastExam').text(pct+'%'); $('#pExamSub').text(grade+' Grade'); } } catch(e){}
+        } catch(e){ console.error(e); }
+    }
+    </script>
+</body>
+
+</html>

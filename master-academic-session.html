@@ -1,0 +1,123 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8"><meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Academic Session — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css"><link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/bootstrap.min.css"><link rel="stylesheet" href="css/all.min.css"><link rel="stylesheet" href="fonts/flaticon.css"><link rel="stylesheet" href="css/animate.min.css"><link rel="stylesheet" href="css/select2.min.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <style>
+        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}.form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}.form-control{font-size:12px;height:36px}.list-table{width:100%;border-collapse:collapse}.list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}.list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.list-table tbody tr:hover td{background:#f5f7ff}.table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}.action-btn{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin:0 1px}.action-btn-delete{background:#ffebee;color:#c62828}.action-btn-delete:hover{background:#c62828;color:#fff}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area"><h3>Masters</h3><ul><li><a href="/dashboard">Home</a></li><li>Academic Session</li></ul></div>
+                <div class="card height-auto"><div class="card-body">
+                    <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-calendar-alt"></i> Academic Session</h3></div></div>
+                    <div class="filter-card">
+                        <div class="row align-items-end" style="gap:0;">
+                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">Academic Session</label>
+                                <input type="text" class="form-control" id="sName" placeholder="e.g. 2025-2026">
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">Start Date</label>
+                                <input type="date" class="form-control" id="sStartDate">
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">End Date</label>
+                                <input type="date" class="form-control" id="sEndDate">
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-6 form-group mb-0">
+                                <label class="form-label-sm">Status</label>
+                                <select class="form-control" id="sStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0 d-flex align-items-end" style="gap:8px;">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 22px;" onclick="saveItem()"><i class="fas fa-save"></i> Save</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
+                        <table class="list-table"><thead><tr><th style="width:50px">Sr No.</th><th>Academic Session</th><th>Start Date</th><th>End Date</th><th>Status</th><th style="width:120px">Action</th></tr></thead><tbody id="listBody"></tbody></table>
+                    </div></div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script><script src="js/plugins.js"></script><script src="js/popper.min.js"></script><script src="js/bootstrap.min.js"></script><script src="js/select2.min.js"></script><script src="js/jquery.scrollUp.min.js"></script><script src="js/api.js"></script><script src="js/app.js"></script><script src="js/main.js"></script>
+    <script>
+    $(async function(){
+        initPage('master-academic-session');
+        let cache = [];
+        let editId = null;
+        async function load(){
+            try { cache = await getAcademicSessions(); } catch(e){ showToast('Failed to load','error'); }
+            const rows = cache.map((s,i)=>{
+                const isActive = s.status === 'Active';
+                const statusBadge = isActive
+                    ? '<span style="background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;"><i class="fas fa-check-circle"></i> Active</span>'
+                    : '<span style="background:#f3f3f3;color:#888;padding:2px 10px;border-radius:10px;font-size:11px;">Inactive</span>';
+                const setActiveBtn = !isActive
+                    ? `<button class="action-btn" style="background:#e8f5e9;color:#2e7d32;" title="Set Active" onclick="setActive(${s.id})"><i class="fas fa-check"></i></button>`
+                    : '';
+                return `<tr><td class="text-center">${i+1}</td><td><strong>${s.name}</strong></td><td>${s.start_date||'—'}</td><td>${s.end_date||'—'}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${setActiveBtn}<button class="action-btn" style="background:#e3f2fd;color:#1565c0;" title="Edit" onclick="editItem(${s.id})"><i class="fas fa-edit"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            }).join('');
+            $('#listBody').html(rows||'<tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No sessions</td></tr>');
+        }
+        window.saveItem=async function(){
+            const name=$('#sName').val().trim();
+            const start_date=$('#sStartDate').val();
+            const end_date=$('#sEndDate').val();
+            const status=$('#sStatus').val();
+            if(!name){showToast('Enter session name','error');return;}
+            if(start_date && end_date && start_date > end_date){showToast('End date must be after start date','error');return;}
+            try {
+                if (editId) {
+                    await updateMasterData('academic_sessions', editId, {name, start_date, end_date, status});
+                    editId = null;
+                    showToast('Session updated','success');
+                } else {
+                    await createMasterData('academic_sessions',{name, start_date, end_date, status});
+                    showToast('Session added','success');
+                }
+                $('#sName').val(''); $('#sStartDate').val(''); $('#sEndDate').val(''); $('#sStatus').val('Active');
+                await load();
+            } catch(e){ showToast('Failed to save','error'); }
+        };
+        window.editItem=function(id){
+            const s = cache.find(x=>x.id===id);
+            if(!s) return;
+            editId = id;
+            $('#sName').val(s.name); $('#sStartDate').val(s.start_date||''); $('#sEndDate').val(s.end_date||''); $('#sStatus').val(s.status||'Active');
+            $('html, body').animate({ scrollTop: 0 }, 300);
+            showToast('Editing "'+s.name+'" — make changes and click Save','info');
+        };
+        window.setActive=async function(id){
+            try {
+                // Set all to Inactive first, then set selected to Active
+                for (const s of cache) {
+                    if (s.status === 'Active' && s.id !== id) {
+                        await updateMasterData('academic_sessions', s.id, { status: 'Inactive' });
+                    }
+                }
+                await updateMasterData('academic_sessions', id, { status: 'Active' });
+                await load();
+                // Update the header session switcher
+                const sess = cache.find(x=>x.id===id);
+                if (sess) sessionStorage.setItem('vkis_selected_session', sess.name);
+                showToast('Session set as Active','success');
+            } catch(e){ showToast('Failed to set active','error'); }
+        };
+        window.del=async function(id){if(!confirm('Delete this session?'))return; try{ await deleteMasterData('academic_sessions',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        await load();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My Books — Student Panel — EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/student-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>My Books</h3>
+                    <ul><li><a href="/student-dashboard">Home</a></li><li>My Books</li></ul>
+                </div>
+            
+            
+<div class="chart-card" style="margin-bottom:16px;">
+    <div class="chart-card-header"><i class="fas fa-book"></i> My Issued Books</div>
+    <div class="chart-card-body">
+    <div class="table-responsive"><table class="recent-table">
+        <thead><tr><th>#</th><th>Book Title</th><th>Issue Date</th><th>Due Date</th><th>Status</th></tr></thead>
+        <tbody id="booksBody"><tr><td colspan="5" style="text-align:center;color:#888;">Loading...</td></tr></tbody>
+    </table></div>
+    </div>
+</div>
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    $(async function () {
+        initPage('s-my-books');
+        try {
+            const children = await getMyChildren();
+            const stu = children && children[0];
+            if (!stu) { $('#booksBody').html('<tr><td colspan="5" style="text-align:center;color:#888;">Student not found.</td></tr>'); return; }
+            const issues = await getBookIssues({ student_id: stu.id }) || [];
+            if (!issues.length) { $('#booksBody').html('<tr><td colspan="5" style="text-align:center;color:#888;">No books issued.</td></tr>'); return; }
+            let html = '';
+            issues.forEach((b, i) => {
+                const status = b.return_date ? 'Returned' : 'Issued';
+                const sColor = b.return_date ? '#2e7d32' : '#ef6c00';
+                const sBg = b.return_date ? '#e8f5e9' : '#fff3e0';
+                html += `<tr><td>${i + 1}</td><td><strong>${b.book_title || b.title || '-'}</strong></td><td>${b.issue_date || '-'}</td><td>${b.due_date || '-'}</td><td><span style="background:${sBg};color:${sColor};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${status}</span></td></tr>`;
+            });
+            $('#booksBody').html(html);
+        } catch (e) { console.error(e); }
+    });
+    </script>
+</body>
+</html>
