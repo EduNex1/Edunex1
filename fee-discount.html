@@ -64,7 +64,7 @@
                             </div>
                         </div>
 
-                        <!-- Student Selection -->
+                        
                         <div class="filter-card">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -90,7 +90,7 @@
                             </div>
                         </div>
 
-                        <!-- Discount Form -->
+                        
                         <div id="discountForm">
                             <div class="empty-state"><i class="fas fa-tags"></i>Select class, section and student to apply discount</div>
                         </div>
@@ -147,10 +147,8 @@
                 if (!stu) return;
                 const cls = classCache.find(c => c.id === stu.class_id);
 
-                // Fetch existing discounts for this student
                 let existingDiscounts = [];
                 try { existingDiscounts = await getFeeDiscounts(stuId); } catch(e) {}
-                // Build map: particularId → total discount amount
                 const discountMap = {};
                 existingDiscounts.forEach(d => { discountMap[d.particular_id] = (discountMap[d.particular_id] || 0) + d.amount; });
 

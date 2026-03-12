@@ -68,7 +68,7 @@
             
                 <div id="profileArea"><p style="text-align:center;color:#888;padding:40px;">Loading...</p></div>
 
-                <!-- Change Password -->
+                
                 <div class="chart-card" style="margin-top:16px;">
                     <div class="chart-card-header"><i class="fas fa-key"></i> Change Password</div>
                     <div class="chart-card-body">
@@ -126,7 +126,6 @@
 
             let html = '<div class="card profile-card"><div class="card-body">';
 
-            // Scholar Details
             html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-user-graduate"></i> Scholar Details</div>';
             html += '<div class="row">';
             html += '<div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4" style="min-width:120px;"><label style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:center;display:block;">Photo</label><div class="profile-photo">' + photoHtml + '</div></div>';
@@ -143,7 +142,6 @@
             html += '</div></div>';
             html += '</div></div>';
 
-            // Personal Details
             html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Personal Details</div>';
             html += '<div class="row">';
             html += pf('Gender', s.gender);
@@ -156,7 +154,6 @@
             html += pf('Weight', s.weight ? s.weight + ' kg' : null);
             html += '</div></div>';
 
-            // Parents / Guardian Details
             html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-users"></i> Parents / Guardian Details</div>';
             html += '<div class="row">';
             html += pf("Father's Name", s.father_name);
@@ -165,7 +162,6 @@
             html += pf('Email', s.email);
             html += '</div></div>';
 
-            // Address Details
             html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details</div>';
             html += '<div class="row">';
             html += '<div class="col-xl-6 col-lg-6 col-12 profile-field"><label>Address</label><div class="pf-value">' + (s.address || '-') + '</div></div>';
@@ -175,7 +171,6 @@
             html += pf('Nationality', s.nationality || 'Indian');
             html += '</div></div>';
 
-            // Transport Details
             if (s.route_id || s.transport_fee) {
                 html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-bus"></i> Transport Details</div>';
                 html += '<div class="row">';

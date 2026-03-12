@@ -105,7 +105,6 @@
     $(async function() {
         initPage('library-add-book');
 
-        // Populate type dropdown
         let bookTypes = [];
         try { bookTypes = await getMasterData('book_types'); } catch(e) {}
         bookTypes.forEach(t => $('#typeId').append(`<option value="${t.id}">${t.name}</option>`));

@@ -64,7 +64,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-sms"></i> Send SMS to Staff</h3></div></div>
 
-                        <!-- Filter Card -->
+                        
                         <div class="filter-card">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
@@ -91,7 +91,7 @@
                             </div>
                         </div>
 
-                        <!-- Staff List -->
+                        
                         <div class="table-card">
                             <div class="table-header">
                                 <h5><i class="fas fa-list"></i> Staff List <span class="count-badge" id="countBadge" style="display:none;">0</span></h5>
@@ -120,7 +120,7 @@
                             </div>
                         </div>
 
-                        <!-- SMS Preview & Send -->
+                        
                         <div class="sms-preview-box" id="smsPreviewBox" style="display:none;">
                             <h6><i class="fas fa-envelope-open-text"></i> SMS Approved Template</h6>
                             <div class="sms-text" id="smsPreviewText"></div>
@@ -170,7 +170,6 @@
                 if (optSettings['msg91_tpl_general']) document.getElementById('fMsg91Tpl').value = optSettings['msg91_tpl_general'];
             } catch(e) { console.error(e); }
 
-            // ==================== Multi-Select Dropdown Engine ====================
             window.togglePanel = function(dropdownId) {
                 const dd = document.getElementById(dropdownId);
                 const panel = dd.querySelector('.ms-panel');
@@ -240,17 +239,14 @@
                 updateTriggerText(panelId);
             }
 
-            // ==================== Build Designation Dropdown ====================
             const designations = [...new Set(staffCache.map(s => s.designation).filter(Boolean))].sort();
             buildMultiSelect('desigPanel', designations.map(d => ({ value: d, label: d })));
 
-            // Populate template dropdown — staff-relevant templates only
             const staffTemplateKeys = ['staff-holiday', 'staff-meeting', 'school-holiday', 'preset-message'];
             const tplSelect = document.getElementById('fTemplate');
             smsTemplates.filter(t => staffTemplateKeys.includes(t.key)).forEach(t => {
                 tplSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
             });
-            // If no keyed templates yet, show all
             if (!tplSelect.options.length || tplSelect.options.length <= 1) {
                 smsTemplates.forEach(t => {
                     if (!tplSelect.querySelector(`option[value="${t.id}"]`)) {
@@ -259,7 +255,6 @@
                 });
             }
 
-            // ==================== Search & Render ====================
             let filteredStaff = [];
 
             window.searchStaff = function() {

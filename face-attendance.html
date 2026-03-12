@@ -277,10 +277,8 @@
         todayStr = new Date().toISOString().split('T')[0];
         startClock();
 
-        // Load timing settings
         await loadTimingSettings();
 
-        // Fullscreen toggle
         $('#btnFS').click(function () {
             const w = $('#attWrap');
             w.toggleClass('fs');
@@ -357,9 +355,7 @@
                 triggerAutoAbsent();
             }
         }
-        // Check every 30 seconds
         setInterval(checkAbsent, 30000);
-        // Also check immediately
         checkAbsent();
     }
 
@@ -459,9 +455,7 @@
     let pendingMark = {};  // cooldown for failed attempts
 
     async function markPerson(label) {
-        // Same-day permanent block — no duplicates
         if (markedToday[label]) return;
-        // Cooldown: if a mark is in-progress or recently failed, skip
         if (pendingMark[label]) return;
         pendingMark[label] = true;
 
@@ -477,7 +471,6 @@
             } else {
                 await markStaffAttendance(todayStr, [{ staff_id: p.id, status: attStatus, remark: remark }]);
             }
-            // Only mark as done AFTER successful DB save
             markedToday[label] = true;
             delete pendingMark[label];
 
@@ -487,9 +480,7 @@
             renderLog();
         } catch (e) {
             console.error('Attendance save failed for ' + p.name + ':', e);
-            // Allow retry after 5 seconds
             setTimeout(() => { delete pendingMark[label]; }, 5000);
-            // Show error to user
             setSt('DB Error: ' + (e.message || 'Save failed') + ' — will retry', '#f44336');
             setTimeout(() => { if (scanning) setSt('Scanning...', '#4caf50'); }, 4000);
         }

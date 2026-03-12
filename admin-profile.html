@@ -35,7 +35,7 @@
                     <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-user-circle"></i> My Profile</h3></div></div>
 
                     <div class="row">
-                        <!-- Profile Info -->
+                        
                         <div class="col-lg-5 col-md-6 col-12">
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-id-badge"></i> Account Information</div>
@@ -50,9 +50,9 @@
                             </div>
                         </div>
 
-                        <!-- Edit Profile + Change Password -->
+                        
                         <div class="col-lg-7 col-md-6 col-12">
-                            <!-- Edit Name/Email -->
+                            
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-edit"></i> Edit Profile</div>
                                 <div class="row">
@@ -70,7 +70,7 @@
                                 </div>
                             </div>
 
-                            <!-- Change Password -->
+                            
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-key"></i> Change Password</div>
                                 <div class="row">
@@ -129,7 +129,6 @@
                 $('#infoEmail').text(email || '—');
                 const ni = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 $('#avatarInitials').text(ni);
-                // Update stored user
                 const u = getUser(); if(u){ u.name = name; u.email = email; setUser(u); }
                 showToast('Profile updated','success');
             } catch(e){ showToast(e.message||'Failed to update','error'); }

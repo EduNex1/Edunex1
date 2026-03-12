@@ -101,7 +101,6 @@
         };
         window.setActive=async function(id){
             try {
-                // Set all to Inactive first, then set selected to Active
                 for (const s of cache) {
                     if (s.status === 'Active' && s.id !== id) {
                         await updateMasterData('academic_sessions', s.id, { status: 'Inactive' });
@@ -109,7 +108,6 @@
                 }
                 await updateMasterData('academic_sessions', id, { status: 'Active' });
                 await load();
-                // Update the header session switcher
                 const sess = cache.find(x=>x.id===id);
                 if (sess) sessionStorage.setItem('vkis_selected_session', sess.name);
                 showToast('Session set as Active','success');

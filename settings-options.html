@@ -29,7 +29,7 @@
                 <div class="card height-auto"><div class="card-body">
                     <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-sliders-h"></i> Option Settings</h3></div></div>
 
-                    <!-- Academic Session Start -->
+                    
                     <div class="section-card">
                         <h5 class="section-title"><i class="fas fa-calendar-alt"></i> Academic Session</h5>
                         <div class="row align-items-end" style="gap:0;">
@@ -49,7 +49,7 @@
                         <button class="btn btn-sm mt-3" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateAcademic()"><i class="fas fa-save"></i> Update</button>
                     </div>
 
-                    <!-- Zoho Email Integration -->
+                    
                     <div class="section-card" id="zohoEmailCard" style="display:none;">
                         <h5 class="section-title"><i class="fas fa-envelope"></i> Zoho Email Integration (ZeptoMail)</h5>
                         <div class="note-box"><i class="fas fa-info-circle"></i> Zoho ZeptoMail se API Key copy karein. From Email woh address hai jisse emails jayengi (e.g. support@edunex1.com). ZeptoMail dashboard se Send Mail Token generate karein.</div>
@@ -70,7 +70,7 @@
                         <button class="btn btn-sm mt-2" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateZohoEmail()"><i class="fas fa-save"></i> Save Email Settings</button>
                     </div>
 
-                    <!-- Email Notification Settings -->
+                    
                     <div class="section-card">
                         <h5 class="section-title"><i class="fas fa-bell"></i> Email Notification Settings</h5>
                         <div class="opt-check"><input type="checkbox" id="chkFeeDepoEmail"><label for="chkFeeDepoEmail">Enable fee deposit email notification</label></div>
@@ -80,7 +80,7 @@
                         <button class="btn btn-sm mt-3" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateEmailNotif()"><i class="fas fa-save"></i> Update</button>
                     </div>
 
-                    <!-- Fee Demand Bill Note -->
+                    
                     <div class="section-card">
                         <h5 class="section-title"><i class="fas fa-file-invoice-dollar"></i> Fee Demand Bill Note</h5>
                         <div class="note-box"><i class="fas fa-info-circle"></i> This text will be printed on the fee demand bill.</div>
@@ -102,7 +102,6 @@
         if (currentUser && currentUser.role === 'super_admin') {
             $('#zohoEmailCard').show();
         }
-        // Get active branch for super_admin
         const activeBranch = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
         let o = {};
         try { o = await getOptionSettings(activeBranch || undefined); } catch(e) {}

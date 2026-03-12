@@ -489,7 +489,7 @@
                             </div>
                         </div>
 
-                        <!-- Filters Row -->
+                        
                         <div class="row mg-b-15 align-items-end">
                             <div class="col-lg-2 col-md-6 col-6 form-group">
                                 <label class="form-label-sm">Class *</label>
@@ -536,7 +536,7 @@
                             </div>
                         </div>
 
-                        <!-- Student List -->
+                        
                         <div id="studentListArea" style="display:none;">
                             <div class="d-flex align-items-center justify-content-between mg-b-10">
                                 <div class="select-all-row">
@@ -564,7 +564,7 @@
                                 </table>
                             </div>
 
-                            <!-- Generate Button -->
+                            
                             <div class="mg-t-15">
                                 <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
                                     id="btnPreview"
@@ -574,7 +574,7 @@
                             </div>
                         </div>
 
-                        <!-- Preview & Print -->
+                        
                         <div id="previewArea" class="id-card-preview-area mg-t-16">
                             <div class="d-flex align-items-center justify-content-between mg-b-15">
                                 <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
@@ -737,7 +737,6 @@
                     const stuSubjects = s.subjects ? (typeof s.subjects === 'string' ? JSON.parse(s.subjects) : s.subjects) : [];
                     const filteredDateSheet = datesheetCache.filter(d => stuSubjects.includes(d.subject_id));
 
-                    // Compute start/end from datesheet entries
                     const dates = filteredDateSheet.map(d => d.date).filter(Boolean).sort();
                     const startDate = dates[0] || '';
                     const endDate = dates[dates.length - 1] || '';
@@ -820,7 +819,6 @@
                 $('html, body').animate({ scrollTop: $('#previewArea').offset().top - 80 }, 400);
             }
 
-            // Print
             $('#btnPrint').on('click', function () {
                 const printContent = document.getElementById('printArea').innerHTML;
                 const printWin = window.open('', '_blank');

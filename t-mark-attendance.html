@@ -190,11 +190,9 @@
                 var sec = sectionCache.find(function (s) { return s.id === parseInt(sid); });
                 var sectionName = sec ? sec.name : sid;
 
-                // Load students for this class/section
                 var students = [];
                 try { students = await getStudents({ class_id: cid, section: sectionName, status: 'Active' }); } catch (e) { console.error('Failed to load students', e); }
 
-                // Load existing attendance for this date
                 var existing = [];
                 try { existing = await getStudentAttendance({ date: date, class_id: cid, section: sectionName }); } catch (e) {}
 

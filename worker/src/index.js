@@ -1,8 +1,4 @@
-// =====================================================
-// EduNex1 — Cloudflare Worker API
-// =====================================================
 
-// ===== JWT HELPERS (using Web Crypto API) =====
 const ALGO = { name: 'HMAC', hash: 'SHA-256' };
 const enc = new TextEncoder();
 
@@ -28,7 +24,6 @@ async function verifyJWT(token, secret) {
     } catch { return null; }
 }
 
-// ===== CORS =====
 const ALLOWED_ORIGINS = new Set([
     'https://edunex1.vercel.app',
     'http://localhost:3000',
@@ -38,7 +33,6 @@ function json(data, status = 200) {
     return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff' } });
 }
 
-// ===== LOGIN RATE LIMITER (per-isolate) =====
 const loginAttempts = new Map();
 function checkLoginRateLimit(ip) {
     const now = Date.now();
@@ -50,7 +44,6 @@ function checkLoginRateLimit(ip) {
     } else {
         loginAttempts.set(key, { start: now, count: 1 });
     }
-    // Cleanup old entries periodically
     if (loginAttempts.size > 1000) {
         for (const [k, v] of loginAttempts) { if (now - v.start > 900000) loginAttempts.delete(k); }
     }
@@ -136,7 +129,6 @@ async function getStaffAttendanceSummary(env, branchId, staffId, monthName, year
     return summary;
 }
 
-// ===== ROUTER =====
 class Router {
     constructor() { this.routes = []; }
     add(method, path, handler) {
@@ -159,7 +151,6 @@ class Router {
     }
 }
 
-// ===== AUTH MIDDLEWARE =====
 async function authenticate(request, env) {
     const auth = request.headers.get('Authorization');
     if (!auth || !auth.startsWith('Bearer ')) return null;
@@ -236,7 +227,6 @@ function isValidISODate(value) {
     return !!value && !Number.isNaN(new Date(value).getTime());
 }
 
-// ===== COUNTER HELPER (auto-generate IDs) =====
 async function getNextId(db, branchId, type, year) {
     await db.prepare('UPDATE counters SET last_serial = last_serial + 1 WHERE branch_id = ? AND counter_type = ? AND year = ?')
         .bind(branchId, type, year).run();
@@ -301,10 +291,8 @@ async function createFeeDepositRecord(env, branchId, data) {
     return { id: depositId, receipt_no: receiptNo };
 }
 
-// ===== MAIN WORKER =====
 const router = new Router();
 
-// ---------- AUTH ----------
 router.post('/api/auth/login', async (req, env) => {
     const clientIP = req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'unknown';
     if (!checkLoginRateLimit(clientIP)) return json({ error: 'Too many login attempts. Please try again after 15 minutes.' }, 429);
@@ -350,7 +338,6 @@ router.get('/api/auth/me', async (req, env) => {
     return json({ user: dbUser });
 });
 
-// ---------- BRANCHES ----------
 router.get('/api/branches', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -370,7 +357,6 @@ router.post('/api/branches', async (req, env) => {
     if (!user || user.role !== 'super_admin') return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     if (!d.name || !d.name.trim()) return json({ error: 'Branch name is required' }, 400);
-    // Use provided code (must be 3 uppercase letters) or auto-generate
     let code = d.code;
     if (code) {
         code = code.trim().toUpperCase();
@@ -391,7 +377,6 @@ router.post('/api/branches', async (req, env) => {
     try {
         const r = await env.DB.prepare('INSERT INTO branches (name, code, address, phone, email, school_name, principal_name, board, affiliation_no, school_code) VALUES (?,?,?,?,?,?,?,?,?,?)')
             .bind(d.name.trim(), code, d.address || '', d.phone || '', d.email || '', d.school_name || d.name.trim(), d.principal_name || '', d.board || 'CBSE', d.affiliation_no || '', d.school_code || '').run();
-        // Create default counter entries
         const yr = new Date().getFullYear();
         await env.DB.prepare('INSERT INTO counters (branch_id, counter_type, year, last_serial) VALUES (?,?,?,0),(?,?,?,0),(?,?,?,0)')
             .bind(r.meta.last_row_id, 'admission', yr, r.meta.last_row_id, 'employee', yr, r.meta.last_row_id, 'receipt', yr).run();
@@ -405,10 +390,8 @@ router.post('/api/branches', async (req, env) => {
 router.put('/api/branches/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    // branch_admin can only update their own branch
     if (user.role === 'branch_admin' && Number(params.id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    // Build dynamic UPDATE with only provided fields
     const allowed = ['name','code','address','phone','email','school_name','principal_name','board','affiliation_no','school_code','logo_url','signing_authority_name','signing_authority_designation','signing_authority_signature_url'];
     const sets = []; const vals = [];
     for (const k of allowed) {
@@ -436,7 +419,6 @@ router.delete('/api/branches/:id', async (req, env, params) => {
     }
 });
 
-// ---------- USERS MANAGEMENT ----------
 router.get('/api/users', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -455,16 +437,13 @@ router.post('/api/users', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    // Branch admins can only create users for their own branch
     const branchId = user.role === 'super_admin' ? d.branch_id : user.branch_id;
-    // Branch admins cannot create super_admin or branch_admin for other branches
     if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot create super admin' }, 403);
     const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.login_id).first();
     if (existing) return json({ error: 'Login ID already exists' }, 409);
     const pwd = d.password || generatePassword();
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id, is_active) VALUES (?,?,?,?,?,1)')
         .bind(d.login_id, pwd, d.role, branchId, d.linked_id || null).run();
-    // Log activity
     await env.DB.prepare('INSERT INTO activity_log (branch_id, user_id, user_name, activity) VALUES (?,?,?,?)')
         .bind(branchId, user.id, user.login_id, `Created user: ${d.login_id} (${d.role})`).run();
     return json({ success: true, password: pwd }, 201);
@@ -499,7 +478,6 @@ router.delete('/api/users/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// Self password change — any logged-in user
 router.post('/api/change-password', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -512,7 +490,6 @@ router.post('/api/change-password', async (req, env) => {
     return json({ success: true });
 });
 
-// Self profile — get own user details
 router.get('/api/me', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -521,7 +498,6 @@ router.get('/api/me', async (req, env) => {
     return json(me);
 });
 
-// Self profile — update own name/email
 router.put('/api/me', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -535,7 +511,6 @@ router.put('/api/me', async (req, env) => {
     return json({ success: true });
 });
 
-// Super admin: list all super admins
 router.get('/api/super-admins', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || user.role !== 'super_admin') return json({ error: 'Forbidden' }, 403);
@@ -543,7 +518,6 @@ router.get('/api/super-admins', async (req, env) => {
     return json(results || []);
 });
 
-// Super admin: create new super admin
 router.post('/api/super-admins', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || user.role !== 'super_admin') return json({ error: 'Forbidden' }, 403);
@@ -557,14 +531,12 @@ router.post('/api/super-admins', async (req, env) => {
     return json({ success: true, login_id: d.login_id.trim(), password });
 });
 
-// Admin: get login credentials for a staff member or student
 router.get('/api/user-credentials/:type/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const type = params.type; // 'staff' or 'student'
     const linkedId = params.id;
     if (type === 'staff') {
-        // Branch isolation: verify staff belongs to admin's branch
         if (user.role === 'branch_admin') {
             const staff = await env.DB.prepare('SELECT id FROM staff WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
             if (!staff) return json({ error: 'Forbidden' }, 403);
@@ -573,7 +545,6 @@ router.get('/api/user-credentials/:type/:id', async (req, env, params) => {
         if (!row) return json({ login_id: null, password: null });
         return json({ login_id: row.login_id, password: row.password_hash });
     } else if (type === 'student') {
-        // Branch isolation: verify student belongs to admin's branch
         if (user.role === 'branch_admin') {
             const stu = await env.DB.prepare('SELECT id FROM students WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
             if (!stu) return json({ error: 'Forbidden' }, 403);
@@ -592,7 +563,6 @@ router.get('/api/user-credentials/:type/:id', async (req, env, params) => {
     return json({ error: 'Invalid type' }, 400);
 });
 
-// ---------- USER PERMISSIONS ----------
 router.get('/api/user-permissions', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -626,12 +596,10 @@ router.post('/api/user-permissions', async (req, env) => {
     return json({ success: true });
 });
 
-// ---------- MY CHILDREN (parent portal) ----------
 router.get('/api/my-children', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (user.role === 'parent') {
-        // Parent's login_id is the phone — find all students with that phone
         const { results } = await env.DB.prepare('SELECT s.*, c.name as class_name, tr.name as route_name, tr.fee as transport_fee FROM students s LEFT JOIN classes c ON s.class_id = c.id LEFT JOIN transport_routes tr ON s.route_id = tr.id WHERE s.phone = ? AND s.status = ? ORDER BY s.name').bind(user.login_id, 'Active').all();
         results.forEach(r => normalizePhotoUrls(req, r));
         return json(results);
@@ -644,7 +612,6 @@ router.get('/api/my-children', async (req, env) => {
     return json([]);
 });
 
-// ---------- STUDENTS ----------
 router.get('/api/students', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -672,7 +639,6 @@ router.get('/api/students', async (req, env) => {
     q += ' ORDER BY s.name';
     const stmt = env.DB.prepare(q);
     const { results } = binds.length ? await stmt.bind(...binds).all() : await stmt.all();
-    // Attach assigned subjects as JSON array for each student
     if (results.length > 0) {
         const ids = results.map(s => s.id);
         const placeholders = ids.map(() => '?').join(',');
@@ -703,7 +669,6 @@ router.post('/api/students', async (req, env) => {
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const branchId = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
-    // Get branch code
     const branch = await env.DB.prepare('SELECT code FROM branches WHERE id = ?').bind(branchId).first();
     const code = branch ? branch.code : 'SCH';
     const yr = new Date().getFullYear();
@@ -714,11 +679,9 @@ router.post('/api/students', async (req, env) => {
         .bind(branchId, admNo, d.photo_url || '', d.name, d.father_name || '', d.mother_name || '', d.dob || '', d.gender || '', d.category || '', d.religion || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.class_id || null, d.section || '', d.session || '', d.roll_no || null, d.route_id || null, d.admission_date || new Date().toISOString().slice(0, 10), d.id_type || 'Aadharshila ID', 'Active', d.fee_amount || 0, 0).run();
 
     const studentId = r.meta.last_row_id;
-    // Auto-create student login
     const studentPwd = generatePassword();
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
         .bind(admNo, studentPwd, 'student', branchId, studentId).run();
-    // Auto-create parent login if phone provided
     let parentPwd = null;
     if (d.phone) {
         const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.phone).first();
@@ -768,7 +731,6 @@ router.put('/api/students/:id', async (req, env, params) => {
 router.delete('/api/students/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    // Branch isolation
     if (user.role === 'branch_admin') {
         const stu = await env.DB.prepare('SELECT id FROM students WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).first();
         if (!stu) return json({ error: 'Forbidden' }, 403);
@@ -778,7 +740,6 @@ router.delete('/api/students/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- STAFF ----------
 router.get('/api/staff', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -887,8 +848,6 @@ router.delete('/api/staff/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- MASTERS (Classes, Sections, Subjects, Designations) ----------
-// Column name whitelist to prevent SQL injection
 const SAFE_COL_RE = /^[a-zA-Z_][a-zA-Z0-9_]{0,63}$/;
 function sanitizeCols(keys) {
     return keys.filter(k => k !== 'id' && k !== 'branch_id' && SAFE_COL_RE.test(k));
@@ -923,7 +882,6 @@ function masterCRUD(table, nameField = 'name') {
         if (!cols.length) return json({ error: 'No valid fields' }, 400);
         const sets = cols.map(k => `${k}=?`);
         const vals = cols.map(k => d[k]);
-        // Branch isolation: branch_admin can only update records in their branch
         if (user.role === 'branch_admin') {
             await env.DB.prepare(`UPDATE ${table} SET ${sets.join(',')} WHERE id=? AND branch_id=?`).bind(...vals, params.id, user.branch_id).run();
         } else {
@@ -934,7 +892,6 @@ function masterCRUD(table, nameField = 'name') {
     router.delete(`/api/${table}/:id`, async (req, env, params) => {
         const user = await authenticate(req, env);
         if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-        // Branch isolation
         if (user.role === 'branch_admin') {
             await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(params.id, user.branch_id).run();
         } else {
@@ -944,13 +901,11 @@ function masterCRUD(table, nameField = 'name') {
     });
 }
 
-// Register all master CRUD routes
 ['classes', 'sections', 'subjects', 'designations', 'fee_particulars', 'expense_heads', 'income_heads',
     'deduction_heads', 'allowance_heads', 'transport_routes', 'vehicles', 'book_types', 'exam_names',
     'exam_groups', 'periods', 'homework_types', 'houses', 'streams', 'grading_system',
     'notices', 'holidays', 'academic_sessions', 'admit_card_instructions', 'syllabi', 'sms_templates'].forEach(t => masterCRUD(t));
 
-// ---------- ATTENDANCE ----------
 router.post('/api/attendance/students', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin', 'teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -1036,7 +991,6 @@ router.post('/api/attendance/staff', async (req, env) => {
     return json({ success: true, count: records.length });
 });
 
-// Auto-mark absent for students/staff who have no attendance today
 router.post('/api/attendance/auto-absent', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -1044,23 +998,18 @@ router.post('/api/attendance/auto-absent', async (req, env) => {
     if (!date) return json({ error: 'Date required' }, 400);
     const bid = user.branch_id || 1;
 
-    // Check if today is a non-working day
     const d = new Date(date + 'T00:00:00');
     const dayOfWeek = d.getDay(); // 0=Sunday
 
-    // Sunday — always skip
     if (dayOfWeek === 0) return json({ success: true, skipped: true, reason: 'Sunday' });
 
-    // Check holiday list
     const { results: holidays } = await env.DB.prepare(
         'SELECT id FROM holidays WHERE branch_id=? AND date=?'
     ).bind(bid, date).all();
     if (holidays.length > 0) return json({ success: true, skipped: true, reason: 'Holiday' });
 
-    // Check 2nd Saturday
     if (dayOfWeek === 6) {
         const dayOfMonth = d.getDate();
-        // 2nd Saturday = falls between 8th-14th of month
         if (dayOfMonth >= 8 && dayOfMonth <= 14) {
             const settings = await getOptionSettingsMap(env, bid);
             if (settings.face_att_2nd_sat_holiday === '1') {
@@ -1069,13 +1018,11 @@ router.post('/api/attendance/auto-absent', async (req, env) => {
         }
     }
 
-    // Get all active students without attendance for this date
     const { results: unmarkedStudents } = await env.DB.prepare(
         `SELECT id FROM students WHERE branch_id=? AND status='Active'
          AND id NOT IN (SELECT student_id FROM student_attendance WHERE date=? AND branch_id=?)`
     ).bind(bid, date, bid).all();
 
-    // Get all active staff without attendance for this date
     const { results: unmarkedStaff } = await env.DB.prepare(
         `SELECT id FROM staff WHERE branch_id=? AND status='Active'
          AND id NOT IN (SELECT staff_id FROM staff_attendance WHERE date=? AND branch_id=?)`
@@ -1095,7 +1042,6 @@ router.post('/api/attendance/auto-absent', async (req, env) => {
     return json({ success: true, students_marked: studentCount, staff_marked: staffCount });
 });
 
-// ---------- FEE DEPOSITS ----------
 router.get('/api/fee-deposits', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1180,7 +1126,6 @@ router.get('/api/fee-due-report', async (req, env) => {
 
     const monthsToCheck = month ? [month] : MONTH_NAMES;
 
-    // Batch-fetch slabs by class (exclude transport particulars to avoid double-count)
     const classIds = [...new Set(students.map(s => s.class_id).filter(Boolean))];
     const slabCache = {};
     for (const cid of classIds) {
@@ -1192,7 +1137,6 @@ router.get('/api/fee-due-report', async (req, env) => {
         slabCache[cid] = slabs;
     }
 
-    // Batch-fetch all discounts for these students
     const studentIds = students.map(s => s.id);
     const allDiscounts = {};
     if (studentIds.length) {
@@ -1205,7 +1149,6 @@ router.get('/api/fee-due-report', async (req, env) => {
         }
     }
 
-    // Batch-fetch all deposits for these students
     const allDeposits = {};
     if (studentIds.length) {
         let depQuery = `SELECT student_id, month, received_amount, balance, date, created_at, id${session && session !== 'All' ? ', session' : ''} FROM fee_deposits WHERE branch_id=? AND student_id IN (${studentIds.map(() => '?').join(',')})`;
@@ -1240,7 +1183,6 @@ router.get('/api/fee-due-report', async (req, env) => {
         const stuDiscounts = allDiscounts[student.id] || [];
 
         for (const monthName of monthsToCheck) {
-            // Get discounts: blanket (no month) + month-specific
             const monthDiscs = stuDiscounts.filter(d => !d.month || d.month === '' || d.month === monthName);
             const monthlyDiscount = roundCurrency(monthDiscs.reduce((sum, item) => sum + Number(item.amount || 0), 0));
             const monthlyCharge = Math.max(0, roundCurrency(baseMonthlyFee + transportFee - monthlyDiscount));
@@ -1303,7 +1245,6 @@ router.get('/api/fee-deposits/:id', async (req, env, params) => {
     return json(row);
 });
 
-// ---------- ONLINE PAYMENT REQUESTS ----------
 router.get('/api/payment-requests', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1499,7 +1440,6 @@ router.get('/api/fee-report-headwise', async (req, env) => {
     return json(results);
 });
 
-// ---------- EXPENSES & INCOMES ----------
 router.get('/api/expenses', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1594,7 +1534,6 @@ router.delete('/api/incomes/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- EXAM RESULTS ----------
 router.post('/api/exam-results', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin', 'teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -1678,7 +1617,6 @@ router.get('/api/exam-results', async (req, env) => {
     return json(results);
 });
 
-// ---------- RESULT DETAILS (per student per exam metadata) ----------
 router.get('/api/result-details', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1727,14 +1665,12 @@ router.post('/api/result-details', async (req, env) => {
         const student = await env.DB.prepare('SELECT class_id, section FROM students WHERE branch_id=? AND id=?').bind(bid, d.student_id).first();
         if (!student || !teacherHasAssignment(assignments, student.class_id, student.section)) return json({ error: 'Forbidden' }, 403);
     }
-    // Upsert: delete existing then insert
     await env.DB.prepare('DELETE FROM result_details WHERE branch_id=? AND student_id=? AND exam_id=?').bind(bid, d.student_id, d.exam_id).run();
     await env.DB.prepare('INSERT INTO result_details (branch_id, student_id, exam_id, attendance, remark, height, weight, result, division, rank, result_date, promoted_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
         .bind(bid, d.student_id, d.exam_id, d.attendance||'', d.remark||'', d.height||'', d.weight||'', d.result||'Pass', d.division||'', d.rank||null, d.result_date||'', d.promoted_to||'').run();
     return json({ success: true });
 });
 
-// ---------- FILE UPLOAD (R2) ----------
 router.post('/api/upload', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1756,7 +1692,6 @@ router.get('/api/files/:path+', async (req, env, params) => {
     return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream' } });
 });
 
-// ---------- SALARY SETTINGS ----------
 router.get('/api/salary-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1795,7 +1730,6 @@ router.delete('/api/salary-settings/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- SALARY GENERATION ----------
 router.get('/api/salaries', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1819,7 +1753,6 @@ router.post('/api/salaries/generate', async (req, env) => {
     const d = await req.json();
     const bid = user.branch_id || 1;
 
-    // Single salary record submission (from salary-generate page)
     if (d.staff_id && !d.staff_ids) {
         const staff = await env.DB.prepare('SELECT id, branch_id, basic_salary FROM staff WHERE id=?').bind(d.staff_id).first();
         if (!staff) return json({ error: 'Staff not found' }, 404);
@@ -1857,7 +1790,6 @@ router.post('/api/salaries/generate', async (req, env) => {
         return json({ success: true, generated: 1 }, 201);
     }
 
-    // Bulk generation (from salary-list bulk action)
     const { month, year, staff_ids } = d;
     let generated = 0;
     for (const sid of staff_ids) {
@@ -1905,7 +1837,6 @@ router.delete('/api/salaries/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- BOOKS ----------
 router.get('/api/books', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -1952,7 +1883,6 @@ router.delete('/api/books/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- BOOK ISSUES ----------
 router.get('/api/book-issues', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2017,7 +1947,6 @@ router.put('/api/book-issues/:id/return', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- TIMETABLE ----------
 router.get('/api/timetable', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2070,7 +1999,6 @@ router.post('/api/timetable', async (req, env) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const body = await req.json();
     const bid = user.branch_id || 1;
-    // Support bulk (entries array) or single entry
     if (body.entries) {
         for (const e of body.entries) {
             const existing = await env.DB.prepare('SELECT id FROM timetable WHERE branch_id=? AND class_id=? AND section=? AND day=? AND period=?')
@@ -2108,7 +2036,6 @@ router.delete('/api/timetable/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- COURSE SCHEDULES ----------
 router.get('/api/course-schedules', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2153,7 +2080,6 @@ router.delete('/api/course-schedules/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- ACTIVITIES ----------
 router.get('/api/activities', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2191,7 +2117,6 @@ router.delete('/api/activities/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- CLASS GROUPS ----------
 router.get('/api/class-groups', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2229,7 +2154,6 @@ router.delete('/api/class-groups/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- HOMEWORK ----------
 router.get('/api/homework', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2310,7 +2234,6 @@ router.delete('/api/homework/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- DATE SHEETS (parent) ----------
 router.get('/api/date-sheets', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2349,7 +2272,6 @@ router.delete('/api/date-sheets/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- DATESHEET ENTRIES ----------
 router.get('/api/date-sheets/:id/entries', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2384,7 +2306,6 @@ router.delete('/api/datesheet-entries/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- DATESHEETS (flat legacy query) ----------
 router.get('/api/datesheets', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2423,7 +2344,6 @@ router.get('/api/datesheets', async (req, env) => {
     return json(results);
 });
 
-// ---------- VENDORS ----------
 router.get('/api/vendors', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2470,7 +2390,6 @@ router.delete('/api/vendors/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- BANK ACCOUNTS ----------
 router.get('/api/bank-accounts', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2517,7 +2436,6 @@ router.delete('/api/bank-accounts/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- CASH TRANSACTIONS ----------
 router.get('/api/cash-transactions', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2537,7 +2455,6 @@ router.post('/api/cash-transactions', async (req, env) => {
     const bid = user.branch_id || 1;
     await env.DB.prepare('INSERT INTO cash_transactions (branch_id, date, type, amount, bank_id, description, reference_no) VALUES (?,?,?,?,?,?,?)')
         .bind(bid, d.date, d.type, d.amount, d.bank_id||null, d.description||'', d.reference_no||'').run();
-    // Update bank balance
     if (d.bank_id) {
         const delta = d.type === 'deposit' ? d.amount : -d.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(delta, d.bank_id).run();
@@ -2550,18 +2467,15 @@ router.put('/api/cash-transactions/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const id = params.id;
     const d = await req.json();
-    // Get old transaction to reverse bank balance
     const old = await env.DB.prepare('SELECT * FROM cash_transactions WHERE id=?').bind(id).first();
     if (!old) return json({ error: 'Not found' }, 404);
     if (user.role !== 'super_admin' && old.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
-    // Reverse old bank balance
     if (old.bank_id) {
         const revDelta = old.type === 'deposit' ? -old.amount : old.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(revDelta, old.bank_id).run();
     }
     await env.DB.prepare('UPDATE cash_transactions SET date=?, type=?, amount=?, bank_id=?, description=?, reference_no=? WHERE id=?')
         .bind(d.date, d.type, d.amount, d.bank_id||null, d.description||'', d.reference_no||'', id).run();
-    // Apply new bank balance
     if (d.bank_id) {
         const delta = d.type === 'deposit' ? d.amount : -d.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(delta, d.bank_id).run();
@@ -2576,7 +2490,6 @@ router.delete('/api/cash-transactions/:id', async (req, env, params) => {
     const old = await env.DB.prepare('SELECT * FROM cash_transactions WHERE id=?').bind(id).first();
     if (!old) return json({ error: 'Not found' }, 404);
     if (user.role !== 'super_admin' && old.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
-    // Reverse bank balance
     if (old.bank_id) {
         const revDelta = old.type === 'deposit' ? -old.amount : old.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(revDelta, old.bank_id).run();
@@ -2585,8 +2498,6 @@ router.delete('/api/cash-transactions/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- EMAIL LOG ----------
-// ---------- EMAIL LOG ----------
 router.get('/api/email-log', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2599,7 +2510,6 @@ router.get('/api/email-log', async (req, env) => {
     return json(results);
 });
 
-// ---------- SEND EMAIL VIA ZOHO SMTP (ZeptoMail API) ----------
 async function sendViaZoho(apiKey, fromEmail, fromName, toEmail, toName, subject, htmlBody) {
     const resp = await fetch('https://api.zeptomail.in/v1.1/email', {
         method: 'POST',
@@ -2626,7 +2536,6 @@ router.post('/api/email/send', async (req, env) => {
     const d = await req.json();
     const bid = user.branch_id || 1;
 
-    // Get Zoho email settings
     const { results: settings } = await env.DB.prepare(
         "SELECT setting_key, setting_value FROM option_settings WHERE branch_id=? AND setting_key IN ('zoho_api_key','zoho_from_email','zoho_from_name')"
     ).bind(bid).all();
@@ -2669,7 +2578,6 @@ router.post('/api/email/send', async (req, env) => {
     return json({ success: true, sent_count: sentCount, failed_count: failCount });
 });
 
-// ---------- ACTIVITY LOG ----------
 router.get('/api/activity-log', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -2678,7 +2586,6 @@ router.get('/api/activity-log', async (req, env) => {
     if (user.role !== 'super_admin') {
         q += ' AND al.branch_id=?';
         b.push(user.branch_id);
-        // branch_admin cannot see super_admin or branch_admin logs
         q += ' AND al.user_id NOT IN (SELECT u.id FROM users u WHERE u.role IN (?,?))';
         b.push('super_admin', 'branch_admin');
     }
@@ -2687,7 +2594,6 @@ router.get('/api/activity-log', async (req, env) => {
     return json(results);
 });
 
-// ---------- FEE SLABS ----------
 router.get('/api/fee-slabs', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2708,7 +2614,6 @@ router.post('/api/fee-slabs', async (req, env) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const bid = user.branch_id || 1;
-    // Upsert pattern
     for (const slab of (d.slabs || [d])) {
         await env.DB.prepare('INSERT OR REPLACE INTO fee_slabs (branch_id, class_id, particular_id, amount, category) VALUES (?,?,?,?,?)')
             .bind(bid, slab.class_id, slab.particular_id, slab.amount || 0, slab.category || 'Default').run();
@@ -2716,7 +2621,6 @@ router.post('/api/fee-slabs', async (req, env) => {
     return json({ success: true }, 201);
 });
 
-// ---------- FEE DISCOUNTS ----------
 router.get('/api/fee-discounts', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2765,7 +2669,6 @@ router.delete('/api/fee-discounts/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- FEE SLAB DELETE ----------
 router.delete('/api/fee-slabs', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -2778,7 +2681,6 @@ router.delete('/api/fee-slabs', async (req, env) => {
     return json({ success: true });
 });
 
-// ---------- CHARACTER CERTIFICATES ----------
 router.get('/api/character-certificates', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2837,7 +2739,6 @@ router.delete('/api/character-certificates/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- CO-SCHOLASTIC AREAS ----------
 router.get('/api/co-scholastic-areas', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2872,7 +2773,6 @@ router.delete('/api/co-scholastic-areas/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- CO-SCHOLASTIC RESULTS ----------
 router.get('/api/co-scholastic-results', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2899,7 +2799,6 @@ router.post('/api/co-scholastic-results', async (req, env) => {
     return json({ success: true });
 });
 
-// ---------- TEACHER PERMISSIONS ----------
 router.get('/api/teacher-permissions', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2943,7 +2842,6 @@ router.delete('/api/teacher-permissions/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- STUDENT SUBJECTS ----------
 router.get('/api/student-subjects/:studentId', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -2955,7 +2853,6 @@ router.post('/api/student-subjects', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const { student_id, subject_ids } = await req.json();
-    // Clear existing
     await env.DB.prepare('DELETE FROM student_subjects WHERE student_id=?').bind(student_id).run();
     for (const sid of subject_ids) {
         await env.DB.prepare('INSERT INTO student_subjects (student_id, subject_id) VALUES (?,?)').bind(student_id, sid).run();
@@ -2963,7 +2860,6 @@ router.post('/api/student-subjects', async (req, env) => {
     return json({ success: true });
 });
 
-// ---------- STUDENT PROMOTION ----------
 router.post('/api/students/promote', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -2972,7 +2868,6 @@ router.post('/api/students/promote', async (req, env) => {
     for (const sid of student_ids) {
         const stu = await env.DB.prepare('SELECT id, class_id, session, category, route_id, old_balance FROM students WHERE id=?').bind(sid).first();
         if (!stu) continue;
-        // Calculate unpaid balance for current session before promoting
         const cat = stu.category || 'Default';
         const { results: exactSlabs } = await env.DB.prepare(
             `SELECT fs.amount FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id = fp.id
@@ -2987,15 +2882,12 @@ router.post('/api/students/promote', async (req, env) => {
         const route = stu.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(stu.route_id).first() : null;
         const transportFee = roundCurrency(route ? Number(route.fee||0) : 0);
         const annualFee = roundCurrency((slabMonthly + transportFee) * 12);
-        // Total paid in current session
         const paidRow = await env.DB.prepare('SELECT COALESCE(SUM(received_amount),0) as total FROM fee_deposits WHERE student_id=? AND session=?').bind(sid, stu.session||'').first();
         const totalPaid = roundCurrency(paidRow ? paidRow.total : 0);
-        // Discounts for current session
         const discRow = await env.DB.prepare('SELECT COALESCE(SUM(amount),0) as total FROM fee_discounts WHERE student_id=? AND branch_id=?').bind(sid, bid).first();
         const totalDisc = roundCurrency(discRow ? discRow.total : 0);
         const unpaid = Math.max(0, roundCurrency(annualFee - totalPaid - totalDisc));
         const newOldBalance = roundCurrency((stu.old_balance || 0) + unpaid);
-        // Promote: update class, section, session, accumulate old_balance, reset fee_paid
         await env.DB.prepare('UPDATE students SET class_id=?, section=?, session=?, old_balance=?, fee_paid=0 WHERE id=?')
             .bind(to_class_id, to_section||'', to_session||'', newOldBalance, sid).run();
         if (Array.isArray(subject_ids)) {
@@ -3008,7 +2900,6 @@ router.post('/api/students/promote', async (req, env) => {
     return json({ success: true, promoted: student_ids.length });
 });
 
-// ---------- FEE CARRY-FORWARD (old balance from previous sessions) ----------
 router.get('/api/fee-carry-forward', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3019,7 +2910,6 @@ router.get('/api/fee-carry-forward', async (req, env) => {
     return json({ carry_forward: stu ? roundCurrency(stu.old_balance || 0) : 0 });
 });
 
-// ---------- EXAMS ----------
 router.get('/api/exams', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3064,7 +2954,6 @@ router.delete('/api/exams/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- GALLERY ----------
 router.get('/api/gallery', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3102,7 +2991,6 @@ router.delete('/api/gallery/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- STAFF ATTENDANCE (GET) ----------
 router.get('/api/attendance/staff', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3128,17 +3016,14 @@ router.get('/api/attendance/staff', async (req, env) => {
     return json(results);
 });
 
-// ---------- OPTION SETTINGS ----------
 const SENSITIVE_SETTINGS = new Set(['zoho_api_key', 'zoho_token', 'api_key', 'secret_key', 'smtp_password', 'sms_api_key']);
 router.get('/api/option-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
-    // Only admins can access settings
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const url = new URL(req.url);
     const bid = user.role === 'super_admin' ? Number(url.searchParams.get('branch_id') || user.branch_id || 1) : Number(user.branch_id || 1);
     const { results } = await env.DB.prepare('SELECT * FROM option_settings WHERE branch_id=?').bind(bid).all();
-    // Filter out sensitive keys for branch_admin
     if (user.role === 'branch_admin') {
         return json(results.filter(r => !SENSITIVE_SETTINGS.has(r.setting_key)));
     }
@@ -3151,7 +3036,6 @@ router.post('/api/option-settings', async (req, env) => {
     const d = await req.json();
     const bid = user.role === 'super_admin' ? Number(d.branch_id || user.branch_id || 1) : Number(user.branch_id || 1);
     for (const [key, value] of Object.entries(d.settings || {})) {
-        // Branch admin cannot modify sensitive settings
         if (user.role === 'branch_admin' && SENSITIVE_SETTINGS.has(key)) continue;
         await env.DB.prepare('INSERT OR REPLACE INTO option_settings (branch_id, setting_key, setting_value) VALUES (?,?,?)')
             .bind(bid, key, value).run();
@@ -3159,7 +3043,6 @@ router.post('/api/option-settings', async (req, env) => {
     return json({ success: true });
 });
 
-// ---------- TRANSFER CERTIFICATES ----------
 router.get('/api/transfer-certificates', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3229,7 +3112,6 @@ router.delete('/api/transfer-certificates/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- TRANSPORT MAPPING ----------
 router.get('/api/transport-mapping', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3299,13 +3181,11 @@ router.delete('/api/transport-mapping/:id', async (req, env, params) => {
     return json({ success: true });
 });
 
-// ---------- DASHBOARD STATS (ENHANCED) ----------
 router.get('/api/dashboard/stats', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const url = new URL(req.url);
-    // Super admin can view any branch by passing ?branch_id=X
     let bid = user.branch_id;
     if (user.role === 'super_admin') {
         const qBid = url.searchParams.get('branch_id');
@@ -3331,7 +3211,6 @@ router.get('/api/dashboard/stats', async (req, env) => {
         ? await env.DB.prepare(`SELECT COUNT(*) as total FROM subjects WHERE branch_id = ?`).bind(bid).first()
         : await env.DB.prepare(`SELECT COUNT(*) as total FROM subjects`).first();
 
-    // Monthly fee data
     const months = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
     const monthlyFee = [];
     for (const m of months) {
@@ -3341,40 +3220,32 @@ router.get('/api/dashboard/stats', async (req, env) => {
         monthlyFee.push({ month: m, collected: row.collected, pending: row.pending });
     }
 
-    // Students by class
     const targetBid = bid || 1;
     const { results: byClass } = await env.DB.prepare(`SELECT c.name as class_name, COUNT(s.id) as count FROM classes c LEFT JOIN students s ON c.id = s.class_id AND s.status='Active' WHERE c.branch_id = ? GROUP BY c.id ORDER BY c.display_order`).bind(targetBid).all();
 
-    // Gender distribution
     const gender = bid
         ? await env.DB.prepare(`SELECT gender, COUNT(*) as count FROM students WHERE branch_id=? AND status='Active' GROUP BY gender`).bind(bid).all()
         : await env.DB.prepare(`SELECT gender, COUNT(*) as count FROM students WHERE status='Active' GROUP BY gender`).all();
 
-    // Category distribution
     const category = bid
         ? await env.DB.prepare(`SELECT category, COUNT(*) as count FROM students WHERE branch_id=? AND status='Active' GROUP BY category`).bind(bid).all()
         : await env.DB.prepare(`SELECT category, COUNT(*) as count FROM students WHERE status='Active' GROUP BY category`).all();
 
-    // Staff by designation
     const staffDesig = bid
         ? await env.DB.prepare(`SELECT designation, COUNT(*) as count FROM staff WHERE branch_id=? AND status='Active' GROUP BY designation`).bind(bid).all()
         : await env.DB.prepare(`SELECT designation, COUNT(*) as count FROM staff WHERE status='Active' GROUP BY designation`).all();
 
-    // Recent admissions (last 10)
     const recentStudents = bid
         ? await env.DB.prepare(`SELECT s.id, s.admission_no, s.name, s.father_name, s.class_id, c.name as class_name, s.section, s.admission_date FROM students s LEFT JOIN classes c ON s.class_id=c.id WHERE s.branch_id=? ORDER BY s.id DESC LIMIT 10`).bind(bid).all()
         : await env.DB.prepare(`SELECT s.id, s.admission_no, s.name, s.father_name, s.class_id, c.name as class_name, s.section, s.admission_date FROM students s LEFT JOIN classes c ON s.class_id=c.id ORDER BY s.id DESC LIMIT 10`).all();
 
-    // Active staff (last 10)
     const activeStaff = bid
         ? await env.DB.prepare(`SELECT id, employee_id, name, designation, phone FROM staff WHERE branch_id=? AND status='Active' ORDER BY name LIMIT 10`).bind(bid).all()
         : await env.DB.prepare(`SELECT id, employee_id, name, designation, phone FROM staff WHERE status='Active' ORDER BY name LIMIT 10`).all();
 
-    // Fee totals — use deposits (collected) and slab-based expected
     const feeCollected = bid
         ? await env.DB.prepare(`SELECT COALESCE(SUM(received_amount),0) as total_paid FROM fee_deposits WHERE branch_id=?`).bind(bid).first()
         : await env.DB.prepare(`SELECT COALESCE(SUM(received_amount),0) as total_paid FROM fee_deposits`).first();
-    // Expected = SUM(slab monthly * 12) per active student + transport*12 + old_balance
     const activeStudentsForFee = bid
         ? (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.branch_id=? AND s.status='Active'`).bind(bid).all()).results
         : (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.status='Active'`).all()).results;
@@ -3409,7 +3280,6 @@ router.get('/api/dashboard/stats', async (req, env) => {
     });
 });
 
-// ---------- GENERIC MASTER DATA CRUD (must be LAST to avoid intercepting specific routes) ----------
 const MASTER_TABLES = new Set([
     'classes', 'sections', 'subjects', 'designations', 'fee_particulars',
     'expense_heads', 'income_heads', 'transport_routes', 'vehicles',
@@ -3468,7 +3338,6 @@ router.put('/api/master/:table/:id', async (req, env, params) => {
     if (!cols.length) return json({ error: 'No valid fields' }, 400);
     const sets = cols.map(k => `${k}=?`).join(',');
     const vals = cols.map(k => data[k]);
-    // Branch isolation
     if (user.role === 'branch_admin') {
         await env.DB.prepare(`UPDATE ${table} SET ${sets} WHERE id=? AND branch_id=?`).bind(...vals, parseInt(params.id), user.branch_id).run();
     } else {
@@ -3483,7 +3352,6 @@ router.delete('/api/master/:table/:id', async (req, env, params) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const table = params.table;
-    // Branch isolation
     if (user.role === 'branch_admin') {
         await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(parseInt(params.id), user.branch_id).run();
     } else {
@@ -3492,7 +3360,6 @@ router.delete('/api/master/:table/:id', async (req, env, params) => {
     return json({ ok: true });
 });
 
-// ===== FACE DESCRIPTORS =====
 router.get('/api/face-descriptors', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -3544,7 +3411,6 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
     return json({ ok: true });
 });
 
-// ===== EXPORT =====
 export default {
     async fetch(request, env) {
         const origin = request.headers.get('Origin') || '';
@@ -3568,7 +3434,6 @@ export default {
             response = json({ error: 'Not found' }, 404);
         }
 
-        // Inject CORS headers into every response
         const newHeaders = new Headers(response.headers);
         Object.entries(corsH).forEach(([k, v]) => newHeaders.set(k, v));
         return new Response(response.body, { status: response.status, statusText: response.statusText, headers: newHeaders });

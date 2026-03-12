@@ -52,7 +52,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-list-alt"></i> Fee Particulars</h3></div></div>
 
-                        <!-- Add / Edit Form -->
+                        
                         <div class="filter-card" id="formSection">
                             <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;" id="formTitle"><i class="fas fa-plus-circle"></i> Add Fee Particular</h6>
                             <input type="hidden" id="editId">
@@ -77,7 +77,7 @@
                                 </div>
                             </div>
 
-                            <!-- Months Selection (shown after mode) -->
+                            
                             <div id="monthSection" style="display:none;">
                                 <label class="form-label-sm" style="margin-bottom:6px;">Select Months to Apply This Fee</label>
                                 <div style="margin-bottom:6px;">
@@ -94,7 +94,7 @@
                             </div>
                         </div>
 
-                        <!-- List -->
+                        
                         <div class="table-card">
                             <div class="table-responsive" style="padding:0 2px 10px;">
                                 <table class="list-table">
@@ -111,7 +111,7 @@
         </div>
     </div>
 
-    <!-- Edit Modal not needed — using inline form -->
+    
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/plugins.js"></script>
@@ -130,10 +130,8 @@
         const ALL_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
         let cache = [];
 
-        // Populate fee modes
         FEE_MODES.forEach(m => $('#pMode').append(`<option value="${m}">${m}</option>`));
 
-        // Build month checkboxes
         function buildMonthGrid() {
             let html = '';
             ALL_MONTHS.forEach(m => {
@@ -143,7 +141,6 @@
         }
         buildMonthGrid();
 
-        // Show month section when mode selected
         $('#pMode').on('change', function() {
             if ($(this).val()) {
                 $('#monthSection').slideDown(150);
@@ -152,14 +149,12 @@
             }
         });
 
-        // Select All toggle
         $('#selectAll').on('change', function() {
             const checked = this.checked;
             $('#monthGrid input[type="checkbox"]').prop('checked', checked);
             updateMonthStyles();
         });
 
-        // Individual month toggle
         $(document).on('change', '#monthGrid input[type="checkbox"]', function() {
             updateMonthStyles();
             const total = $('#monthGrid input[type="checkbox"]').length;
@@ -192,7 +187,6 @@
             updateMonthStyles();
         }
 
-        // Load list
         async function loadList() {
             try { cache = await getFeeParticulars(); } catch(e){ cache = []; }
             const rows = cache.map((p, i) => {
@@ -215,7 +209,6 @@
             $('#listBody').html(rows || '<tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No fee particulars added</td></tr>');
         }
 
-        // Submit
         window.submitForm = async function() {
             const name = $('#pName').val().trim();
             const is_transport = $('#pTransport').is(':checked') ? 1 : 0;
@@ -237,7 +230,6 @@
             } catch(e){ showToast('Failed to save','error'); }
         };
 
-        // Cancel
         window.cancelForm = function() {
             $('#editId').val('');
             $('#pName').val('');
@@ -250,7 +242,6 @@
             $('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Fee Particular');
         };
 
-        // Edit
         window.editParticular = function(id) {
             const p = cache.find(x=>x.id===id);
             if (!p) return;
@@ -265,7 +256,6 @@
             $('html, body').animate({ scrollTop: $('#formSection').offset().top - 80 }, 300);
         };
 
-        // Delete
         window.removeParticular = async function(id) {
             if (!confirm('Delete this fee particular?')) return;
             try { await deleteMasterData('fee_particulars', id); await loadList(); showToast('Fee particular deleted', 'success'); }

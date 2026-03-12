@@ -69,7 +69,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-envelope"></i> Send Email to Staff</h3></div></div>
 
-                        <!-- Filter Card -->
+                        
                         <div class="filter-card">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
@@ -86,7 +86,7 @@
                             </div>
                         </div>
 
-                        <!-- Staff List -->
+                        
                         <div class="table-card">
                             <div class="table-header">
                                 <h5><i class="fas fa-list"></i> Staff List <span class="count-badge" id="countBadge" style="display:none;">0</span></h5>
@@ -114,7 +114,7 @@
                             </div>
                         </div>
 
-                        <!-- Email Compose & Send -->
+                        
                         <div class="email-compose-box" id="emailComposeBox" style="display:none;">
                             <h6><i class="fas fa-envelope-open-text"></i> Compose Email</h6>
                             <div class="form-group">
@@ -196,7 +196,6 @@
                 }
             } catch(e) { console.error(e); }
 
-            // ==================== Multi-Select Dropdown Engine ====================
             window.togglePanel = function(dropdownId) {
                 const dd = document.getElementById(dropdownId);
                 const panel = dd.querySelector('.ms-panel');
@@ -272,11 +271,9 @@
                 return div.innerHTML;
             }
 
-            // ==================== Build Designation Dropdown ====================
             const designations = [...new Set(staffCache.map(s => s.designation).filter(Boolean))].sort();
             buildMultiSelect('desigPanel', designations.map(d => ({ value: d, label: d })));
 
-            // ==================== Search & Render ====================
             let filteredStaff = [];
 
             window.searchStaff = function() {

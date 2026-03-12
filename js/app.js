@@ -1,11 +1,5 @@
-/**
- * ============================================
- * SCHOOL MANAGEMENT SYSTEM — SHARED UTILITIES
- * ============================================
- * Common functions for sidebar, header, toasts, modals
- */
 
-// ===== AUTH GUARD — Redirect to login if not authenticated =====
+
 (function () {
     if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
         window.location.href = '/';
@@ -22,12 +16,6 @@ function requireRoles(allowedRoles, redirectTo) {
     return true;
 }
 
-// ==================== SIDEBAR RENDERER ====================
-
-/**
- * Render the sidebar navigation — compact, professional ERP style
- * @param {string} activeMenu — key of the active menu item
- */
 function renderSidebar(activeMenu) {
     const user = typeof getUser === 'function' ? getUser() : null;
     const isSuperAdmin = user && user.role === 'super_admin';
@@ -435,7 +423,6 @@ function renderSidebar(activeMenu) {
     }
 }
 
-// Shared sidebar dropdown toggle handler — used by all role sidebars
 function bindSidebarDropdowns(container) {
     $(container).off('click', '.sidebar-nav-item > .nav-link').on('click', '.sidebar-nav-item > .nav-link', function (e) {
         if (!$('#wrapper').hasClass('sidebar-collapsed')) {
@@ -470,12 +457,8 @@ function bindSidebarDropdowns(container) {
     });
 }
 
-
-// ==================== HEADER RENDERER ====================
-
 function renderHeader(userName, role) {
     userName = userName || 'Admin';
-    // Get user info from localStorage (set during login)
     var loggedUser = typeof getUser === 'function' ? getUser() : null;
     var schoolName = (loggedUser && loggedUser.school_name) ? loggedUser.school_name : 'EduNex1';
     if (loggedUser) {
@@ -486,7 +469,6 @@ function renderHeader(userName, role) {
         role = role || 'Super Admin';
     }
 
-    // Branch switcher HTML — only for super_admin
     var branchSwitcherHtml = '';
     if (loggedUser && loggedUser.role === 'super_admin') {
         branchSwitcherHtml = `
@@ -497,7 +479,6 @@ function renderHeader(userName, role) {
             </li>`;
     }
 
-    // Session switcher HTML — for admin roles
     var sessionSwitcherHtml = '';
     if (loggedUser && ['super_admin', 'branch_admin'].includes(loggedUser.role)) {
         sessionSwitcherHtml = `
@@ -545,17 +526,14 @@ function renderHeader(userName, role) {
         headerContainer.innerHTML = html;
     }
 
-    // Load branches into switcher for super admin
     if (loggedUser && loggedUser.role === 'super_admin') {
         loadBranchSwitcher();
     }
-    // Load session switcher for admin roles
     if (loggedUser && ['super_admin', 'branch_admin'].includes(loggedUser.role)) {
         loadSessionSwitcher();
     }
 }
 
-// ===== BRANCH SWITCHER LOGIC =====
 async function loadBranchSwitcher() {
     var switcher = document.getElementById('branchSwitcher');
     if (!switcher) return;
@@ -569,11 +547,9 @@ async function loadBranchSwitcher() {
                 switcher.appendChild(opt);
             });
         }
-    } catch(e) { /* ignore */ }
-    // Restore saved branch selection
+    } catch(e) {  }
     var savedBranch = sessionStorage.getItem('vkis_selected_branch');
     if (savedBranch) switcher.value = savedBranch;
-    // On change, save and reload page
     switcher.addEventListener('change', function() {
         sessionStorage.setItem('vkis_selected_branch', this.value);
         if (typeof onBranchSwitch === 'function') {
@@ -592,7 +568,6 @@ function getSelectedBranch() {
     return '';
 }
 
-// ===== SESSION SWITCHER LOGIC =====
 async function loadSessionSwitcher() {
     var switcher = document.getElementById('sessionSwitcher');
     if (!switcher) return;
@@ -606,20 +581,17 @@ async function loadSessionSwitcher() {
             });
             switcher.innerHTML = html;
         }
-    } catch(e) { /* ignore */ }
-    // Restore saved session selection, or default to Active session
+    } catch(e) {  }
     var savedSession = sessionStorage.getItem('vkis_selected_session');
     if (savedSession) {
         switcher.value = savedSession;
     } else {
-        // Default to the Active session
         var activeOpt = switcher.querySelector('[data-active="1"]');
         if (activeOpt) {
             switcher.value = activeOpt.value;
             sessionStorage.setItem('vkis_selected_session', activeOpt.value);
         }
     }
-    // On change, save and reload page
     switcher.addEventListener('change', function() {
         sessionStorage.setItem('vkis_selected_session', this.value);
         if (typeof onSessionSwitch === 'function') {
@@ -637,9 +609,6 @@ function getSelectedSession() {
     }
     return '';
 }
-
-
-// ==================== TOAST NOTIFICATIONS ====================
 
 function showToast(message, type) {
     type = type || 'success';
@@ -680,9 +649,6 @@ function showToast(message, type) {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-
-// ==================== CONFIRM MODAL ====================
 
 function showConfirmModal(title, message, onConfirm) {
     const existingModal = document.getElementById('confirmModal');
@@ -726,10 +692,6 @@ function showConfirmModal(title, message, onConfirm) {
     });
 }
 
-
-// ==================== DROPDOWN GENERATORS (API-BACKED) ====================
-
-// Cache for dropdown data (populated once per page load)
 var _dropdownCache = {};
 
 async function _loadDropdownData(key, apiFn) {
@@ -821,8 +783,6 @@ async function populateBranchDropdown(selectElement, includeAll) {
     selectElement.innerHTML = html;
 }
 
-// ==================== FOOTER ====================
-
 function renderFooter() {
     var loggedUser = typeof getUser === 'function' ? getUser() : null;
     var schoolName = (loggedUser && loggedUser.school_name) ? loggedUser.school_name : 'EduNex1';
@@ -835,15 +795,11 @@ function renderFooter() {
     }
 }
 
-
-// ==================== PAGE INIT (ROLE-AWARE) ====================
-
 function initPage(activeMenu) {
     var user = typeof getUser === 'function' ? getUser() : null;
     var role = user ? user.role : 'super_admin';
     var path = window.location.pathname;
 
-    // Auto-detect role from URL for seamless navigation in presentation mode
     if (path.startsWith('/t-') || path === '/teacher-dashboard') role = 'teacher';
     else if (path.startsWith('/p-') || path === '/parent-dashboard') role = 'parent';
     else if (path.startsWith('/s-') || path === '/student-dashboard' || path === '/student-dashboard.html') role = 'student';
@@ -863,7 +819,6 @@ function initPage(activeMenu) {
     }
     renderFooter();
 
-    // Inject mobile sidebar overlay if not present
     if (!document.querySelector('.sidebar-overlay')) {
         var overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
@@ -871,8 +826,6 @@ function initPage(activeMenu) {
     }
 }
 
-
-// ==================== TEACHER SIDEBAR ====================
 function renderTeacherSidebar(activeMenu) {
     function mc(key) { return activeMenu === key ? ' menu-active' : ''; }
     function oc(keys) { return keys.includes(activeMenu) ? ' show' : ''; }
@@ -887,13 +840,10 @@ function renderTeacherSidebar(activeMenu) {
         '<div class="sidebar-menu-content">' +
         '<ul class="nav nav-sidebar-menu sidebar-toggle-view">' +
 
-        // Dashboard
         '<li class="nav-item"><a href="/teacher-dashboard" class="nav-link' + mc('dashboard') + '"><i class="flaticon-dashboard"></i><span>Dashboard</span></a></li>' +
 
-        // My Students
         '<li class="nav-item"><a href="/t-my-students" class="nav-link' + mc('t-my-students') + '"><i class="flaticon-classmates"></i><span>My Students</span></a></li>' +
 
-        // Attendance
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-checklist"></i><span>Attendance</span></a>' +
         '<ul class="nav sub-group-menu' + sga(attMenus) + '">' +
@@ -901,10 +851,8 @@ function renderTeacherSidebar(activeMenu) {
         '<li class="nav-item"><a href="/t-attendance-report" class="nav-link' + mc('t-attendance-report') + '"><i class="fas fa-angle-right"></i>Attendance Report</a></li>' +
         '</ul></li>' +
 
-        // Homework
         '<li class="nav-item"><a href="/t-homework" class="nav-link' + mc('t-homework') + '"><i class="flaticon-open-book"></i><span>Homework</span></a></li>' +
 
-        // Results
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-script"></i><span>Results</span></a>' +
         '<ul class="nav sub-group-menu' + sga(resMenus) + '">' +
@@ -912,7 +860,6 @@ function renderTeacherSidebar(activeMenu) {
         '<li class="nav-item"><a href="/t-view-results" class="nav-link' + mc('t-view-results') + '"><i class="fas fa-angle-right"></i>View Results</a></li>' +
         '</ul></li>' +
 
-        // Academics
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-mortarboard"></i><span>Academics</span></a>' +
         '<ul class="nav sub-group-menu' + sga(acadMenus) + '">' +
@@ -923,10 +870,8 @@ function renderTeacherSidebar(activeMenu) {
         '<li class="nav-item"><a href="/t-holidays" class="nav-link' + mc('t-holidays') + '"><i class="fas fa-angle-right"></i>Holidays</a></li>' +
         '</ul></li>' +
 
-        // My Attendance
         '<li class="nav-item"><a href="/t-my-attendance" class="nav-link' + mc('t-my-attendance') + '"><i class="fas fa-calendar-check"></i><span>My Attendance</span></a></li>' +
 
-        // My Profile
         '<li class="nav-item"><a href="/t-my-profile" class="nav-link' + mc('t-my-profile') + '"><i class="flaticon-user"></i><span>My Profile</span></a></li>' +
 
         '</ul></div></div>';
@@ -935,7 +880,6 @@ function renderTeacherSidebar(activeMenu) {
     bindSidebarDropdowns(sc);
 }
 
-// ==================== PARENT SIDEBAR ==
 function renderParentSidebar(activeMenu) {
     function mc(key) { return activeMenu === key ? ' menu-active' : ''; }
     function oc(keys) { return keys.includes(activeMenu) ? ' show' : ''; }
@@ -950,16 +894,12 @@ function renderParentSidebar(activeMenu) {
         '<div class="sidebar-menu-content">' +
         '<ul class="nav nav-sidebar-menu sidebar-toggle-view">' +
 
-        // Dashboard
         '<li class="nav-item"><a href="/parent-dashboard" class="nav-link' + mc('dashboard') + '"><i class="flaticon-dashboard"></i><span>Dashboard</span></a></li>' +
 
-        // My Children
         '<li class="nav-item"><a href="/p-my-children" class="nav-link' + mc('p-my-children') + '"><i class="flaticon-classmates"></i><span>My Children</span></a></li>' +
 
-        // Attendance
         '<li class="nav-item"><a href="/p-attendance" class="nav-link' + mc('p-attendance') + '"><i class="flaticon-checklist"></i><span>Attendance</span></a></li>' +
 
-        // Fee
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-technological"></i><span>Fee</span></a>' +
         '<ul class="nav sub-group-menu' + sga(feeMenus) + '">' +
@@ -968,7 +908,6 @@ function renderParentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/p-fee-receipts" class="nav-link' + mc('p-fee-receipts') + '"><i class="fas fa-angle-right"></i>Fee Receipts</a></li>' +
         '</ul></li>' +
 
-        // Results
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-script"></i><span>Results</span></a>' +
         '<ul class="nav sub-group-menu' + sga(resMenus) + '">' +
@@ -976,10 +915,8 @@ function renderParentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/p-report-card" class="nav-link' + mc('p-report-card') + '"><i class="fas fa-angle-right"></i>Report Card</a></li>' +
         '</ul></li>' +
 
-        // Homework
         '<li class="nav-item"><a href="/p-homework" class="nav-link' + mc('p-homework') + '"><i class="flaticon-open-book"></i><span>Homework</span></a></li>' +
 
-        // Academics
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-mortarboard"></i><span>Academics</span></a>' +
         '<ul class="nav sub-group-menu' + sga(acadMenus) + '">' +
@@ -990,10 +927,8 @@ function renderParentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/p-holidays" class="nav-link' + mc('p-holidays') + '"><i class="fas fa-angle-right"></i>Holidays</a></li>' +
         '</ul></li>' +
 
-        // Transport
         '<li class="nav-item"><a href="/p-transport" class="nav-link' + mc('p-transport') + '"><i class="flaticon-bus-side-view"></i><span>Transport</span></a></li>' +
 
-        // My Profile
         '<li class="nav-item"><a href="/p-my-profile" class="nav-link' + mc('p-my-profile') + '"><i class="flaticon-user"></i><span>My Profile</span></a></li>' +
 
         '</ul></div></div>';
@@ -1002,7 +937,6 @@ function renderParentSidebar(activeMenu) {
     bindSidebarDropdowns(sc);
 }
 
-// ==================== STUDENT SIDEBAR ==
 function renderStudentSidebar(activeMenu) {
     function mc(key) { return activeMenu === key ? ' menu-active' : ''; }
     function oc(keys) { return keys.includes(activeMenu) ? ' show' : ''; }
@@ -1016,16 +950,12 @@ function renderStudentSidebar(activeMenu) {
         '<div class="sidebar-menu-content">' +
         '<ul class="nav nav-sidebar-menu sidebar-toggle-view">' +
 
-        // Dashboard
         '<li class="nav-item"><a href="/student-dashboard" class="nav-link' + mc('dashboard') + '"><i class="flaticon-dashboard"></i><span>Dashboard</span></a></li>' +
 
-        // My Attendance
         '<li class="nav-item"><a href="/s-my-attendance" class="nav-link' + mc('s-my-attendance') + '"><i class="flaticon-checklist"></i><span>My Attendance</span></a></li>' +
 
-        // My Results
         '<li class="nav-item"><a href="/s-my-results" class="nav-link' + mc('s-my-results') + '"><i class="flaticon-script"></i><span>My Results</span></a></li>' +
 
-        // Fee
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-technological"></i><span>Fee</span></a>' +
         '<ul class="nav sub-group-menu' + sga(feeMenus) + '">' +
@@ -1033,7 +963,6 @@ function renderStudentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/s-fee-receipts" class="nav-link' + mc('s-fee-receipts') + '"><i class="fas fa-angle-right"></i>Fee Receipts</a></li>' +
         '</ul></li>' +
 
-        // Academics
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-mortarboard"></i><span>Academics</span></a>' +
         '<ul class="nav sub-group-menu' + sga(acadMenus) + '">' +
@@ -1045,13 +974,10 @@ function renderStudentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/s-holidays" class="nav-link' + mc('s-holidays') + '"><i class="fas fa-angle-right"></i>Holidays</a></li>' +
         '</ul></li>' +
 
-        // My Books
         '<li class="nav-item"><a href="/s-my-books" class="nav-link' + mc('s-my-books') + '"><i class="flaticon-books"></i><span>My Books</span></a></li>' +
 
-        // Transport
         '<li class="nav-item"><a href="/s-transport" class="nav-link' + mc('s-transport') + '"><i class="flaticon-bus-side-view"></i><span>My Transport</span></a></li>' +
 
-        // My Profile
         '<li class="nav-item"><a href="/s-my-profile" class="nav-link' + mc('s-my-profile') + '"><i class="flaticon-user"></i><span>My Profile</span></a></li>' +
 
         '</ul></div></div>';
@@ -1059,9 +985,6 @@ function renderStudentSidebar(activeMenu) {
     sc.innerHTML = html;
     bindSidebarDropdowns(sc);
 }
-
-
-// ==================== UTILITY: DEBOUNCE ==
 
 function debounce(func, wait) {
     let timeout;

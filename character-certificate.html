@@ -336,7 +336,7 @@
                             </div>
                         </div>
 
-                        <!-- Tabs -->
+                        
                         <div class="cc-tabs">
                             <button class="cc-tab active" data-tab="add"><i class="fas fa-plus-circle mg-r-5"></i>Add
                                 Character Certificate</button>
@@ -344,10 +344,10 @@
                                 Certificates</button>
                         </div>
 
-                        <!-- ADD Panel -->
+                        
                         <div class="cc-panel active" id="panelAdd">
                             <div class="cc-form">
-                                <!-- Step 1: Select Student (same as TC) -->
+                                
                                 <div class="row mg-b-15"
                                     style="background:#f8f9ff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
                                     <div class="col-12 mg-b-10">
@@ -375,7 +375,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Step 2: Certificate Details (shown after student selected) -->
+                                
                                 <div id="ccFormFields" style="display:none;">
                                     <div class="row mg-t-15"
                                         style="background:#fff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
@@ -384,7 +384,7 @@
                                                 <i class="fas fa-edit mg-r-5"></i> Step 2: Certificate Details
                                             </h6>
                                         </div>
-                                        <!-- Auto-filled (readonly) -->
+                                        
                                         <div class="col-lg-4 col-md-6 form-group">
                                             <label class="form-label-sm">Serial No. (Auto)</label>
                                             <input type="text" class="form-control" id="fSerialNo" readonly
@@ -421,7 +421,7 @@
                                                 style="background:#f0f0f0;">
                                         </div>
 
-                                        <!-- Editable -->
+                                        
                                         <div class="col-lg-4 col-md-6 form-group">
                                             <label class="form-label-sm">Conduct *</label>
                                             <select class="form-control" id="fConduct">
@@ -445,7 +445,7 @@
                                             <input type="text" class="form-control" id="fRemarks" value="">
                                         </div>
 
-                                        <!-- Format Selection -->
+                                        
                                         <div class="col-12 mg-t-10 mg-b-10">
                                             <h6 style="font-size:13px;font-weight:700;color:#304ffe;margin:0 0 10px;">
                                                 <i class="fas fa-file-alt mg-r-5"></i> Certificate Format
@@ -479,7 +479,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Buttons (same as TC) -->
+                                    
                                     <div class="mg-t-15 d-flex" style="gap:10px;">
                                         <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
                                             id="btnSaveCC"
@@ -496,7 +496,7 @@
                             </div>
                         </div>
 
-                        <!-- VIEW Panel -->
+                        
                         <div class="cc-panel" id="panelView">
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="ccTable">
@@ -519,7 +519,7 @@
                             <div id="ccRecordCount" style="font-size:12px;font-weight:600;color:#555;margin-top:8px;">
                             </div>
 
-                            <!-- Preview -->
+                            
                             <div class="cert-preview-area" id="certPreviewArea">
                                 <div class="d-flex align-items-center justify-content-between mg-b-15">
                                     <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
@@ -569,7 +569,6 @@
             const school = branches[0] || {};
             const currentSession = sessions.find(s => s.status === 'Active');
 
-            // Tabs
             $('.cc-tab').on('click', function () {
                 const tab = $(this).data('tab');
                 $('.cc-tab').removeClass('active');
@@ -841,7 +840,6 @@
                 $('html, body').animate({ scrollTop: $('#certPreviewArea').offset().top - 80 }, 400);
             }
 
-            // Print
             $('#btnPrint').on('click', function () {
                 const printContent = document.getElementById('certPrintArea').innerHTML;
                 const printWin = window.open('', '_blank');

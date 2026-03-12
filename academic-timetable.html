@@ -63,13 +63,13 @@
                             </div>
                         </div>
 
-                        <!-- Quick Links -->
+                        
                         <div class="quick-links">
                             <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Time Table</button>
                             <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Entry</button>
                         </div>
 
-                        <!-- ADD FORM -->
+                        
                         <div class="form-card" id="addSection" style="display:none;">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-4 col-6 form-group">
@@ -116,9 +116,9 @@
                             <input type="hidden" id="editId" value="">
                         </div>
 
-                        <!-- VIEW SECTION -->
+                        
                         <div id="viewSection">
-                            <!-- Filters -->
+                            
                             <div class="row gutters-8 align-items-end mg-b-12">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Day</label>
@@ -160,7 +160,7 @@
                                 </div>
                             </div>
 
-                            <!-- Results -->
+                            
                             <div class="d-flex align-items-center justify-content-between mg-b-10" style="flex-wrap:wrap;gap:8px;">
                                 <span class="record-count" id="recordCount">0 Records</span>
                             </div>
@@ -209,7 +209,6 @@
                 ]);
             } catch(e) { console.error('Load error', e); }
 
-            // Populate dropdowns
             DAYS.forEach(d => { $('#filterDay, #addDay').append(`<option value="${d}">${d}</option>`); });
             classCache.forEach(c => { $('#filterClass, #addClass').append(`<option value="${c.id}">${c.name}</option>`); });
             sectionCache.forEach(s => { $('#filterSection, #addSection2').append(`<option value="${s.name}">${s.name}</option>`); });
@@ -218,7 +217,6 @@
             const teachers = staffCache.filter(s => (s.designation||'').toLowerCase() === 'teacher' && (s.status||'Active') === 'Active');
             teachers.forEach(t => { $('#filterTeacher, #addTeacher').append(`<option value="${t.id}">${t.name}</option>`); });
 
-            // Auto-fill time when period is selected
             $('#addPeriod').on('change', function () {
                 const pNo = parseInt($(this).val());
                 const period = periodCache.find(p => (p.no || p.id) === pNo);
@@ -242,11 +240,9 @@
                 return h + ':' + m;
             }
 
-            // Pre-select Class 5 and auto-load
             if (classCache.length) { $('#filterClass').val(classCache[0].id); }
             await loadTable();
 
-            // Tab switching
             $('#tabView').on('click', function () {
                 $(this).addClass('active'); $('#tabAdd').removeClass('active');
                 $('#viewSection').show(); $('#addSection').hide();
@@ -257,7 +253,6 @@
                 resetAddForm();
             });
 
-            // Search / Reset
             $('#btnSearch').on('click', function () { loadTable(); });
             $('#btnReset').on('click', function () {
                 $('#filterDay, #filterClass, #filterSubject, #filterTeacher').val('');
@@ -306,7 +301,6 @@
                 });
             }
 
-            // Save
             $('#btnSave').on('click', async function () {
                 const startTime = $('#addStartTime').val();
                 const endTime = $('#addEndTime').val();

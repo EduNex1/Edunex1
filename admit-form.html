@@ -262,12 +262,12 @@
 
                         <form class="admit-form" id="admissionForm" autocomplete="off">
 
-                            <!-- ═══════════ SCHOLAR DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-user-graduate"></i> Scholar Details
                                 </div>
                                 <div class="row">
-                                    <!-- Photo -->
+                                    
                                     <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center"
                                         style="min-width:120px;">
                                         <label>Photo</label>
@@ -284,7 +284,7 @@
                                         <input type="file" id="photoInput" accept="image/*" style="display:none;">
                                     </div>
 
-                                    <!-- Fields beside photo -->
+                                    
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
@@ -308,7 +308,7 @@
                                                     placeholder="Personal Edu. No.">
                                             </div>
                                         </div>
-                                        <!-- ID Type selector + Class/Section in same column -->
+                                        
                                         <div class="row">
                                             <div class="col-lg-5 col-md-6 col-12 form-group">
                                                 <div class="id-type-selector">
@@ -467,7 +467,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ ADDRESS DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details
                                 </div>
@@ -544,7 +544,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ PARENTS / GUARDIAN DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-users"></i> Parents / Guardian Details
                                 </div>
@@ -609,7 +609,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ TRANSFER CERTIFICATE DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-exchange-alt"></i> Transfer Certificate
                                     Details
@@ -633,7 +633,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ BANK ACCOUNT DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-university"></i> Bank Account Details
                                 </div>
@@ -664,7 +664,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ OTHER DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-info-circle"></i> Other Details</div>
                                 <div class="row">
@@ -694,7 +694,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ UPLOAD DOCUMENTS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
                                 <div class="row">
@@ -719,7 +719,7 @@
                                 <div class="doc-list" id="docList"></div>
                             </div>
 
-                            <!-- ═══════════ CONSENT NOTE ═══════════ -->
+                            
                             <div class="consent-box">
                                 <label>
                                     <input type="checkbox" id="consentCheck">
@@ -729,7 +729,7 @@
                                 </label>
                             </div>
 
-                            <!-- ═══════════ SUBMIT ═══════════ -->
+                            
                             <div class="form-actions">
                                 <button type="submit" class="btn-submit"><i class="fas fa-save mg-r-5"></i>
                                     Submit</button>
@@ -775,12 +775,10 @@
             const today = new Date();
             $('#admissionDate').val(String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear());
 
-            // Check if editing
             const urlParams = new URLSearchParams(window.location.search);
             const editId = urlParams.get('edit');
             if (editId) { loadStudentForEdit(parseInt(editId)); }
 
-            // Photo upload — open crop modal
             $('#photoInput').on('change', function (e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -789,12 +787,10 @@
                 r.readAsDataURL(file);
             });
 
-            // Transport toggle
             $('#transportOpt').on('change', function () {
                 $('#routeGroup').toggle($(this).val() === 'Yes');
             });
 
-            // Aadhar auto-format
             $('#aadharNumber').on('input', function () {
                 let v = this.value.replace(/\D/g, '').substring(0, 12);
                 if (v.length > 8) v = v.substring(0, 4) + ' ' + v.substring(4, 8) + ' ' + v.substring(8);
@@ -802,10 +798,8 @@
                 this.value = v;
             });
 
-            // Document upload
             $('#addDocBtn').on('click', addDocument);
 
-            // Submit
             $('#admissionForm').on('submit', async function (e) {
                 e.preventDefault();
                 if (!validateForm()) return;

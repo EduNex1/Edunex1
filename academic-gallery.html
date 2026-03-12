@@ -88,13 +88,13 @@
                             </div>
                         </div>
 
-                        <!-- Quick Links -->
+                        
                         <div class="quick-links">
                             <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Album</button>
                             <button class="ql-btn active" id="tabView"><i class="fas fa-th mg-r-5"></i>View Albums</button>
                         </div>
 
-                        <!-- ==================== ADD SECTION ==================== -->
+                        
                         <div id="addSection" style="display:none;">
                             <div class="form-card">
                                 <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-folder-plus" style="color:#304ffe;margin-right:6px;"></i>Album Details</h6>
@@ -116,7 +116,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Photo Upload -->
+                                
                                 <div class="form-group mg-t-10">
                                     <label class="form-label-sm">Photos</label>
                                     <div class="upload-area" id="uploadArea">
@@ -139,7 +139,7 @@
                             </div>
                         </div>
 
-                        <!-- ==================== VIEW SECTION ==================== -->
+                        
                         <div id="viewSection">
                             <div class="d-flex align-items-center justify-content-between mg-b-12" style="flex-wrap:wrap;gap:8px;">
                                 <h6 style="font-weight:700;font-size:14px;color:#0d1b4a;margin:0;"><i class="fas fa-th" style="color:#304ffe;margin-right:6px;"></i>Albums</h6>
@@ -169,7 +169,7 @@
         </div>
     </div>
 
-    <!-- Lightbox container -->
+    
     <div id="lightboxContainer"></div>
 
     <script src="js/jquery-3.3.1.min.js"></script>
@@ -187,10 +187,8 @@
             let selectedPhotos = []; // array of { name, dataUrl }
             let galleryCache = [];
             try { galleryCache = await getGallery(); } catch(e) { console.error('Load error', e); }
-            // Parse photos JSON from DB
             galleryCache.forEach(g => { try { g.photos = typeof g.photos === 'string' ? JSON.parse(g.photos) : (g.photos || []); } catch(e) { g.photos = []; } });
 
-            // Quick Links
             $('#tabAdd').on('click', function () {
                 $(this).addClass('active'); $('#tabView').removeClass('active');
                 $('#addSection').show(); $('#viewSection').hide();
@@ -238,12 +236,10 @@
                 });
             }
 
-            // File input
             $('#photoInput').on('change', function (e) {
                 handleFiles(e.target.files);
             });
 
-            // Drag & Drop
             const $ua = $('#uploadArea');
             $ua.on('dragover', function (e) { e.preventDefault(); $(this).addClass('dragover'); });
             $ua.on('dragleave drop', function () { $(this).removeClass('dragover'); });
@@ -279,7 +275,6 @@
                 renderPreview();
             };
 
-            // Save
             $('#btnSave').on('click', async function () {
                 const title = $('#gTitle').val().trim();
                 const date = $('#gDate').val();
@@ -308,7 +303,6 @@
                 } catch(e) { showToast('Error saving album', 'error'); }
             });
 
-            // Cancel
             $('#btnCancel').on('click', function () { clearForm(); $('#tabView').click(); });
 
             function clearForm() {
@@ -319,7 +313,6 @@
                 $('#btnSave').html('<i class="fas fa-save"></i> Save');
             }
 
-            // Edit
             window.editAlbum = function (id) {
                 const g = galleryCache.find(x => x.id === id);
                 if (!g) return;
@@ -332,7 +325,6 @@
                 $('html, body').animate({ scrollTop: 0 }, 300);
             };
 
-            // Delete
             window.removeAlbum = async function (id) {
                 if (!confirm('Delete this album and all its photos?')) return;
                 try {
@@ -343,7 +335,6 @@
                 } catch(e) { showToast('Error deleting album', 'error'); }
             };
 
-            // View Photos (Lightbox)
             window.viewAlbum = function (id) {
                 const g = galleryCache.find(x => x.id === id);
                 const photos = g ? (g.photos || []) : [];

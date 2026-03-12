@@ -1,11 +1,5 @@
-/**
- * ============================================================
- * SCHOOL MANAGEMENT SYSTEM — CUSTOM RESPONSIVE OVERRIDES
- * ============================================================
- * Clean, consistent, professional ERP styling
- */
 
-/* ==================== LOADING SPINNER ==================== */
+
 .table-loading-overlay {
     position: relative;
     min-height: 100px;
@@ -43,7 +37,6 @@
     }
 }
 
-/* Inline field error */
 .field-error {
     color: #c62828;
     font-size: 11px;
@@ -51,14 +44,12 @@
     margin-top: 2px;
 }
 
-/* Password mask cursor */
 .password-mask {
     cursor: pointer;
     letter-spacing: 2px;
     user-select: none;
 }
 
-/* ==================== CONTENT TOP BAR ==================== */
 .navbar.header-menu-one.custom-topbar {
     position: fixed;
     top: 0;
@@ -82,7 +73,6 @@
     gap: 8px;
 }
 
-/* Force navbar-nav to row always (override Bootstrap navbar-expand-md column default) */
 .header-main-menu .navbar-nav {
     flex-direction: row !important;
     align-items: center;
@@ -105,7 +95,6 @@
     overflow: hidden;
 }
 
-/* Navbar switcher items (branch/session dropdowns) */
 .navbar-switcher-item {
     margin-right: 8px;
 }
@@ -205,7 +194,6 @@
     background: #f3f4f6;
 }
 
-/* ==================== INDEPENDENT SCROLL: SIDEBAR & BODY ==================== */
 html,
 body {
     height: 100%;
@@ -235,7 +223,6 @@ body {
     display: block !important;
 }
 
-/* --- Sidebar: fixed full-height, independently scrollable --- */
 .sidebar-menu-one {
     position: fixed !important;
     top: 0 !important;
@@ -260,7 +247,6 @@ body {
     padding-bottom: 0;
 }
 
-/* Sub-menu dark background */
 .sidebar-menu-one .sidebar-menu-content .nav-sidebar-menu>.nav-item .sub-group-menu {
     background-color: #031f40 !important;
 }
@@ -274,17 +260,14 @@ body {
     color: #fff !important;
 }
 
-/* Nav item borders */
 .sidebar-menu-one .sidebar-menu-content .nav-sidebar-menu>.nav-item {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Active parent item */
 .sidebar-menu-one .sidebar-menu-content .nav-sidebar-menu>.nav-item .nav-link.menu-active {
     background-color: #051f3e;
 }
 
-/* Thin sidebar scrollbar */
 .sidebar-menu-one .sidebar-menu-content::-webkit-scrollbar {
     width: 4px;
 }
@@ -298,7 +281,6 @@ body {
     border-radius: 4px;
 }
 
-/* Thin body scrollbar */
 .dashboard-content-one::-webkit-scrollbar {
     width: 6px;
 }
@@ -308,12 +290,10 @@ body {
     border-radius: 4px;
 }
 
-/* Hide mobile sidebar header since no top header */
 .sidebar-menu-one .mobile-sidebar-header {
     display: none !important;
 }
 
-/* Desktop collapsed sidebar support */
 .sidebar-collapsed .dashboard-content-one {
     margin-left: 8rem;
     width: calc(100% - 8rem);
@@ -324,7 +304,6 @@ body {
     left: 8rem;
 }
 
-/* ==================== HAMBURGER MENU BUTTON ==================== */
 .sidebar-toggle-mobile {
     display: none;
     background: none;
@@ -342,7 +321,6 @@ body {
     background: #f0f1f3;
 }
 
-/* ==================== MOBILE SIDEBAR OVERLAY ==================== */
 .sidebar-overlay {
     display: none;
     position: fixed;
@@ -353,7 +331,6 @@ body {
     backdrop-filter: blur(2px);
 }
 
-/* Tablet layout: sidebar hidden, content full-width */
 @media only screen and (max-width: 991px) {
     .sidebar-toggle-mobile {
         display: inline-flex;
@@ -381,7 +358,7 @@ body {
         font-size: 10px;
     }
 
-    /* Switchers row: full width on second line */
+    
     .header-main-menu .navbar-nav {
         flex-wrap: wrap;
         gap: 6px;
@@ -417,7 +394,7 @@ body {
         z-index: 100;
     }
 
-    /* When sidebar is open on mobile */
+    
     .sidebar-open-mobile .sidebar-menu-one {
         left: 0 !important;
     }
@@ -462,14 +439,14 @@ body {
         font-size: 16px;
     }
 
-    /* Tables: horizontal scroll */
+    
     .table-responsive,
     .card-body > .table-responsive {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Cards */
+    
     .card-body {
         padding: 12px 14px;
     }
@@ -478,7 +455,7 @@ body {
         font-size: 14px;
     }
 
-    /* Forms */
+    
     .filter-form,
     .filter-card {
         padding: 14px;
@@ -488,12 +465,12 @@ body {
         padding: 16px 14px 8px;
     }
 
-    /* Modals */
+    
     .modal-dialog {
         margin: 10px;
     }
 
-    /* DataTables responsive */
+    
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {
         float: none !important;
@@ -501,7 +478,7 @@ body {
         margin-bottom: 8px;
     }
 
-    /* Quick links grid */
+    
     .quick-grid {
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 8px;
@@ -521,14 +498,13 @@ body {
     }
 }
 
-/* Mobile layout adjustments */
 @media only screen and (max-width: 767px) {
     .navbar.header-menu-one.custom-topbar {
         min-height: 50px;
         padding: 6px 10px;
     }
 
-    /* Header: hamburger + school name on row 1, switchers + avatar on row 1 right */
+    
     .header-main-menu {
         gap: 6px !important;
     }
@@ -545,12 +521,12 @@ body {
         display: none;
     }
 
-    /* Move switchers into a separate row below header on phone */
+    
     .header-main-menu .navbar-nav {
         gap: 4px;
     }
 
-    /* Hide branch/session label text, keep compact dropdowns */
+    
     .navbar-switcher-select {
         min-width: 80px !important;
         max-width: 110px;
@@ -570,7 +546,7 @@ body {
         padding-top: 4px;
     }
 
-    /* Hide user name, show only avatar */
+    
     .simple-user-menu .admin-title {
         display: none;
     }
@@ -597,7 +573,7 @@ body {
         font-size: 10px;
     }
 
-    /* Forms: taller for touch */
+    
     .filter-form .form-control,
     .filter-form select,
     .new-added-form .form-control,
@@ -606,7 +582,7 @@ body {
         font-size: 14px;
     }
 
-    /* Table cells tighter */
+    
     .table thead th {
         font-size: 9px;
         padding: 6px 6px;
@@ -617,7 +593,7 @@ body {
         padding: 6px 6px;
     }
 
-    /* Cards */
+    
     .card-body {
         padding: 10px 10px;
     }
@@ -626,7 +602,7 @@ body {
         font-size: 13px;
     }
 
-    /* Forms */
+    
     .filter-form,
     .filter-card {
         padding: 12px 10px;
@@ -640,21 +616,21 @@ body {
         font-size: 10px;
     }
 
-    /* Action buttons */
+    
     .action-btn {
         width: 30px;
         height: 30px;
         font-size: 13px;
     }
 
-    /* Button sizing */
+    
     .btn-fill-lg,
     .fw-btn-fill {
         padding: 8px 14px;
         font-size: 12px;
     }
 
-    /* Quick links */
+    
     .quick-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
@@ -673,7 +649,7 @@ body {
         font-size: 8px;
     }
 
-    /* Stats cards */
+    
     .stats-card {
         padding: 10px 8px;
     }
@@ -686,7 +662,7 @@ body {
         font-size: 9px;
     }
 
-    /* Stat cards (dashboard) */
+    
     .stat-card {
         padding: 10px 8px;
         gap: 8px;
@@ -706,7 +682,7 @@ body {
         font-size: 8px;
     }
 
-    /* Select2 */
+    
     .select2-container .select2-selection--single {
         height: 42px !important;
     }
@@ -719,7 +695,7 @@ body {
         height: 42px !important;
     }
 
-    /* Row gutters */
+    
     .row {
         margin-left: -6px;
         margin-right: -6px;
@@ -730,7 +706,7 @@ body {
         padding-right: 6px;
     }
 
-    /* Modal */
+    
     .modal-dialog {
         margin: 8px;
     }
@@ -743,12 +719,12 @@ body {
         padding: 12px 14px;
     }
 
-    /* Section title */
+    
     .section-title {
         font-size: 13px;
     }
 
-    /* Welcome banner */
+    
     .welcome-banner {
         padding: 14px 16px !important;
     }
@@ -758,7 +734,6 @@ body {
     }
 }
 
-/* Very small screens */
 @media only screen and (max-width: 480px) {
     .header-school-name {
         font-size: 13px;
@@ -769,7 +744,7 @@ body {
         padding: 4px 6px;
     }
 
-    /* Hide switchers on very small screens — too cramped */
+    
     .navbar-switcher-item {
         display: none !important;
     }
@@ -846,7 +821,6 @@ body {
     }
 }
 
-/* ==================== GLOBAL TYPOGRAPHY & SIZING ==================== */
 .dashboard-content-one {
     font-size: 14px;
 }
@@ -910,8 +884,6 @@ body {
     margin-bottom: 0;
 }
 
-/* ==================== SIDEBAR COMPACT STYLING ==================== */
-/* More compact sidebar like professional ERPs */
 .sidebar-menu-one .sidebar-menu-content .nav-sidebar-menu>.nav-item>.nav-link {
     padding: 10px 20px;
 }
@@ -935,8 +907,6 @@ body {
     padding: 6px 0;
 }
 
-/* ==================== UNIFIED TABLE & CARD SYSTEM ==================== */
-/* Global filter-card (also applies to old .filter-form) */
 .filter-card,
 .filter-form {
     background: #fff;
@@ -946,7 +916,6 @@ body {
     margin-bottom: 16px;
 }
 
-/* Global table-card wrapper */
 .table-card {
     background: #fff;
     border: 2px solid #e0e0e0;
@@ -971,7 +940,6 @@ body {
     padding: 0 2px 10px;
 }
 
-/* Ensure all tables inside cards are scrollable on mobile */
 .card-body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -999,7 +967,6 @@ body {
     padding-left: 34px;
 }
 
-/* All tables: consistent sizing */
 .list-table,
 #studentTable,
 .table.data-table,
@@ -1010,7 +977,6 @@ body {
     font-size: 13px;
 }
 
-/* All table headers: navy blue */
 .list-table thead th,
 #studentTable thead th,
 .table.data-table thead th,
@@ -1028,7 +994,6 @@ body {
     border-bottom: none;
 }
 
-/* All table cells: consistent spacing */
 .list-table tbody td,
 #studentTable tbody td,
 .table.data-table tbody td,
@@ -1040,7 +1005,6 @@ body {
     vertical-align: middle;
 }
 
-/* All table rows: same hover */
 .list-table tbody tr:hover td,
 #studentTable tbody tr:hover td,
 .table.data-table tbody tr:hover td,
@@ -1049,7 +1013,6 @@ body {
     background: #f5f7ff !important;
 }
 
-/* Small form labels — used across all pages */
 .form-label-sm {
     font-size: 11px;
     font-weight: 700;
@@ -1060,7 +1023,6 @@ body {
     letter-spacing: .3px;
 }
 
-/* DataTable controls consistent sizing */
 .dataTables_wrapper .dataTables_length select {
     font-size: 13px;
     padding: 4px 8px;
@@ -1085,7 +1047,6 @@ body {
     margin: 0 2px !important;
 }
 
-/* ==================== FILTER SECTION ==================== */
 .filter-form .form-control,
 .filter-form select,
 .new-added-form .form-control,
@@ -1096,7 +1057,6 @@ body {
     border: 1px solid #d5d9e0;
 }
 
-/* Select2 Single Dropdown — full height fix */
 .select2-container .select2-selection--single {
     height: 38px !important;
     border-radius: 6px !important;
@@ -1119,7 +1079,6 @@ body {
     right: 6px !important;
 }
 
-/* Select2 Multiple Dropdown */
 .select2-container .select2-selection--multiple {
     min-height: 38px !important;
     border-radius: 6px !important;
@@ -1137,7 +1096,6 @@ body {
     border: none;
 }
 
-/* Select2 dropdown options */
 .select2-results__option {
     font-size: 13px;
     padding: 6px 12px;
@@ -1179,7 +1137,6 @@ body {
     min-height: 90px;
 }
 
-/* ==================== STATS CARDS ==================== */
 .stats-card {
     background: #fff;
     border-radius: 8px;
@@ -1210,7 +1167,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* ==================== QUICK LINKS ==================== */
 .quick-links-bar {
     display: flex;
     align-items: center;
@@ -1226,7 +1182,6 @@ body {
     white-space: nowrap;
 }
 
-/* ==================== ACTION BUTTONS ==================== */
 .action-btn {
     display: inline-flex;
     align-items: center;
@@ -1271,7 +1226,6 @@ body {
     color: #fff;
 }
 
-/* ==================== STATUS & CATEGORY BADGES ==================== */
 .status-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -1355,7 +1309,6 @@ body {
     margin: 1px 2px;
 }
 
-/* ==================== FORM SECTIONS ==================== */
 .section-title {
     font-size: 14px;
     font-weight: 700;
@@ -1372,8 +1325,6 @@ body {
     font-size: 14px;
 }
 
-/* ==================== UNIFIED BUTTON SYSTEM ==================== */
-/* Primary button: navy blue (replaces old gradient-yellow) */
 .fw-btn-fill.btn-gradient-yellow,
 .btn-fill-lg.btn-gradient-yellow,
 .btn-gradient-yellow,
@@ -1395,7 +1346,6 @@ button.btn-gradient-yellow {
     color: #fff !important;
 }
 
-/* Secondary button: light neutral style for reset/cancel/list actions */
 .fw-btn-fill.bg-blue-dark.btn-hover-yellow,
 .btn-fill-lg.bg-blue-dark.btn-hover-yellow,
 a.btn-fill-lg.bg-blue-dark.btn-hover-yellow,
@@ -1428,7 +1378,6 @@ a.bg-blue-dark {
     border-radius: 6px;
 }
 
-/* Reset button style */
 .btn-reset,
 .fw-btn-fill.btn-reset {
     background: #f0f0f0 !important;
@@ -1450,14 +1399,12 @@ a.bg-blue-dark {
     border-radius: 6px;
 }
 
-/* Global: Ensure ALL .btn.btn-sm have curved edges (6px) */
 .btn.btn-sm,
 a.btn.btn-sm,
 button.btn.btn-sm {
     border-radius: 6px !important;
 }
 
-/* Secondary/Cancel .btn-light buttons — consistent curved + light grey */
 .btn.btn-sm.btn-light,
 a.btn.btn-sm.btn-light,
 button.btn-light[data-dismiss="modal"] {
@@ -1473,7 +1420,6 @@ button.btn-light[data-dismiss="modal"] {
     color: #111827 !important;
 }
 
-/* Tertiary button: outlined navy — for View List, Back, secondary navigation */
 .btn-outline-navy,
 a.btn-outline-navy {
     background: #fff !important;
@@ -1498,7 +1444,6 @@ a.btn-outline-navy:hover {
     text-decoration: none !important;
 }
 
-/* ==================== DataTables Plugin Overrides ==================== */
 .dataTables_wrapper .dataTables_length label,
 .dataTables_wrapper .dataTables_filter label {
     font-size: 12px;
@@ -1534,7 +1479,6 @@ a.btn-outline-navy:hover {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
-/* ==================== STUDENT PHOTO IN TABLE ==================== */
 .student-photo-cell img,
 .student-photo {
     width: 32px;
@@ -1544,7 +1488,6 @@ a.btn-outline-navy:hover {
     border: 2px solid #eee;
 }
 
-/* ==================== MODAL TWEAKS ==================== */
 .modal-student-photo {
     width: 80px;
     height: 80px;
@@ -1568,7 +1511,6 @@ a.btn-outline-navy:hover {
     font-size: 12px;
 }
 
-/* ==================== COUNTER BADGE ==================== */
 .counter-badge {
     display: inline-flex;
     align-items: center;
@@ -1582,7 +1524,6 @@ a.btn-outline-navy:hover {
     font-weight: 700;
 }
 
-/* ==================== ASSIGN PANEL ==================== */
 .assign-panel {
     background: linear-gradient(135deg, #f5f7ff, #e8eaf6);
     border-radius: 10px;
@@ -1590,7 +1531,6 @@ a.btn-outline-navy:hover {
     border: 1px solid #c5cae9;
 }
 
-/* ==================== FORMAT CARD ==================== */
 .format-card {
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -1630,7 +1570,6 @@ a.btn-outline-navy:hover {
     margin: 2px 0 0 0;
 }
 
-/* ==================== CERT LIST ITEM ==================== */
 .cert-list-item {
     display: flex;
     align-items: center;
@@ -1657,7 +1596,6 @@ a.btn-outline-navy:hover {
     color: #888;
 }
 
-/* ==================== PHOTO UPLOAD ==================== */
 .photo-upload-area {
     width: 100px;
     height: 120px;
@@ -1700,7 +1638,6 @@ a.btn-outline-navy:hover {
     font-size: 10px;
 }
 
-/* Auto-generated fields */
 .auto-generated-field {
     background: #f5f7ff !important;
     font-weight: 600;
@@ -1708,7 +1645,6 @@ a.btn-outline-navy:hover {
     font-size: 13px;
 }
 
-/* ==================== CROP MODAL ==================== */
 .crop-modal-overlay {
     position: fixed;
     top: 0;
@@ -1804,7 +1740,6 @@ a.btn-outline-navy:hover {
     background: #e5e7eb;
 }
 
-/* Crop modal responsive */
 @media (max-width: 480px) {
     .crop-modal-box {
         width: 100%;
@@ -1832,7 +1767,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-/* ==================== DOCUMENT UPLOAD ==================== */
 .doc-upload-zone {
     border: 2px dashed #c5cae9;
     border-radius: 10px;
@@ -1943,7 +1877,6 @@ a.btn-outline-navy:hover {
     color: #fff;
 }
 
-/* ==================== EMPTY STATE ==================== */
 .empty-state {
     text-align: center;
     padding: 40px 16px;
@@ -1960,7 +1893,6 @@ a.btn-outline-navy:hover {
     font-size: 13px;
 }
 
-/* ==================== MODULE HUB PAGES ==================== */
 .module-hero {
     background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
     border: 1px solid #eef2f7;
@@ -2060,7 +1992,6 @@ a.btn-outline-navy:hover {
     color: #0d1b4a;
 }
 
-/* ==================== PROMOTED BADGES ==================== */
 .promoted-badge {
     display: inline-flex;
     align-items: center;
@@ -2073,7 +2004,6 @@ a.btn-outline-navy:hover {
     color: #2e7d32;
 }
 
-/* ==================== STATS BAR ==================== */
 .stats-bar {
     display: flex;
     gap: 10px;
@@ -2103,7 +2033,6 @@ a.btn-outline-navy:hover {
     color: #ef6c00;
 }
 
-/* ==================== SUCCESS OVERLAY ==================== */
 .success-overlay {
     position: fixed;
     top: 0;
@@ -2156,7 +2085,6 @@ a.btn-outline-navy:hover {
     color: #2e7d32;
 }
 
-/* ==================== STUDENT CHECK ROW (shared: assign, cert, promo) ==================== */
 .student-check-row {
     transition: background 0.2s ease;
     cursor: pointer;
@@ -2175,7 +2103,6 @@ a.btn-outline-navy:hover {
     opacity: 0.8;
 }
 
-/* ==================== PRESET BUTTONS (assign-subjects) ==================== */
 .preset-btn {
     padding: 5px 14px;
     border-radius: 16px;
@@ -2195,7 +2122,6 @@ a.btn-outline-navy:hover {
     border-color: #304ffe;
 }
 
-/* ==================== PASSWORD TOGGLE (admit-form) ==================== */
 .password-toggle-wrapper {
     position: relative;
 }
@@ -2216,7 +2142,6 @@ a.btn-outline-navy:hover {
     border-color: #ff0000 !important;
 }
 
-/* ==================== CERTIFICATE PREVIEW ==================== */
 .certificate-preview {
     border: 3px double #333;
     padding: 40px;
@@ -2295,7 +2220,6 @@ a.btn-outline-navy:hover {
     margin-bottom: 4px;
 }
 
-/* ==================== SUBJECT TOGGLE (promotion page) ==================== */
 .subject-toggle-wrapper {
     display: flex;
     align-items: center;
@@ -2376,7 +2300,6 @@ a.btn-outline-navy:hover {
     opacity: 0.85;
 }
 
-/* ==================== PROMOTION FLEX ROW ==================== */
 .promo-flex-row {
     display: flex;
     flex-wrap: nowrap;
@@ -2410,7 +2333,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-/* ==================== RESPONSIVE: TABLET (768px — 1199px) ==================== */
 @media only screen and (max-width: 1199px) {
     .stats-card .stats-number {
         font-size: 18px;
@@ -2440,7 +2362,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-/* ==================== RESPONSIVE: SMALL TABLET (576px — 767px) ==================== */
 @media only screen and (max-width: 767px) {
     .breadcrumbs-area h3 {
         font-size: 16px;
@@ -2530,7 +2451,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-/* ==================== RESPONSIVE: MOBILE (<576px) ==================== */
 @media only screen and (max-width: 575px) {
     .breadcrumbs-area h3 {
         font-size: 15px;
@@ -2553,7 +2473,7 @@ a.btn-outline-navy:hover {
         font-size: 16px;
     }
 
-    /* Stack filter controls */
+    
     .filter-form .form-group {
         margin-bottom: 6px;
     }
@@ -2620,7 +2540,7 @@ a.btn-outline-navy:hover {
         height: 50px;
     }
 
-    /* Cert format cards side by side on mobile too */
+    
     .format-card {
         padding: 10px;
     }
@@ -2633,7 +2553,7 @@ a.btn-outline-navy:hover {
         font-size: 11px;
     }
 
-    /* Certificate preview */
+    
     .certificate-preview {
         padding: 20px;
         font-size: 13px;
@@ -2659,7 +2579,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-/* ==================== PRINT STYLES ==================== */
 @media print {
     body * {
         visibility: hidden;
@@ -2683,9 +2602,6 @@ a.btn-outline-navy:hover {
     }
 }
 
-
-/* ==================== GLOBAL ACTION BUTTONS (Consistent across all pages) ==================== */
-/* Base styles for all action button variants */
 .action-btn,
 .action-icon {
     width: 28px !important;
@@ -2704,7 +2620,6 @@ a.btn-outline-navy:hover {
     background: transparent !important;
 }
 
-/* Edit — Blue */
 .action-btn.edit,
 .action-btn-edit,
 .action-icon.edit {
@@ -2719,7 +2634,6 @@ a.btn-outline-navy:hover {
     color: #fff !important;
 }
 
-/* Delete — Red */
 .action-btn.delete,
 .action-btn-delete,
 .action-icon.delete {
@@ -2734,7 +2648,6 @@ a.btn-outline-navy:hover {
     color: #fff !important;
 }
 
-/* Print — Green */
 .action-btn.print,
 .action-btn-print,
 .action-icon.print {
@@ -2749,7 +2662,6 @@ a.btn-outline-navy:hover {
     color: #fff !important;
 }
 
-/* View — Teal */
 .action-btn.view,
 .action-btn-view,
 .action-icon.view {
@@ -2764,7 +2676,6 @@ a.btn-outline-navy:hover {
     color: #fff !important;
 }
 
-/* Ensure action cells are always horizontal — never wrap */
 td .action-btn,
 td .action-btn-edit,
 td .action-btn-delete,
@@ -2774,7 +2685,6 @@ td .action-icon {
     display: inline-flex !important;
 }
 
-/* Force the TD containing action buttons to never wrap */
 td:has(.action-btn),
 td:has(.action-icon),
 td:has(.action-btn-edit),
@@ -2782,9 +2692,7 @@ td:has(.action-btn-delete) {
     white-space: nowrap !important;
     min-width: fit-content !important;
 }
-/* ==================== DASHBOARD COMPONENTS (Shared) ==================== */
 
-/* ===== WELCOME BANNER ===== */
 .welcome-banner {
     background: linear-gradient(135deg, #0d1b4a 0%, #1a3a7a 60%, #2952a3 100%) !important;
     border-radius: 10px;
@@ -2847,7 +2755,6 @@ td:has(.action-btn-delete) {
     letter-spacing: 0.3px;
 }
 
-/* ===== STAT CARDS GRID ===== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -2899,7 +2806,6 @@ td:has(.action-btn-delete) {
     }
 }
 
-/* ===== STAT CARD ===== */
 .stat-card {
     background: #fff;
     border-radius: 8px;
@@ -2972,7 +2878,6 @@ td:has(.action-btn-delete) {
     text-overflow: ellipsis;
 }
 
-/* ===== DASHBOARD CARD ===== */
 .dashboard-card {
     background: #fff;
     border-radius: 10px;
@@ -2980,7 +2885,6 @@ td:has(.action-btn-delete) {
     box-shadow: 0 2px 8px rgba(13, 27, 74, 0.04);
 }
 
-/* ===== CHART CARDS ===== */
 .chart-card {
     background: #fff;
     border-radius: 8px;
@@ -3005,21 +2909,18 @@ td:has(.action-btn-delete) {
 .chart-card-header i { font-size: 12px; opacity: 0.8; }
 .chart-card-body { padding: 16px; overflow-x: hidden; }
 
-/* ===== RECENT TABLE ===== */
 .recent-table { width: 100%; border-collapse: collapse; }
 .recent-table th { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.3px; padding: 6px 8px; border-bottom: 2px solid #e8eaf6; text-align: left; }
 .recent-table td { font-size: 11px; padding: 8px 8px; border-bottom: 1px solid #f0f1f3; color: #333; font-weight: 500; }
 .recent-table tr:last-child td { border-bottom: none; }
 .recent-table .name-cell { font-weight: 700; color: #0d1b4a; }
 
-/* ===== QUICK ACCESS GRID ===== */
 .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
 .quick-item { background: #f8f9fb; border: 1px solid #e8eaf6; border-radius: 8px; padding: 14px 10px; text-align: center; text-decoration: none; color: #0d1b4a; transition: all 0.2s; }
 .quick-item:hover { background: #0d1b4a; color: #fff; text-decoration: none; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(13, 27, 74, 0.2); }
 .quick-item i { font-size: 20px; display: block; margin-bottom: 6px; }
 .quick-item span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
 
-/* ===== ACTIVITY TIMELINE ===== */
 .activity-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f1f3; }
 .activity-item:last-child { border-bottom: none; }
 .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
@@ -3030,7 +2931,6 @@ td:has(.action-btn-delete) {
 .activity-text { font-size: 11px; color: #333; font-weight: 500; }
 .activity-time { font-size: 9px; color: #aaa; margin-top: 1px; }
 
-/* ===== STAFF MINI LIST ===== */
 .staff-mini { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f0f1f3; }
 .staff-mini:last-child { border-bottom: none; }
 .staff-mini-photo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #e8eaf6; }
@@ -3038,7 +2938,6 @@ td:has(.action-btn-delete) {
 .staff-mini-info .sm-name { font-size: 11px; font-weight: 700; color: #0d1b4a; }
 .staff-mini-info .sm-role { font-size: 9px; color: #888; }
 
-/* ===== DASHBOARD RESPONSIVE ===== */
 @media (max-width: 991px) {
     .welcome-banner { padding: 16px 20px; }
     .welcome-banner h4 { font-size: 14px !important; }

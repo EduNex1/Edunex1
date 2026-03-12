@@ -213,10 +213,10 @@
                     </ul>
                 </div>
 
-                <!-- Details Grid -->
+                
                 <div id="detailsContent" style="display:none;">
 
-                    <!-- Top Section: Photo + Basic Details + Action Buttons -->
+                    
                     <div class="detail-card">
                         <div class="section-header">
                             <i class="fas fa-id-badge"></i> Staff Details
@@ -224,7 +224,7 @@
                         </div>
                         <div class="detail-card-body">
                             <div class="row">
-                                <!-- Photo -->
+                                
                                 <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 text-center"
                                     style="min-width:120px;">
                                     <label
@@ -234,7 +234,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Basic Fields beside photo -->
+                                
                                 <div class="col">
                                     <div class="row">
                                         <div class="col-xl-3 col-lg-3 col-md-4 col-6">
@@ -285,7 +285,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- Personal Information -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-user"></i> Personal Details</div>
@@ -316,7 +316,7 @@
                             </div>
                         </div>
 
-                        <!-- Contact Information -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-phone-alt"></i> Contact Information</div>
@@ -347,7 +347,7 @@
                             </div>
                         </div>
 
-                        <!-- Teaching Subjects -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-book"></i> Teaching Subjects</div>
@@ -357,7 +357,7 @@
                             </div>
                         </div>
 
-                        <!-- Government IDs -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-id-card"></i> Government IDs</div>
@@ -386,7 +386,7 @@
                             </div>
                         </div>
 
-                        <!-- Bank Details -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-university"></i> Bank Details</div>
@@ -424,7 +424,7 @@
                             </div>
                         </div>
 
-                        <!-- Other Details & Login -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-info-circle"></i> Other Details & Login
@@ -461,7 +461,7 @@
                     </div>
                 </div>
 
-                <!-- Not Found -->
+                
                 <div id="notFoundArea" style="display:none;">
                     <div class="detail-card text-center" style="padding:60px 20px;">
                         <i class="fas fa-user-slash"
@@ -575,7 +575,6 @@
             setText('dComments', '-', true);
             setText('dLoginId', s.login_id || '-');
 
-            // Fetch actual credentials for admin view
             try {
                 var creds = await getUserCredentials('staff', s.id);
                 var pwEl = document.getElementById('dPassword');

@@ -89,23 +89,18 @@
         const currentUser = typeof getUser === 'function' ? getUser() : null;
         const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
 
-        // Branch admin: hide branch_admin role option
         if (!isSuperAdmin) $('#uRole option[value="branch_admin"]').remove();
 
-        // Load branches
         let branches = [];
         try { branches = await getBranches(); } catch(e) {}
 
         if (isSuperAdmin) {
-            // Super admin: show all branches in dropdown
             (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
         } else {
-            // Branch admin: auto-set their branch, disable dropdown
             if (branches.length) {
                 branches.forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
                 $('#uBranch').val(currentUser.branch_id);
             } else {
-                // Fallback if branches API returned empty
                 $('#uBranch').append(`<option value="${currentUser.branch_id}">My Branch</option>`);
                 $('#uBranch').val(currentUser.branch_id);
             }

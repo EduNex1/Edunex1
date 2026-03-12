@@ -168,7 +168,7 @@
                             </div>
                         </div>
 
-                        <!-- Filter -->
+                        
                         <form class="filter-form mg-b-15" id="filterForm">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -207,7 +207,7 @@
                             </div>
                         </form>
 
-                        <!-- Stats -->
+                        
                         <div class="stats-row" id="statsRow">
                             <div class="stat-pill">
                                 <div class="sp-icon" style="background:#eef0ff;color:#042954;"><i class="fas fa-users"></i></div>
@@ -223,7 +223,7 @@
                             </div>
                         </div>
 
-                        <!-- Person Grid -->
+                        
                         <div id="personGrid" class="person-grid"></div>
                         <div id="emptyState" class="empty-state">
                             <i class="fas fa-user-plus"></i>
@@ -237,7 +237,7 @@
         </div>
     </div>
 
-    <!-- Face Capture Overlay -->
+    
     <div class="face-overlay" id="faceOverlay">
         <div class="overlay-person-info" id="overlayPersonInfo">
             <img src="" id="overlayPhoto" alt="">
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-    <!-- Model Loading -->
+    
     <div class="model-loading" id="modelLoading">
         <div class="spinner-border text-light"></div>
         <p>Loading face recognition models...</p>
@@ -318,7 +318,6 @@
         await loadDesignations();
         await loadFaceDescriptors();
 
-        // Type change
         $('#selType').change(function () {
             currentType = $(this).val();
             if (currentType === 'staff') {
@@ -333,7 +332,6 @@
             }
         });
 
-        // Class change → load sections + students
         $('#selClass').change(async function () {
             const classId = $(this).val();
             if (!classId) { allPersons = []; renderGrid(); return; }
@@ -345,13 +343,11 @@
         $('#selDesignation').change(() => loadStaff());
         $('#searchInput').on('input', () => renderGrid());
 
-        // Search button
         $('#btnSearch').click(function () {
             if (currentType === 'student') loadStudents();
             else loadStaff();
         });
 
-        // Reset button
         $('#btnReset').click(function () {
             $('#searchInput').val('');
             if (currentType === 'student') {
@@ -364,7 +360,6 @@
             renderGrid();
         });
 
-        // Close capture
         $('#closeCapture').click(() => stopCapture());
     });
 
@@ -511,7 +506,6 @@
         return d.innerHTML;
     }
 
-    // ===== FACE CAPTURE =====
     async function startCapture(personId, personType) {
         if (!modelsLoaded) { alert('Models not loaded yet. Please wait.'); return; }
         currentCapturePerson = allPersons.find(p => p.id === personId && p.type === personType);

@@ -1,11 +1,6 @@
-// =====================================================
-// EduNex1 — API Client
-// Replaces mock-data.js with real Cloudflare Worker API
-// =====================================================
 
 const API_BASE = 'https://vkis-api.schoolhub100.workers.dev';
 
-// ===== AUTH HELPERS =====
 function getToken() { return localStorage.getItem('vkis_token'); }
 function setToken(token) { localStorage.setItem('vkis_token', token); }
 function getUser() { try { return JSON.parse(localStorage.getItem('vkis_user')); } catch { return null; } }
@@ -18,19 +13,16 @@ function requireAuth() {
     return true;
 }
 
-// ===== API FETCH WRAPPER =====
 async function api(endpoint, options = {}) {
     const token = getToken();
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    // Auto-inject session for GET requests to session-dependent endpoints
     const method = (options.method || 'GET').toUpperCase();
     if (method === 'GET' && typeof getSelectedSession === 'function') {
         const sess = getSelectedSession();
         if (sess && !endpoint.includes('session=')) {
             const sessionEndpoints = ['/api/students', '/api/exams', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise'];
-            // Match list endpoints but not single-item endpoints like /api/students/123
             if (sessionEndpoints.some(ep => endpoint.startsWith(ep) && (endpoint === ep || endpoint.charAt(ep.length) === '?'))) {
                 endpoint += (endpoint.includes('?') ? '&' : '?') + 'session=' + encodeURIComponent(sess);
             }
@@ -46,7 +38,6 @@ async function api(endpoint, options = {}) {
     return data;
 }
 
-// ===== AUTH API =====
 async function loginUser(login_id, password) {
     try {
         const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ login_id, password }) });
@@ -61,13 +52,11 @@ function logoutUser() { clearAuth(); window.location.href = '/'; }
 
 async function getCurrentUser() { return api('/api/auth/me'); }
 
-// ===== BRANCHES =====
 async function getBranches() { return api('/api/branches'); }
 async function createBranch(data) { return api('/api/branches', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateBranch(id, data) { return api(`/api/branches/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteBranch(id) { return api(`/api/branches/${id}`, { method: 'DELETE' }); }
 
-// ===== STUDENTS =====
 async function getStudents(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/students${params ? '?' + params : ''}`);
@@ -77,7 +66,6 @@ async function createStudent(data) { return api('/api/students', { method: 'POST
 async function updateStudent(id, data) { return api(`/api/students/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteStudent(id) { return api(`/api/students/${id}`, { method: 'DELETE' }); }
 
-// ===== STAFF =====
 async function getStaff(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/staff${params ? '?' + params : ''}`);
@@ -87,7 +75,6 @@ async function createStaffMember(data) { return api('/api/staff', { method: 'POS
 async function updateStaffMember(id, data) { return api(`/api/staff/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteStaffMember(id) { return api(`/api/staff/${id}`, { method: 'DELETE' }); }
 
-// ===== MASTER DATA (generic) =====
 async function getMasterData(table, branchId) {
     const params = branchId ? `?branch_id=${branchId}` : '';
     return api(`/api/${table}${params}`);
@@ -96,7 +83,6 @@ async function createMasterData(table, data) { return api(`/api/${table}`, { met
 async function updateMasterData(table, id, data) { return api(`/api/${table}/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteMasterData(table, id) { return api(`/api/${table}/${id}`, { method: 'DELETE' }); }
 
-// Shortcut functions for specific masters
 async function getClasses() { return getMasterData('classes'); }
 async function getSections() { return getMasterData('sections'); }
 async function getSubjects() { return getMasterData('subjects'); }
@@ -126,7 +112,6 @@ async function createSyllabus(data) { return createMasterData('syllabi', data); 
 async function updateSyllabus(id, data) { return updateMasterData('syllabi', id, data); }
 async function deleteSyllabus(id) { return deleteMasterData('syllabi', id); }
 
-// ===== OPTION SETTINGS =====
 async function getOptionSettings(branchId) {
     const params = branchId ? `?branch_id=${encodeURIComponent(branchId)}` : '';
     const rows = await api(`/api/option-settings${params}`);
@@ -138,10 +123,8 @@ async function getOptionSettings(branchId) {
 }
 async function saveOptionSettings(settings, branchId) { return api('/api/option-settings', { method: 'POST', body: JSON.stringify({ settings, branch_id: branchId || undefined }) }); }
 
-// ===== MY CHILDREN (parent portal) =====
 async function getMyChildren() { return api('/api/my-children'); }
 
-// ===== ATTENDANCE =====
 async function markStudentAttendance(date, records) {
     return api('/api/attendance/students', { method: 'POST', body: JSON.stringify({ date, records }) });
 }
@@ -156,7 +139,6 @@ async function autoMarkAbsent(date) {
     return api('/api/attendance/auto-absent', { method: 'POST', body: JSON.stringify({ date }) });
 }
 
-// ===== FEES =====
 async function getFeeDeposits(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/fee-deposits${params ? '?' + params : ''}`);
@@ -193,7 +175,6 @@ async function updatePaymentRequest(id, data) {
     return api(`/api/payment-requests/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 }
 
-// ===== EXPENSES & INCOMES =====
 async function getExpenses() { return api('/api/expenses'); }
 async function createExpense(data) { return api('/api/expenses', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateExpense(id, data) { return api(`/api/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
@@ -203,7 +184,6 @@ async function createIncome(data) { return api('/api/incomes', { method: 'POST',
 async function updateIncome(id, data) { return api(`/api/incomes/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteIncome(id) { return api(`/api/incomes/${id}`, { method: 'DELETE' }); }
 
-// ===== EXAM RESULTS =====
 async function getExamResults(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/exam-results${params ? '?' + params : ''}`);
@@ -219,7 +199,6 @@ async function saveResultDetail(data) {
     return api('/api/result-details', { method: 'POST', body: JSON.stringify(data) });
 }
 
-// ===== EXAMS =====
 async function getExams(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/exams${params ? '?' + params : ''}`);
@@ -228,13 +207,11 @@ async function createExam(data) { return api('/api/exams', { method: 'POST', bod
 async function updateExam(id, data) { return api(`/api/exams/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteExam(id) { return api(`/api/exams/${id}`, { method: 'DELETE' }); }
 
-// ===== DASHBOARD =====
 async function getDashboardStats(branchId) {
     const params = branchId ? `?branch_id=${branchId}` : '';
     return api(`/api/dashboard/stats${params}`);
 }
 
-// ===== FILE UPLOAD =====
 async function uploadFile(file) {
     const token = getToken();
     const formData = new FormData();
@@ -246,7 +223,6 @@ async function uploadFile(file) {
     return res.json();
 }
 
-// ===== USERS =====
 async function getUsers() { return api('/api/users'); }
 async function createUser(data) { return api('/api/users', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateUser(id, data) { return api(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
@@ -257,7 +233,6 @@ async function getMyProfile() { return api('/api/me'); }
 async function updateMyProfile(data) { return api('/api/me', { method: 'PUT', body: JSON.stringify(data) }); }
 async function getSuperAdmins() { return api('/api/super-admins'); }
 async function createSuperAdmin(data) { return api('/api/super-admins', { method: 'POST', body: JSON.stringify(data) }); }
-// User Permissions
 async function getUserPermissions(userId) {
     const params = userId ? `?user_id=${userId}` : '';
     return api(`/api/user-permissions${params}`);
@@ -266,7 +241,6 @@ async function saveUserPermissions(userId, permissions) {
     return api('/api/user-permissions', { method: 'POST', body: JSON.stringify({ user_id: userId, permissions }) });
 }
 
-// ===== SALARY =====
 async function getSalarySettings(staffId) {
     const params = staffId ? `?staff_id=${staffId}` : '';
     return api(`/api/salary-settings${params}`);
@@ -281,16 +255,13 @@ async function generateSalaries(data) { return api('/api/salaries/generate', { m
 async function updateSalary(id, data) { return api(`/api/salaries/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteSalary(id) { return api(`/api/salaries/${id}`, { method: 'DELETE' }); }
 
-// ===== SMS TEMPLATES =====
 async function getSmsTemplates() { return getMasterData('sms_templates'); }
 
-// ===== BOOKS =====
 async function getBooks() { return api('/api/books'); }
 async function createBook(data) { return api('/api/books', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateBook(id, data) { return api(`/api/books/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteBook(id) { return api(`/api/books/${id}`, { method: 'DELETE' }); }
 
-// ===== BOOK ISSUES =====
 async function getBookIssues(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/book-issues${params ? '?' + params : ''}`);
@@ -298,7 +269,6 @@ async function getBookIssues(filters = {}) {
 async function createBookIssue(data) { return api('/api/book-issues', { method: 'POST', body: JSON.stringify(data) }); }
 async function returnBook(id, data) { return api(`/api/book-issues/${id}/return`, { method: 'PUT', body: JSON.stringify(data) }); }
 
-// ===== TIMETABLE =====
 async function getTimetable(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/timetable${params ? '?' + params : ''}`);
@@ -308,7 +278,6 @@ async function createTimetableEntry(data) { return api('/api/timetable', { metho
 async function updateTimetableEntry(id, data) { return api(`/api/timetable/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteTimetableEntry(id) { return api(`/api/timetable/${id}`, { method: 'DELETE' }); }
 
-// ===== COURSE SCHEDULES =====
 async function getCourseSchedules(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/course-schedules${params ? '?' + params : ''}`);
@@ -317,23 +286,19 @@ async function createCourseSchedule(data) { return api('/api/course-schedules', 
 async function updateCourseSchedule(id, data) { return api(`/api/course-schedules/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteCourseSchedule(id) { return api(`/api/course-schedules/${id}`, { method: 'DELETE' }); }
 
-// ===== ACTIVITIES =====
 async function getActivities() { return api('/api/activities'); }
 async function createActivity(data) { return api('/api/activities', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateActivity(id, data) { return api(`/api/activities/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteActivity(id) { return api(`/api/activities/${id}`, { method: 'DELETE' }); }
 
-// ===== CLASS GROUPS =====
 async function getClassGroups() { return api('/api/class-groups'); }
 async function createClassGroup(data) { return api('/api/class-groups', { method: 'POST', body: JSON.stringify(data) }); }
 
-// ===== GALLERY =====
 async function getGallery() { return api('/api/gallery'); }
 async function createGalleryAlbum(data) { return api('/api/gallery', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateGalleryAlbum(id, data) { return api(`/api/gallery/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteGalleryAlbum(id) { return api(`/api/gallery/${id}`, { method: 'DELETE' }); }
 
-// ===== HOMEWORK =====
 async function getHomework(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/homework${params ? '?' + params : ''}`);
@@ -342,48 +307,39 @@ async function createHomework(data) { return api('/api/homework', { method: 'POS
 async function updateHomework(id, data) { return api(`/api/homework/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteHomework(id) { return api(`/api/homework/${id}`, { method: 'DELETE' }); }
 
-// ===== DATESHEETS =====
 async function getDatesheets(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/datesheets${params ? '?' + params : ''}`);
 }
-// Date Sheets (parent) CRUD
 async function getDateSheets() { return api('/api/date-sheets'); }
 async function createDateSheet(data) { return api('/api/date-sheets', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateDateSheet(id, data) { return api(`/api/date-sheets/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteDateSheet(id) { return api(`/api/date-sheets/${id}`, { method: 'DELETE' }); }
-// Date Sheet Entries
 async function getDateSheetEntries(sheetId) { return api(`/api/date-sheets/${sheetId}/entries`); }
 async function createDateSheetEntry(sheetId, data) { return api(`/api/date-sheets/${sheetId}/entries`, { method: 'POST', body: JSON.stringify(data) }); }
 async function updateDateSheetEntry(entryId, data) { return api(`/api/datesheet-entries/${entryId}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteDateSheetEntry(entryId) { return api(`/api/datesheet-entries/${entryId}`, { method: 'DELETE' }); }
 
-// ===== VENDORS =====
 async function getVendors() { return api('/api/vendors'); }
 async function createVendor(data) { return api('/api/vendors', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateVendor(id, data) { return api(`/api/vendors/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteVendor(id) { return api(`/api/vendors/${id}`, { method: 'DELETE' }); }
 
-// ===== BANK ACCOUNTS =====
 async function getBankAccounts() { return api('/api/bank-accounts'); }
 async function createBankAccount(data) { return api('/api/bank-accounts', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateBankAccount(id, data) { return api(`/api/bank-accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteBankAccount(id) { return api(`/api/bank-accounts/${id}`, { method: 'DELETE' }); }
 
-// ===== CASH TRANSACTIONS =====
 async function getCashTransactions() { return api('/api/cash-transactions'); }
 async function createCashTransaction(data) { return api('/api/cash-transactions', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateCashTransaction(id, data) { return api(`/api/cash-transactions/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteCashTransaction(id) { return api(`/api/cash-transactions/${id}`, { method: 'DELETE' }); }
 
-// ===== EMAIL =====
 async function getEmailLog() { return api('/api/email-log'); }
 async function sendEmailApi(data) { return api('/api/email/send', { method: 'POST', body: JSON.stringify(data) }); }
 
-// ===== ACTIVITY LOG =====
 async function getActivityLog() { return api('/api/activity-log'); }
 
-// ===== FEE SLABS =====
 async function getFeeSlabs(classId) {
     const params = classId ? `?class_id=${classId}` : '';
     return api(`/api/fee-slabs${params}`);
@@ -393,7 +349,6 @@ async function deleteFeeSlabsByClass(classId, category) {
     return api(`/api/fee-slabs?class_id=${classId}&category=${encodeURIComponent(category || 'Default')}`, { method: 'DELETE' });
 }
 
-// ===== FEE DISCOUNTS =====
 async function getFeeDiscounts(studentId) {
     const params = studentId ? `?student_id=${studentId}` : '';
     return api(`/api/fee-discounts${params}`);
@@ -401,13 +356,11 @@ async function getFeeDiscounts(studentId) {
 async function createFeeDiscount(data) { return api('/api/fee-discounts', { method: 'POST', body: JSON.stringify(data) }); }
 async function deleteFeeDiscount(id) { return api(`/api/fee-discounts/${id}`, { method: 'DELETE' }); }
 
-// ===== CHARACTER CERTIFICATES =====
 async function getCharacterCertificates() { return api('/api/character-certificates'); }
 async function createCharacterCertificate(data) { return api('/api/character-certificates', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateCharacterCertificate(id, data) { return api(`/api/character-certificates/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteCharacterCertificate(id) { return api(`/api/character-certificates/${id}`, { method: 'DELETE' }); }
 
-// ===== CO-SCHOLASTIC =====
 async function getCoScholasticAreas() { return api('/api/co-scholastic-areas'); }
 async function getCoScholasticResults(filters = {}) {
     const params = new URLSearchParams(filters).toString();
@@ -417,7 +370,6 @@ async function saveCoScholasticResults(exam_id, student_id, results) {
     return api('/api/co-scholastic-results', { method: 'POST', body: JSON.stringify({ exam_id, student_id, results }) });
 }
 
-// ===== TEACHER PERMISSIONS =====
 async function getTeacherPermissions(staffId) {
     const params = staffId ? `?staff_id=${staffId}` : '';
     return api(`/api/teacher-permissions${params}`);
@@ -426,31 +378,25 @@ async function createTeacherPermission(data) { return api('/api/teacher-permissi
 async function updateTeacherPermission(id, data) { return api(`/api/teacher-permissions/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteTeacherPermission(id) { return api(`/api/teacher-permissions/${id}`, { method: 'DELETE' }); }
 
-// ===== STUDENT SUBJECTS =====
 async function getStudentSubjects(studentId) { return api(`/api/student-subjects/${studentId}`); }
 async function saveStudentSubjects(studentId, subjectIds) {
     return api('/api/student-subjects', { method: 'POST', body: JSON.stringify({ student_id: studentId, subject_ids: subjectIds }) });
 }
 
-// ===== STUDENT PROMOTION =====
 async function promoteStudents(data) { return api('/api/students/promote', { method: 'POST', body: JSON.stringify(data) }); }
 
-// ===== FEE CARRY-FORWARD =====
 async function getCarryForward(studentId, currentSession) {
     return api(`/api/fee-carry-forward?student_id=${studentId}&current_session=${encodeURIComponent(currentSession)}`);
 }
 
-// ===== GALLERY =====
 async function getGallery() { return api('/api/gallery'); }
 async function createGalleryItem(data) { return api('/api/gallery', { method: 'POST', body: JSON.stringify(data) }); }
 
-// ===== STAFF ATTENDANCE (GET) =====
 async function getStaffAttendance(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/attendance/staff${params ? '?' + params : ''}`);
 }
 
-// ===== OPTION SETTINGS =====
 async function getOptionSettings(branchId) {
     const params = branchId ? `?branch_id=${encodeURIComponent(branchId)}` : '';
     const rows = await api(`/api/option-settings${params}`);
@@ -462,20 +408,17 @@ async function getOptionSettings(branchId) {
 }
 async function saveOptionSettings(settings, branchId) { return api('/api/option-settings', { method: 'POST', body: JSON.stringify({ settings, branch_id: branchId || undefined }) }); }
 
-// ===== TRANSFER CERTIFICATES =====
 async function getTransferCertificates() { return api('/api/transfer-certificates'); }
 async function createTransferCertificate(data) { return api('/api/transfer-certificates', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateTransferCertificate(id, data) { return api(`/api/transfer-certificates/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteTransferCertificate(id) { return api(`/api/transfer-certificates/${id}`, { method: 'DELETE' }); }
 
-// ===== SHORTCUT MASTER FUNCTIONS =====
 async function getDeductionHeads() { return getMasterData('deduction_heads'); }
 async function getAllowanceHeads() { return getMasterData('allowance_heads'); }
 async function getBookTypes() { return getMasterData('book_types'); }
 async function getHomeworkTypes() { return getMasterData('homework_types'); }
 async function getExamGroups() { return getMasterData('exam_groups'); }
 
-// ===== FACE DESCRIPTORS =====
 async function getFaceDescriptors(filters = {}) { const p = new URLSearchParams(filters).toString(); return api(`/api/face-descriptors${p ? '?' + p : ''}`); }
 async function saveFaceDescriptor(data) { return api('/api/face-descriptors', { method: 'POST', body: JSON.stringify(data) }); }
 async function deleteFaceDescriptor(type, personId) { return api(`/api/face-descriptors/${type}/${personId}`, { method: 'DELETE' }); }

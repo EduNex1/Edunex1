@@ -135,8 +135,6 @@
             overflow: hidden;
         }
 
-
-
         .bento-stat-number {
             font-size: 32px;
             font-weight: 800;
@@ -374,10 +372,10 @@
                     </ul>
                 </div>
 
-                <!-- Bento Grid: Profile + Stats -->
+                
                 <div class="bento-grid" id="bentoGrid"></div>
 
-                <!-- Attendance Calendar -->
+                
                 <div class="card height-auto mg-b-15">
                     <div class="card-body">
                         <h6 class="section-heading"><i class="fas fa-calendar-alt"></i> Attendance Calendar</h6>
@@ -390,7 +388,7 @@
                     </div>
                 </div>
 
-                <!-- Day-by-Day Log -->
+                
                 <div class="card height-auto">
                     <div class="card-body">
                         <h6 class="section-heading"><i class="fas fa-list"></i> Day-by-Day Log</h6>
@@ -455,7 +453,6 @@
             const statusMap = { P: 'present', A: 'absent', L: 'leave', HD: 'leave' };
             const statusLabel = { P: 'Present', A: 'Absent', L: 'Leave', HD: 'Half Day' };
 
-            // Compute summary
             const present = records.filter(r => r.status === 'P').length;
             const absent = records.filter(r => r.status === 'A').length;
             const leave = records.filter(r => r.status === 'L').length;
@@ -508,7 +505,6 @@
                 </div>
             `);
 
-            // Calendar
             const recordMap = {};
             records.forEach(r => { recordMap[r.date] = r; });
 
@@ -548,7 +544,6 @@
             }
             $('#calendarArea').html(calHtml);
 
-            // Day-by-day log
             let logHtml = '';
             const sortedRecords = [...records].sort((a, b) => b.date.localeCompare(a.date));
             sortedRecords.forEach(r => {

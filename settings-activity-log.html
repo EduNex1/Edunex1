@@ -58,7 +58,6 @@
         const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
         let usersCache = [];
         try { usersCache = await getUsers(); } catch(e){}
-        // Branch admin: filter out super_admin and branch_admin from user dropdown
         const filteredUsers = isSuperAdmin ? usersCache : usersCache.filter(u => !['super_admin','branch_admin'].includes(u.role));
         filteredUsers.forEach(u=>$('#fUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
 

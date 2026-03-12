@@ -116,11 +116,11 @@
 
                         <form class="admit-form" id="staffForm" autocomplete="off">
 
-                            <!-- ═══════════ EMPLOYMENT DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-id-badge"></i> Employment Details</div>
                                 <div class="row">
-                                    <!-- Photo -->
+                                    
                                     <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center" style="min-width:120px;">
                                         <label>Photo</label>
                                         <div class="photo-box" id="photoUploadArea" onclick="document.getElementById('photoInput').click()">
@@ -134,7 +134,7 @@
                                         <input type="file" id="photoInput" accept="image/*" style="display:none;">
                                     </div>
 
-                                    <!-- Fields beside photo -->
+                                    
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-xl-3 col-lg-3 col-md-4 col-6 form-group">
@@ -177,7 +177,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ PERSONAL DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-user"></i> Personal Details</div>
                                 <div class="row">
@@ -209,7 +209,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ CONTACT & ADDRESS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-phone-alt"></i> Contact & Address</div>
                                 <div class="row">
@@ -232,7 +232,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ SALARY & GOVERNMENT IDS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-id-card"></i> Salary & Government IDs</div>
                                 <div class="row">
@@ -255,7 +255,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ BANK ACCOUNT DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-university"></i> Bank Account Details</div>
                                 <div class="row">
@@ -287,7 +287,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ OTHER DETAILS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-info-circle"></i> Other Details</div>
                                 <div class="row">
@@ -302,7 +302,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ UPLOAD DOCUMENTS ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
                                 <div class="row">
@@ -324,7 +324,7 @@
                                 <div class="doc-list" id="docList"></div>
                             </div>
 
-                            <!-- ═══════════ SUBMIT ═══════════ -->
+                            
                             <div class="form-actions">
                                 <button type="submit" class="btn-submit"><i class="fas fa-save mg-r-5"></i> Save Staff</button>
                                 <a href="view-staff.html" class="btn-back"><i class="fas fa-arrow-left mg-r-5"></i> Back</a>
@@ -332,7 +332,7 @@
 
                         </form>
 
-                        <!-- Staff Login Details - Separate section (shown on edit) -->
+                        
                         <div id="loginSection" style="display:none; margin-top:20px; border-top:2px solid #e8eaf6; padding-top:18px;">
                             <div class="form-section-title"><i class="fas fa-key"></i> Staff Login Details</div>
                             <div class="row align-items-end">
@@ -389,10 +389,8 @@
         $(document).ready(async function () {
             initPage('add-staff');
 
-            // Populate designation dropdown from API
             populateDesignationDropdown(document.getElementById('designation'), false);
 
-            // Populate teaching subjects from API
             try {
                 const subjects = await getSubjects();
                 let subHtml = '';
@@ -401,12 +399,10 @@
             } catch(e) { console.error('Failed to load subjects', e); }
             $('#teachingSubjects').select2({ placeholder: 'Select subjects (if applicable)', allowClear: true });
 
-            // Auto-fill
             $('#employeeId').val('(Auto-generated)');
             const today = new Date();
             $('#joiningDate').val(String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear());
 
-            // Photo upload — open crop modal
             $('#photoInput').on('change', function (e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -415,7 +411,6 @@
                 r.readAsDataURL(file);
             });
 
-            // Check if editing
             const urlParams = new URLSearchParams(window.location.search);
             const editId = urlParams.get('edit');
             if (editId) {
@@ -424,7 +419,6 @@
                 await loadStaffForEdit(editStaffId);
             }
 
-            // Aadhar auto-format
             $('#aadharNumber').on('input', function () {
                 let v = this.value.replace(/\D/g, '').substring(0, 12);
                 if (v.length > 8) v = v.substring(0, 4) + ' ' + v.substring(4, 8) + ' ' + v.substring(8);
@@ -432,10 +426,8 @@
                 this.value = v;
             });
 
-            // Document upload
             $('#addDocBtn').on('click', addDocument);
 
-            // Submit
             $('#staffForm').on('submit', async function (e) {
                 e.preventDefault();
                 if (!validateForm()) return;

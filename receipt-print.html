@@ -262,13 +262,13 @@
 </head>
 
 <body>
-    <!-- Controls (hidden in print) -->
+    
     <div class="print-controls" id="controls">
         <button class="btn-print" id="btnPrint"><i class="fas fa-print"></i> Print Receipt</button>
         <button class="btn-back" onclick="window.close()"><i class="fas fa-arrow-left"></i> Close</button>
     </div>
 
-    <!-- Receipt Content -->
+    
     <div id="receiptContent"></div>
 
     <script src="js/jquery-3.3.1.min.js"></script>
@@ -292,7 +292,6 @@
             try { branches = await getBranches(); } catch(e) {}
             const branch = branches.find(b => b.id === dep.branch_id) || {};
 
-            // Build fee table rows from items
             let feeRows = '';
             const items = dep.items || [];
             items.forEach((item, i) => {

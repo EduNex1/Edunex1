@@ -209,7 +209,7 @@
                             </div>
                         </div>
 
-                        <!-- Filter -->
+                        
                         <form class="filter-form mg-b-15" id="filterForm">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -257,7 +257,7 @@
                             </div>
                         </form>
 
-                        <!-- Report -->
+                        
                         <div id="reportArea" style="display:none;">
                             <div class="d-flex align-items-center justify-content-between mg-b-10 flex-wrap"
                                 style="gap:8px;">
@@ -366,7 +366,6 @@
                 else if (orderBy === 'name') students.sort((a,b) => (a.name||'').localeCompare(b.name||''));
                 else if (orderBy === 'admissionNo') students.sort((a,b) => (a.admission_no||'').localeCompare(b.admission_no||''));
 
-                // Group records by student
                 const byStudent = {};
                 records.forEach(r => {
                     if (!byStudent[r.student_id]) byStudent[r.student_id] = [];

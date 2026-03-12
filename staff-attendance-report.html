@@ -233,7 +233,7 @@
                             </div>
                         </div>
 
-                        <!-- Filter -->
+                        
                         <form class="filter-form mg-b-15" id="filterForm">
                             <div class="row gutters-8">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -258,7 +258,7 @@
                             </div>
                         </form>
 
-                        <!-- Report -->
+                        
                         <div id="reportArea" style="display:none;">
                             <div class="d-flex align-items-center justify-content-between mg-b-10 flex-wrap"
                                 style="gap:8px;">
@@ -342,7 +342,6 @@
                 let records = [];
                 try { records = await getStaffAttendance({ from_date: fromDate, to_date: toDate }); } catch(e) {}
 
-                // Group by staff
                 const byStaff = {};
                 records.forEach(r => {
                     if (!byStaff[r.staff_id]) byStaff[r.staff_id] = [];

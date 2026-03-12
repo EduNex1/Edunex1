@@ -25,7 +25,7 @@
             <div id="sidebar-container"></div>
             <div class="dashboard-content-one">
 
-                <!-- Breadcrumbs -->
+                
                 <div class="breadcrumbs-area">
                     <h3>Homework</h3>
                     <ul>
@@ -34,7 +34,7 @@
                     </ul>
                 </div>
 
-                <!-- No Permission State (hidden by default) -->
+                
                 <div id="noPermissionState" style="display:none;">
                     <div class="chart-card" style="text-align:center;padding:60px 20px;">
                         <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
@@ -43,9 +43,9 @@
                     </div>
                 </div>
 
-                <!-- Main Content (shown when permissions exist) -->
+                
                 <div id="mainContent">
-                    <!-- Filter Bar -->
+                    
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-filter"></i> Filter & Add Homework</div>
                         <div class="chart-card-body">
@@ -75,7 +75,7 @@
                         </div>
                     </div>
 
-                    <!-- Add Homework Form (collapsible) -->
+                    
                     <div id="addHwForm" style="display:none;">
                         <div class="chart-card" style="margin-bottom:16px;">
                             <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
@@ -128,7 +128,7 @@
                         </div>
                     </div>
 
-                    <!-- Homework List -->
+                    
                     <div class="chart-card">
                         <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
                             <span><i class="fas fa-list-ul"></i> My Homework List</span>
@@ -138,7 +138,7 @@
                         </div>
                         <div class="chart-card-body" style="padding:8px 16px;">
 
-                            <!-- Empty state for when class not selected yet -->
+                            
                             <div id="selectClassPrompt">
                                 <div style="text-align:center;padding:40px 20px;">
                                     <i class="fas fa-hand-pointer" style="font-size:36px;color:#c5cae9;margin-bottom:12px;"></i>
@@ -146,7 +146,7 @@
                                 </div>
                             </div>
 
-                            <!-- Empty state for no homework -->
+                            
                             <div id="noHomeworkState" style="display:none;">
                                 <div style="text-align:center;padding:40px 20px;">
                                     <i class="fas fa-clipboard" style="font-size:36px;color:#c5cae9;margin-bottom:12px;"></i>
@@ -155,7 +155,7 @@
                                 </div>
                             </div>
 
-                            <!-- Homework Table -->
+                            
                             <div id="hwTableWrap" style="display:none;">
                                 <div class="table-responsive">
                                     <table class="recent-table">
@@ -202,13 +202,11 @@
 
             initPage('t-homework');
 
-            // Load sections for mapping section_id → name
             try { sectionCache = await getSections(); } catch (e) { console.error('Failed to load sections', e); }
 
             var user = getUser();
             if (!user || !user.linked_id) return;
 
-            // Load teacher permissions from API
             try {
                 var perms = await getTeacherPermissions(user.linked_id);
                 teacherPermissions = perms.map(function (p) {
@@ -227,7 +225,6 @@
                 return;
             }
 
-            // Populate class dropdown with only assigned classes
             var classSelect = document.getElementById('hwClass');
             var addedClasses = {};
             teacherPermissions.forEach(function (p) {
@@ -240,7 +237,6 @@
                 }
             });
 
-            // On class change, populate sections
             classSelect.addEventListener('change', function () {
                 var classId = parseInt(this.value);
                 var sectionSelect = document.getElementById('hwSection');
@@ -256,7 +252,6 @@
                 });
             });
 
-            // On section change, auto-fill subject
             document.getElementById('hwSection').addEventListener('change', function () {
                 var classId = parseInt(document.getElementById('hwClass').value);
                 var sectionId = parseInt(this.value);

@@ -151,12 +151,12 @@
                     </ul>
                 </div>
 
-                <!-- Children Cards Row -->
+                
                 <div class="row" id="childrenCards" style="margin-bottom:20px;"></div>
 
-                <!-- Selected Child Detail -->
+                
                 <div id="childDetail" style="display:none;">
-                    <!-- Stats -->
+                    
                     <div class="stats-grid stats-grid-4" style="margin-bottom:16px;">
                         <div class="stat-card">
                             <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
@@ -192,7 +192,7 @@
                         </div>
                     </div>
 
-                    <!-- Personal Information -->
+                    
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-user"></i> Personal Information</div>
                         <div class="chart-card-body">
@@ -200,7 +200,7 @@
                         </div>
                     </div>
 
-                    <!-- Guardian Information -->
+                    
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-user-friends"></i> Guardian Information</div>
                         <div class="chart-card-body">
@@ -208,7 +208,7 @@
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
+                    
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-bolt"></i> Quick Actions</div>
                         <div class="chart-card-body">
@@ -280,7 +280,6 @@
             renderChildCards();
 
             var c = selectedChild;
-            // Stats — set some defaults since detailed stats require separate API calls
             document.getElementById('cdAtt').textContent = '—';
             document.getElementById('cdAttSub').textContent = 'View attendance';
             document.getElementById('cdFee').textContent = '—';
@@ -289,7 +288,6 @@
             document.getElementById('cdExamSub').textContent = 'View results';
             document.getElementById('cdHw').textContent = '—';
 
-            // Personal Info
             document.getElementById('personalInfo').innerHTML = buildInfo([
                 ['Full Name', c.name || ''], ['Class', (c.class_name || '') + ' — ' + (c.section || '')],
                 ['Roll Number', c.roll_no || ''], ['Admission No', c.admission_no || ''],
@@ -298,7 +296,6 @@
                 ['Category', c.category || ''], ['Address', c.address || '']
             ]);
 
-            // Guardian Info
             document.getElementById('guardianInfo').innerHTML = buildInfo([
                 ['Father\'s Name', c.father_name || ''], ['Father\'s Phone', c.father_phone || ''],
                 ['Father\'s Occupation', c.father_occupation || ''],
@@ -306,7 +303,6 @@
                 ['Mother\'s Occupation', c.mother_occupation || '']
             ]);
 
-            // Quick Actions
             document.getElementById('quickActions').innerHTML =
                 '<a href="/p-fee-status" class="quick-item"><i class="fas fa-rupee-sign"></i><span>Fee Status</span></a>' +
                 '<a href="/p-results" class="quick-item"><i class="fas fa-chart-bar"></i><span>Results</span></a>' +

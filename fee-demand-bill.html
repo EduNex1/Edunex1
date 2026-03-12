@@ -186,7 +186,7 @@
                             </div>
                         </div>
 
-                        <!-- Filters -->
+                        
                         <div class="filter-card">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -228,13 +228,13 @@
                             </div>
                         </div>
 
-                        <!-- Student List -->
+                        
                         <div id="stuList">
                             <div class="empty-state"><i class="fas fa-file-invoice"></i>Select class, months and
                                 particulars, then click Search</div>
                         </div>
 
-                        <!-- Proceed Button -->
+                        
                         <div id="proceedBar" style="display:none;margin-top:16px;text-align:right;">
                             <button class="fw-btn-fill" id="btnProceed"
                                 style="border-radius:6px;height:40px;font-size:13px;padding:0 24px;width:auto;background:#2e7d32;">
@@ -306,7 +306,6 @@
                 const classVal = parseInt($('#fClass').val());
 
                 const billData = { studentIds: selected, months: months, particularIds: parts, class_id: isNaN(classVal) ? null : classVal, section: $('#fSection').val() || '' };
-                // Pass current session if available
                 if (typeof getSelectedSession === 'function') {
                     const sess = getSelectedSession();
                     if (sess) billData.session = sess;

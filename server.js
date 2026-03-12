@@ -4,7 +4,6 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== SECURITY HEADERS ====================
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
@@ -14,12 +13,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// ==================== STATIC FILES (must come FIRST) ====================
-// Serve all static assets with absolute paths
 app.use(express.static(__dirname, { index: false }));
 
-// ==================== CLEAN URL ROUTES ====================
-// Flat routes (no nesting) — so relative paths in HTML still work
 const routes = {
     '/': 'login.html',
     '/dashboard': 'dashboard.html',
@@ -27,7 +22,6 @@ const routes = {
     '/parent-dashboard': 'parent-dashboard.html',
     '/student-dashboard': 'student-dashboard.html',
 
-    // Students
     '/student-list': 'all-student.html',
     '/new-admission': 'admit-form.html',
     '/student-details': 'student-details.html',
@@ -45,7 +39,6 @@ const routes = {
     '/face-registration': 'face-registration.html',
     '/face-settings': 'face-settings.html',
 
-    // Academics
     '/academic-notice': 'academic-notice.html',
     '/academic-timetable': 'academic-timetable.html',
     '/academic-schedule': 'academic-schedule.html',
@@ -57,7 +50,6 @@ const routes = {
     '/academic-homework': 'academic-homework.html',
     '/academic-gallery': 'academic-gallery.html',
 
-    // Staff
     '/view-staff': 'view-staff.html',
     '/staff-details': 'staff-details.html',
     '/add-staff': 'add-staff.html',
@@ -67,7 +59,6 @@ const routes = {
     '/staff-attendance-detail': 'staff-attendance-detail.html',
     '/teacher-permission': 'teacher-permission.html',
 
-    // Fee
     '/fee-deposit': 'fee-deposit.html',
     '/fee-online-requests': 'fee-online-requests.html',
     '/fee-online-request-review': 'fee-online-request-review.html',
@@ -80,14 +71,12 @@ const routes = {
     '/receipt-print': 'receipt-print.html',
     '/fee-discount': 'fee-discount.html',
 
-    // Payroll
     '/deduction-head': 'deduction-head.html',
     '/allowance-head': 'allowance-head.html',
     '/salary-settings': 'salary-settings.html',
     '/salary-generate': 'salary-generate.html',
     '/salary-list': 'salary-list.html',
 
-    // Accounts
     '/account-expenses': 'account-expenses.html',
     '/account-income': 'account-income.html',
     '/expense-head': 'expense-head.html',
@@ -97,25 +86,20 @@ const routes = {
     '/account-vendor': 'account-vendor.html',
     '/account-bank': 'account-bank.html',
 
-    // Email
     '/email-students': 'email-students.html',
     '/email-staff': 'email-staff.html',
     '/email-report': 'email-report.html',
 
-    // Result
     '/result-student-wise': 'result-student-wise.html',
     '/result-subject-wise': 'result-subject-wise.html',
     '/consolidated-marks': 'consolidated-marks.html',
     '/result-single-exam': 'result-single-exam.html',
     '/result-multiple-exam': 'result-multiple-exam.html',
 
-    // Teachers
     '/add-teacher': 'add-teacher.html',
 
-    // Class
     '/add-class': 'add-class.html',
 
-    // Library
     '/all-books': 'library-books.html',
     '/add-book': 'library-add-book.html',
     '/library-books': 'library-books.html',
@@ -125,11 +109,9 @@ const routes = {
     '/library-return': 'library-return.html',
     '/library-settings': 'library-settings.html',
 
-    // Fee Master
     '/fee-particulars': 'fee-particulars.html',
     '/fee-amount-slab': 'fee-amount-slab.html',
 
-    // Masters
     '/master-academic-session': 'master-academic-session.html',
     '/master-designation': 'master-designation.html',
     '/master-class': 'master-class.html',
@@ -142,18 +124,15 @@ const routes = {
     '/master-house': 'master-house.html',
     '/master-stream': 'master-stream.html',
 
-    // Other
     '/transport': 'transport-vehicles.html',
     '/transport-vehicles': 'transport-vehicles.html',
     '/transport-registration': 'transport-registration.html',
     '/transport-routes': 'transport-routes.html',
     '/transport-mapping': 'transport-mapping.html',
 
-    // Admin Profile
     '/admin-profile': 'admin-profile.html',
     '/super-admin-profile': 'super-admin-profile.html',
 
-    // Settings Module
     '/settings-users': 'settings-users.html',
     '/settings-user-add': 'settings-user-add.html',
     '/settings-user-permission': 'settings-user-permission.html',
@@ -164,9 +143,6 @@ const routes = {
     '/settings-options': 'settings-options.html',
     '/settings-exam': 'settings-exam.html',
 
-    // ==================== ROLE DASHBOARDS (defined above) ====================
-
-    // ==================== TEACHER PANEL ====================
     '/t-my-students': 't-my-students.html',
     '/t-mark-attendance': 't-mark-attendance.html',
     '/t-attendance-report': 't-attendance-report.html',
@@ -181,7 +157,6 @@ const routes = {
     '/t-my-attendance': 't-my-attendance.html',
     '/t-my-profile': 't-my-profile.html',
 
-    // ==================== PARENT PANEL ====================
     '/p-my-children': 'p-my-children.html',
     '/p-attendance': 'p-attendance.html',
     '/p-fee-status': 'p-fee-status.html',
@@ -198,7 +173,6 @@ const routes = {
     '/p-transport': 'p-transport.html',
     '/p-my-profile': 'p-my-profile.html',
 
-    // ==================== STUDENT PANEL ====================
     '/s-my-attendance': 's-my-attendance.html',
     '/s-my-results': 's-my-results.html',
     '/s-fee-status': 's-fee-status.html',
@@ -214,14 +188,12 @@ const routes = {
     '/s-my-profile': 's-my-profile.html',
 };
 
-// Register clean URL routes
 Object.entries(routes).forEach(([route, file]) => {
     app.get(route, (req, res) => {
         res.sendFile(path.join(__dirname, file));
     });
 });
 
-// 404 handler
 app.use((req, res) => {
     res.status(404).send(`
         <div style="text-align:center;padding:50px;font-family:sans-serif;">

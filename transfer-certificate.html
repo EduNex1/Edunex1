@@ -322,7 +322,7 @@
                             </div>
                         </div>
 
-                        <!-- Tabs -->
+                        
                         <div class="tc-tabs">
                             <button class="tc-tab active" data-tab="add"><i class="fas fa-plus-circle mg-r-5"></i>Add
                                 Transfer Certificate</button>
@@ -330,10 +330,10 @@
                                 Certificates</button>
                         </div>
 
-                        <!-- ADD TC Panel -->
+                        
                         <div class="tc-panel active" id="panelAdd">
                             <div class="tc-form">
-                                <!-- Step 1: Select Student -->
+                                
                                 <div class="row mg-b-15"
                                     style="background:#f8f9ff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
                                     <div class="col-12 mg-b-10">
@@ -361,7 +361,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Step 2: TC Details -->
+                                
                                 <div id="tcFormFields" style="display:none;">
                                     <div class="row mg-t-15"
                                         style="background:#fff;padding:14px;border-radius:8px;border:1px solid #e0e0e0;">
@@ -370,7 +370,7 @@
                                                 <i class="fas fa-edit mg-r-5"></i> Step 2: Transfer Certificate Details
                                             </h6>
                                         </div>
-                                        <!-- Auto-filled fields -->
+                                        
                                         <div class="col-lg-4 col-md-6 form-group">
                                             <label class="form-label-sm">TC No. (Auto)</label>
                                             <input type="text" class="form-control" id="fTcNo" readonly
@@ -436,7 +436,7 @@
                                                 style="background:#f0f0f0;">
                                         </div>
 
-                                        <!-- Editable fields -->
+                                        
                                         <div class="col-lg-4 col-md-6 form-group">
                                             <label class="form-label-sm">Date of Leaving *</label>
                                             <input type="date" class="form-control" id="fLeaveDate">
@@ -493,7 +493,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Buttons -->
+                                    
                                     <div class="mg-t-15 d-flex" style="gap:10px;">
                                         <button type="button" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark"
                                             id="btnSaveTC"
@@ -510,7 +510,7 @@
                             </div>
                         </div>
 
-                        <!-- VIEW TC Panel -->
+                        
                         <div class="tc-panel" id="panelView">
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="tcTable">
@@ -532,7 +532,7 @@
                             <div id="tcRecordCount" style="font-size:12px;font-weight:600;color:#555;margin-top:8px;">
                             </div>
 
-                            <!-- TC Preview -->
+                            
                             <div class="tc-preview-area" id="tcPreviewArea">
                                 <div class="d-flex align-items-center justify-content-between mg-b-15">
                                     <h6 style="font-weight:700;font-size:14px;color:#333;margin:0;">
@@ -575,7 +575,6 @@
             const currentSession = sessions.find(s => s.status === 'Active') || {};
             let tcCounter = tcCache.length + 1;
 
-            // ========== Date to Words Converter ==========
             function dateToWords(dateStr) {
                 if (!dateStr) return '';
                 const d = new Date(dateStr);
@@ -627,7 +626,6 @@
                 return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
             }
 
-            // Tabs
             $('.tc-tab').on('click', function () {
                 const tab = $(this).data('tab');
                 $('.tc-tab').removeClass('active');
@@ -697,7 +695,6 @@
                 editingTcId = null;
             });
 
-            // Save TC
             $('#btnSaveTC').on('click', async function () {
                 const sid = parseInt($('#tcStudent').val());
                 if (!sid) { showToast('Please select a student', 'error'); return; }

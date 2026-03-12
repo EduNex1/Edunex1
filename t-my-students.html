@@ -35,7 +35,7 @@
                     </ul>
                 </div>
 
-                <!-- No Permission -->
+                
                 <div id="noPermissionState" style="display:none;">
                     <div class="chart-card" style="text-align:center;padding:60px 20px;">
                         <i class="fas fa-user-lock" style="font-size:48px;color:#c5cae9;margin-bottom:16px;"></i>
@@ -46,7 +46,7 @@
                 </div>
 
                 <div id="mainContent">
-                    <!-- Filter -->
+                    
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-users"></i> View Students</div>
                         <div class="chart-card-body">
@@ -79,7 +79,7 @@
                         </div>
                     </div>
 
-                    <!-- Stats Row -->
+                    
                     <div id="statsRow" style="display:none;">
                         <div class="stats-grid stats-grid-4">
                             <div class="stat-card">
@@ -117,7 +117,7 @@
                         </div>
                     </div>
 
-                    <!-- Select Class Prompt -->
+                    
                     <div id="selectPrompt">
                         <div class="chart-card" style="text-align:center;padding:40px 20px;">
                             <i class="fas fa-hand-pointer" style="font-size:36px;color:#c5cae9;margin-bottom:12px;"></i>
@@ -126,7 +126,7 @@
                         </div>
                     </div>
 
-                    <!-- Student Table -->
+                    
                     <div id="tableWrap" style="display:none;">
                         <div class="chart-card">
                             <div class="chart-card-header"><i class="fas fa-list"></i> Student List</div>
@@ -238,14 +238,12 @@
                     students = await getStudents({ class_id: classId, section: sectionName, status: 'Active' });
                 } catch (e) { console.error('Failed to load students', e); }
 
-                // Stats
                 document.getElementById('statsRow').style.display = 'block';
                 document.getElementById('statTotal').textContent = students.length;
                 var boys = students.filter(function (s) { return s.gender === 'Male'; }).length;
                 document.getElementById('statGender').textContent = boys + ' / ' + (students.length - boys);
                 document.getElementById('statSubject').textContent = perm ? perm.subject_name : '—';
 
-                // Table
                 document.getElementById('tableWrap').style.display = 'block';
                 var html = '';
                 students.forEach(function (s, i) {

@@ -64,13 +64,13 @@
                             </div>
                         </div>
 
-                        <!-- Quick Links -->
+                        
                         <div class="quick-links">
                             <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Syllabus</button>
                             <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Syllabus</button>
                         </div>
 
-                        <!-- ADD FORM -->
+                        
                         <div class="form-card" id="addSection" style="display:none;">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
@@ -121,7 +121,7 @@
                             <input type="hidden" id="editId" value="">
                         </div>
 
-                        <!-- VIEW SECTION -->
+                        
                         <div id="viewSection">
                             <div class="row gutters-8 align-items-end mg-b-12">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -206,7 +206,6 @@
             if (classCache.length) $('#filterClass').val(classCache[0].id);
             loadTable();
 
-            // Tabs
             $('#tabView').on('click', function () {
                 $(this).addClass('active'); $('#tabAdd').removeClass('active');
                 $('#viewSection').show(); $('#addSection').hide();
@@ -217,7 +216,6 @@
                 resetAddForm();
             });
 
-            // File upload
             $('#addFile').on('change', function () {
                 const file = this.files[0];
                 if (file) {
@@ -229,7 +227,6 @@
                 }
             });
 
-            // Search / Reset
             $('#btnSearch').on('click', loadTable);
             $('#btnReset').on('click', function () {
                 $('#filterClass, #filterSubject, #filterStatus').val('');
@@ -277,7 +274,6 @@
                 });
             }
 
-            // Save
             $('#btnSave').on('click', async function () {
                 const data = {
                     class_id: parseInt($('#addClass').val()),

@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="row">
-                    <!-- Left: Student Search -->
+                    
                     <div class="col-lg-7 col-12">
                         <div class="card height-auto">
                             <div class="card-body">
@@ -108,7 +108,7 @@
                         </div>
                     </div>
 
-                    <!-- Right: Subject Assignment Panel -->
+                    
                     <div class="col-lg-5 col-12">
                         <div class="card height-auto">
                             <div class="card-body">
@@ -118,14 +118,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Subject Multi-Select -->
+                                
                                 <div class="form-group">
                                     <label class="form-label-sm">Select Subjects</label>
                                     <select class="select2" id="subjectSelect" multiple="multiple"
                                         style="width:100%;"></select>
                                 </div>
 
-                                <!-- Quick Presets -->
+                                
                                 <div class="mg-b-15">
                                     <label class="form-label-sm mg-b-6">Quick Presets</label>
                                     <div class="d-flex" style="gap:6px;flex-wrap:wrap;">
@@ -140,7 +140,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Assign Panel -->
+                                
                                 <div class="assign-panel">
                                     <p style="font-size:12px;color:#666;margin-bottom:10px;">
                                         <i class="fas fa-info-circle mg-r-5" style="color:#304ffe;"></i>
@@ -182,7 +182,6 @@
             populateSectionDropdown(document.getElementById('sectionFilter'), true);
             populateSubjectDropdown(document.getElementById('subjectSelect'), false);
 
-            // Cache subjects for presets
             try { subjectsCache = await getSubjects(); } catch(e) { console.error(e); }
 
             $('.select2').select2();
@@ -200,7 +199,6 @@
                 if (preset === 'all') ids = subjectsCache.map(s => s.id);
                 else if (preset === 'clear') ids = [];
                 else {
-                    // First N subjects based on preset type
                     const counts = { primary: 5, middle: 7, senior: 9 };
                     ids = subjectsCache.slice(0, counts[preset] || 5).map(s => s.id);
                 }

@@ -386,7 +386,7 @@
                     </ul>
                 </div>
 
-                <!-- Staff List -->
+                
                 <div class="card height-auto">
                     <div class="card-body">
                         <div class="heading-layout1">
@@ -397,7 +397,7 @@
                             </div>
                         </div>
 
-                        <!-- Filter Form -->
+                        
                         <form class="filter-form mg-b-15" id="filterForm">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -465,8 +465,6 @@
         </div>
     </div>
 
-
-
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/plugins.js"></script>
     <script src="js/popper.min.js"></script>
@@ -482,7 +480,6 @@
         $(document).ready(async function () {
             initPage('view-staff');
 
-            // Populate designation dropdown from API
             try {
                 const desigs = await getDesignations();
                 let dHtml = '<option value="All">All Designations</option>';
@@ -534,7 +531,6 @@
                 const staffRes = await getStaff(filters);
                 let staff = Array.isArray(staffRes) ? staffRes : (staffRes.results || []);
 
-                // Client-side search filter
                 if(filters.search) {
                     const q = filters.search.toLowerCase();
                     staff = staff.filter(s => (s.name||'').toLowerCase().includes(q) || (s.employee_id||'').toLowerCase().includes(q) || (s.phone||'').includes(q));

@@ -1,45 +1,32 @@
 (function ($) {
   "use strict";
 
-  /*-------------------------------------
-      Sidebar Toggle Menu
-    -------------------------------------*/
-  // NOTE: Sidebar dropdown toggle is handled in app.js renderSidebar().
-  // The duplicate handler that was here has been removed to prevent
-  // double-firing (open then immediately close).
+  
 
-  /*-------------------------------------
-      Sidebar Menu Control
-    -------------------------------------*/
+  
   $(".sidebar-toggle").on("click", function () {
     window.setTimeout(function () {
       $("#wrapper").toggleClass("sidebar-collapsed");
     }, 500);
   });
 
-  /*-------------------------------------
-      Sidebar Menu Control Mobile
-    -------------------------------------*/
+  
   $(document).on("click", ".sidebar-toggle-mobile", function () {
     $("#wrapper").toggleClass("sidebar-open-mobile");
     if ($("#wrapper").hasClass("sidebar-collapsed")) {
       $("#wrapper").removeClass("sidebar-collapsed");
     }
   });
-  // Close sidebar when overlay is clicked
   $(document).on("click", ".sidebar-overlay", function () {
     $("#wrapper").removeClass("sidebar-open-mobile");
   });
-  // Close sidebar when a nav link is clicked (mobile)
   $(document).on("click", ".sidebar-menu-one .nav-link[href]:not([href='#'])", function () {
     if (window.innerWidth <= 991) {
       $("#wrapper").removeClass("sidebar-open-mobile");
     }
   });
 
-  /*-------------------------------------
-      jquery Scollup activation code
-   -------------------------------------*/
+  
   $.scrollUp({
     scrollText: '<i class="fa fa-angle-up"></i>',
     easingType: "linear",
@@ -47,17 +34,13 @@
     animation: "fade"
   });
 
-  /*-------------------------------------
-      jquery Scollup activation code
-    -------------------------------------*/
+  
   $("#preloader").fadeOut("slow", function () {
     $(this).remove();
   });
 
   $(function () {
-    /*-------------------------------------
-          Data Table init
-      -------------------------------------*/
+    
     if ($.fn.DataTable !== undefined) {
       $('.data-table').DataTable({
         paging: true,
@@ -66,36 +49,28 @@
         lengthChange: false,
         lengthMenu: [20, 50, 75, 100],
         columnDefs: [{
-          targets: [0, -1], // column or columns numbers
-          orderable: false // set orderable for selected columns
+          targets: [0, -1],
+          orderable: false
         }],
       });
     }
 
-    /*-------------------------------------
-          All Checkbox Checked
-      -------------------------------------*/
+    
     $(".checkAll").on("click", function () {
       $(this).parents('.table').find('input:checkbox').prop('checked', this.checked);
     });
 
-    /*-------------------------------------
-          Tooltip init
-      -------------------------------------*/
+    
     $('[data-toggle="tooltip"]').tooltip();
 
-    /*-------------------------------------
-          Select 2 Init
-      -------------------------------------*/
+    
     if ($.fn.select2 !== undefined) {
       $('.select2').select2({
         width: '100%'
       });
     }
 
-    /*-------------------------------------
-          Date Picker
-      -------------------------------------*/
+    
     if ($.fn.datepicker !== undefined) {
       $('.air-datepicker').datepicker({
         language: {
@@ -112,9 +87,7 @@
       });
     }
 
-    /*-------------------------------------
-          Counter
-      -------------------------------------*/
+    
     var counterContainer = $(".counter");
     if (counterContainer.length) {
       counterContainer.counterUp({
@@ -123,9 +96,7 @@
       });
     }
 
-    /*-------------------------------------
-          Vector Map 
-      -------------------------------------*/
+    
     if ($.fn.vectorMap !== undefined) {
       $('#world-map').vectorMap({
         map: 'world_mill',
@@ -156,9 +127,7 @@
       });
     }
 
-    /*-------------------------------------
-          Line Chart 
-      -------------------------------------*/
+    
     if ($("#earning-line-chart").length) {
 
       var lineChartData = {
@@ -280,9 +249,7 @@
       });
     }
 
-    /*-------------------------------------
-          Bar Chart 
-      -------------------------------------*/
+    
     if ($("#expense-bar-chart").length) {
 
       var barChartData = {
@@ -372,9 +339,7 @@
       });
     }
 
-    /*-------------------------------------
-          Doughnut Chart 
-      -------------------------------------*/
+    
     if ($("#student-doughnut-chart").length) {
 
       var doughnutChartData = {
@@ -408,9 +373,7 @@
       });
     }
 
-    /*-------------------------------------
-          Calender initiate 
-      -------------------------------------*/
+    
     if ($.fn.fullCalendar !== undefined) {
       $('#fc-calender').fullCalendar({
         header: {
@@ -419,7 +382,7 @@
           right: 'prev,next',
         },
         fixedWeekCount: false,
-        navLinks: true, // can click day/week names to navigate views
+        navLinks: true,
         editable: true,
         eventLimit: true, // allow "more" link when too many events
         aspectRatio: 1.8,

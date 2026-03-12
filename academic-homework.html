@@ -64,13 +64,13 @@
                             </div>
                         </div>
 
-                        <!-- Quick Links -->
+                        
                         <div class="quick-links">
                             <button class="ql-btn" id="tabAdd"><i class="fas fa-plus mg-r-5"></i>Add Homework</button>
                             <button class="ql-btn active" id="tabView"><i class="fas fa-list mg-r-5"></i>View Homework</button>
                         </div>
 
-                        <!-- ==================== ADD SECTION ==================== -->
+                        
                         <div id="addSection" style="display:none;">
                             <div class="form-card">
                                 <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-edit" style="color:#304ffe;margin-right:6px;"></i>Add Homework</h6>
@@ -125,9 +125,9 @@
                             </div>
                         </div>
 
-                        <!-- ==================== VIEW SECTION ==================== -->
+                        
                         <div id="viewSection">
-                            <!-- Filter -->
+                            
                             <div style="margin-bottom:14px;">
                                 <div class="row gutters-8 align-items-end">
                                     <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -172,7 +172,7 @@
                                 </div>
                             </div>
 
-                            <!-- Homework List -->
+                            
                             <div class="d-flex align-items-center justify-content-between mg-b-12" style="flex-wrap:wrap;gap:8px;">
                                 <h6 style="font-weight:700;font-size:14px;color:#0d1b4a;margin:0;"><i class="fas fa-list" style="color:#304ffe;margin-right:6px;"></i>Homework List</h6>
                                 <span class="record-count" id="recordCount">0 Records</span>
@@ -218,7 +218,6 @@
             let classCache = [], subjectCache = [], sectionCache = [], hwCache = [];
             try { [classCache, subjectCache, sectionCache, hwCache] = await Promise.all([getClasses(), getSubjects(), getSections(), getHomework()]); } catch(e) { console.error('Failed to load data', e); }
 
-            // Populate dropdowns
             const classOpts = '<option value="">Select Class</option>' + classCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             const subOpts = '<option value="">Select Subject</option>' + subjectCache.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
             const sectionOpts = '<option value="">Select Section</option>' + sectionCache.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
@@ -230,7 +229,6 @@
 
             $('#hwDate').val(new Date().toISOString().split('T')[0]);
 
-            // Quick Links
             $('#tabAdd').on('click', function () {
                 $(this).addClass('active'); $('#tabView').removeClass('active');
                 $('#addSection').show(); $('#viewSection').hide();
@@ -301,7 +299,6 @@
                 });
             }
 
-            // Save
             $('#btnSave').on('click', async function () {
                 const date = $('#hwDate').val();
                 const class_id = $('#hwClass').val();
@@ -333,7 +330,6 @@
                 } catch(e) { showToast('Error saving homework', 'error'); }
             });
 
-            // Cancel
             $('#btnCancel').on('click', function () { clearForm(); $('#tabView').click(); });
 
             function clearForm() {
@@ -343,7 +339,6 @@
                 $('#btnSave').html('<i class="fas fa-save"></i> Save');
             }
 
-            // Edit
             window.editHomework = function (id) {
                 const h = hwCache.find(x => x.id === id);
                 if (!h) return;
@@ -355,7 +350,6 @@
                 $('html, body').animate({ scrollTop: 0 }, 300);
             };
 
-            // Delete
             window.removeHomework = async function (id) {
                 if (!confirm('Delete this homework?')) return;
                 try {
@@ -366,7 +360,6 @@
                 } catch(e) { showToast('Error deleting homework', 'error'); }
             };
 
-            // Filter
             $('#btnSearch').on('click', renderList);
             $('#btnReset').on('click', function () {
                 $('#filterFrom').val(''); $('#filterTo').val(''); $('#filterType').val('');

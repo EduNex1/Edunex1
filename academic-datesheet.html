@@ -223,7 +223,7 @@
                             </div>
                         </div>
 
-                        <!-- Quick Links -->
+                        
                         <div class="quick-links">
                             <button class="ql-btn" id="tabCreate"><i class="fas fa-plus mg-r-5"></i>Create Date
                                 Sheet</button>
@@ -231,9 +231,9 @@
                                 Sheets</button>
                         </div>
 
-                        <!-- ==================== CREATE SECTION ==================== -->
+                        
                         <div id="createSection" style="display:none;">
-                            <!-- Step 1: Exam Info -->
+                            
                             <div class="form-card" id="step1">
                                 <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i
                                         class="fas fa-info-circle" style="color:#304ffe;margin-right:6px;"></i>Exam
@@ -272,7 +272,7 @@
                                 <input type="hidden" id="editSheetId" value="">
                             </div>
 
-                            <!-- Step 2: Add Entries (shown after save) -->
+                            
                             <div id="step2" style="display:none;">
                                 <div class="entry-form">
                                     <h6><i class="fas fa-plus-circle mg-r-5"></i>Add Subject Entry</h6>
@@ -318,7 +318,7 @@
                                     <input type="hidden" id="editEntryId" value="">
                                 </div>
 
-                                <!-- Entry List with filters -->
+                                
                                 <div class="entry-list">
                                     <div class="el-header">
                                         <span class="record-count" id="entryCount">0 Entries</span>
@@ -352,7 +352,7 @@
                             </div>
                         </div>
 
-                        <!-- ==================== VIEW SECTION ==================== -->
+                        
                         <div id="viewSection">
                             <div class="d-flex align-items-center justify-content-between mg-b-10"
                                 style="flex-wrap:wrap;gap:8px;">
@@ -401,7 +401,6 @@
                 ]);
             } catch(e) { console.error('Load error', e); }
 
-            // Populate dropdowns
             examCache.forEach(e => { $('#createExam').append(`<option value="${e.id}">${e.name}</option>`); });
             classCache.forEach(c => {
                 $('#entryClass, #entryFilterClass').append(`<option value="${c.id}">${c.name}</option>`);
@@ -413,7 +412,6 @@
             $('#createPublishDate').val(new Date().toISOString().split('T')[0]);
             loadSheetList();
 
-            // ==================== TAB SWITCHING ====================
             $('#tabView').on('click', function () {
                 $(this).addClass('active'); $('#tabCreate').removeClass('active');
                 $('#viewSection').show(); $('#createSection').hide();
@@ -426,7 +424,6 @@
                 resetSheetForm();
             });
 
-            // ==================== SHEET LIST (View tab) ====================
             function loadSheetList() {
                 const tbody = $('#sheetBody');
                 tbody.empty();
@@ -454,7 +451,6 @@
                 });
             }
 
-            // ==================== CREATE / EDIT SHEET ====================
             $('#btnSaveSheet').on('click', async function () {
                 const examId = $('#createExam').val();
                 const publishDate = $('#createPublishDate').val();
@@ -474,7 +470,6 @@
                     }
                     sheetCache = await getDateSheets();
 
-                    // Show step 2
                     $('#step1').find('select, input[type="date"]').prop('disabled', true);
                     $('#btnSaveSheet').hide();
                     $('#step2').show();
@@ -498,7 +493,6 @@
                 currentSheetId = null;
             }
 
-            // ==================== ENTRIES ====================
             async function loadEntries() {
                 if (!currentSheetId) return;
                 try { entryCache = await getDateSheetEntries(currentSheetId); } catch(e) { entryCache = []; }
@@ -543,10 +537,8 @@
                 });
             }
 
-            // Entry filters
             $('#entryFilterClass, #entryFilterSubject').on('change', function () { loadEntries(); });
 
-            // Save entry
             $('#btnSaveEntry').on('click', async function () {
                 const data = {
                     date: $('#entryDate').val(),
@@ -607,7 +599,6 @@
                 } catch(e) { showToast('Error deleting entry', 'error'); }
             };
 
-            // ==================== EDIT SHEET (from view list) ====================
             window.editSheet = function (id) {
                 const ds = sheetCache.find(x => x.id === id);
                 if (!ds) return;
@@ -634,12 +625,10 @@
                 } catch(e) { showToast('Error deleting date sheet', 'error'); }
             };
 
-            // ==================== PRINT ====================
             window.printSheet = function (id) {
                 window.open('/datesheet-print?id=' + id, '_blank');
             };
 
-            // ==================== HELPERS ====================
             function fmtDate(dateStr) {
                 if (!dateStr) return '-';
                 const d = new Date(dateStr);

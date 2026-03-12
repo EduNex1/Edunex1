@@ -132,7 +132,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-layer-group"></i> Result — Multiple Exam</h3></div></div>
 
-                        <!-- Filter -->
+                        
                         <div class="filter-card">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -157,7 +157,7 @@
                             </div>
                         </div>
 
-                        <!-- Student List -->
+                        
                         <div class="table-card" id="listCard" style="display:none;">
                             <div class="table-header">
                                 <h5><i class="fas fa-list"></i> Student List <span class="count-badge" id="countBadge">0</span></h5>
@@ -188,7 +188,7 @@
                             </div>
                         </div>
 
-                        <!-- Marksheets -->
+                        
                         <div class="marksheet-wrapper" id="marksheetArea" style="display:none;">
                             <div style="text-align:right;margin-bottom:14px;">
                                 <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 24px;" onclick="window.print()"><i class="fas fa-print"></i> Print Marksheets</button>
@@ -229,7 +229,6 @@
 
             classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
 
-            // Multi-select dropdown engine
             function togglePanel(dropdownId) {
                 const dd = document.getElementById(dropdownId);
                 const panel = dd.querySelector('.ms-panel');
@@ -339,7 +338,6 @@
                 const selectedIds = Array.from(document.querySelectorAll('.stu-cb:checked')).map(cb => parseInt(cb.value));
                 if (selectedIds.length === 0) { alert('Please select at least one student'); return; }
 
-                // Fetch all results for all selected exams in parallel
                 let allResultsByExam = {}, allDetailsByExam = {}, allCoScol = [];
                 try {
                     const promises = selectedExams.map(exam => Promise.all([
@@ -492,7 +490,6 @@
                         </div>`;
 
                     } else {
-                        // Junior (Nursery-8)
                         let thRow1 = '<th rowspan="2" style="text-align:left;min-width:100px;">Subject</th>';
                         selectedExams.forEach(exam => { thRow1 += `<th colspan="3" class="exam-group-th">${exam.name}</th>`; });
                         thRow1 += '<th colspan="2" class="exam-group-th">Grand Total</th>';
@@ -592,7 +589,6 @@
                 document.getElementById('marksheetArea').style.display = 'block';
                 document.getElementById('marksheetArea').scrollIntoView({ behavior: 'smooth' });
 
-                // Auto-shrink font so table fits without scroll
                 const examCnt = selectedExams.length;
                 let tSize = 9, hSize = 8;
                 if (examCnt >= 4) { tSize = 7; hSize = 6; }

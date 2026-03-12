@@ -79,11 +79,11 @@
                         <div id="profileState"><p style="text-align:center;color:#888;padding:20px;">Loading profile...</p></div>
                         <form class="profile-form" id="profileForm" style="display:none;" autocomplete="off">
 
-                            <!-- ═══════════ PERSONAL INFORMATION ═══════════ -->
+                            
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-user"></i> Personal Information</div>
                                 <div class="row">
-                                    <!-- Photo -->
+                                    
                                     <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-4 form-group text-center" style="min-width:120px;">
                                         <label>Photo</label>
                                         <div class="photo-box" id="photoUploadArea" onclick="document.getElementById('photoInput').click()">
@@ -96,7 +96,7 @@
                                         <small style="color:#aaa;font-size:9px;margin-top:3px;display:block;">Passport size</small>
                                         <input type="file" id="photoInput" accept="image/*" style="display:none;">
                                     </div>
-                                    <!-- Fields beside photo -->
+                                    
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-xl-4 col-lg-4 col-md-6 col-12 form-group">
@@ -132,7 +132,7 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════ CONTACT & ADDRESS ═══════════ -->
+                            
                             <div class="form-section" style="margin-top:10px;">
                                 <div class="form-section-title"><i class="fas fa-phone-alt"></i> Contact & Address</div>
                                 <div class="row">
@@ -155,7 +155,7 @@
                                 </div>
                             </div>
 
-                            <!-- Save Button -->
+                            
                             <div class="form-actions">
                                 <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Profile</button>
                             </div>
@@ -163,7 +163,7 @@
                     </div>
                 </div>
 
-                <!-- Change Password Card -->
+                
                 <div class="card height-auto" id="pwCard" style="display:none;">
                     <div class="card-body">
                         <div class="heading-layout1">
@@ -220,7 +220,6 @@
             const staff = await getStaffMember(user.linked_id);
             currentPhotoUrl = staff.photo_url || '';
 
-            // Personal Info
             $('#pfName').val(staff.name || '');
             $('#pfFatherName').val(staff.father_name || '');
             $('#pfEmployeeId').val(staff.employee_id || staff.login_id || '');
@@ -229,13 +228,11 @@
             $('#pfGender').val(staff.gender || '');
             $('#pfQualification').val(staff.qualification || '');
 
-            // Contact
             $('#pfPhone').val(staff.phone || '');
             $('#pfEmail').val(staff.email || '');
             $('#pfJoiningDate').val(staff.joining_date || '');
             $('#pfAddress').val(staff.address || '');
 
-            // Photo
             if (currentPhotoUrl) {
                 $('#photoPreview').attr('src', currentPhotoUrl).show();
                 $('#uploadPlaceholder').hide();

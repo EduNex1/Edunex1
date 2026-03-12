@@ -60,7 +60,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-balance-scale"></i> Expenses &amp; Income Report</h3></div></div>
 
-                        <!-- Filter -->
+                        
                         <div class="filter-card no-print">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -78,21 +78,21 @@
                             </div>
                         </div>
 
-                        <!-- Report -->
+                        
                         <div class="report-card" id="reportCard">
                             <div class="report-header">
                                 <h5 id="reportSchoolName">School</h5>
                                 <p id="reportPeriod">Expenses &amp; Income Statement</p>
                             </div>
                             <div style="display:flex;flex-wrap:wrap;">
-                                <!-- Expenses Side -->
+                                
                                 <div style="flex:1;min-width:280px;border-right:1px solid #e0e0e0;">
                                     <table class="bill-table">
                                         <thead><tr><th colspan="2" style="text-align:center;"><i class="fas fa-arrow-circle-down" style="margin-right:4px;"></i>Expenses</th></tr></thead>
                                         <tbody id="expBody"></tbody>
                                     </table>
                                 </div>
-                                <!-- Income Side -->
+                                
                                 <div style="flex:1;min-width:280px;">
                                     <table class="bill-table">
                                         <thead><tr><th colspan="2" style="text-align:center;"><i class="fas fa-arrow-circle-up" style="margin-right:4px;"></i>Income</th></tr></thead>
@@ -102,10 +102,10 @@
                             </div>
                         </div>
 
-                        <!-- Profit / Loss -->
+                        
                         <div id="profitBox"></div>
 
-                        <!-- Print -->
+                        
                         <div style="text-align:center;margin-top:16px;" class="no-print">
                             <button class="fw-btn-fill btn-gradient-yellow" onclick="window.print()" style="border-radius:6px;height:38px;font-size:12px;padding:0 24px;width:auto;"><i class="fas fa-print"></i> Print Report</button>
                         </div>
@@ -145,7 +145,6 @@
             if(fFrom){ expenses=expenses.filter(e=>e.date>=fFrom); incomes=incomes.filter(i=>i.date>=fFrom); }
             if(fTo){ expenses=expenses.filter(e=>e.date<=fTo); incomes=incomes.filter(i=>i.date<=fTo); }
 
-            // Period label
             if(fFrom && fTo){
                 $('#reportPeriod').text(`Period: ${formatDate(fFrom)} — ${formatDate(fTo)}`);
             } else if(fFrom){
@@ -156,7 +155,6 @@
                 $('#reportPeriod').html('Expenses &amp; Income Statement — All Records');
             }
 
-            // Group expenses by head_name
             let expByHead = {};
             expenses.forEach(e=>{
                 const key = e.head_name || 'Other';
@@ -174,7 +172,6 @@
             expHtml+=`<tr class="total-row"><td>Total Expenses</td><td style="text-align:right;color:#c62828;">₹${totalExp.toLocaleString('en-IN')}</td></tr>`;
             $('#expBody').html(expHtml);
 
-            // Group incomes by head_name
             let incByHead = {};
             incomes.forEach(i=>{
                 const key = i.head_name || 'Other';
@@ -192,7 +189,6 @@
             incHtml+=`<tr class="total-row"><td>Total Income</td><td style="text-align:right;color:#2e7d32;">₹${totalInc.toLocaleString('en-IN')}</td></tr>`;
             $('#incBody').html(incHtml);
 
-            // Profit / Loss
             const diff=totalInc-totalExp;
             let cls='neutral', label='Break Even', sign='';
             if(diff>0){ cls='profit'; label='Profit'; sign='+'; }

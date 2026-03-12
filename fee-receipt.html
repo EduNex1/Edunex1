@@ -67,7 +67,7 @@
                             </div>
                         </div>
 
-                        <!-- Filters -->
+                        
                         <div class="filter-card">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -109,15 +109,13 @@
                             </div>
                         </div>
 
-                        <!-- Receipt List -->
+                        
                         <div id="receiptList">
                             <div class="empty-state"><i class="fas fa-filter"></i>Apply filters and click Search to view receipts</div>
                         </div>
 
                     </div>
                 </div>
-
-
 
             </div>
         </div>
@@ -135,7 +133,6 @@
         $(document).ready(async function () {
             if (typeof initPage === 'function') initPage('fee-receipt');
 
-            // Populate filters from API
             try {
                 const classes = await getClasses();
                 classes.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));

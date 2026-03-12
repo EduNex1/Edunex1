@@ -45,7 +45,7 @@
                     <div class="card-body">
                         <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-undo-alt"></i> Book Return</h3></div></div>
 
-                        <!-- Filter -->
+                        
                         <div class="filter-card">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
@@ -63,7 +63,7 @@
                             </div>
                         </div>
 
-                        <!-- Issued Books List -->
+                        
                         <div class="table-card">
                             <div class="table-responsive" style="padding:0 2px 10px;">
                                 <table class="list-table">
@@ -77,7 +77,7 @@
                             </div>
                         </div>
 
-                        <!-- Return Form (hidden) -->
+                        
                         <div class="return-form" id="returnSection" style="display:none;">
                             <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-undo-alt"></i> Process Return</h6>
                             <input type="hidden" id="rIssueId">
@@ -142,7 +142,6 @@
 
         const finePerDay = parseInt(optSettings['library_fine_per_day'] || '5');
 
-        // Populate class & section
         classCache.forEach(c => $('#fClass').append(`<option value="${c.id}">${c.name}</option>`));
         sectionCache.forEach(s => $('#fSection').append(`<option value="${s.name}">${s.name}</option>`));
 

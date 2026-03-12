@@ -208,7 +208,7 @@
                     </ul>
                 </div>
 
-                <!-- Child Selector -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
                     <div class="chart-card-body" style="padding:12px 16px;">
@@ -223,7 +223,7 @@
                     </div>
                 </div>
 
-                <!-- Fee Summary -->
+                
                 <div class="fee-summary-row">
                     <div class="fee-box box-total">
                         <div class="fb-label">Annual Fee</div>
@@ -252,7 +252,7 @@
                     </div>
                 </div>
 
-                <!-- Monthly Breakdown -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee Breakdown</div>
                     <div class="chart-card-body" id="feeBreakdownInfo">
@@ -260,7 +260,7 @@
                     </div>
                 </div>
 
-                <!-- Month-wise Status -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-th-large"></i> Month-wise Status</div>
                     <div class="chart-card-body">
@@ -270,7 +270,7 @@
                     </div>
                 </div>
 
-                <!-- Payment History -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-list-ol"></i> Payment History</div>
                     <div class="chart-card-body">
@@ -327,7 +327,6 @@
             const monthlyCharge = baseMonthly;
             const annualFee = baseMonthly * 12;
 
-            // ---- Breakdown ----
             let bh = '';
             if((slabs||[]).length){
                 (slabs||[]).forEach(s => {
@@ -345,7 +344,6 @@
             }
             $('#feeBreakdownInfo').html(bh);
 
-            // ---- Deposits by month ----
             const depositsByMonth = {};
             (deps||[]).forEach(d => { const m=d.month||''; if(!depositsByMonth[m]) depositsByMonth[m]=[]; depositsByMonth[m].push(d); });
 
@@ -361,7 +359,6 @@
                 return md.reduce((s,x)=>s+Number(x.received_amount||0),0) >= monthlyCharge;
             }).length;
 
-            // ---- Update summary cards ----
             $('#fTotal').text(fmt(annualFee));
             $('#fTotalSub').text(fmt(monthlyCharge)+' × 12 months');
             $('#fPaid').text(fmt(totalPaid));
@@ -372,7 +369,6 @@
             $('#fDiscount').text(fmt(totalDisc));
             $('#fDiscountSub').text(totalDisc ? 'Discount applied' : 'No discount');            $('#fOldBal').text(fmt(oldBalance));
             $('#fOldBalSub').text(oldBalance > 0 ? 'Previous session dues' : 'No old dues');
-            // ---- Month grid ----
             const now = new Date();
             const currentMonth = now.toLocaleString('en-US',{month:'long'});
             let gh = '';
@@ -399,7 +395,6 @@
             });
             $('#monthGrid').html(gh);
 
-            // ---- Payment history ----
             if(!(deps||[]).length){
                 $('#paymentList').html('<p style="text-align:center;color:#888;margin:0;">No payments recorded yet.</p>');
             } else {

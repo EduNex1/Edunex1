@@ -44,7 +44,7 @@
                     <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-user-shield"></i> Super Admin Profile</h3></div></div>
 
                     <div class="row">
-                        <!-- Profile Info -->
+                        
                         <div class="col-lg-5 col-md-6 col-12">
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-id-badge"></i> Account Information</div>
@@ -59,9 +59,9 @@
                             </div>
                         </div>
 
-                        <!-- Edit Profile + Change Password -->
+                        
                         <div class="col-lg-7 col-md-6 col-12">
-                            <!-- Edit Name/Email -->
+                            
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-edit"></i> Edit Profile</div>
                                 <div class="row">
@@ -79,7 +79,7 @@
                                 </div>
                             </div>
 
-                            <!-- Change Password -->
+                            
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-key"></i> Change Password</div>
                                 <div class="row">
@@ -104,13 +104,13 @@
                         </div>
                     </div>
 
-                    <!-- Manage Super Admins Section -->
+                    
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="profile-card">
                                 <div class="profile-title"><i class="fas fa-users-cog"></i> Manage Super Admins</div>
 
-                                <!-- Add New Super Admin -->
+                                
                                 <div style="background:#f8f9ff;border-radius:10px;padding:18px 20px;margin-bottom:18px">
                                     <div style="font-size:12px;font-weight:700;color:#0d1b4a;margin-bottom:12px"><i class="fas fa-plus-circle" style="color:#4fc3f7;margin-right:6px"></i>Add New Super Admin</div>
                                     <div class="row">
@@ -140,7 +140,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Super Admins List -->
+                                
                                 <div class="table-responsive">
                                     <table class="admin-table" id="adminsTable">
                                         <thead>
@@ -172,7 +172,6 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin'])) return;
         initPage('super-admin-profile');
 
-        // ── Load Profile ──
         let profile = {};
         try { profile = await getMyProfile(); } catch(e) { showToast('Failed to load profile','error'); }
 
@@ -187,10 +186,8 @@
         $('#editName').val(profile.name || '');
         $('#editEmail').val(profile.email || '');
 
-        // ── Load Super Admins List ──
         await loadAdmins();
 
-        // ── Save Profile ──
         window.saveProfile = async function(){
             const name = $('#editName').val().trim();
             const email = $('#editEmail').val().trim();
@@ -207,7 +204,6 @@
             } catch(e){ showToast(e.message||'Failed to update','error'); }
         };
 
-        // ── Password Strength ──
         window.checkPwStrength = function(){
             const pw = $('#newPw').val();
             const el = $('#pwStrength');
@@ -217,7 +213,6 @@
             else { el.html('<span style="color:#43a047;">Strong</span>'); }
         };
 
-        // ── Change Password ──
         window.doChangePassword = async function(){
             const current = $('#currentPw').val().trim();
             const newPw = $('#newPw').val().trim();
@@ -234,7 +229,6 @@
             } catch(e){ showToast(e.message||'Failed to change password','error'); }
         };
 
-        // ── Create Super Admin ──
         window.createAdmin = async function(){
             const login_id = $('#newAdminLoginId').val().trim();
             const name = $('#newAdminName').val().trim();
@@ -244,11 +238,9 @@
             try {
                 const res = await createSuperAdmin({ login_id, name, email });
                 if(res.error){ showToast(res.error,'error'); return; }
-                // Show credentials
                 $('#credLoginId').text(res.login_id || login_id);
                 $('#credPassword').text(res.password || '—');
                 $('#credBox').slideDown(200);
-                // Clear form
                 $('#newAdminLoginId, #newAdminName, #newAdminEmail').val('');
                 showToast('Super Admin created','success');
                 await loadAdmins();

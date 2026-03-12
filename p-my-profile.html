@@ -28,7 +28,7 @@
                     <ul><li><a href="/parent-dashboard">Home</a></li><li>My Profile</li></ul>
                 </div>
 
-                <!-- Parent Profile -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-user-circle"></i> Parent Information</div>
                     <div class="chart-card-body" id="parentProfileArea">
@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <!-- Children Overview -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-user-graduate"></i> My Children</div>
                     <div class="chart-card-body" id="childrenOverview">
@@ -44,7 +44,7 @@
                     </div>
                 </div>
 
-                <!-- Child Detail Selector -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-child"></i> Child Detail</div>
                     <div class="chart-card-body" style="padding:12px 16px 0 16px;">
@@ -55,7 +55,7 @@
                 </div>
                 <div id="profileArea"></div>
 
-                <!-- Change Password Card -->
+                
                 <div class="chart-card">
                     <div class="chart-card-header"><i class="fas fa-key"></i> Change Password</div>
                     <div class="chart-card-body">
@@ -103,7 +103,6 @@
         const user = typeof getUser==='function'?getUser():null;
         try {
             children = await getMyChildren() || [];
-            // Render parent profile
             if(children.length){
                 const c = children[0];
                 const parentName = (user&&user.name) || c.father_name || c.mother_name || 'Parent';
@@ -123,7 +122,6 @@
             } else {
                 $('#parentProfileArea').html('<span style="color:#888;">No children linked to this account.</span>');
             }
-            // Render children overview
             if(children.length){
                 let coHtml='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">';
                 children.forEach(c=>{
@@ -140,7 +138,6 @@
             } else {
                 $('#childrenOverview').html('<span style="color:#888;">No children found.</span>');
             }
-            // Populate child selector
             const cs = $('#childSelect');
             children.forEach(c => cs.append(`<option value="${c.id}">${c.name} \u2014 Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
             if (children.length === 1) { cs.val(children[0].id); loadProfile(); }

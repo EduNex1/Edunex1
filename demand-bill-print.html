@@ -259,14 +259,14 @@
 </head>
 
 <body>
-    <!-- Controls (hidden in print) -->
+    
     <div class="print-controls" id="controls">
         <button class="btn-print" id="btnPrint"><i class="fas fa-print"></i> Print PDF</button>
         <button class="btn-back" onclick="window.close()"><i class="fas fa-arrow-left"></i> Close</button>
         <span id="billCount"></span>
     </div>
 
-    <!-- Bills Content -->
+    
     <div id="billContent"></div>
 
     <script src="js/jquery-3.3.1.min.js"></script>
@@ -307,7 +307,6 @@
             const parts = particularCache.filter(p => numericPartIds.includes(Number(p.id)));
             const currentUser = typeof getUser === 'function' ? (getUser() || {}) : JSON.parse(localStorage.getItem('vkis_user') || '{}');
 
-            // Get school info from branch settings
             let school = { school_name: currentUser.school_name || 'School', board: '', address: '', phone: '' };
             try {
                 const branches = await getBranches();
@@ -329,7 +328,6 @@
             const currentSession = sessions.find(s => s.status === 'Active');
             const sessionName = storedSession || (currentSession ? currentSession.name : '');
 
-            // Batch-fetch all discounts and deposits for selected students
             let allDiscounts = {}, allDeposits = {};
             try {
                 const discountPromises = studentIds.map(sid => getFeeDiscounts(sid).then(d => ({ sid, data: d })).catch(() => ({ sid, data: [] })));
@@ -342,7 +340,6 @@
                 for (const r of depResults) allDeposits[r.sid] = r.data;
             } catch(e) {}
 
-            // Identify transport particular
             const transportParticular = particularCache.find(p => Number(p.is_transport) === 1);
             const transportPartId = transportParticular ? Number(transportParticular.id) : null;
 
@@ -353,7 +350,6 @@
 
                 const selectedSlabs = [];
                 numericPartIds.forEach(particularId => {
-                    // Skip transport particular from slabs — it uses route fee instead
                     if (transportPartId && particularId === transportPartId) return;
 
                     const categoryMatch = slabCache.find(s => Number(s.particular_id) === particularId && String(s.category || 'Default') === String(stu.category || 'Default'));
@@ -370,7 +366,6 @@
                         perMonthRows.push({ month: m, particular: particular ? particular.name : 'Fee', amount: parseFloat(slab.amount) || 0 });
                     });
 
-                    // Add transport from route fee (not slab) if transport particular is selected
                     if (stu.route_id && transportPartId && numericPartIds.includes(transportPartId)) {
                         const route = routeCache.find(r => Number(r.id) === Number(stu.route_id));
                         const routeFee = parseFloat(route ? route.fee : 0);
@@ -382,7 +377,6 @@
 
                 let grandTotal = perMonthRows.reduce((sum, row) => sum + row.amount, 0);
 
-                // Apply discounts — filter by both month AND particular
                 const stuDiscounts = allDiscounts[sid] || [];
                 const applicableDiscounts = stuDiscounts.filter(d => {
                     const monthMatch = !d.month || d.month === '' || months.includes(d.month);
@@ -392,10 +386,8 @@
                 const discountTotal = applicableDiscounts.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
                 grandTotal -= discountTotal;
 
-                // Get old balance from student record (carry-forward balance), NOT from sum of deposit.balance
                 const oldBalance = parseFloat(stu.old_balance) || 0;
 
-                // Build fee table rows
                 let feeRows = '';
                 let sno = 1;
                 perMonthRows.forEach(row => {
@@ -407,18 +399,15 @@
                         </tr>`;
                 });
 
-                // Show discount row if any
                 if (discountTotal > 0) {
                     feeRows += `<tr><td>${sno++}</td><td>—</td><td style="color:#2e7d32;">Discount</td><td style="color:#2e7d32;">- ₹${discountTotal.toLocaleString('en-IN')}</td></tr>`;
                 }
 
-                // Add old balance row if any
                 if (oldBalance > 0) {
                     feeRows += `<tr><td>${sno++}</td><td>—</td><td style="font-weight:600;color:#e65100;">Old Balance</td><td style="color:#e65100;">₹${oldBalance.toLocaleString('en-IN')}</td></tr>`;
                     grandTotal += oldBalance;
                 }
 
-                // Ensure grand total is never negative
                 grandTotal = Math.max(0, grandTotal);
 
                 const today = new Date();

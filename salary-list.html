@@ -72,7 +72,7 @@
                             </div>
                         </div>
 
-                        <!-- Filters -->
+                        
                         <div class="filter-card">
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
@@ -98,7 +98,7 @@
                             </div>
                         </div>
 
-                        <!-- Salary Table -->
+                        
                         <div class="table-card">
                             <div class="table-header">
                                 <h5><i class="fas fa-money-check-alt" style="margin-right:6px;"></i>Generated Salaries</h5>
@@ -124,7 +124,7 @@
                             </div>
                         </div>
 
-                        <!-- Pay Section (shown inline below list on edit click for unpaid) -->
+                        
                         <div class="pay-card" id="payCard">
                             <div style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-credit-card"></i> Mark Payment</div>
                             <div class="row align-items-end" style="gap:0;">
@@ -193,7 +193,6 @@
                 ]);
             } catch(e) { console.error(e); }
 
-            // Populate filters
             SALARY_MONTHS.forEach(m => $('#fMonth').append(`<option value="${m}">${m}</option>`));
             const designations = [...new Set(staffCache.map(s => s.designation).filter(Boolean))].sort();
             designations.forEach(d => $('#fDesignation').append(`<option value="${d}">${d}</option>`));
@@ -222,7 +221,6 @@
                 list = list.filter(g => staffIds.includes(g.staff_id));
             }
 
-            // Sort newest first
             list.sort((a, b) => b.id - a.id);
 
             const tbody = document.getElementById('salaryBody');
@@ -257,7 +255,6 @@
                 </tr>`;
             });
 
-            // Total row
             html += `<tr class="total-row">
                 <td colspan="7" style="text-align:right;">Total</td>
                 <td>₹${grandTotal.toLocaleString('en-IN')}</td>
@@ -332,7 +329,6 @@
             const gAllowances = typeof g.allowances === 'string' ? JSON.parse(g.allowances || '{}') : (g.allowances || {});
             const gDeductions = typeof g.deductions === 'string' ? JSON.parse(g.deductions || '{}') : (g.deductions || {});
 
-            // Build allowance & deduction lines
             let allowanceLines = '';
             let totalAllow = 0;
             allowanceHeads.forEach(a => {

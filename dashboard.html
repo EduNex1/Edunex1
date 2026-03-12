@@ -459,9 +459,9 @@
                     </ul>
                 </div>
 
-                <!-- ======================== ADMIN DASHBOARD ======================== -->
+                
                 <div id="admin-dashboard">
-                    <!-- Welcome Banner -->
+                    
                     <div class="welcome-banner">
                         <h4 class="dashboard-welcome-text"><i class="fas fa-sun"
                                 style="margin-right:6px;color:#ffd54f;"></i> Welcome back, Admin!</h4>
@@ -469,7 +469,7 @@
                         <div class="welcome-date" id="todayDate"></div>
                     </div>
 
-                    <!-- Stat Cards -->
+                    
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon blue"><i class="fas fa-user-graduate"></i></div>
@@ -521,9 +521,9 @@
                         </div>
                     </div>
 
-                    <!-- Charts Row -->
+                    
                     <div class="row">
-                        <!-- Students by Class -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-chart-bar"></i> Students by Class</div>
@@ -532,7 +532,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Monthly Fee Collection -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee
@@ -546,7 +546,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- Fee Overview Doughnut -->
+                        
                         <div class="col-lg-3 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-chart-pie"></i> Fee Overview</div>
@@ -556,7 +556,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Category Distribution -->
+                        
                         <div class="col-lg-3 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-chart-pie"></i> Category Dist.</div>
@@ -566,7 +566,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Gender Distribution -->
+                        
                         <div class="col-lg-3 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-venus-mars"></i> Gender Dist.</div>
@@ -576,7 +576,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Staff by Designation -->
+                        
                         <div class="col-lg-3 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-users-cog"></i> Staff Roles</div>
@@ -588,7 +588,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- Recent Admissions -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-user-plus"></i> Recent Admissions</div>
@@ -597,7 +597,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Active Staff -->
+                        
                         <div class="col-lg-6 col-12">
                             <div class="chart-card">
                                 <div class="chart-card-header"><i class="fas fa-user-tie"></i> Active Staff Members
@@ -607,7 +607,7 @@
                         </div>
                     </div>
 
-                    <!-- Quick Access -->
+                    
                     <div class="chart-card">
                         <div class="chart-card-header"><i class="fas fa-th-large"></i> Quick Access</div>
                         <div class="chart-card-body">
@@ -637,7 +637,7 @@
                         </div>
                     </div>
 
-                </div><!-- end admin-dashboard -->
+                </div>
 
                 <div id='footer-container'></div>
             </div>
@@ -658,11 +658,9 @@
             });
 
             async function buildDashboard() {
-                // Today's date
                 var now = new Date();
                 var dateStr = now.getDate() + ' ' + now.toLocaleString('en-IN', { month: 'long' }) + ' ' + now.getFullYear();
 
-                // Role-based dashboard switching
                 var user = typeof getUser === 'function' ? getUser() : null;
                 var role = user ? user.role : 'super_admin';
 
@@ -672,7 +670,6 @@
 
                 document.getElementById('todayDate').textContent = dateStr;
 
-                // Welcome message
                 var welcomeEl = document.querySelector('#admin-dashboard .dashboard-welcome-text');
                 if (welcomeEl && user) {
                     var roleNames = { super_admin: 'Super Admin', branch_admin: 'Admin' };
@@ -680,7 +677,6 @@
                 }
                 var bannerEl = document.getElementById('schoolNameBanner');
                 if (bannerEl) {
-                    // Fetch school name from active branch
                     try {
                         var branches = await getBranches();
                         var branchId = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
@@ -699,7 +695,6 @@
                     }
                 }
 
-                // Fetch dashboard stats from API
                 var branchId = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
                 var data;
                 try {
@@ -711,7 +706,6 @@
                     return;
                 }
 
-                // ===== STAT CARDS =====
                 var totalStudents = data.students ? data.students.total : 0;
                 var activeStudents = data.students ? (data.students.active || 0) : 0;
                 var totalStaff = data.staff ? data.staff.total : 0;
@@ -734,7 +728,6 @@
                 document.getElementById('classesSub').textContent = (data.byClass ? data.byClass.length : 0) + ' groups';
                 document.getElementById('totalSubjects').textContent = data.subjects || 0;
 
-                // ===== STUDENTS BY CLASS CHART =====
                 var classLabels = [];
                 var classCounts = [];
                 var classColors = [];
@@ -758,14 +751,12 @@
                     }
                 });
 
-                // ===== FEE OVERVIEW DOUGHNUT =====
                 new Chart(document.getElementById('feeOverviewChart'), {
                     type: 'doughnut',
                     data: { labels: ['Collected', 'Pending'], datasets: [{ data: [totalCollected, pendingFee], backgroundColor: ['#2e7d32', '#c62828'], borderWidth: 0, cutout: '65%' }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' }, padding: 16, usePointStyle: true } } } }
                 });
 
-                // ===== MONTHLY FEE COLLECTION BAR CHART =====
                 var shortMonths = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
                 var monthlyCollected = [];
                 var monthlyPending = [];
@@ -793,7 +784,6 @@
                     }
                 });
 
-                // ===== CATEGORY DISTRIBUTION =====
                 var catLabels = (data.category || []).map(function (c) { return c.category || 'Unknown'; });
                 var catData = (data.category || []).map(function (c) { return c.count; });
                 var catColors = ['#0d1b4a', '#1a3a7a', '#ef6c00', '#2e7d32', '#6a1b9a'];
@@ -803,7 +793,6 @@
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, padding: 12, usePointStyle: true } } } }
                 });
 
-                // ===== GENDER DISTRIBUTION =====
                 var genderMap = {};
                 (data.gender || []).forEach(function (g) { genderMap[g.gender] = g.count; });
                 new Chart(document.getElementById('genderChart'), {
@@ -812,7 +801,6 @@
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, padding: 12, usePointStyle: true } } } }
                 });
 
-                // ===== STAFF BY DESIGNATION =====
                 var desigLabels = (data.staffDesig || []).map(function (d) { return d.designation; });
                 var desigData = (data.staffDesig || []).map(function (d) { return d.count; });
                 var desigColors = ['#0d1b4a', '#1a3a7a', '#2952a3', '#3f6bc5', '#6b8fd4', '#97b3e3', '#ef6c00', '#2e7d32', '#c62828', '#6a1b9a', '#00695c', '#e91e63'];
@@ -829,7 +817,6 @@
                     }
                 });
 
-                // ===== RECENT ADMISSIONS TABLE =====
                 var tableHtml = '<thead><tr><th>Name</th><th>Adm No</th><th>Class</th><th>Date</th></tr></thead><tbody>';
                 (data.recentStudents || []).forEach(function (s) {
                     tableHtml += '<tr>' +
@@ -842,7 +829,6 @@
                 tableHtml += '</tbody>';
                 document.getElementById('recentAdmissions').innerHTML = tableHtml;
 
-                // ===== ACTIVE STAFF LIST =====
                 var staffHtml = '';
                 (data.activeStaff || []).forEach(function (s) {
                     staffHtml += '<div class="staff-mini">' +

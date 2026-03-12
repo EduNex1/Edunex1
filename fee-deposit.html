@@ -96,11 +96,11 @@
                             </div>
                         </div>
 
-                        <!-- ===== STEP 1: Select Student ===== -->
+                        
                         <div class="form-card" id="step1">
                             <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;"><i class="fas fa-user-graduate" style="color:#0d1b4a;margin-right:6px;"></i>Select Student</h6>
 
-                            <!-- Option A: By Admission No -->
+                            
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
                                     <label class="form-label-sm">Enter Admission No.</label>
@@ -115,7 +115,7 @@
 
                             <div class="or-divider"><hr><span>or select manually</span><hr></div>
 
-                            <!-- Option B: By Class → Section → Student -->
+                            
                             <div class="row gutters-8 align-items-end">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Select Class</label>
@@ -131,7 +131,7 @@
                                 </div>
                             </div>
 
-                            <!-- Month + Particulars -->
+                            
                             <div id="monthPartSection" style="display:none;">
                                 <hr style="border-top:1px dashed #e0e0e0;margin:14px 0;">
                                 <div class="row gutters-8 align-items-end">
@@ -164,7 +164,7 @@
                             </div>
                         </div>
 
-                        <!-- ===== STEP 2: Fee Receipt Form ===== -->
+                        
                         <div id="receiptSection" style="display:none;">
                             <div class="receipt-card">
                                 <div class="receipt-header">
@@ -172,7 +172,7 @@
                                     <small id="schoolName"></small>
                                 </div>
                                 <div class="receipt-body">
-                                    <!-- Row 1: Category, Receipt, Date -->
+                                    
                                     <div class="r-row">
                                         <div class="r-field" style="max-width:160px;">
                                             <label>Fee Category</label>
@@ -188,7 +188,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Row 2: Student Info -->
+                                    
                                     <div class="r-row">
                                         <div class="r-field">
                                             <label>Admission No.</label>
@@ -220,7 +220,7 @@
 
                                     <hr class="r-sep">
 
-                                    <!-- Fee Breakdown Table -->
+                                    
                                     <table class="fee-tbl">
                                         <thead>
                                             <tr>
@@ -238,7 +238,7 @@
                                         </tfoot>
                                     </table>
 
-                                    <!-- Summary Grid -->
+                                    
                                     <div class="summary-grid">
                                         <div class="s-item">
                                             <label>Total Amount</label>
@@ -272,7 +272,7 @@
 
                                     <hr class="r-sep">
 
-                                    <!-- Payment Mode + Remarks -->
+                                    
                                     <div class="r-row" style="align-items:end;">
                                         <div class="r-field" style="max-width:200px;">
                                             <label>Payment Mode *</label>
@@ -321,7 +321,6 @@
             let feeSlabCache = [];
             let routesCache = [];
 
-            // Load classes and fee particulars from API
             try {
                 classesCache = await getClasses();
                 $('#selClass').html('<option value="">Select Class</option>' + classesCache.map(c => `<option value="${c.id}">${c.name}</option>`).join(''));
@@ -330,10 +329,8 @@
             $('#selSection').html('<option value="">Select Section</option>');
             $('#selStudent').html('<option value="">Select Student</option>');
 
-            // Populate particulars checkboxes from API
             try {
                 feeParticularsCache = await getFeeParticulars();
-                // Show only non-transport particulars (transport fee auto-added from route)
                 feeParticularsCache.filter(p => !p.is_transport).forEach(p => {
                     const charge = p.charge || p.amount || 0;
                     $('#partGroup').append(`<label><input type="checkbox" class="part-cb" value="${p.id}" data-charge="${charge}"> ${p.name} <span class="part-charge" style="color:#888;font-size:10px;">(₹${charge})</span></label>`);
@@ -341,15 +338,12 @@
                 routesCache = await getTransportRoutes();
             } catch(e) { console.error('Failed to load fee particulars', e); }
 
-            // Payment modes
             const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
             $('#rPayMode').html('<option value="">Select</option>' + PAYMENT_MODES.map(m => `<option>${m}</option>`).join(''));
 
-            // School name from user context
             const user = JSON.parse(localStorage.getItem('vkis_user') || '{}');
             $('#schoolName').text(user.school_name || 'School Management System');
 
-            // ===== Class → Section → Student cascade =====
             $('#selClass').on('change', async function () {
                 const classId = $(this).val();
                 if (!classId) { $('#selSection').html('<option value="">Select Section</option>'); $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
@@ -378,7 +372,6 @@
                 if (sid) { await selectStudent(parseInt(sid)); } else { hideMonthPart(); }
             });
 
-            // ===== Fetch by Admission No =====
             $('#btnFetchAdm').on('click', async function () {
                 const admNo = $('#admNo').val().trim();
                 if (!admNo) { showToast('Enter an admission number', 'error'); return; }
@@ -403,7 +396,6 @@
                     $('#monthPartSection').slideDown(200);
                     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
                     $('#selMonth').val(months[new Date().getMonth()]);
-                    // Show transport info if student has a route
                     $('#transportInfo').remove();
                     if (selectedStudent.route_id) {
                         const route = routesCache.find(r => r.id === selectedStudent.route_id);
@@ -451,13 +443,11 @@
                 refreshParticularCharges(null);
             }
 
-            // Select All particulars
             $('#partAll').on('change', function () { $('.part-cb').prop('checked', $(this).is(':checked')); });
             $('.part-group').on('change', '.part-cb', function () {
                 $('#partAll').prop('checked', $('.part-cb').length === $('.part-cb:checked').length);
             });
 
-            // ===== PROCEED =====
             $('#btnProceed').on('click', function () {
                 if (!selectedStudent) { showToast('Please select a student', 'error'); return; }
                 const month = $('#selMonth').val();
@@ -485,7 +475,6 @@
                 $('#rSibling').text('—');
                 $('#rCategory').text(getStudentFeeCategory(stu));
 
-                // Fee rows
                 const tbody = $('#feeRows');
                 tbody.empty();
                 totalAmount = 0;
@@ -498,7 +487,6 @@
                     rowNum++;
                     tbody.append(`<tr><td>${rowNum}</td><td>${p.name}</td><td style="text-align:right;">₹${charge.toLocaleString('en-IN')}</td></tr>`);
                 });
-                // Auto-add transport fee from route
                 const transportFee = parseFloat($('#transportFee').val()) || 0;
                 if (transportFee > 0) {
                     totalAmount += transportFee;
@@ -537,10 +525,8 @@
                 $('#sBalance').text('₹' + balance.toLocaleString('en-IN'));
             }
 
-            // Live recalculation
             $('#sLateFee, #sConcession, #sReceived').on('input', recalcGrandTotal);
 
-            // ===== SUBMIT =====
             $('#btnSubmit').on('click', async function () {
                 if (!selectedStudent) return;
                 const month = $('#selMonth').val();
@@ -590,7 +576,6 @@
                 } catch(e) { showToast('Error: ' + e.message, 'error'); }
             });
 
-            // ===== RESET / BACK =====
             $('#btnReset').on('click', fullReset);
             $('#btnBack').on('click', function () { $('#receiptSection').slideUp(300); });
 

@@ -79,14 +79,12 @@
                 return;
             }
 
-            // Student already has route_name & transport_fee from getMyChildren
             let routeName = stu.route_name || 'Route #' + stu.route_id;
             let monthlyFee = Number(stu.transport_fee || 0);
             let vehicleNo = '';
             let driverName = '';
             let driverPhone = '';
 
-            // Try to get vehicle & driver from transport mapping
             try {
                 const mappings = await getTransportMappings({ route_id: stu.route_id }) || [];
                 if (mappings.length) {

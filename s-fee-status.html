@@ -120,12 +120,12 @@
                     </ul>
                 </div>
 
-                <!-- Student Info -->
+                
                 <div id="stuInfo" class="chart-card" style="margin-bottom:16px;display:none;">
                     <div class="chart-card-header"><i class="fas fa-user-graduate"></i> <span id="stuLabel"></span></div>
                 </div>
 
-                <!-- Fee Summary -->
+                
                 <div class="fee-summary-row">
                     <div class="fee-box box-total"><div class="fb-label">Annual Fee</div><div class="fb-value" id="fTotal">\u20B90</div><div class="fb-sub" id="fTotalSub">&nbsp;</div></div>
                     <div class="fee-box box-paid"><div class="fb-label">Total Paid</div><div class="fb-value" id="fPaid">\u20B90</div><div class="fb-sub" id="fPaidSub">&nbsp;</div></div>
@@ -134,13 +134,13 @@
                     <div class="fee-box box-oldbal"><div class="fb-label">Old Balance</div><div class="fb-value" id="fOldBal">\u20B90</div><div class="fb-sub" id="fOldBalSub">&nbsp;</div></div>
                 </div>
 
-                <!-- Monthly Fee Breakdown -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee Breakdown</div>
                     <div class="chart-card-body" id="feeBreakdownInfo"><p style="color:#888;text-align:center;">Loading...</p></div>
                 </div>
 
-                <!-- Month-wise Status -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-th-large"></i> Month-wise Status</div>
                     <div class="chart-card-body">
@@ -148,7 +148,7 @@
                     </div>
                 </div>
 
-                <!-- Payment History -->
+                
                 <div class="chart-card" style="margin-bottom:16px;">
                     <div class="chart-card-header"><i class="fas fa-list-ol"></i> Payment History</div>
                     <div class="chart-card-body">
@@ -195,7 +195,6 @@
             const monthlyCharge = slabMonthly + transportFee;
             const annualFee = monthlyCharge * 12;
 
-            // Breakdown
             let bh = '';
             if ((slabs||[]).length) {
                 (slabs||[]).forEach(s => {
@@ -213,7 +212,6 @@
             }
             $('#feeBreakdownInfo').html(bh);
 
-            // Deposits by month
             const depositsByMonth = {};
             (deps||[]).forEach(d => { const m=d.month||''; if (!depositsByMonth[m]) depositsByMonth[m]=[]; depositsByMonth[m].push(d); });
 
@@ -229,7 +227,6 @@
                 return md.reduce((s,x)=>s+Number(x.received_amount||0),0) >= monthlyCharge;
             }).length;
 
-            // Summary cards
             $('#fTotal').text(fmt(annualFee));
             $('#fTotalSub').text(fmt(monthlyCharge)+' \u00D7 12 months');
             $('#fPaid').text(fmt(totalPaid));
@@ -242,7 +239,6 @@
             $('#fOldBal').text(fmt(oldBalance));
             $('#fOldBalSub').text(oldBalance > 0 ? 'Previous session dues' : 'No old dues');
 
-            // Month grid
             const now = new Date();
             const currentMonth = now.toLocaleString('en-US',{month:'long'});
             let gh = '';
@@ -262,7 +258,6 @@
             });
             $('#monthGrid').html(gh);
 
-            // Payment history
             if (!(deps||[]).length) {
                 $('#paymentList').html('<p style="text-align:center;color:#888;margin:0;">No payments recorded yet.</p>');
             } else {

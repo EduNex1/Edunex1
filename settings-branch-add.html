@@ -58,7 +58,6 @@
                 if(b){ $('#editId').val(b.id); $('#bName').val(b.name); $('#bCode').val(b.code||'').prop('readonly', true); $('#formTitle').html('<i class="fas fa-edit"></i> Edit Branch'); $('#pageMode').text('Edit Branch'); }
             } catch(e) { console.error(e); }
         }
-        // Auto-uppercase code input
         $('#bCode').on('input', function(){ this.value = this.value.replace(/[^A-Za-z]/g,'').toUpperCase().substring(0,3); });
         window.saveBranchItem=async function(){
             const name=$('#bName').val().trim();
