@@ -22,7 +22,7 @@ app.use(express.static(__dirname, { index: false }));
 // Flat routes (no nesting) — so relative paths in HTML still work
 const routes = {
     '/': 'login.html',
-    '/dashboard': 'index.html',
+    '/dashboard': 'dashboard.html',
     '/teacher-dashboard': 'teacher-dashboard.html',
     '/parent-dashboard': 'parent-dashboard.html',
     '/student-dashboard': 'student-dashboard.html',

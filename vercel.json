@@ -4,7 +4,7 @@
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/login.html" },
-    { "source": "/dashboard", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/teacher-dashboard", "destination": "/teacher-dashboard.html" },
     { "source": "/parent-dashboard", "destination": "/parent-dashboard.html" },
     { "source": "/student-dashboard", "destination": "/student-dashboard.html" },
