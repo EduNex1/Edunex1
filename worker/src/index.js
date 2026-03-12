@@ -29,15 +29,13 @@ async function verifyJWT(token, secret) {
 }
 
 // ===== CORS =====
-function corsHeaders() {
-    return {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    };
-}
+const ALLOWED_ORIGINS = new Set([
+    'https://edunex1.vercel.app',
+    'http://localhost:3000',
+]);
+
 function json(data, status = 200) {
-    return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', ...corsHeaders() } });
+    return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff' } });
 }
 
 // ===== LOGIN RATE LIMITER (per-isolate) =====
@@ -1755,7 +1753,7 @@ router.get('/api/files/:path+', async (req, env, params) => {
     const key = params.path;
     const obj = await env.UPLOADS.get(key);
     if (!obj) return new Response('Not found', { status: 404 });
-    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', ...corsHeaders() } });
+    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream' } });
 });
 
 // ---------- SALARY SETTINGS ----------
@@ -3549,13 +3547,30 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
 // ===== EXPORT =====
 export default {
     async fetch(request, env) {
-        if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders() });
+        const origin = request.headers.get('Origin') || '';
+        const originAllowed = ALLOWED_ORIGINS.has(origin);
+        const corsH = {
+            'Access-Control-Allow-Origin': originAllowed ? origin : '',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+            'Vary': 'Origin',
+        };
+
+        if (request.method === 'OPTIONS') return new Response(null, { headers: corsH });
+
+        let response;
         const url = new URL(request.url);
         const match = router.match(request.method, url.pathname);
         if (match) {
-            try { return await match.handler(request, env, match.params); }
-            catch (e) { return json({ error: e.message }, 500); }
+            try { response = await match.handler(request, env, match.params); }
+            catch (e) { response = json({ error: e.message }, 500); }
+        } else {
+            response = json({ error: 'Not found' }, 404);
         }
-        return json({ error: 'Not found' }, 404);
+
+        // Inject CORS headers into every response
+        const newHeaders = new Headers(response.headers);
+        Object.entries(corsH).forEach(([k, v]) => newHeaders.set(k, v));
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers: newHeaders });
     }
 };
