@@ -289,18 +289,29 @@ textarea.form-control {
     }
 
     .breadcrumbs-area h3 {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .chart-card-header,
     .card-head,
     .panel-head {
-        padding: 14px 14px;
+        padding: 12px 14px;
     }
 
     .chart-card-body,
     .card-body-lite,
     .panel-body {
         padding: 14px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 44px;
+        height: 44px;
+        font-size: 14px;
+    }
+
+    #childSelect {
+        min-width: 100% !important;
     }
 }

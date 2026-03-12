@@ -336,7 +336,7 @@ input:focus {
 
 @media (max-width: 767px) {
     .breadcrumbs-area h3 {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .welcome-banner,
@@ -345,6 +345,13 @@ input:focus {
     .chart-card,
     .quick-item,
     .stat-card {
-        border-radius: 16px;
+        border-radius: 14px;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 44px !important;
+        height: 44px !important;
+        font-size: 14px !important;
     }
 }

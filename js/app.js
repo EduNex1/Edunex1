@@ -490,8 +490,8 @@ function renderHeader(userName, role) {
     var branchSwitcherHtml = '';
     if (loggedUser && loggedUser.role === 'super_admin') {
         branchSwitcherHtml = `
-            <li class="navbar-item" style="margin-right:12px;">
-                <select id="branchSwitcher" class="form-control form-control-sm" style="min-width:180px;font-size:12px;height:34px;border-radius:6px;border:1px solid #e0e0e0;background:#fff;cursor:pointer;">
+            <li class="navbar-item navbar-switcher-item">
+                <select id="branchSwitcher" class="form-control form-control-sm navbar-switcher-select">
                     <option value="">All Branches</option>
                 </select>
             </li>`;
@@ -501,8 +501,8 @@ function renderHeader(userName, role) {
     var sessionSwitcherHtml = '';
     if (loggedUser && ['super_admin', 'branch_admin'].includes(loggedUser.role)) {
         sessionSwitcherHtml = `
-            <li class="navbar-item" style="margin-right:12px;">
-                <select id="sessionSwitcher" class="form-control form-control-sm" style="min-width:160px;font-size:12px;height:34px;border-radius:6px;border:1px solid #e0e0e0;background:#fff;cursor:pointer;">
+            <li class="navbar-item navbar-switcher-item">
+                <select id="sessionSwitcher" class="form-control form-control-sm navbar-switcher-select">
                     <option value="">Loading...</option>
                 </select>
             </li>`;
@@ -511,6 +511,9 @@ function renderHeader(userName, role) {
     const html = `
     <div class="navbar navbar-expand-md header-menu-one custom-topbar">
         <div class="header-main-menu">
+            <button class="sidebar-toggle-mobile" type="button" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="header-school-block">
                 <h4 class="header-school-name">${schoolName}</h4>
                 <span class="header-school-subtitle">EduNex1</span>
@@ -859,6 +862,13 @@ function initPage(activeMenu) {
         renderSidebar(activeMenu);
     }
     renderFooter();
+
+    // Inject mobile sidebar overlay if not present
+    if (!document.querySelector('.sidebar-overlay')) {
+        var overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+    }
 }
 
 

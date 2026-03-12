@@ -79,6 +79,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+}
+
+/* Force navbar-nav to row always (override Bootstrap navbar-expand-md column default) */
+.header-main-menu .navbar-nav {
+    flex-direction: row !important;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.header-main-menu .navbar-nav .navbar-item {
+    margin-right: 0 !important;
 }
 
 .header-school-block {
@@ -88,6 +103,22 @@
     min-width: 0;
     flex: 1;
     overflow: hidden;
+}
+
+/* Navbar switcher items (branch/session dropdowns) */
+.navbar-switcher-item {
+    margin-right: 8px;
+}
+
+.navbar-switcher-select {
+    min-width: 160px;
+    font-size: 12px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    cursor: pointer;
+    padding: 0 8px;
 }
 
 .header-school-name {
@@ -153,6 +184,9 @@
     border-radius: 12px;
     padding: 8px;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    position: absolute !important;
+    right: 0;
+    top: 100%;
 }
 
 .simple-user-menu .dropdown-item {
@@ -290,33 +324,106 @@ body {
     left: 8rem;
 }
 
+/* ==================== HAMBURGER MENU BUTTON ==================== */
+.sidebar-toggle-mobile {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #0d1b4a;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-toggle-mobile:hover {
+    background: #f0f1f3;
+}
+
+/* ==================== MOBILE SIDEBAR OVERLAY ==================== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 99;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
 /* Tablet layout: sidebar hidden, content full-width */
 @media only screen and (max-width: 991px) {
+    .sidebar-toggle-mobile {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .navbar.header-menu-one.custom-topbar {
         left: 0;
-        height: 64px;
-        padding: 0 16px;
+        height: auto;
+        min-height: 56px;
+        padding: 8px 14px;
+        flex-wrap: wrap;
+    }
+
+    .header-main-menu {
+        flex-wrap: wrap !important;
     }
 
     .header-school-name {
-        font-size: 17px;
+        font-size: 16px;
     }
 
     .header-school-subtitle {
         font-size: 10px;
     }
 
+    /* Switchers row: full width on second line */
+    .header-main-menu .navbar-nav {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .header-main-menu .navbar-nav .navbar-item {
+        margin: 0 !important;
+    }
+
+    .navbar-switcher-item {
+        margin-right: 4px !important;
+    }
+
+    .navbar-switcher-select {
+        min-width: 120px !important;
+        font-size: 11px !important;
+        height: 30px !important;
+    }
+
     .dashboard-content-one {
         margin-left: 0;
         width: 100%;
         max-width: 100%;
-        margin-top: 64px;
-        height: calc(100vh - 64px);
+        margin-top: 60px;
+        height: calc(100vh - 60px);
+        padding: 0 14px;
         padding-top: 6px;
     }
 
     .sidebar-menu-one {
         left: -27rem;
+        transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 100;
+    }
+
+    /* When sidebar is open on mobile */
+    .sidebar-open-mobile .sidebar-menu-one {
+        left: 0 !important;
+    }
+
+    .sidebar-open-mobile .sidebar-overlay {
+        display: block;
     }
 
     .sidebar-collapsed .dashboard-content-one {
@@ -354,38 +461,126 @@ body {
     .breadcrumbs-area h3 {
         font-size: 16px;
     }
+
+    /* Tables: horizontal scroll */
+    .table-responsive,
+    .card-body > .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Cards */
+    .card-body {
+        padding: 12px 14px;
+    }
+
+    .heading-layout1 .item-title h3 {
+        font-size: 14px;
+    }
+
+    /* Forms */
+    .filter-form,
+    .filter-card {
+        padding: 14px;
+    }
+
+    .new-added-form {
+        padding: 16px 14px 8px;
+    }
+
+    /* Modals */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    /* DataTables responsive */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        float: none !important;
+        text-align: left !important;
+        margin-bottom: 8px;
+    }
+
+    /* Quick links grid */
+    .quick-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 8px;
+    }
+
+    .quick-item {
+        padding: 10px 6px;
+    }
+
+    .quick-item i {
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+
+    .quick-item span {
+        font-size: 9px;
+    }
 }
 
 /* Mobile layout adjustments */
 @media only screen and (max-width: 767px) {
+    .navbar.header-menu-one.custom-topbar {
+        min-height: 50px;
+        padding: 6px 10px;
+    }
+
+    /* Header: hamburger + school name on row 1, switchers + avatar on row 1 right */
+    .header-main-menu {
+        gap: 6px !important;
+    }
+
     .header-school-name {
-        font-size: 16px;
+        font-size: 14px;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .header-school-subtitle {
         display: none;
     }
 
-    .navbar.header-menu-one.custom-topbar {
-        height: 56px;
-        padding: 0 12px;
+    /* Move switchers into a separate row below header on phone */
+    .header-main-menu .navbar-nav {
+        gap: 4px;
+    }
+
+    /* Hide branch/session label text, keep compact dropdowns */
+    .navbar-switcher-select {
+        min-width: 80px !important;
+        max-width: 110px;
+        font-size: 10px !important;
+        height: 28px !important;
+        padding: 0 4px !important;
+    }
+
+    .navbar-switcher-item {
+        margin-right: 2px !important;
     }
 
     .dashboard-content-one {
-        margin-top: 56px;
-        height: calc(100vh - 56px);
-        padding: 0 12px;
+        margin-top: 54px;
+        height: calc(100vh - 54px);
+        padding: 0 10px;
         padding-top: 4px;
     }
 
+    /* Hide user name, show only avatar */
     .simple-user-menu .admin-title {
         display: none;
     }
 
     .simple-user-menu .navbar-nav-link {
         gap: 0;
-        padding: 6px;
+        padding: 4px;
         border-radius: 50%;
+        background: transparent;
+        border: none;
     }
 
     .simple-user-menu .admin-img img {
@@ -401,21 +596,253 @@ body {
     .breadcrumbs-area ul li a {
         font-size: 10px;
     }
+
+    /* Forms: taller for touch */
+    .filter-form .form-control,
+    .filter-form select,
+    .new-added-form .form-control,
+    .new-added-form select {
+        height: 42px;
+        font-size: 14px;
+    }
+
+    /* Table cells tighter */
+    .table thead th {
+        font-size: 9px;
+        padding: 6px 6px;
+    }
+
+    .table tbody td {
+        font-size: 11px;
+        padding: 6px 6px;
+    }
+
+    /* Cards */
+    .card-body {
+        padding: 10px 10px;
+    }
+
+    .heading-layout1 .item-title h3 {
+        font-size: 13px;
+    }
+
+    /* Forms */
+    .filter-form,
+    .filter-card {
+        padding: 12px 10px;
+    }
+
+    .new-added-form {
+        padding: 14px 10px 6px;
+    }
+
+    .new-added-form label {
+        font-size: 10px;
+    }
+
+    /* Action buttons */
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    /* Button sizing */
+    .btn-fill-lg,
+    .fw-btn-fill {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    /* Quick links */
+    .quick-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+    }
+
+    .quick-item {
+        padding: 8px 4px;
+    }
+
+    .quick-item i {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+
+    .quick-item span {
+        font-size: 8px;
+    }
+
+    /* Stats cards */
+    .stats-card {
+        padding: 10px 8px;
+    }
+
+    .stats-card .stats-number {
+        font-size: 18px;
+    }
+
+    .stats-card .stats-label {
+        font-size: 9px;
+    }
+
+    /* Stat cards (dashboard) */
+    .stat-card {
+        padding: 10px 8px;
+        gap: 8px;
+    }
+
+    .stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .stat-info .stat-number {
+        font-size: 15px;
+    }
+
+    .stat-info .stat-label {
+        font-size: 8px;
+    }
+
+    /* Select2 */
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+    }
+
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 42px !important;
+    }
+
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 42px !important;
+    }
+
+    /* Row gutters */
+    .row {
+        margin-left: -6px;
+        margin-right: -6px;
+    }
+
+    .row > [class*="col-"] {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    /* Modal */
+    .modal-dialog {
+        margin: 8px;
+    }
+
+    .modal-body {
+        padding: 14px;
+    }
+
+    .modal-header {
+        padding: 12px 14px;
+    }
+
+    /* Section title */
+    .section-title {
+        font-size: 13px;
+    }
+
+    /* Welcome banner */
+    .welcome-banner {
+        padding: 14px 16px !important;
+    }
+
+    .welcome-banner h4 {
+        font-size: 13px !important;
+    }
 }
 
 /* Very small screens */
 @media only screen and (max-width: 480px) {
     .header-school-name {
-        font-size: 14px;
+        font-size: 13px;
+        max-width: 110px;
+    }
+
+    .navbar.header-menu-one.custom-topbar {
+        padding: 4px 6px;
+    }
+
+    /* Hide switchers on very small screens — too cramped */
+    .navbar-switcher-item {
+        display: none !important;
     }
 
     .dashboard-content-one {
-        padding: 0 8px;
+        padding: 0 6px;
         padding-top: 4px;
     }
 
     .breadcrumbs-area h3 {
-        font-size: 14px;
+        font-size: 13px;
+    }
+
+    .breadcrumbs-area ul {
+        display: none;
+    }
+
+    .table thead th {
+        font-size: 8px;
+        padding: 5px 4px;
+        letter-spacing: 0;
+    }
+
+    .table tbody td {
+        font-size: 10px;
+        padding: 5px 4px;
+    }
+
+    .quick-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stat-card {
+        padding: 8px 6px;
+        gap: 6px;
+        border-radius: 8px;
+    }
+
+    .stat-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+    .stat-info .stat-number {
+        font-size: 13px;
+    }
+
+    .stat-info .stat-label {
+        font-size: 7px;
+    }
+
+    .stat-info .stat-sub {
+        font-size: 8px;
+    }
+
+    .chart-card-header {
+        font-size: 9px;
+        padding: 6px 10px;
+    }
+
+    .chart-card-body {
+        padding: 8px 10px;
+    }
+
+    .chart-card {
+        border-radius: 8px;
+    }
+
+    .simple-user-menu .admin-img img {
+        width: 28px;
+        height: 28px;
     }
 }
 
@@ -528,13 +955,26 @@ body {
     margin-bottom: 16px;
 }
 
+.table-card .table-responsive,
+.table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .card-body>.table-responsive {
     background: #fff;
     border: 2px solid #e0e0e0;
     border-radius: 14px;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 16px;
     padding: 0 2px 10px;
+}
+
+/* Ensure all tables inside cards are scrollable on mobile */
+.card-body {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .filter-form .row.gutters-8,

@@ -20,10 +20,20 @@
   /*-------------------------------------
       Sidebar Menu Control Mobile
     -------------------------------------*/
-  $(".sidebar-toggle-mobile").on("click", function () {
-    $("#wrapper").toggleClass("sidebar-collapsed-mobile");
+  $(document).on("click", ".sidebar-toggle-mobile", function () {
+    $("#wrapper").toggleClass("sidebar-open-mobile");
     if ($("#wrapper").hasClass("sidebar-collapsed")) {
       $("#wrapper").removeClass("sidebar-collapsed");
+    }
+  });
+  // Close sidebar when overlay is clicked
+  $(document).on("click", ".sidebar-overlay", function () {
+    $("#wrapper").removeClass("sidebar-open-mobile");
+  });
+  // Close sidebar when a nav link is clicked (mobile)
+  $(document).on("click", ".sidebar-menu-one .nav-link[href]:not([href='#'])", function () {
+    if (window.innerWidth <= 991) {
+      $("#wrapper").removeClass("sidebar-open-mobile");
     }
   });
 
