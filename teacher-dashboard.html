@@ -70,14 +70,6 @@
                             <div class="stat-sub">Classes marked today</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon red"><i class="fas fa-tasks"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-label">Pending Tasks</div>
-                            <div class="stat-number" id="tPendingTasks">0</div>
-                            <div class="stat-sub">Homework to review</div>
-                        </div>
-                    </div>
                 </div>
 
                 
@@ -200,10 +192,6 @@
                     }
                 });
                 document.getElementById('tAttendance').textContent = Object.keys(coveredAssignments).length + '/' + assignmentList.length;
-
-                var homework = await getHomework() || [];
-                var activeHomework = homework.filter(function (item) { return String(item.status || 'Active').toLowerCase() === 'active'; });
-                document.getElementById('tPendingTasks').textContent = activeHomework.length;
 
                 var dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
                 var timetable = await getTimetable({ staff_id: user.linked_id, day: dayName }) || [];

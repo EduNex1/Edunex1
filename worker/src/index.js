@@ -157,6 +157,51 @@ async function authenticate(request, env) {
     return verifyJWT(auth.slice(7), env.JWT_SECRET);
 }
 
+async function getUserAssignedBranchIds(env, userId, fallbackBranchId) {
+    const fallback = fallbackBranchId ? [Number(fallbackBranchId)] : [];
+    try {
+        const { results } = await env.DB.prepare('SELECT branch_id FROM user_branch_assignments WHERE user_id = ? ORDER BY is_primary DESC, id ASC').bind(userId).all();
+        const ids = (results || []).map(r => Number(r.branch_id)).filter(Boolean);
+        return ids.length ? ids : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function uniqueBranchIds(ids) {
+    return Array.from(new Set((ids || []).map(v => Number(v)).filter(Boolean)));
+}
+
+async function setUserBranchAssignments(env, userId, branchIds, primaryBranchId) {
+    const ids = uniqueBranchIds(branchIds && branchIds.length ? branchIds : [primaryBranchId]);
+    if (!ids.length) return;
+    try {
+        await env.DB.prepare('DELETE FROM user_branch_assignments WHERE user_id = ?').bind(userId).run();
+        for (const bid of ids) {
+            await env.DB.prepare('INSERT OR REPLACE INTO user_branch_assignments (user_id, branch_id, is_primary) VALUES (?,?,?)')
+                .bind(userId, bid, Number(bid) === Number(primaryBranchId) ? 1 : 0).run();
+        }
+    } catch {
+    }
+}
+
+async function logActivity(env, entry) {
+    const branchId = entry.branch_id || null;
+    const userId = entry.user_id || null;
+    const userName = entry.user_name || '';
+    const activity = entry.activity || '';
+    const ipAddress = entry.ip_address || 'unknown';
+    const actionType = entry.action_type || 'other';
+    if (!activity) return;
+    try {
+        await env.DB.prepare('INSERT INTO activity_log (branch_id, user_id, user_name, activity, ip_address, action_type) VALUES (?,?,?,?,?,?)')
+            .bind(branchId, userId, userName, activity, ipAddress, actionType).run();
+    } catch {
+        await env.DB.prepare('INSERT INTO activity_log (branch_id, user_id, user_name, activity, ip_address) VALUES (?,?,?,?,?)')
+            .bind(branchId, userId, userName, activity, ipAddress).run();
+    }
+}
+
 function isAdminRole(user) {
     return ['super_admin', 'branch_admin'].includes(user.role);
 }
@@ -310,6 +355,7 @@ router.post('/api/auth/login', async (req, env) => {
 
     const token = await signJWT({ id: user.id, login_id: user.login_id, role: user.role, branch_id: user.branch_id, linked_id: user.linked_id }, env.JWT_SECRET);
     await env.DB.prepare('UPDATE users SET last_login = datetime("now") WHERE id = ?').bind(user.id).run();
+    const branchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
 
     let userName = null;
     if (user.role === 'parent') {
@@ -327,7 +373,16 @@ router.post('/api/auth/login', async (req, env) => {
         }
     }
 
-    return json({ token, user: { id: user.id, login_id: user.login_id, name: userName, role: user.role, branch_id: user.branch_id, linked_id: user.linked_id, branch_code: user.branch_code, school_name: user.school_name } });
+    await logActivity(env, {
+        branch_id: user.branch_id,
+        user_id: user.id,
+        user_name: user.login_id,
+        activity: 'Login successful',
+        ip_address: clientIP,
+        action_type: 'login'
+    });
+
+    return json({ token, user: { id: user.id, login_id: user.login_id, name: userName, role: user.role, branch_id: user.branch_id, branch_ids: branchIds, linked_id: user.linked_id, branch_code: user.branch_code, school_name: user.school_name } });
 });
 
 router.get('/api/auth/me', async (req, env) => {
@@ -335,6 +390,7 @@ router.get('/api/auth/me', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const dbUser = await env.DB.prepare('SELECT u.id, u.login_id, u.role, u.branch_id, u.linked_id, u.is_active, u.last_login, b.code as branch_code, b.school_name, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id WHERE u.id = ?')
         .bind(user.id).first();
+    if (dbUser) dbUser.branch_ids = await getUserAssignedBranchIds(env, dbUser.id, dbUser.branch_id);
     return json({ user: dbUser });
 });
 
@@ -345,8 +401,11 @@ router.get('/api/branches', async (req, env) => {
         const { results } = await env.DB.prepare('SELECT * FROM branches ORDER BY id').all();
         return json(results);
     }
-    if (user.role === 'branch_admin') {
-        const { results } = await env.DB.prepare('SELECT * FROM branches WHERE id=?').bind(user.branch_id).all();
+    if (['branch_admin', 'teacher', 'staff', 'student', 'parent'].includes(user.role)) {
+        const branchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        if (!branchIds.length) return json([]);
+        const placeholders = branchIds.map(() => '?').join(',');
+        const { results } = await env.DB.prepare(`SELECT * FROM branches WHERE id IN (${placeholders}) ORDER BY id`).bind(...branchIds).all();
         return json(results);
     }
     return json({ error: 'Forbidden' }, 403);
@@ -437,15 +496,25 @@ router.post('/api/users', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const branchId = user.role === 'super_admin' ? d.branch_id : user.branch_id;
+    const branchId = user.role === 'super_admin' ? Number(d.branch_id) : Number(user.branch_id);
+    if (!branchId) return json({ error: 'branch_id is required' }, 400);
     if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot create super admin' }, 403);
     const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.login_id).first();
     if (existing) return json({ error: 'Login ID already exists' }, 409);
     const pwd = d.password || generatePassword();
-    await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id, is_active) VALUES (?,?,?,?,?,1)')
+    const inserted = await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id, is_active) VALUES (?,?,?,?,?,1)')
         .bind(d.login_id, pwd, d.role, branchId, d.linked_id || null).run();
-    await env.DB.prepare('INSERT INTO activity_log (branch_id, user_id, user_name, activity) VALUES (?,?,?,?)')
-        .bind(branchId, user.id, user.login_id, `Created user: ${d.login_id} (${d.role})`).run();
+    const newUserId = inserted.meta.last_row_id;
+    const requestedBranchIds = Array.isArray(d.branch_ids) && user.role === 'super_admin' ? d.branch_ids : [branchId];
+    await setUserBranchAssignments(env, newUserId, requestedBranchIds, branchId);
+    await logActivity(env, {
+        branch_id: branchId,
+        user_id: user.id,
+        user_name: user.login_id,
+        activity: `Created user: ${d.login_id} (${d.role})`,
+        ip_address: req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || 'unknown',
+        action_type: 'edit'
+    });
     return json({ success: true, password: pwd }, 201);
 });
 
@@ -460,9 +529,17 @@ router.put('/api/users/:id', async (req, env, params) => {
     if (d.is_active !== undefined) { sets.push('is_active=?'); vals.push(d.is_active); }
     if (d.password) { sets.push('password_hash=?'); vals.push(d.password); }
     if (d.role && user.role === 'super_admin') { sets.push('role=?'); vals.push(d.role); }
-    if (sets.length === 0) return json({ error: 'Nothing to update' }, 400);
-    vals.push(params.id);
-    await env.DB.prepare(`UPDATE users SET ${sets.join(',')} WHERE id=?`).bind(...vals).run();
+    if (d.branch_id !== undefined && user.role === 'super_admin') { sets.push('branch_id=?'); vals.push(Number(d.branch_id) || null); }
+    if (sets.length > 0) {
+        vals.push(params.id);
+        await env.DB.prepare(`UPDATE users SET ${sets.join(',')} WHERE id=?`).bind(...vals).run();
+    } else if (!Array.isArray(d.branch_ids)) {
+        return json({ error: 'Nothing to update' }, 400);
+    }
+    if (user.role === 'super_admin' && Array.isArray(d.branch_ids)) {
+        const primaryBranch = d.branch_id !== undefined ? Number(d.branch_id) : Number(target.branch_id);
+        await setUserBranchAssignments(env, Number(params.id), d.branch_ids, primaryBranch);
+    }
     return json({ success: true });
 });
 
@@ -2586,8 +2663,6 @@ router.get('/api/activity-log', async (req, env) => {
     if (user.role !== 'super_admin') {
         q += ' AND al.branch_id=?';
         b.push(user.branch_id);
-        q += ' AND al.user_id NOT IN (SELECT u.id FROM users u WHERE u.role IN (?,?))';
-        b.push('super_admin', 'branch_admin');
     }
     q += ' ORDER BY al.created_at DESC LIMIT 200';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
@@ -2913,12 +2988,20 @@ router.get('/api/fee-carry-forward', async (req, env) => {
 router.get('/api/exams', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['super_admin','branch_admin','teacher','staff'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const url = new URL(req.url);
     let q = 'SELECT * FROM exams WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const branchId = url.searchParams.get('branch_id');
+    if (user.role === 'super_admin') {
+        if (branchId && branchId !== 'All') { q += ' AND branch_id=?'; b.push(branchId); }
+    } else {
+        q += ' AND branch_id=?';
+        b.push(user.branch_id);
+    }
     const session = url.searchParams.get('session');
     if (session && session !== 'All') { q += ' AND session=?'; b.push(session); }
+    q += ' ORDER BY id DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
 });
@@ -3022,7 +3105,14 @@ router.get('/api/option-settings', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const url = new URL(req.url);
-    const bid = user.role === 'super_admin' ? Number(url.searchParams.get('branch_id') || user.branch_id || 1) : Number(user.branch_id || 1);
+    let bid;
+    if (user.role === 'super_admin') {
+        bid = Number(url.searchParams.get('branch_id') || user.branch_id || 1);
+    } else {
+        const assigned = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        const requested = Number(url.searchParams.get('branch_id') || user.branch_id || 1);
+        bid = assigned.includes(requested) ? requested : Number(user.branch_id || 1);
+    }
     const { results } = await env.DB.prepare('SELECT * FROM option_settings WHERE branch_id=?').bind(bid).all();
     if (user.role === 'branch_admin') {
         return json(results.filter(r => !SENSITIVE_SETTINGS.has(r.setting_key)));
@@ -3034,7 +3124,14 @@ router.post('/api/option-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.role === 'super_admin' ? Number(d.branch_id || user.branch_id || 1) : Number(user.branch_id || 1);
+    let bid;
+    if (user.role === 'super_admin') {
+        bid = Number(d.branch_id || user.branch_id || 1);
+    } else {
+        const assigned = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        const requested = Number(d.branch_id || user.branch_id || 1);
+        bid = assigned.includes(requested) ? requested : Number(user.branch_id || 1);
+    }
     for (const [key, value] of Object.entries(d.settings || {})) {
         if (user.role === 'branch_admin' && SENSITIVE_SETTINGS.has(key)) continue;
         await env.DB.prepare('INSERT OR REPLACE INTO option_settings (branch_id, setting_key, setting_value) VALUES (?,?,?)')
@@ -3089,15 +3186,18 @@ router.put('/api/transfer-certificates/:id', async (req, env, params) => {
     const existing = await env.DB.prepare('SELECT branch_id FROM transfer_certificates WHERE id=?').bind(id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
     if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
-    const student = await getStudentForCertificate(env, user, d.student_id);
-    if (!student) return json({ error: 'Student not found' }, 404);
+    if (d.student_id) {
+        const student = await getStudentForCertificate(env, user, d.student_id);
+        if (!student) return json({ error: 'Student not found' }, 404);
+    }
     if (!isValidISODate(d.date_of_leaving) || !isValidISODate(d.issue_date)) return json({ error: 'Invalid transfer certificate dates' }, 400);
     if (d.date_of_admission && isValidISODate(d.date_of_admission) && d.date_of_leaving < d.date_of_admission) return json({ error: 'Date of leaving cannot be before admission date' }, 400);
     if (d.issue_date < d.date_of_leaving) return json({ error: 'Issue date cannot be before leaving date' }, 400);
-    if (d.issue_date > new Date().toISOString().slice(0,10)) return json({ error: 'Issue date cannot be in the future' }, 400);
+    const tomorrowUtc = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+    if (d.issue_date > tomorrowUtc) return json({ error: 'Issue date cannot be in the future' }, 400);
     await env.DB.prepare(
         `UPDATE transfer_certificates SET tc_no=?, admission_no=?, student_name=?, father_name=?, mother_name=?, dob=?, dob_words=?, nationality=?, category=?, religion=?, gender=?, class_id=?, section=?, last_class_studied=?, date_of_admission=?, date_of_leaving=?, qualified_for_promotion=?, fees_paid_up_to_date=?, scholarship=?, general_conduct=?, character=?, reason_for_leaving=?, remarks=?, issue_date=?, status=? WHERE id=?`
-    ).bind(d.tc_no, d.admission_no, d.student_name, d.father_name, d.mother_name, d.dob, d.dob_words, d.nationality, d.category, d.religion, d.gender, d.class_id, d.section, d.last_class_studied, d.date_of_admission, d.date_of_leaving, d.qualified_for_promotion, d.fees_paid_up_to_date, d.scholarship, d.general_conduct, d.character, d.reason_for_leaving, d.remarks, d.issue_date, d.status, id).run();
+    ).bind(d.tc_no, d.admission_no, d.student_name, d.father_name, d.mother_name, d.dob, d.dob_words, d.nationality || 'Indian', d.category, d.religion, d.gender, d.class_id, d.section, d.last_class_studied, d.date_of_admission, d.date_of_leaving, d.qualified_for_promotion || 'Yes', d.fees_paid_up_to_date || 'Yes', d.scholarship || 'None', d.general_conduct || 'Good', d.character || 'Good', d.reason_for_leaving, d.remarks, d.issue_date, d.status || 'Issued', id).run();
     return json({ success: true });
 });
 
@@ -3426,12 +3526,35 @@ export default {
 
         let response;
         const url = new URL(request.url);
+        const apiUser = url.pathname.startsWith('/api/') ? await authenticate(request, env) : null;
         const match = router.match(request.method, url.pathname);
         if (match) {
             try { response = await match.handler(request, env, match.params); }
             catch (e) { response = json({ error: e.message }, 500); }
         } else {
             response = json({ error: 'Not found' }, 404);
+        }
+
+        if (apiUser && url.pathname.startsWith('/api/')) {
+            const methodMap = {
+                GET: 'view',
+                POST: 'edit',
+                PUT: 'edit',
+                PATCH: 'edit',
+                DELETE: 'delete'
+            };
+            const actionType = methodMap[request.method] || 'other';
+            const ipAddress = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+            if (!url.pathname.startsWith('/api/activity-log')) {
+                await logActivity(env, {
+                    branch_id: apiUser.branch_id,
+                    user_id: apiUser.id,
+                    user_name: apiUser.login_id,
+                    activity: `${request.method} ${url.pathname}${response.status >= 400 ? ` (${response.status})` : ''}`,
+                    ip_address: ipAddress,
+                    action_type: actionType
+                });
+            }
         }
 
         const newHeaders = new Headers(response.headers);

@@ -157,41 +157,6 @@
                 
                 <div id="childDetail" style="display:none;">
                     
-                    <div class="stats-grid stats-grid-4" style="margin-bottom:16px;">
-                        <div class="stat-card">
-                            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-label">Attendance</div>
-                                <div class="stat-number" id="cdAtt">—</div>
-                                <div class="stat-sub" id="cdAttSub">This month</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-label">Fee Status</div>
-                                <div class="stat-number" id="cdFee">—</div>
-                                <div class="stat-sub" id="cdFeeSub">—</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon orange"><i class="fas fa-star"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-label">Last Exam</div>
-                                <div class="stat-number" id="cdExam">—</div>
-                                <div class="stat-sub" id="cdExamSub">—</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon purple"><i class="fas fa-book"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-label">Homework</div>
-                                <div class="stat-number" id="cdHw">—</div>
-                                <div class="stat-sub">Pending today</div>
-                            </div>
-                        </div>
-                    </div>
-
                     
                     <div class="chart-card" style="margin-bottom:16px;">
                         <div class="chart-card-header"><i class="fas fa-user"></i> Personal Information</div>
@@ -280,14 +245,6 @@
             renderChildCards();
 
             var c = selectedChild;
-            document.getElementById('cdAtt').textContent = '—';
-            document.getElementById('cdAttSub').textContent = 'View attendance';
-            document.getElementById('cdFee').textContent = '—';
-            document.getElementById('cdFeeSub').textContent = 'View fee status';
-            document.getElementById('cdExam').textContent = '—';
-            document.getElementById('cdExamSub').textContent = 'View results';
-            document.getElementById('cdHw').textContent = '—';
-
             document.getElementById('personalInfo').innerHTML = buildInfo([
                 ['Full Name', c.name || ''], ['Class', (c.class_name || '') + ' — ' + (c.section || '')],
                 ['Roll Number', c.roll_no || ''], ['Admission No', c.admission_no || ''],

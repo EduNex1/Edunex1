@@ -37,7 +37,7 @@
                             </div>
                             <div class="col-lg-2 col-md-4 col-6 form-group mb-0">
                                 <label class="form-label-sm">Status</label>
-                                <select class="form-control" id="sStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+                                <select class="form-control" id="sStatus"><option value="Inactive" selected>Inactive</option><option value="Active">Active</option></select>
                             </div>
                             <div class="col-lg-3 col-md-4 col-6 form-group mb-0 d-flex align-items-end" style="gap:8px;">
                                 <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:13px;padding:7px 22px;" onclick="saveItem()"><i class="fas fa-save"></i> Save</button>
@@ -87,7 +87,7 @@
                     await createMasterData('academic_sessions',{name, start_date, end_date, status});
                     showToast('Session added','success');
                 }
-                $('#sName').val(''); $('#sStartDate').val(''); $('#sEndDate').val(''); $('#sStatus').val('Active');
+                $('#sName').val(''); $('#sStartDate').val(''); $('#sEndDate').val(''); $('#sStatus').val('Inactive');
                 await load();
             } catch(e){ showToast('Failed to save','error'); }
         };

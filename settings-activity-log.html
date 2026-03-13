@@ -44,7 +44,7 @@
                         </div>
                     </div>
                     <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
-                        <table class="list-table"><thead><tr><th style="width:40px">#</th><th>User</th><th>Activity</th><th>Date & Time</th><th>IP Address</th></tr></thead><tbody id="listBody"></tbody></table>
+                        <table class="list-table"><thead><tr><th style="width:40px">#</th><th>User</th><th>Action</th><th>Activity</th><th>Date & Time</th><th>IP Address</th></tr></thead><tbody id="listBody"></tbody></table>
                     </div></div>
                 </div></div>
             </div>
@@ -73,11 +73,12 @@
             const rows = list.map((l,i)=>`<tr>
                 <td class="text-center">${i+1}</td>
                 <td><span class="user-tag">${l.user_name||('User #'+(l.user_id||'—'))}</span></td>
+                <td><span class="user-tag" style="background:#e3f2fd;color:#0d47a1;text-transform:uppercase;">${l.action_type||'other'}</span></td>
                 <td>${l.activity}</td>
                 <td style="white-space:nowrap;font-size:11px;">${l.created_at||''}</td>
                 <td><span class="ip-badge">${l.ip_address||'—'}</span></td>
             </tr>`).join('');
-            $('#listBody').html(rows||'<tr><td colspan="5" class="text-center text-muted" style="padding:30px;">No activity found</td></tr>');
+            $('#listBody').html(rows||'<tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No activity found</td></tr>');
         }
         window.doSearch=function(){ load(); };
         window.doReset=function(){ $('#fUser').val('');$('#fFrom').val('');$('#fTo').val(''); load(); };

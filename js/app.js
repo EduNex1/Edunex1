@@ -469,12 +469,18 @@ function renderHeader(userName, role) {
         role = role || 'Super Admin';
     }
 
+    var userBranchIds = Array.isArray(loggedUser && loggedUser.branch_ids) ? loggedUser.branch_ids : [];
+    var canSwitchBranches = !!(loggedUser && (loggedUser.role === 'super_admin' || userBranchIds.length > 1));
+
     var branchSwitcherHtml = '';
-    if (loggedUser && loggedUser.role === 'super_admin') {
+    if (canSwitchBranches) {
+        var branchDefaultOption = (loggedUser && loggedUser.role === 'super_admin')
+            ? '<option value="">All Branches</option>'
+            : '';
         branchSwitcherHtml = `
             <li class="navbar-item navbar-switcher-item">
                 <select id="branchSwitcher" class="form-control form-control-sm navbar-switcher-select">
-                    <option value="">All Branches</option>
+                    ${branchDefaultOption}
                 </select>
             </li>`;
     }
@@ -526,7 +532,7 @@ function renderHeader(userName, role) {
         headerContainer.innerHTML = html;
     }
 
-    if (loggedUser && loggedUser.role === 'super_admin') {
+    if (canSwitchBranches) {
         loadBranchSwitcher();
     }
     if (loggedUser && ['super_admin', 'branch_admin'].includes(loggedUser.role)) {
@@ -537,9 +543,12 @@ function renderHeader(userName, role) {
 async function loadBranchSwitcher() {
     var switcher = document.getElementById('branchSwitcher');
     if (!switcher) return;
+    var user = typeof getUser === 'function' ? getUser() : null;
+    var canAllBranches = !!(user && user.role === 'super_admin');
     try {
         var branches = await getBranches();
         if (branches && !branches.error && Array.isArray(branches)) {
+            if (!canAllBranches) switcher.innerHTML = '';
             branches.forEach(function(b) {
                 var opt = document.createElement('option');
                 opt.value = b.id;
@@ -549,7 +558,12 @@ async function loadBranchSwitcher() {
         }
     } catch(e) {  }
     var savedBranch = sessionStorage.getItem('vkis_selected_branch');
-    if (savedBranch) switcher.value = savedBranch;
+    if (savedBranch) {
+        switcher.value = savedBranch;
+    } else if (!canAllBranches && switcher.options.length) {
+        switcher.value = switcher.options[0].value;
+        sessionStorage.setItem('vkis_selected_branch', switcher.value);
+    }
     switcher.addEventListener('change', function() {
         sessionStorage.setItem('vkis_selected_branch', this.value);
         if (typeof onBranchSwitch === 'function') {
@@ -562,10 +576,17 @@ async function loadBranchSwitcher() {
 
 function getSelectedBranch() {
     var user = typeof getUser === 'function' ? getUser() : null;
-    if (user && user.role === 'super_admin') {
+    if (!user) return '';
+    if (user.role === 'super_admin') {
         return sessionStorage.getItem('vkis_selected_branch') || '';
     }
-    return '';
+    var branchIds = Array.isArray(user.branch_ids) ? user.branch_ids : [];
+    if (branchIds.length > 1) {
+        var selected = sessionStorage.getItem('vkis_selected_branch');
+        if (selected && branchIds.map(String).includes(String(selected))) return selected;
+        return String(branchIds[0]);
+    }
+    return user.branch_id ? String(user.branch_id) : '';
 }
 
 async function loadSessionSwitcher() {
@@ -577,20 +598,23 @@ async function loadSessionSwitcher() {
             var html = '';
             sessions.forEach(function(s) {
                 var isCurrent = s.status === 'Active';
-                html += '<option value="' + s.name + '"' + (isCurrent ? ' data-active="1"' : '') + '>' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
+                html += '<option value="' + s.name + '">' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
             });
             switcher.innerHTML = html;
         }
     } catch(e) {  }
     var savedSession = sessionStorage.getItem('vkis_selected_session');
+    var hasSavedSession = false;
     if (savedSession) {
-        switcher.value = savedSession;
-    } else {
-        var activeOpt = switcher.querySelector('[data-active="1"]');
-        if (activeOpt) {
-            switcher.value = activeOpt.value;
-            sessionStorage.setItem('vkis_selected_session', activeOpt.value);
+        for (var i = 0; i < switcher.options.length; i++) {
+            if (switcher.options[i].value === savedSession) { hasSavedSession = true; break; }
         }
+    }
+    if (hasSavedSession) {
+        switcher.value = savedSession;
+    } else if (switcher.options.length) {
+        switcher.value = switcher.options[0].value;
+        sessionStorage.setItem('vkis_selected_session', switcher.value);
     }
     switcher.addEventListener('change', function() {
         sessionStorage.setItem('vkis_selected_session', this.value);
@@ -725,7 +749,7 @@ async function populateSessionDropdown(selectElement, includeAll) {
     var sessions = await _loadDropdownData('sessions', getAcademicSessions);
     sessions.forEach(function(s) {
         var isCurrent = s.status === 'Active';
-        html += '<option value="' + s.name + '"' + (isCurrent ? ' selected' : '') + '>' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
+        html += '<option value="' + s.name + '">' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
     });
     selectElement.innerHTML = html;
 }
