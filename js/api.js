@@ -127,7 +127,12 @@ async function getExamNames(filters = {}) {
     const branchId = (filters && filters.branch_id) || (typeof getSelectedBranch === 'function' ? getSelectedBranch() : '');
     const master = await fetchExamNamesMaster(branchId);
     if (master.length) return master;
-    const exams = await getExams({ ...filters, useMasterFallback: false });
+    let exams = [];
+    try {
+        exams = await getExams({ ...filters, useMasterFallback: false });
+    } catch (e) {
+        exams = [];
+    }
     return mapExamRowsToNames(exams);
 }
 async function getNotices() { return getMasterData('notices'); }
@@ -244,20 +249,33 @@ async function getExams(filters = {}) {
     }
 
     let params = new URLSearchParams(payload).toString();
-    let rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+    let rows = [];
+    try {
+        rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+    } catch (e) {
+        rows = [];
+    }
 
     if ((!Array.isArray(rows) || rows.length === 0) && !filters.session && payload.session) {
         const retryPayload = { ...payload };
         delete retryPayload.session;
         params = new URLSearchParams(retryPayload).toString();
-        rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+        try {
+            rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+        } catch (e) {
+            rows = [];
+        }
     }
 
     if ((!Array.isArray(rows) || rows.length === 0) && payload.branch_id) {
         const retryPayload = { ...payload };
         delete retryPayload.branch_id;
         params = new URLSearchParams(retryPayload).toString();
-        rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+        try {
+            rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+        } catch (e) {
+            rows = [];
+        }
     }
 
     if ((!Array.isArray(rows) || rows.length === 0) && useMasterFallback) {
@@ -295,7 +313,9 @@ async function uploadFile(file) {
         method: 'POST', body: formData,
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    return data;
 }
 
 async function getUsers() { return api('/api/users'); }

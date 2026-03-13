@@ -1020,7 +1020,13 @@
             }
 
             $('#btnPrint').on('click', function () {
-                const content = document.getElementById('printArea').innerHTML;
+                const printEl = document.getElementById('printArea');
+                if (!printEl) {
+                    if (typeof showToast === 'function') showToast('Print template not loaded', 'error');
+                    else alert('Print template not loaded');
+                    return;
+                }
+                const content = printEl.innerHTML;
                 const isL = currentOrientation === 'landscape';
                 const sc = isL ? 100 : 80;
                 const pw = window.open('', '_blank');

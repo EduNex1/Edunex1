@@ -595,12 +595,19 @@ async function loadSessionSwitcher() {
     try {
         var sessions = await getAcademicSessions();
         if (sessions && !sessions.error && Array.isArray(sessions)) {
-            var html = '';
-            sessions.forEach(function(s) {
-                var isCurrent = s.status === 'Active';
-                html += '<option value="' + s.name + '">' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
-            });
-            switcher.innerHTML = html;
+            if (sessions.length) {
+                var html = '';
+                sessions.forEach(function(s) {
+                    var isCurrent = s.status === 'Active';
+                    html += '<option value="' + s.name + '">' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
+                });
+                switcher.innerHTML = html;
+                switcher.disabled = false;
+            } else {
+                switcher.innerHTML = '<option value="">No sessions available</option>';
+                switcher.disabled = true;
+                return;
+            }
         }
     } catch(e) {  }
     var savedSession = sessionStorage.getItem('vkis_selected_session');
@@ -733,6 +740,12 @@ async function _loadDropdownData(key, apiFn) {
 async function populateClassDropdown(selectElement, includeAll) {
     let html = includeAll ? '<option value="All">All Classes</option>' : '<option value="">Select Class *</option>';
     var classes = await _loadDropdownData('classes', getClasses);
+    if (!Array.isArray(classes) || !classes.length) {
+        selectElement.innerHTML = includeAll ? '<option value="">No classes available</option>' : '<option value="">No classes available</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    selectElement.disabled = false;
     classes.forEach(function(c) { html += '<option value="' + c.id + '">Class ' + c.name + '</option>'; });
     selectElement.innerHTML = html;
 }
@@ -740,6 +753,12 @@ async function populateClassDropdown(selectElement, includeAll) {
 async function populateSectionDropdown(selectElement, includeAll) {
     let html = includeAll ? '<option value="All">All Sections</option>' : '<option value="">Select Section *</option>';
     var sections = await _loadDropdownData('sections', getSections);
+    if (!Array.isArray(sections) || !sections.length) {
+        selectElement.innerHTML = includeAll ? '<option value="">No sections available</option>' : '<option value="">No sections available</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    selectElement.disabled = false;
     sections.forEach(function(s) { html += '<option value="' + s.name + '">' + s.name + '</option>'; });
     selectElement.innerHTML = html;
 }
@@ -747,6 +766,12 @@ async function populateSectionDropdown(selectElement, includeAll) {
 async function populateSessionDropdown(selectElement, includeAll) {
     let html = includeAll ? '<option value="All">All Sessions</option>' : '<option value="">Select Session *</option>';
     var sessions = await _loadDropdownData('sessions', getAcademicSessions);
+    if (!Array.isArray(sessions) || !sessions.length) {
+        selectElement.innerHTML = includeAll ? '<option value="">No sessions available</option>' : '<option value="">No sessions available</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    selectElement.disabled = false;
     sessions.forEach(function(s) {
         var isCurrent = s.status === 'Active';
         html += '<option value="' + s.name + '">' + s.name + (isCurrent ? ' (Current)' : '') + '</option>';
@@ -757,6 +782,12 @@ async function populateSessionDropdown(selectElement, includeAll) {
 async function populateSubjectDropdown(selectElement, includeAll) {
     let html = includeAll ? '<option value="All">All Subjects</option>' : '';
     var subjects = await _loadDropdownData('subjects', getSubjects);
+    if (!Array.isArray(subjects) || !subjects.length) {
+        selectElement.innerHTML = '<option value="">No subjects available</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    selectElement.disabled = false;
     subjects.forEach(function(s) { html += '<option value="' + s.id + '">' + s.name + '</option>'; });
     selectElement.innerHTML = html;
 }
@@ -792,6 +823,12 @@ async function populateDesignationDropdown(selectElement) {
 async function populateExamDropdown(selectElement) {
     let html = '<option value="">Select Exam *</option>';
     var exams = await _loadDropdownData('exam_names', getExamNames);
+    if (!Array.isArray(exams) || !exams.length) {
+        selectElement.innerHTML = '<option value="">No exams available</option>';
+        selectElement.disabled = true;
+        return;
+    }
+    selectElement.disabled = false;
     exams.forEach(function(e) { html += '<option value="' + e.id + '">' + e.name + '</option>'; });
     selectElement.innerHTML = html;
 }
@@ -802,8 +839,17 @@ async function populateBranchDropdown(selectElement, includeAll) {
         var branches = await getBranches();
         if (branches && !branches.error && Array.isArray(branches)) {
             branches.forEach(function(b) { html += '<option value="' + b.id + '">' + b.name + ' (' + b.code + ')</option>'; });
+            selectElement.disabled = branches.length === 0;
+        } else {
+            selectElement.disabled = true;
         }
-    } catch(e) {}
+    } catch(e) {
+        selectElement.disabled = true;
+    }
+    if (selectElement.disabled) {
+        selectElement.innerHTML = '<option value="">No branches available</option>';
+        return;
+    }
     selectElement.innerHTML = html;
 }
 

@@ -340,7 +340,13 @@
         };
 
         window.doPrint = function() {
-            const content = document.getElementById('printBody').innerHTML;
+            const printEl = document.getElementById('printBody');
+            if (!printEl) {
+                if (typeof showToast === 'function') showToast('Print template not loaded', 'error');
+                else alert('Print template not loaded');
+                return;
+            }
+            const content = printEl.innerHTML;
             const win = window.open('', '_blank', 'width=800,height=600');
             win.document.write(`<html><head><title>Fee Slab Print</title><style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;} th,td{padding:6px 10px;border:1px solid #ddd;} th{background:#0d1b4a;color:#fff;font-size:10px;text-transform:uppercase;-webkit-print-color-adjust:exact;print-color-adjust:exact;}</style></head><body>${content}</body></html>`);
             win.document.close();

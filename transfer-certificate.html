@@ -935,7 +935,13 @@
             }
 
             $('#btnPrintTC').on('click', function () {
-                const printContent = document.getElementById('tcPrintArea').innerHTML;
+                const printEl = document.getElementById('tcPrintArea');
+                if (!printEl) {
+                    if (typeof showToast === 'function') showToast('Print template not loaded', 'error');
+                    else alert('Print template not loaded');
+                    return;
+                }
+                const printContent = printEl.innerHTML;
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Transfer Certificate - ${school.school_name || ''}</title>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
