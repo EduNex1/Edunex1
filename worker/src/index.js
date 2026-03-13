@@ -505,16 +505,23 @@ router.post('/api/users', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const branchId = user.role === 'super_admin' ? Number(d.branch_id) : Number(user.branch_id);
+    let branchId = user.role === 'super_admin' ? Number(d.branch_id) : Number(d.branch_id || user.branch_id);
     if (!branchId) return json({ error: 'branch_id is required' }, 400);
     if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot create super admin' }, 403);
+
+    let requestedBranchIds = Array.isArray(d.branch_ids) && d.branch_ids.length ? d.branch_ids.map(Number).filter(Boolean) : [branchId];
+    if (user.role === 'branch_admin') {
+        const creatorBranchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        if (!creatorBranchIds.includes(branchId)) return json({ error: 'Forbidden branch assignment' }, 403);
+        if (requestedBranchIds.some(id => !creatorBranchIds.includes(id))) return json({ error: 'Cannot assign branches outside your access' }, 403);
+    }
+
     const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.login_id).first();
     if (existing) return json({ error: 'Login ID already exists' }, 409);
     const pwd = d.password || generatePassword();
     const inserted = await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id, is_active) VALUES (?,?,?,?,?,1)')
         .bind(d.login_id, pwd, d.role, branchId, d.linked_id || null).run();
     const newUserId = inserted.meta.last_row_id;
-    const requestedBranchIds = Array.isArray(d.branch_ids) && user.role === 'super_admin' ? d.branch_ids : [branchId];
     await setUserBranchAssignments(env, newUserId, requestedBranchIds, branchId);
     await logActivity(env, {
         branch_id: branchId,
@@ -533,21 +540,36 @@ router.put('/api/users/:id', async (req, env, params) => {
     const d = await req.json();
     const target = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(params.id).first();
     if (!target) return json({ error: 'Not found' }, 404);
-    if (user.role === 'branch_admin' && target.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    let adminAllowedBranchIds = [];
+    if (user.role === 'branch_admin') {
+        adminAllowedBranchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        if (!adminAllowedBranchIds.includes(Number(target.branch_id))) return json({ error: 'Forbidden' }, 403);
+    }
     const sets = []; const vals = [];
     if (d.is_active !== undefined) { sets.push('is_active=?'); vals.push(d.is_active); }
     if (d.password) { sets.push('password_hash=?'); vals.push(d.password); }
-    if (d.role && user.role === 'super_admin') { sets.push('role=?'); vals.push(d.role); }
-    if (d.branch_id !== undefined && user.role === 'super_admin') { sets.push('branch_id=?'); vals.push(Number(d.branch_id) || null); }
+    if (d.role && ['super_admin','branch_admin'].includes(user.role)) {
+        if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot assign super admin role' }, 403);
+        sets.push('role=?'); vals.push(d.role);
+    }
+    if (d.branch_id !== undefined && ['super_admin','branch_admin'].includes(user.role)) {
+        const newPrimary = Number(d.branch_id) || null;
+        if (user.role === 'branch_admin' && newPrimary && !adminAllowedBranchIds.includes(newPrimary)) return json({ error: 'Forbidden branch assignment' }, 403);
+        sets.push('branch_id=?'); vals.push(newPrimary);
+    }
     if (sets.length > 0) {
         vals.push(params.id);
         await env.DB.prepare(`UPDATE users SET ${sets.join(',')} WHERE id=?`).bind(...vals).run();
     } else if (!Array.isArray(d.branch_ids)) {
         return json({ error: 'Nothing to update' }, 400);
     }
-    if (user.role === 'super_admin' && Array.isArray(d.branch_ids)) {
+    if (Array.isArray(d.branch_ids) && ['super_admin','branch_admin'].includes(user.role)) {
+        const branchIds = d.branch_ids.map(Number).filter(Boolean);
+        if (user.role === 'branch_admin' && branchIds.some(id => !adminAllowedBranchIds.includes(id))) {
+            return json({ error: 'Cannot assign branches outside your access' }, 403);
+        }
         const primaryBranch = d.branch_id !== undefined ? Number(d.branch_id) : Number(target.branch_id);
-        await setUserBranchAssignments(env, Number(params.id), d.branch_ids, primaryBranch);
+        await setUserBranchAssignments(env, Number(params.id), branchIds, primaryBranch);
     }
     return json({ success: true });
 });
@@ -558,7 +580,11 @@ router.delete('/api/users/:id', async (req, env, params) => {
     const target = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(params.id).first();
     if (!target) return json({ error: 'Not found' }, 404);
     if (target.role === 'super_admin') return json({ error: 'Cannot delete super admin' }, 403);
-    if (user.role === 'branch_admin' && target.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (user.role === 'branch_admin') {
+        const adminAllowedBranchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        if (!adminAllowedBranchIds.includes(Number(target.branch_id))) return json({ error: 'Forbidden' }, 403);
+    }
+    await env.DB.prepare('DELETE FROM user_branch_assignments WHERE user_id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM user_permissions WHERE user_id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM users WHERE id=?').bind(params.id).run();
     return json({ success: true });
@@ -3186,8 +3212,12 @@ router.post('/api/transfer-certificates', async (req, env) => {
     if (!isValidISODate(d.date_of_leaving) || !isValidISODate(d.issue_date)) return json({ error: 'Invalid transfer certificate dates' }, 400);
     if (d.date_of_admission && isValidISODate(d.date_of_admission) && d.date_of_leaving < d.date_of_admission) return json({ error: 'Date of leaving cannot be before admission date' }, 400);
     if (d.issue_date < d.date_of_leaving) return json({ error: 'Issue date cannot be before leaving date' }, 400);
-    if (d.issue_date > new Date().toISOString().slice(0,10)) return json({ error: 'Issue date cannot be in the future' }, 400);
-    const bid = user.role === 'super_admin' ? (d.branch_id || user.branch_id) : user.branch_id;
+    const tomorrowUtc = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+    if (d.issue_date > tomorrowUtc) return json({ error: 'Issue date cannot be in the future' }, 400);
+    const requestedBranchId = Number(d.branch_id) || null;
+    const bid = user.role === 'super_admin'
+        ? Number(requestedBranchId || student.branch_id || user.branch_id || 1)
+        : Number(user.branch_id || student.branch_id || 1);
     const r = await env.DB.prepare(
         `INSERT INTO transfer_certificates (branch_id, student_id, tc_no, admission_no, student_name, father_name, mother_name, dob, dob_words, nationality, category, religion, gender, class_id, section, last_class_studied, date_of_admission, date_of_leaving, qualified_for_promotion, fees_paid_up_to_date, scholarship, general_conduct, character, reason_for_leaving, remarks, issue_date, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(bid, d.student_id, d.tc_no, d.admission_no, d.student_name, d.father_name, d.mother_name, d.dob, d.dob_words, d.nationality || 'Indian', d.category, d.religion, d.gender, d.class_id, d.section, d.last_class_studied, d.date_of_admission, d.date_of_leaving, d.qualified_for_promotion || 'Yes', d.fees_paid_up_to_date || 'Yes', d.scholarship || 'None', d.general_conduct || 'Good', d.character || 'Good', d.reason_for_leaving, d.remarks, d.issue_date, d.status || 'Issued').run();

@@ -14,6 +14,9 @@
         .status-row{display:flex;align-items:center;gap:8px;padding-top:23px}
         .status-row input{width:16px;height:16px}
         .readonly-note{font-size:10px;color:#888;margin-top:3px}
+        .branch-check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;padding:10px;border:1px solid #e7ebf3;border-radius:8px;background:#fbfcff;max-height:140px;overflow:auto}
+        .branch-check-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#1f2937;line-height:1.2}
+        .branch-check-item input{width:14px;height:14px}
     </style>
 </head>
 <body>
@@ -52,15 +55,15 @@
                                 <input type="number" class="form-control" id="uLinkedId" placeholder="Optional student/staff/parent ID" min="1">
                                 <div class="readonly-note" id="linkedReadonlyNote" style="display:none;">Linked record ID is only set during creation in the current API.</div>
                             </div>
-                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                            <div class="col-lg-4 col-md-6 col-12 form-group" id="singleBranchGroup">
                                 <label class="form-label-sm">Branch <span style="color:red">*</span></label>
                                 <select class="form-control" id="uBranch"><option value="">— Select Branch —</option></select>
                                 <div class="readonly-note" id="branchReadonlyNote" style="display:none;">Branch cannot be changed from this edit form in the current API.</div>
                             </div>
                             <div class="col-lg-8 col-md-12 col-12 form-group" id="multiBranchGroup" style="display:none;">
-                                <label class="form-label-sm">Assigned Branches</label>
-                                <select class="form-control" id="uBranches" multiple style="height:110px;"></select>
-                                <div class="readonly-note">For Branch Admin or staff roles, assign one or multiple branches. Primary branch will be used as default.</div>
+                                <label class="form-label-sm">Select Branches <span style="color:red">*</span></label>
+                                <div id="uBranchesList" class="branch-check-grid"></div>
+                                <div class="readonly-note">Primary branch is auto-selected from the first checked branch.</div>
                             </div>
                             <div class="col-lg-4 col-md-6 col-12 form-group" id="pwdGroup">
                                 <label class="form-label-sm">Password <span style="color:red">*</span></label>
@@ -93,16 +96,43 @@
         initPage('settings-users');
         const currentUser = typeof getUser === 'function' ? getUser() : null;
         const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
-
-        if (!isSuperAdmin) $('#uRole option[value="branch_admin"]').remove();
+        const isBranchAdmin = currentUser && currentUser.role === 'branch_admin';
+        const canAssignBranches = !!(isSuperAdmin || isBranchAdmin);
 
         let branches = [];
         try { branches = await getBranches(); } catch(e) {}
 
-        if (isSuperAdmin) {
+        function getCheckedBranchIds() {
+            return Array.from(document.querySelectorAll('#uBranchesList .branch-check-item input:checked')).map(function(el){ return Number(el.value); }).filter(Boolean);
+        }
+
+        function syncPrimaryFromChecks() {
+            const checked = getCheckedBranchIds();
+            $('#uBranch').val(checked.length ? String(checked[0]) : '');
+        }
+
+        function renderBranchChecks(items, selectedIds) {
+            const selected = (selectedIds || []).map(Number);
+            const html = (items || []).map(function(b){
+                const checked = selected.includes(Number(b.id)) ? 'checked' : '';
+                return '<label class="branch-check-item"><input type="checkbox" value="' + b.id + '" ' + checked + '> ' + b.name + ' (' + (b.code || '') + ')</label>';
+            }).join('');
+            $('#uBranchesList').html(html || '<div class="readonly-note">No branches available.</div>');
+            $('#uBranchesList .branch-check-item input').on('change', function(){ syncPrimaryFromChecks(); });
+            syncPrimaryFromChecks();
+        }
+
+        if (canAssignBranches) {
             (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
-            (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranches').append(`<option value="${b.id}">${b.name}</option>`));
+            $('#singleBranchGroup').hide();
             $('#multiBranchGroup').show();
+            const defaultBranch = Number(currentUser && currentUser.branch_id || 0);
+            renderBranchChecks(branches, defaultBranch ? [defaultBranch] : []);
+            if (defaultBranch) {
+                const defaultCheckbox = document.querySelector('#uBranchesList .branch-check-item input[value="' + defaultBranch + '"]');
+                if (defaultCheckbox) defaultCheckbox.checked = true;
+                syncPrimaryFromChecks();
+            }
         } else {
             if (branches.length) {
                 branches.forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
@@ -126,11 +156,11 @@
                     $('#uLoginId').val(u.login_id||'').prop('readonly', true);
                     $('#uRole').val(u.role||'');
                     $('#uBranch').val(u.branch_id||'');
-                    if (isSuperAdmin) {
+                    if (canAssignBranches) {
                         const selected = Array.isArray(u.branch_ids) ? u.branch_ids.map(String) : [];
-                        $('#uBranches option').each(function(){ this.selected = selected.includes(this.value); });
+                        renderBranchChecks(branches, selected.map(Number));
                         if (!selected.length && u.branch_id) {
-                            $('#uBranches').val([String(u.branch_id)]);
+                            renderBranchChecks(branches, [Number(u.branch_id)]);
                         }
                     } else {
                         $('#uBranch').prop('disabled', true);
@@ -154,28 +184,28 @@
         window.saveUser=async function(){
             const login_id=$('#uLoginId').val().trim();
             const role=$('#uRole').val();
-            const branch_id=parseInt($('#uBranch').val())||0;
-            const branch_ids = $('#uBranches').val() || [];
+            const branch_ids = getCheckedBranchIds();
+            const branch_id=canAssignBranches ? (branch_ids[0] || 0) : (parseInt($('#uBranch').val())||0);
             const password=$('#uPassword').val();
             const linked_id=parseInt($('#uLinkedId').val())||null;
             const is_active=$('#uActive').is(':checked') ? 1 : 0;
             if(!login_id){showToast('Enter login ID','error');return;}
             if(!role){showToast('Select role','error');return;}
-            if(isSuperAdmin){
-                if(!branch_id){showToast('Select primary branch','error');return;}
+            if(canAssignBranches){
                 if(!branch_ids.length){showToast('Assign at least one branch','error');return;}
+                if(!branch_id){showToast('Select at least one branch','error');return;}
             } else if(!branch_id){
                 showToast('Select branch','error');return;
             }
             if(!editId && password.length<6){showToast('Password must be at least 6 characters','error');return;}
             const data = editId ? { is_active } : { branch_id, role, login_id, linked_id };
-            if (isSuperAdmin) {
+            if (canAssignBranches) {
                 const parsedBranchIds = branch_ids.map(v => parseInt(v)).filter(Boolean);
                 if (!parsedBranchIds.includes(branch_id)) parsedBranchIds.unshift(branch_id);
                 data.branch_ids = parsedBranchIds;
             }
-            if(!editId || (currentUser && currentUser.role === 'super_admin')) data.role = role;
-            if (editId && isSuperAdmin) data.branch_id = branch_id;
+            if(!editId || isSuperAdmin || isBranchAdmin) data.role = role;
+            if (editId && (isSuperAdmin || isBranchAdmin)) data.branch_id = branch_id;
             if(password) data.password = password;
             try {
                 if(editId){ await updateUser(editId, data); }
