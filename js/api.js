@@ -14,22 +14,25 @@ function requireAuth() {
 }
 
 async function api(endpoint, options = {}) {
+    const skipSessionInjection = options.skipSessionInjection === true;
+    const fetchOptions = { ...options };
+    delete fetchOptions.skipSessionInjection;
     const token = getToken();
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    const headers = { 'Content-Type': 'application/json', ...(fetchOptions.headers || {}) };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const method = (options.method || 'GET').toUpperCase();
-    if (method === 'GET' && typeof getSelectedSession === 'function') {
+    const method = (fetchOptions.method || 'GET').toUpperCase();
+    if (!skipSessionInjection && method === 'GET' && typeof getSelectedSession === 'function') {
         const sess = getSelectedSession();
         if (sess && !endpoint.includes('session=')) {
-            const sessionEndpoints = ['/api/students', '/api/exams', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise'];
+            const sessionEndpoints = ['/api/students', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise'];
             if (sessionEndpoints.some(ep => endpoint.startsWith(ep) && (endpoint === ep || endpoint.charAt(ep.length) === '?'))) {
                 endpoint += (endpoint.includes('?') ? '&' : '?') + 'session=' + encodeURIComponent(sess);
             }
         }
     }
 
-    const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+    const res = await fetch(`${API_BASE}${endpoint}`, { ...fetchOptions, headers });
     if (res.status === 401 && !endpoint.includes('/auth/login')) {
         clearAuth(); window.location.href = '/'; return null;
     }
@@ -99,7 +102,23 @@ async function getTransportMappings(filters = {}) {
 async function createTransportMapping(data) { return api('/api/transport-mapping', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateTransportMapping(id, data) { return api(`/api/transport-mapping/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteTransportMapping(id) { return api(`/api/transport-mapping/${id}`, { method: 'DELETE' }); }
-async function getExamNames() { return getMasterData('exam_names'); }
+async function getExamNames(filters = {}) {
+    let list = [];
+    try {
+        list = await getMasterData('exam_names');
+    } catch(e) {
+        list = [];
+    }
+    if (Array.isArray(list) && list.length) return list;
+    const exams = await getExams(filters);
+    if (!Array.isArray(exams)) return [];
+    return exams.map(exam => ({
+        id: exam.id,
+        name: exam.name || exam.title || '',
+        session: exam.session || '',
+        status: exam.status || 'Published'
+    }));
+}
 async function getNotices() { return getMasterData('notices'); }
 async function getHolidays() { return getMasterData('holidays'); }
 async function getAcademicSessions() { return getMasterData('academic_sessions'); }
@@ -200,8 +219,27 @@ async function saveResultDetail(data) {
 }
 
 async function getExams(filters = {}) {
-    const params = new URLSearchParams(filters).toString();
-    return api(`/api/exams${params ? '?' + params : ''}`);
+    const payload = { ...filters };
+    if (!payload.session && typeof getSelectedSession === 'function') {
+        const selectedSession = getSelectedSession();
+        if (selectedSession) payload.session = selectedSession;
+    }
+    if (!payload.branch_id && typeof getSelectedBranch === 'function') {
+        const selectedBranch = getSelectedBranch();
+        if (selectedBranch) payload.branch_id = selectedBranch;
+    }
+
+    let params = new URLSearchParams(payload).toString();
+    let rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+
+    if ((!Array.isArray(rows) || rows.length === 0) && !filters.session && payload.session) {
+        const retryPayload = { ...payload };
+        delete retryPayload.session;
+        params = new URLSearchParams(retryPayload).toString();
+        rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+    }
+
+    return rows;
 }
 async function createExam(data) { return api('/api/exams', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateExam(id, data) { return api(`/api/exams/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }

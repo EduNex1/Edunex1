@@ -2997,16 +2997,23 @@ router.get('/api/fee-carry-forward', async (req, env) => {
 router.get('/api/exams', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
-    if (!['super_admin','branch_admin','teacher','staff'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    if (!['super_admin','branch_admin','teacher','staff','student','parent'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const url = new URL(req.url);
     let q = 'SELECT * FROM exams WHERE 1=1';
     const b = [];
-    const branchId = url.searchParams.get('branch_id');
+    const branchId = Number(url.searchParams.get('branch_id') || 0);
     if (user.role === 'super_admin') {
-        if (branchId && branchId !== 'All') { q += ' AND branch_id=?'; b.push(branchId); }
+        if (branchId) {
+            q += ' AND branch_id=?';
+            b.push(branchId);
+        }
     } else {
+        const assignedBranchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        const selectedBranchId = branchId && assignedBranchIds.includes(branchId)
+            ? branchId
+            : Number(user.branch_id || assignedBranchIds[0] || 0);
         q += ' AND branch_id=?';
-        b.push(user.branch_id);
+        b.push(selectedBranchId);
     }
     const session = url.searchParams.get('session');
     if (session && session !== 'All') { q += ' AND session=?'; b.push(session); }
