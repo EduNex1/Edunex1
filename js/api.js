@@ -102,22 +102,33 @@ async function getTransportMappings(filters = {}) {
 async function createTransportMapping(data) { return api('/api/transport-mapping', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateTransportMapping(id, data) { return api(`/api/transport-mapping/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
 async function deleteTransportMapping(id) { return api(`/api/transport-mapping/${id}`, { method: 'DELETE' }); }
-async function getExamNames(filters = {}) {
-    let list = [];
+async function fetchExamNamesMaster(branchId) {
     try {
-        list = await getMasterData('exam_names');
-    } catch(e) {
-        list = [];
+        const rows = await getMasterData('exam_names', branchId || undefined);
+        return Array.isArray(rows) ? rows : [];
+    } catch (e) {
+        return [];
     }
-    if (Array.isArray(list) && list.length) return list;
-    const exams = await getExams(filters);
-    if (!Array.isArray(exams)) return [];
-    return exams.map(exam => ({
-        id: exam.id,
-        name: exam.name || exam.title || '',
-        session: exam.session || '',
-        status: exam.status || 'Published'
-    }));
+}
+
+function mapExamRowsToNames(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows
+        .map(exam => ({
+            id: exam.id,
+            name: exam.name || exam.title || '',
+            session: exam.session || '',
+            status: exam.status || 'Published'
+        }))
+        .filter(exam => exam.name);
+}
+
+async function getExamNames(filters = {}) {
+    const branchId = (filters && filters.branch_id) || (typeof getSelectedBranch === 'function' ? getSelectedBranch() : '');
+    const master = await fetchExamNamesMaster(branchId);
+    if (master.length) return master;
+    const exams = await getExams({ ...filters, useMasterFallback: false });
+    return mapExamRowsToNames(exams);
 }
 async function getNotices() { return getMasterData('notices'); }
 async function getHolidays() { return getMasterData('holidays'); }
@@ -220,6 +231,9 @@ async function saveResultDetail(data) {
 
 async function getExams(filters = {}) {
     const payload = { ...filters };
+    const useMasterFallback = payload.useMasterFallback !== false;
+    delete payload.useMasterFallback;
+
     if (!payload.session && typeof getSelectedSession === 'function') {
         const selectedSession = getSelectedSession();
         if (selectedSession) payload.session = selectedSession;
@@ -239,7 +253,30 @@ async function getExams(filters = {}) {
         rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
     }
 
-    return rows;
+    if ((!Array.isArray(rows) || rows.length === 0) && payload.branch_id) {
+        const retryPayload = { ...payload };
+        delete retryPayload.branch_id;
+        params = new URLSearchParams(retryPayload).toString();
+        rows = await api(`/api/exams${params ? '?' + params : ''}`, { skipSessionInjection: true });
+    }
+
+    if ((!Array.isArray(rows) || rows.length === 0) && useMasterFallback) {
+        const branchId = (filters && filters.branch_id) || payload.branch_id || (typeof getSelectedBranch === 'function' ? getSelectedBranch() : '');
+        const master = await fetchExamNamesMaster(branchId);
+        if (master.length) {
+            return master
+                .map((exam, idx) => ({
+                    id: exam.id || ('m_' + idx),
+                    name: exam.name || exam.title || '',
+                    title: exam.name || exam.title || '',
+                    session: exam.session || payload.session || '',
+                    status: exam.status || 'Published'
+                }))
+                .filter(exam => exam.name);
+        }
+    }
+
+    return Array.isArray(rows) ? rows : [];
 }
 async function createExam(data) { return api('/api/exams', { method: 'POST', body: JSON.stringify(data) }); }
 async function updateExam(id, data) { return api(`/api/exams/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
