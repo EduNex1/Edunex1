@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="table-card"><div class="table-responsive" style="padding:0 2px 10px;">
-                        <table class="list-table"><thead><tr><th style="width:70px">Action</th><th>Login ID</th><th>Role</th><th>Status</th><th>Last Login</th><th>Branch</th><th>Created</th></tr></thead><tbody id="listBody"></tbody></table>
+                        <table class="list-table"><thead><tr><th style="width:70px">Action</th><th>Login ID</th><th>Role</th><th>Status</th><th>Last Login</th><th>Branches</th><th>Created</th></tr></thead><tbody id="listBody"></tbody></table>
                     </div></div>
                 </div></div>
             </div>
@@ -67,6 +67,13 @@
             }
             const rows = list.map(u=>{
                 const br = allBranches.find(b=>b.id===u.branch_id);
+                const branchIds = Array.isArray(u.branch_ids) ? u.branch_ids : [];
+                const branchBadges = branchIds.length
+                    ? branchIds.map(id => {
+                        const rb = allBranches.find(b => Number(b.id) === Number(id));
+                        return rb ? '<span class="branch-badge" style="margin-right:4px;">' + rb.name + '</span>' : '';
+                    }).join('')
+                    : (br ? '<span class="branch-badge">' + br.name + '</span>' : (u.branch_name || '—'));
                 const createdAt = u.created_at ? String(u.created_at).replace('T',' ').slice(0,19) : '—';
                 const lastLogin = u.last_login ? String(u.last_login).replace('T',' ').slice(0,19) : '—';
                 return `<tr>
@@ -75,7 +82,7 @@
                     <td>${u.role||'—'}</td>
                     <td><span class="status-badge ${u.is_active ? 'status-active' : 'status-inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>${lastLogin}</td>
-                    <td>${br?'<span class="branch-badge">'+br.name+'</span>':(u.branch_name||'—')}</td>
+                        <td>${branchBadges}</td>
                     <td>${createdAt}</td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="7" class="text-center text-muted" style="padding:30px;">No users found</td></tr>');

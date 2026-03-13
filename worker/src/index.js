@@ -483,9 +483,18 @@ router.get('/api/users', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (user.role === 'super_admin') {
         const { results } = await env.DB.prepare('SELECT u.id, u.login_id, u.role, u.branch_id, u.is_active, u.last_login, u.created_at, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id ORDER BY u.created_at DESC').all();
+        for (const row of results || []) {
+            row.branch_ids = await getUserAssignedBranchIds(env, row.id, row.branch_id);
+        }
         return json(results);
     } else if (user.role === 'branch_admin') {
-        const { results } = await env.DB.prepare('SELECT u.id, u.login_id, u.role, u.branch_id, u.is_active, u.last_login, u.created_at, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id WHERE u.branch_id = ? ORDER BY u.created_at DESC').bind(user.branch_id).all();
+        const branchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+        if (!branchIds.length) return json([]);
+        const placeholders = branchIds.map(() => '?').join(',');
+        const { results } = await env.DB.prepare(`SELECT u.id, u.login_id, u.role, u.branch_id, u.is_active, u.last_login, u.created_at, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id WHERE u.branch_id IN (${placeholders}) ORDER BY u.created_at DESC`).bind(...branchIds).all();
+        for (const row of results || []) {
+            row.branch_ids = await getUserAssignedBranchIds(env, row.id, row.branch_id);
+        }
         return json(results);
     }
     return json({ error: 'Forbidden' }, 403);

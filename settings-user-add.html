@@ -57,6 +57,11 @@
                                 <select class="form-control" id="uBranch"><option value="">— Select Branch —</option></select>
                                 <div class="readonly-note" id="branchReadonlyNote" style="display:none;">Branch cannot be changed from this edit form in the current API.</div>
                             </div>
+                            <div class="col-lg-8 col-md-12 col-12 form-group" id="multiBranchGroup" style="display:none;">
+                                <label class="form-label-sm">Assigned Branches</label>
+                                <select class="form-control" id="uBranches" multiple style="height:110px;"></select>
+                                <div class="readonly-note">For Branch Admin or staff roles, assign one or multiple branches. Primary branch will be used as default.</div>
+                            </div>
                             <div class="col-lg-4 col-md-6 col-12 form-group" id="pwdGroup">
                                 <label class="form-label-sm">Password <span style="color:red">*</span></label>
                                 <div style="position:relative;">
@@ -96,6 +101,8 @@
 
         if (isSuperAdmin) {
             (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
+            (Array.isArray(branches)?branches:[]).forEach(b=>$('#uBranches').append(`<option value="${b.id}">${b.name}</option>`));
+            $('#multiBranchGroup').show();
         } else {
             if (branches.length) {
                 branches.forEach(b=>$('#uBranch').append(`<option value="${b.id}">${b.name}</option>`));
@@ -118,12 +125,21 @@
                     $('#editId').val(u.id);
                     $('#uLoginId').val(u.login_id||'').prop('readonly', true);
                     $('#uRole').val(u.role||'');
-                    $('#uBranch').val(u.branch_id||'').prop('disabled', true);
+                    $('#uBranch').val(u.branch_id||'');
+                    if (isSuperAdmin) {
+                        const selected = Array.isArray(u.branch_ids) ? u.branch_ids.map(String) : [];
+                        $('#uBranches option').each(function(){ this.selected = selected.includes(this.value); });
+                        if (!selected.length && u.branch_id) {
+                            $('#uBranches').val([String(u.branch_id)]);
+                        }
+                    } else {
+                        $('#uBranch').prop('disabled', true);
+                    }
                     $('#uLinkedId').prop('disabled', true);
                     $('#uActive').prop('checked', !!u.is_active);
                     $('#loginReadonlyNote').show();
                     $('#linkedReadonlyNote').show();
-                    $('#branchReadonlyNote').show();
+                    if (!isSuperAdmin) $('#branchReadonlyNote').show();
                     $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit User — '+(u.login_id||''));
                     $('#pageMode').text('Edit User');
                     if(currentUser && currentUser.role !== 'super_admin') $('#uRole').prop('disabled', true);
@@ -139,15 +155,27 @@
             const login_id=$('#uLoginId').val().trim();
             const role=$('#uRole').val();
             const branch_id=parseInt($('#uBranch').val())||0;
+            const branch_ids = $('#uBranches').val() || [];
             const password=$('#uPassword').val();
             const linked_id=parseInt($('#uLinkedId').val())||null;
             const is_active=$('#uActive').is(':checked') ? 1 : 0;
             if(!login_id){showToast('Enter login ID','error');return;}
             if(!role){showToast('Select role','error');return;}
-            if(!branch_id){showToast('Select branch','error');return;}
+            if(isSuperAdmin){
+                if(!branch_id){showToast('Select primary branch','error');return;}
+                if(!branch_ids.length){showToast('Assign at least one branch','error');return;}
+            } else if(!branch_id){
+                showToast('Select branch','error');return;
+            }
             if(!editId && password.length<6){showToast('Password must be at least 6 characters','error');return;}
             const data = editId ? { is_active } : { branch_id, role, login_id, linked_id };
+            if (isSuperAdmin) {
+                const parsedBranchIds = branch_ids.map(v => parseInt(v)).filter(Boolean);
+                if (!parsedBranchIds.includes(branch_id)) parsedBranchIds.unshift(branch_id);
+                data.branch_ids = parsedBranchIds;
+            }
             if(!editId || (currentUser && currentUser.role === 'super_admin')) data.role = role;
+            if (editId && isSuperAdmin) data.branch_id = branch_id;
             if(password) data.password = password;
             try {
                 if(editId){ await updateUser(editId, data); }
