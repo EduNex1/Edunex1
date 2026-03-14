@@ -845,8 +845,9 @@
                 if (section && section !== 'All') students = students.filter(s => s.section === section);
                 const orderBy = $('#orderBy').val();
                 if (orderBy === 'rollNo') students.sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
-                else if (orderBy === 'name') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                else if (orderBy === 'admissionNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
+                else if (orderBy === 'nameAZ') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                else if (orderBy === 'nameZA') students.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                else if (orderBy === 'admNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
                 renderStudentList(students);
             });
 
@@ -931,7 +932,7 @@
                     const cn = cls ? cls.name : '-';
                     const dob = s.dob ? new Date(s.dob).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
                     const sess = s.session || currentSession.name || '';
-                    const bg = s.blood_group || 'A+';
+                    const bg = s.blood_group || '-';
 
                     if (currentOrientation === 'portrait') {
                         container.append(`

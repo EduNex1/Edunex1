@@ -69,6 +69,10 @@
                                     <label class="form-label-sm">Fee Category</label>
                                     <select class="form-control" id="fCategory"></select>
                                 </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Session</label>
+                                    <select class="form-control" id="fSession"></select>
+                                </div>
                                 <div class="col-lg-6 col-md-6 col-12 form-group d-flex align-items-end" style="gap:8px;">
                                     <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchSlabs()"><i class="fas fa-search"></i> Search</button>
                                     <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="clearFilter()"><i class="fas fa-redo"></i> Clear</button>
@@ -82,6 +86,7 @@
                             <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;" id="slabFormTitle"><i class="fas fa-plus-circle"></i> Add Fee Slab</h6>
                             <input type="hidden" id="editClassId">
                             <input type="hidden" id="editCategory">
+                            <input type="hidden" id="editSession">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
                                     <label class="form-label-sm">Fee Category</label>
@@ -90,6 +95,10 @@
                                 <div class="col-lg-3 col-md-4 col-6 form-group">
                                     <label class="form-label-sm">Class</label>
                                     <select class="form-control" id="sClass"><option value="">— Select —</option></select>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">Session</label>
+                                    <select class="form-control" id="sSession"></select>
                                 </div>
                             </div>
                             <div id="amountFields" style="margin-top:8px;"></div>
@@ -145,7 +154,13 @@
         initPage('fee-amount-slab');
 
         let classCache = [], particularCache = [], slabRows = [];
-        try { [classCache, particularCache, slabRows] = await Promise.all([getClasses(), getFeeParticulars(), getFeeSlabs()]); } catch(e) {}
+        try {
+            await Promise.all([
+                populateSessionDropdown(document.getElementById('fSession'), false),
+                populateSessionDropdown(document.getElementById('sSession'), false)
+            ]);
+            [classCache, particularCache, slabRows] = await Promise.all([getClasses(), getFeeParticulars(), getFeeSlabs()]);
+        } catch(e) {}
 
         let categories = ['Default', ...new Set(slabRows.map(r => r.category).filter(c => c && c !== 'Default'))];
         categories.forEach(c => {
@@ -154,11 +169,17 @@
         });
         classCache.forEach(c => $('#sClass').append(`<option value="${c.id}">Class ${c.name}</option>`));
 
-        function groupSlabs(rows) {
+        function getSelectedSession() {
+            return $('#fSession').val() || '';
+        }
+
+        function groupSlabs(rows, session) {
             const map = {};
             rows.forEach(r => {
-                const key = r.class_id + '|' + (r.category || 'Default');
-                if (!map[key]) map[key] = { class_id: r.class_id, category: r.category || 'Default', amounts: {} };
+                const slabSess = r.session || '';
+                if (session && slabSess !== session) return;
+                const key = r.class_id + '|' + (r.category || 'Default') + '|' + slabSess;
+                if (!map[key]) map[key] = { class_id: r.class_id, category: r.category || 'Default', session: slabSess, amounts: {} };
                 map[key].amounts[r.particular_id] = r.amount;
             });
             return Object.values(map);
@@ -182,7 +203,7 @@
         }
 
         function buildTableHeader() {
-            let th = '<tr><th style="width:50px">Sr No.</th><th>Fee Category</th><th>Class</th>';
+            let th = '<tr><th style="width:50px">Sr No.</th><th>Fee Category</th><th>Session</th><th>Class</th>';
             getNonTransportParticulars().forEach(p => {
                 const short = p.name + (p.mode ? ' (' + p.mode.charAt(0) + ')' : '');
                 th += `<th class="text-center">${short}</th>`;
@@ -193,13 +214,14 @@
 
         function loadList(category) {
             const cat = category || $('#fCategory').val() || 'Default';
-            const grouped = groupSlabs(slabRows).filter(s => s.category === cat);
+            const sess = getSelectedSession();
+            const grouped = groupSlabs(slabRows, sess).filter(s => s.category === cat);
 
             buildTableHeader();
 
             if (grouped.length === 0) {
-                const colCount = getNonTransportParticulars().length + 4;
-                $('#slabBody').html(`<tr><td colspan="${colCount}" class="text-center text-muted" style="padding:30px;">No fee slabs found for this category</td></tr>`);
+                const colCount = getNonTransportParticulars().length + 5;
+                $('#slabBody').html(`<tr><td colspan="${colCount}" class="text-center text-muted" style="padding:30px;">No fee slabs found for this category / session</td></tr>`);
                 return;
             }
 
@@ -212,16 +234,18 @@
                     total += amt;
                     tds += `<td class="text-center">${amt ? '₹' + amt.toLocaleString() : '—'}</td>`;
                 });
+                const sessDisp = s.session || '—';
                 return `<tr>
                     <td class="text-center">${i + 1}</td>
                     <td>${s.category}</td>
+                    <td>${sessDisp}</td>
                     <td><strong>Class ${cl ? cl.name : '—'}</strong></td>
                     ${tds}
                     <td class="text-center"><strong style="color:#0d1b4a;">₹${total.toLocaleString()}</strong></td>
                     <td>
-                        <button class="action-btn action-btn-print" title="Preview & Print" onclick="previewSlab(${s.class_id},'${s.category}')"><i class="fas fa-print"></i></button>
-                        <button class="action-btn action-btn-edit" title="Edit" onclick="editSlab(${s.class_id},'${s.category}')"><i class="fas fa-pen"></i></button>
-                        <button class="action-btn action-btn-delete" title="Delete" onclick="removeSlab(${s.class_id},'${s.category}')"><i class="fas fa-trash-alt"></i></button>
+                        <button class="action-btn action-btn-print" title="Preview & Print" onclick="previewSlab(${s.class_id},'${s.category}','${s.session}')"><i class="fas fa-print"></i></button>
+                        <button class="action-btn action-btn-edit" title="Edit" onclick="editSlab(${s.class_id},'${s.category}','${s.session}')"><i class="fas fa-pen"></i></button>
+                        <button class="action-btn action-btn-delete" title="Delete" onclick="removeSlab(${s.class_id},'${s.category}','${s.session}')"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>`;
             }).join('');
@@ -234,7 +258,9 @@
         window.showAddForm = function() {
             $('#editClassId').val('');
             $('#editCategory').val('');
+            $('#editSession').val('');
             $('#sCategory').val($('#fCategory').val() || 'Default');
+            $('#sSession').val($('#fSession').val() || '');
             $('#sClass').val('');
             buildAmountFields();
             $('#slabFormTitle').html('<i class="fas fa-plus-circle"></i> Add Fee Slab');
@@ -246,14 +272,17 @@
             $('#addSection').slideUp(200);
             $('#editClassId').val('');
             $('#editCategory').val('');
+            $('#editSession').val('');
         };
 
         window.submitSlab = async function() {
             const category = $('#sCategory').val();
             const classId = parseInt($('#sClass').val()) || 0;
+            const session = $('#sSession').val() || '';
 
             if (!category) { showToast('Select a fee category', 'error'); return; }
             if (!classId) { showToast('Select a class', 'error'); return; }
+            if (!session) { showToast('Select a session', 'error'); return; }
 
             const slabs = [];
             let hasAny = false;
@@ -266,42 +295,53 @@
 
             slabs.forEach(s => s.category = category);
 
+            const editingClassId = $('#editClassId').val();
+            const editingCategory = $('#editCategory').val();
+            const editingSession = $('#editSession').val();
+
             try {
-                await saveFeeSlabs({ slabs });
-                showToast($('#editClassId').val() ? 'Fee slab updated' : 'Fee slab added', 'success');
+                if (editingClassId) {
+                    await deleteFeeSlabsByClass(editingClassId, editingCategory, editingSession);
+                }
+                await saveFeeSlabs({ slabs, session });
+                showToast(editingClassId ? 'Fee slab updated' : 'Fee slab added', 'success');
                 slabRows = await getFeeSlabs();
                 cancelAdd();
                 loadList();
             } catch(e) { showToast('Error saving slab', 'error'); }
         };
 
-        window.editSlab = function(classId, category) {
+        window.editSlab = function(classId, category, session) {
+            const sess = session || '';
             const grouped = groupSlabs(slabRows);
-            const s = grouped.find(x => x.class_id === classId && x.category === category);
+            const s = grouped.find(x => x.class_id === classId && x.category === category && (x.session || '') === sess);
             if (!s) return;
             $('#editClassId').val(classId);
             $('#editCategory').val(category);
+            $('#editSession').val(sess);
             $('#sCategory').val(s.category);
             $('#sClass').val(s.class_id);
+            $('#sSession').val(sess);
             buildAmountFields(s.amounts);
             $('#slabFormTitle').html('<i class="fas fa-edit"></i> Edit Fee Slab');
             $('#addSection').slideDown(200);
             $('html, body').animate({ scrollTop: $('#addSection').offset().top - 80 }, 300);
         };
 
-        window.removeSlab = async function(classId, category) {
+        window.removeSlab = async function(classId, category, session) {
             if (!confirm('Delete this fee slab?')) return;
             try {
-                await deleteFeeSlabsByClass(classId, category);
+                await deleteFeeSlabsByClass(classId, category, session || '');
                 slabRows = await getFeeSlabs();
                 loadList();
                 showToast('Fee slab deleted', 'success');
             } catch(e) { showToast('Error deleting slab', 'error'); }
         };
 
-        window.previewSlab = function(classId, category) {
+        window.previewSlab = function(classId, category, session) {
+            const sess = session || '';
             const grouped = groupSlabs(slabRows);
-            const s = grouped.find(x => x.class_id === classId && x.category === category);
+            const s = grouped.find(x => x.class_id === classId && x.category === category && (x.session || '') === sess);
             if (!s) return;
             const cl = classCache.find(c => c.id === s.class_id);
             let total = 0;
@@ -324,7 +364,7 @@
             $('#printBody').html(`
                 <div style="text-align:center;margin-bottom:16px;">
                     <h5 style="font-size:16px;font-weight:800;color:#0d1b4a;margin:0;">Fee Amount Slab</h5>
-                    <p style="font-size:11px;color:#888;margin:4px 0;">${s.category} Category</p>
+                    <p style="font-size:11px;color:#888;margin:4px 0;">${s.category} Category — Session: ${sess || '—'}</p>
                     <p style="font-size:13px;font-weight:700;color:#333;margin:4px 0;">Class: ${cl ? cl.name : '—'}</p>
                 </div>
                 <table style="width:100%;border-collapse:collapse;">

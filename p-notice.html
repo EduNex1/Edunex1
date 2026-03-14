@@ -27,13 +27,6 @@
                     <h3>Notices</h3>
                     <ul><li><a href="/parent-dashboard">Home</a></li><li>Academics > Notices</li></ul>
                 </div>
-            
-        <div class="chart-card" style="margin-bottom:16px;">
-            <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
-            <div class="chart-card-body" style="padding:12px 16px;">
-                <select id="childSelect" class="form-control" style="max-width:350px;"><option value="">— loading —</option></select>
-            </div>
-        </div>
 
         <div class="chart-card">
             <div class="chart-card-header"><i class="fas fa-bullhorn"></i> Notice Board</div>
@@ -58,19 +51,20 @@
     $(async function () {
         initPage('p-notice');
         try {
-            const children = await getMyChildren() || [];
-            const cs = $('#childSelect').empty();
-            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} \u2014 Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
             const notices = await getNotices() || [];
             if (!notices.length) { $('#noticeArea').html('<p style="text-align:center;color:#888;">No notices posted yet.</p>'); return; }
             const colors = ['#c62828','#1565c0','#2e7d32','#ef6c00','#7b1fa2'];
             let html = '';
             notices.forEach((n, i) => {
                 const c = colors[i % colors.length];
-                html += `<div style="margin-bottom:12px;padding:16px;background:#f8f9fa;border-radius:10px;border-left:4px solid ${c};"><div style="font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:6px;">${n.title || 'Notice'}</div><p style="font-size:12px;color:#555;margin:0;">${n.description || n.content || ''}</p><div style="font-size:10px;color:#888;margin-top:6px;">Posted: ${n.date || n.created_at || ''}</div></div>`;
+                html += `<div style="margin-bottom:12px;padding:16px;background:#f8f9fa;border-radius:10px;border-left:4px solid ${c};"><div style="font-size:14px;font-weight:700;color:#0d1b4a;margin-bottom:6px;">${escHtml(n.title) || 'Notice'}</div><p style="font-size:12px;color:#555;margin:0;">${escHtml(n.description || n.content || '')}</p><div style="font-size:10px;color:#888;margin-top:6px;">Posted: ${n.date || n.created_at || ''}</div></div>`;
             });
             $('#noticeArea').html(html);
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#noticeArea').html('<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:8px;"></i><p>Unable to load notices. Please try again later.</p></div>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     </script>
 </body>

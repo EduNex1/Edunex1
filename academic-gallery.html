@@ -250,7 +250,7 @@
                     if (!file.type.startsWith('image/')) return;
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        selectedPhotos.push({ name: file.name, dataUrl: e.target.result });
+                        selectedPhotos.push({ name: file.name, dataUrl: e.target.result, file: file });
                         renderPreview();
                     };
                     reader.readAsDataURL(file);
@@ -282,7 +282,16 @@
                 if (!title) { showToast('Please enter a title', 'error'); return; }
                 if (!date) { showToast('Please select a date', 'error'); return; }
 
-                const photos = selectedPhotos.map(p => p.name);
+                const photos = [];
+                for (const p of selectedPhotos) {
+                    try {
+                        const result = await uploadFile(p.file);
+                        photos.push(result.url);
+                    } catch (uploadErr) {
+                        showToast('Error uploading ' + p.name, 'error');
+                        return;
+                    }
+                }
                 try {
                     const editId = parseInt($('#editId').val());
                     if (editId) {
@@ -341,6 +350,10 @@
                 if (!photos.length) { showToast('No photos in this album', 'error'); return; }
 
                 const imgs = photos.map((p, i) => {
+                    const isUrl = p.startsWith('http') || p.startsWith('/');
+                    if (isUrl) {
+                        return `<img src="${p}" alt="Photo ${i + 1}" title="Photo ${i + 1}">`;
+                    }
                     const hue = (i * 47 + 30) % 360;
                     return `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='hsl(${hue},60%25,85%25)' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.35em' fill='hsl(${hue},40%25,40%25)' font-family='sans-serif' font-size='12'%3E${p}%3C/text%3E%3C/svg%3E" alt="${p}" title="${p}">`;
                 }).join('');

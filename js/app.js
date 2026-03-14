@@ -462,7 +462,7 @@ function renderHeader(userName, role) {
     var loggedUser = typeof getUser === 'function' ? getUser() : null;
     var schoolName = (loggedUser && loggedUser.school_name) ? loggedUser.school_name : 'EduNex1';
     if (loggedUser) {
-        userName = loggedUser.login_id || userName;
+        userName = loggedUser.name || loggedUser.login_id || userName;
         var roleMap = { super_admin: 'Super Admin', branch_admin: 'Branch Admin', teacher: 'Teacher', student: 'Student', parent: 'Parent', staff: 'Staff' };
         role = roleMap[loggedUser.role] || role || 'Super Admin';
     } else {
@@ -495,6 +495,9 @@ function renderHeader(userName, role) {
             </li>`;
     }
 
+    var displayName = (loggedUser && loggedUser.name) ? loggedUser.name : userName;
+    var initials = displayName.split(' ').filter(function(w){return w;}).map(function(w){return w[0];}).join('').substring(0,2).toUpperCase() || '?';
+
     const html = `
     <div class="navbar navbar-expand-md header-menu-one custom-topbar">
         <div class="header-main-menu">
@@ -514,12 +517,12 @@ function renderHeader(userName, role) {
                             <h5 class="item-title">${userName}</h5>
                             <span>${role}</span>
                         </div>
-                        <div class="admin-img">
-                            <img src="img/figure/admin.jpg" alt="Admin">
+                        <div class="admin-img admin-img-initials">
+                            ${initials}
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href="${loggedUser && loggedUser.role === 'super_admin' ? '/super-admin-profile' : '/admin-profile'}"><i class="flaticon-user"></i>My Profile</a>
+                        <a class="dropdown-item" href="${(function(){if(!loggedUser) return '/admin-profile'; var r=loggedUser.role; if(r==='super_admin') return '/super-admin-profile'; if(r==='teacher') return '/t-my-profile'; if(r==='student') return '/s-my-profile'; if(r==='parent') return '/p-my-profile'; return '/admin-profile';})()}"><i class="flaticon-user"></i>My Profile</a>
                         <a class="dropdown-item" href="#" onclick="if(typeof logoutUser==='function'){logoutUser();}else{window.location.href='/';}return false;"><i class="flaticon-turn-off"></i>Log Out</a>
                     </div>
                 </li>
@@ -810,6 +813,30 @@ async function populateRouteDropdown(selectElement) {
     let html = '<option value="">Select Route (Optional)</option>';
     var routes = await _loadDropdownData('routes', getTransportRoutes);
     routes.forEach(function(r) { html += '<option value="' + r.id + '">' + r.name + '</option>'; });
+    selectElement.innerHTML = html;
+}
+
+async function populateHouseDropdown(selectElement) {
+    let html = '<option value="">Select</option>';
+    try {
+        var houses = await _loadDropdownData('houses', getHouses);
+        houses.forEach(function(h) { html += '<option value="' + h.name + '">' + h.name + '</option>'; });
+    } catch(e) { console.warn('Could not load houses:', e); }
+    selectElement.innerHTML = html;
+}
+
+async function populateStreamDropdown(selectElement) {
+    let html = '<option value="">Select</option>';
+    try {
+        var streams = await _loadDropdownData('streams', getStreams);
+        if (streams && streams.length) {
+            streams.forEach(function(s) { html += '<option value="' + s.name + '">' + s.name + '</option>'; });
+        } else {
+            html += '<option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="N/A">N/A</option>';
+        }
+    } catch(e) {
+        html += '<option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="N/A">N/A</option>';
+    }
     selectElement.innerHTML = html;
 }
 

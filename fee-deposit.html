@@ -344,8 +344,7 @@
             const user = JSON.parse(localStorage.getItem('vkis_user') || '{}');
             $('#schoolName').text(user.school_name || 'School Management System');
 
-            $('#selClass').on('change', async function () {
-                const classId = $(this).val();
+            async function loadSectionsForClass(classId) {
                 if (!classId) { $('#selSection').html('<option value="">Select Section</option>'); $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
                 try {
                     const studs = await getStudents({ class_id: classId, status: 'Active' });
@@ -354,17 +353,23 @@
                     $('#selStudent').html('<option value="">Select Student</option>');
                 } catch(e) { console.error(e); }
                 hideMonthPart();
-            });
+            }
 
-            $('#selSection').on('change', async function () {
-                const classId = $('#selClass').val();
-                const sec = $(this).val();
+            async function loadStudentsForSection(classId, sec) {
                 if (!classId || !sec) { $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
                 try {
                     const studs = await getStudents({ class_id: classId, section: sec, status: 'Active' });
                     $('#selStudent').html('<option value="">Select Student</option>' + studs.map(s => `<option value="${s.id}">${s.name} (${s.admission_no})</option>`).join(''));
                 } catch(e) { console.error(e); }
                 hideMonthPart();
+            }
+
+            $('#selClass').on('change', async function () {
+                await loadSectionsForClass($(this).val());
+            });
+
+            $('#selSection').on('change', async function () {
+                await loadStudentsForSection($('#selClass').val(), $(this).val());
             });
 
             $('#selStudent').on('change', async function () {
@@ -379,11 +384,11 @@
                     const allStudents = await getStudents({ status: 'Active' });
                     const stu = allStudents.find(s => (s.admission_no||'').toLowerCase() === admNo.toLowerCase());
                     if (!stu) { showToast('Student not found', 'error'); return; }
-                    $('#selClass').val(stu.class_id).trigger('change');
-                    setTimeout(() => {
-                        $('#selSection').val(stu.section).trigger('change');
-                        setTimeout(() => { $('#selStudent').val(stu.id).trigger('change'); }, 200);
-                    }, 200);
+                    $('#selClass').val(stu.class_id);
+                    await loadSectionsForClass(stu.class_id);
+                    $('#selSection').val(stu.section);
+                    await loadStudentsForSection(stu.class_id, stu.section);
+                    $('#selStudent').val(stu.id).trigger('change');
                 } catch(e) { showToast('Error: ' + e.message, 'error'); }
             });
 
@@ -448,13 +453,27 @@
                 $('#partAll').prop('checked', $('.part-cb').length === $('.part-cb:checked').length);
             });
 
-            $('#btnProceed').on('click', function () {
+            $('#btnProceed').on('click', async function () {
                 if (!selectedStudent) { showToast('Please select a student', 'error'); return; }
                 const month = $('#selMonth').val();
                 if (!month) { showToast('Please select a month', 'error'); return; }
                 const parts = [];
                 $('.part-cb:checked').each(function () { parts.push(parseInt($(this).val())); });
                 if (!parts.length) { showToast('Select at least one particular', 'error'); return; }
+
+                // Check if fee already paid for this month
+                try {
+                    var existingDeposits = await getFeeDeposits({ student_id: selectedStudent.id, month: month });
+                    if (Array.isArray(existingDeposits) && existingDeposits.length > 0) {
+                        var totalAlreadyPaid = existingDeposits.reduce(function(sum, d) { return sum + Number(d.received_amount || 0); }, 0);
+                        showConfirmModal('Already Paid', '<div style="text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:36px;color:#ef6c00;margin-bottom:10px;"></i><br><strong>' + selectedStudent.name + '</strong> has already paid <strong>₹' + totalAlreadyPaid.toLocaleString('en-IN') + '</strong> for <strong>' + month + '</strong>.<br><br>Do you still want to add another payment for this month?</div>', function() {
+                            buildReceipt(selectedStudent, month, parts);
+                            $('#receiptSection').slideDown(300);
+                            $('html, body').animate({ scrollTop: $('#receiptSection').offset().top - 20 }, 300);
+                        });
+                        return;
+                    }
+                } catch(e) { console.error('Deposit check error:', e); }
 
                 buildReceipt(selectedStudent, month, parts);
                 $('#receiptSection').slideDown(300);

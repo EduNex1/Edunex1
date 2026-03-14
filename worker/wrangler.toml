@@ -14,3 +14,5 @@ bucket_name = "vkis-school-uploads"
 [vars]
 JWT_SECRET = "schoolsync-secret-key-2026-change-in-production"
 DEFAULT_PASSWORD = "School@2026"
+# Set DEV_MODE to "true" for local development only; remove or set to "" in production
+DEV_MODE = "true"

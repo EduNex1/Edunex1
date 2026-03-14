@@ -174,7 +174,8 @@
             });
             cs.addEventListener('change', function () {
                 var cid = parseInt(this.value); var ss = document.getElementById('attSection'); ss.innerHTML = '<option value="">— Select Section —</option>';
-                teacherPermissions.filter(function (p) { return p.class_id === cid; }).forEach(function (p) { var o = document.createElement('option'); o.value = p.section_id; o.textContent = p.section_name; ss.appendChild(o); });
+                var addedSections = {};
+                teacherPermissions.filter(function (p) { return p.class_id === cid; }).forEach(function (p) { if (addedSections[p.section_id]) return; addedSections[p.section_id] = true; var o = document.createElement('option'); o.value = p.section_id; o.textContent = p.section_name; ss.appendChild(o); });
             });
 
             window.loadAttendance = async function () {
@@ -191,7 +192,7 @@
                 var sectionName = sec ? sec.name : sid;
 
                 var students = [];
-                try { students = await getStudents({ class_id: cid, section: sectionName, status: 'Active' }); } catch (e) { console.error('Failed to load students', e); }
+                try { students = await getStudents({ class_id: cid, section: sectionName, status: 'Active' }); } catch (e) { console.error('Failed to load students', e); showToast('Failed to load students', 'error'); }
 
                 var existing = [];
                 try { existing = await getStudentAttendance({ date: date, class_id: cid, section: sectionName }); } catch (e) {}

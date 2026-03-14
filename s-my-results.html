@@ -152,7 +152,10 @@
                     </div>
 
                     <div class="chart-card" style="margin-bottom:16px;">
-                        <div class="chart-card-header"><i class="fas fa-list-ol"></i> Subject-wise Results</div>
+                        <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <span><i class="fas fa-list-ol"></i> Subject-wise Results</span>
+                            <button class="btn btn-primary no-print" onclick="window.print()" style="font-size:12px;padding:4px 14px;"><i class="fas fa-print"></i> Print</button>
+                        </div>
                         <div class="chart-card-body">
                             <div class="table-responsive">
                                 <table class="recent-table">
@@ -196,7 +199,10 @@
             const exams = await getExamNames();
             const sel = $('#examSelect');
             (exams || []).forEach(e => sel.append(`<option value="${e.id}">${e.name}</option>`));
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            showToast('Unable to load results. Please try again.', 'error');
+        }
     });
 
     async function loadResult() {
@@ -236,7 +242,7 @@
 
             $('#noResult').hide();
             $('#resultArea').show();
-        } catch (e) { console.error(e); alert('Error loading results'); }
+        } catch (e) { console.error(e); showToast('Error loading results', 'error'); }
     }
     </script>
 </body>

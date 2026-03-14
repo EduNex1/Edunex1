@@ -440,7 +440,7 @@
                     tbody.append(`<tr>
                         <td style="font-weight:600;">${exam ? exam.name : (ds.exam_name || '-')}</td>
                         <td>${fmtDate(ds.publish_date)}</td>
-                        <td class="col-hide-md">—</td>
+                        <td class="col-hide-md">${ds.entry_count || 0}</td>
                         <td><span class="status-badge ${statusCls}">${ds.status}</span></td>
                         <td style="white-space:nowrap;">
                             <button class="action-btn print" onclick="printSheet(${ds.id})" title="Print"><i class="fas fa-print"></i></button>

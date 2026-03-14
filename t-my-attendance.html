@@ -97,7 +97,11 @@
     async function loadMyAttendance() {
         const user = getUser();
         const month = $('#attendanceMonth').val();
-        if (!user || !user.linked_id || !month) {
+        if (!user || !user.linked_id) {
+            $('#attendanceBody').html('<tr><td colspan="4" style="text-align:center;color:#c62828;padding:16px;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>Your account is not linked to a staff record. Please contact your administrator.</td></tr>');
+            return;
+        }
+        if (!month) {
             return;
         }
         const startDate = month + '-01';

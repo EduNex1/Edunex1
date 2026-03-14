@@ -27,15 +27,6 @@
                     <h3>Holidays</h3>
                     <ul><li><a href="/parent-dashboard">Home</a></li><li>Academics > Holidays</li></ul>
                 </div>
-            
-        <div class="chart-card" style="margin-bottom:16px;">
-            <div class="chart-card-header"><i class="fas fa-child"></i> Select Child</div>
-            <div class="chart-card-body" style="padding:12px 16px;">
-                <select id="childSelect" class="form-control" style="max-width:350px;">
-                    <option value="">— loading —</option>
-                </select>
-            </div>
-        </div>
 
         <div class="chart-card">
             <div class="chart-card-header"><i class="fas fa-umbrella-beach"></i> Holidays</div>
@@ -63,9 +54,6 @@
     $(async function () {
         initPage('p-holidays');
         try {
-            const children = await getMyChildren() || [];
-            const cs = $('#childSelect').empty();
-            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} \u2014 Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
             const holidays = await getHolidays() || [];
             if (!holidays.length) { $('#holidayBody').html('<tr><td colspan="4" style="text-align:center;color:#888;">No holidays found.</td></tr>'); return; }
             const typeColors = { National: '#2e7d32', Festival: '#ef6c00', Vacation: '#1565c0', Holiday: '#7b1fa2' };
@@ -73,10 +61,14 @@
             let html = '';
             holidays.forEach((h, i) => {
                 const t = h.type || 'Holiday', c = typeColors[t] || '#555', bg = typeBg[t] || '#f5f5f5';
-                html += `<tr><td>${i + 1}</td><td><strong>${h.name || h.title || '-'}</strong></td><td>${h.date || '-'}</td><td><span style="background:${bg};color:${c};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${t}</span></td></tr>`;
+                html += `<tr><td>${i + 1}</td><td><strong>${escHtml(h.name || h.title || '-')}</strong></td><td>${h.date || '-'}</td><td><span style="background:${bg};color:${c};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${escHtml(t)}</span></td></tr>`;
             });
             $('#holidayBody').html(html);
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#holidayBody').html('<tr><td colspan="4" class="text-center text-danger p-4">Unable to load holidays. Please try again later.</td></tr>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     </script>
 </body>

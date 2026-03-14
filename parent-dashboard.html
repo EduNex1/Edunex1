@@ -136,23 +136,29 @@
         const user = typeof getUser==='function'?getUser():null;
         if(user){
             const parentName = user.name || 'Parent';
-            document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+parentName+'!';
+            document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+escHtml(parentName)+'!';
             const b=document.getElementById('schoolNameBanner'); if(b&&user.school_name) b.textContent=user.school_name+' \u2014 Parent Portal';
         }
         try {
             children = await getMyChildren()||[];
             if(user && !user.name && children.length){
                 const pn = children[0].father_name || children[0].mother_name || 'Parent';
-                document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+pn+'!';
+                document.querySelector('.dashboard-welcome-text').innerHTML='<i class="fas fa-home" style="margin-right:6px;color:#ffd54f;"></i> Welcome, '+escHtml(pn)+'!';
             }
             const cs = $('#childSelect').empty();
-            children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}" data-sec="${c.section||''}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
+            children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}" data-sec="${c.section||''}">${escHtml(c.name)} \u2014 Class ${escHtml(c.class_name||'')}${c.section?'-'+escHtml(c.section):''}</option>`));
             if(children.length) loadDash();
             else {
                 $('#dashHw').html('<span style="color:#888;">No child linked to this parent account.</span>');
                 $('#dashExams').html('<span style="color:#888;">No exams available.</span>');
             }
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error('Parent dashboard init error:', e);
+            $('#childSelect').html('<option value="">-- unable to load --</option>');
+            $('#dashHw').html('<span style="color:#c62828;">Unable to load homework.</span>');
+            $('#dashExams').html('<span style="color:#c62828;">Unable to load exams.</span>');
+            if(typeof showToast==='function') showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     async function loadDash(){
         const sid = $('#childSelect').val();
@@ -164,11 +170,22 @@
             const deps = await getFeeDeposits({student_id:child.id})||[];
             const totalPaid = deps.reduce((sum,row)=>sum+Number(row.received_amount||0),0);
             const slabs = await getFeeSlabs(child.class_id)||[];
-            const slabTotal = slabs.reduce((sum,row)=>sum+Number(row.amount||0),0);
+            // Filter: exclude transport, match student category
+            const nonTransport = slabs.filter(function(x){ return !x.is_transport; });
+            const childCat = child.category || 'Default';
+            const catSlabs = nonTransport.filter(function(x){ return (x.category||'Default') === childCat; });
+            const finalSlabs = catSlabs.length ? catSlabs : nonTransport.filter(function(x){ return (x.category||'Default') === 'Default'; });
+            const slabTotal = finalSlabs.reduce(function(sum,x){
+                var mc; try { var mp = typeof x.months==='string'&&x.months ? JSON.parse(x.months) : (Array.isArray(x.months)?x.months:null); mc = Array.isArray(mp)?mp.length:12; } catch(e){ mc=12; }
+                return sum + Number(x.amount||0) * mc;
+            },0);
             const transportFee = Number(child.transport_fee||0);
             const oldBalance = Number(child.old_balance||0);
-            const totalFee = (slabTotal + transportFee) * 12;
-            const pending = Math.max(0,totalFee + oldBalance - totalPaid);
+            let totalFee = slabTotal + transportFee * 12;
+            if (!totalFee && Number(child.fee_amount||0) > 0) totalFee = Number(child.fee_amount);
+            const discs = await getFeeDiscounts(child.id)||[];
+            const totalDisc = discs.reduce((s,x)=>s+Number(x.amount||0),0);
+            const pending = Math.max(0,totalFee + oldBalance - totalPaid - totalDisc);
             $('#pFeePaid').text('\u20B9'+totalPaid.toLocaleString('en-IN'));
             $('#pFeeSub').html(pending<=0?'<span style="color:#43a047;">No dues \u2705</span>':'<span style="color:#c62828;">\u20B9'+pending.toLocaleString('en-IN')+' pending</span>');
 
@@ -178,14 +195,14 @@
                 let h='';
                 hw.slice(0,3).forEach(w=>{
                     const dueDate = w.due_date || w.submission_date || '';
-                    h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${w.subject_name||''}</strong> \u2014 ${w.title||''}</span>${dueDate?'<span class="badge badge-warning" style="font-size:10px;">Due: '+dueDate+'</span>':''}</div>`;
+                    h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${escHtml(w.subject_name||'')}</strong> \u2014 ${escHtml(w.title||'')}</span>${dueDate?'<span class="badge badge-warning" style="font-size:10px;">Due: '+escHtml(dueDate)+'</span>':''}</div>`;
                 });
                 $('#dashHw').html(h);
             }
 
             const exams = await getExams()||[];
             if(!exams.length) $('#dashExams').html('<span style="color:#888;">No upcoming exams.</span>');
-            else { let h=''; exams.slice(0,3).forEach(e=>{ h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${e.name||''}</strong></span></div>`; }); $('#dashExams').html(h); }
+            else { let h=''; exams.slice(0,3).forEach(e=>{ h+=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0;"><span><strong>${escHtml(e.name||'')}</strong></span></div>`; }); $('#dashExams').html(h); }
 
             try {
                 const att = await getStudentAttendance({student_id:child.id})||[];
@@ -194,10 +211,41 @@
                 const pct=total?Math.round(present*100/total):0;
                 $('#pAttPercent').text(pct+'%');
                 $('#pAttSub').text('Present: '+present+'/'+total+' days');
-            } catch(e) {}
+            } catch(e) {
+                console.error('Attendance load error:', e);
+                $('#pAttPercent').text('--');
+                $('#pAttSub').text('Unable to load');
+                if(typeof showToast==='function') showToast('Unable to load attendance data. Please try again.', 'error');
+            }
 
-            try { const res = await getExamResults({student_id:child.id})||[]; if(res.length){ const total=res.reduce((sum,row)=>sum+Number(row.total_marks||0),0); const max=res.reduce((sum,row)=>sum+Number(row.max_marks||100),0); const pct=max?Math.round(total*100/max):0; const grade=pct>=90?'A+':pct>=75?'A':pct>=60?'B':pct>=45?'C':'D'; $('#pLastExam').text(pct+'%'); $('#pExamSub').text(grade+' Grade'); } } catch(e){}
-        } catch(e){ console.error(e); }
+            try {
+                const res = await getExamResults({student_id:child.id})||[];
+                if(res.length){
+                    const total=res.reduce((sum,row)=>sum+Number(row.total_marks||0),0);
+                    const max=res.reduce((sum,row)=>sum+Number(row.max_marks||100),0);
+                    const pct=max?Math.round(total*100/max):0;
+                    const grade=pct>=90?'A+':pct>=75?'A':pct>=60?'B':pct>=45?'C':'D';
+                    $('#pLastExam').text(pct+'%');
+                    $('#pExamSub').text(grade+' Grade');
+                }
+            } catch(e){
+                console.error('Exam results load error:', e);
+                $('#pLastExam').text('--');
+                $('#pExamSub').text('Unable to load');
+                if(typeof showToast==='function') showToast('Unable to load exam results. Please try again.', 'error');
+            }
+        } catch(e){
+            console.error('Dashboard data load error:', e);
+            $('#pAttPercent').text('--');
+            $('#pAttSub').text('');
+            $('#pFeePaid').text('--');
+            $('#pFeeSub').text('');
+            $('#pLastExam').text('--');
+            $('#pExamSub').text('');
+            $('#dashHw').html('<span style="color:#c62828;">Unable to load homework.</span>');
+            $('#dashExams').html('<span style="color:#c62828;">Unable to load exams.</span>');
+            if(typeof showToast==='function') showToast('Unable to load data. Please try again.', 'error');
+        }
     }
     </script>
 </body>

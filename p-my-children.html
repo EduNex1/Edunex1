@@ -207,7 +207,11 @@
         async function loadChildren() {
             try {
                 children = await getMyChildren();
-            } catch(e) { children = []; }
+            } catch(e) {
+                console.error(e);
+                children = [];
+                showToast('Unable to load children data. Please try again.', 'error');
+            }
 
             if (children.length === 0) {
                 document.getElementById('childrenCards').innerHTML = '<div class="col-12"><div class="chart-card" style="text-align:center;padding:40px 20px;"><i class="fas fa-child" style="font-size:40px;color:#ccc;"></i><p class="mt-2" style="color:#888;">No children found linked to your account.</p></div></div>';
@@ -261,11 +265,12 @@
             ]);
 
             document.getElementById('quickActions').innerHTML =
-                '<a href="/p-fee-status" class="quick-item"><i class="fas fa-rupee-sign"></i><span>Fee Status</span></a>' +
-                '<a href="/p-results" class="quick-item"><i class="fas fa-chart-bar"></i><span>Results</span></a>' +
-                '<a href="/p-homework" class="quick-item"><i class="fas fa-book"></i><span>Homework</span></a>' +
-                '<a href="/p-timetable" class="quick-item"><i class="fas fa-clock"></i><span>Timetable</span></a>' +
-                '<a href="/p-transport" class="quick-item"><i class="fas fa-bus"></i><span>Transport</span></a>';
+                '<a href="/p-attendance?child_id=' + c.id + '" class="quick-item"><i class="fas fa-calendar-check"></i><span>Attendance</span></a>' +
+                '<a href="/p-fee-status?child_id=' + c.id + '" class="quick-item"><i class="fas fa-rupee-sign"></i><span>Fee Status</span></a>' +
+                '<a href="/p-results?child_id=' + c.id + '" class="quick-item"><i class="fas fa-chart-bar"></i><span>Results</span></a>' +
+                '<a href="/p-homework?child_id=' + c.id + '" class="quick-item"><i class="fas fa-book"></i><span>Homework</span></a>' +
+                '<a href="/p-timetable?child_id=' + c.id + '" class="quick-item"><i class="fas fa-clock"></i><span>Timetable</span></a>' +
+                '<a href="/p-transport?child_id=' + c.id + '" class="quick-item"><i class="fas fa-bus"></i><span>Transport</span></a>';
 
             document.getElementById('childDetail').style.display = 'block';
         }

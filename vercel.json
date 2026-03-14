@@ -77,6 +77,10 @@
     { "source": "/email-staff", "destination": "/email-staff.html" },
     { "source": "/email-report", "destination": "/email-report.html" },
 
+    { "source": "/sms-report", "destination": "/sms-report.html" },
+    { "source": "/sms-staff", "destination": "/sms-staff.html" },
+    { "source": "/sms-students", "destination": "/sms-students.html" },
+
     { "source": "/result-student-wise", "destination": "/result-student-wise.html" },
     { "source": "/result-subject-wise", "destination": "/result-subject-wise.html" },
     { "source": "/consolidated-marks", "destination": "/consolidated-marks.html" },
@@ -87,6 +91,7 @@
     { "source": "/add-class", "destination": "/add-class.html" },
 
     { "source": "/all-books", "destination": "/library-books.html" },
+    { "source": "/add-book", "destination": "/library-add-book.html" },
     { "source": "/library-books", "destination": "/library-books.html" },
     { "source": "/library-add-book", "destination": "/library-add-book.html" },
     { "source": "/library-book-type", "destination": "/library-book-type.html" },
@@ -179,7 +184,8 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" }
       ]
     }
   ]

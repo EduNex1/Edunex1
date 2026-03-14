@@ -330,6 +330,10 @@
                                                 <label>Section *</label>
                                                 <select class="form-control" id="sectionSelect"></select>
                                             </div>
+                                            <div class="col-lg-2 col-md-3 col-6 form-group">
+                                                <label>Session *</label>
+                                                <select class="form-control" id="sessionSelect"></select>
+                                            </div>
                                             <div class="col-lg-3 col-md-4 col-6 form-group">
                                                 <label>Date of Admission *</label>
                                                 <input type="text" class="form-control air-datepicker"
@@ -364,10 +368,6 @@
                                         <label>Stream</label>
                                         <select class="form-control" id="stream">
                                             <option value="">Select</option>
-                                            <option value="Science">Science</option>
-                                            <option value="Commerce">Commerce</option>
-                                            <option value="Arts">Arts</option>
-                                            <option value="N/A">N/A</option>
                                         </select>
                                     </div>
                                     <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
@@ -428,10 +428,6 @@
                                         <label>House</label>
                                         <select class="form-control" id="house">
                                             <option value="">Select</option>
-                                            <option value="Red">Red House</option>
-                                            <option value="Blue">Blue House</option>
-                                            <option value="Green">Green House</option>
-                                            <option value="Yellow">Yellow House</option>
                                         </select>
                                     </div>
                                     <div class="col-xl-2 col-lg-3 col-md-4 col-6 form-group">
@@ -769,8 +765,11 @@
 
             populateClassDropdown(document.getElementById('classSelect'), false);
             populateSectionDropdown(document.getElementById('sectionSelect'), false);
+            populateSessionDropdown(document.getElementById('sessionSelect'), false);
             populateReligionDropdown(document.getElementById('religion'));
             populateRouteDropdown(document.getElementById('routeSelect'));
+            populateHouseDropdown(document.getElementById('house'));
+            populateStreamDropdown(document.getElementById('stream'));
 
             const today = new Date();
             $('#admissionDate').val(String(today.getDate()).padStart(2, '0') + '/' + String(today.getMonth() + 1).padStart(2, '0') + '/' + today.getFullYear());
@@ -831,6 +830,48 @@
         });
 
         function getFormData(photoUrl) {
+            // Map radio button value to display name for id_type DB column
+            const idTypeVal = $('input[name="idType"]:checked').val() || 'aadharshila_id';
+            const idTypeMap = { unique_id: 'Unique ID', enrollment_no: 'Enrollment No.', aadharshila_id: 'Aadharshila ID' };
+
+            // Extra data for fields without dedicated DB columns
+            const extra = {
+                pen: ($('#pen').val() || '').trim(),
+                id_type_value: ($('#idTypeValue').val() || '').trim(),
+                stream: $('#stream').val() || '',
+                fee_category: $('#feeCategory').val() || '',
+                new_old: $('#newOld').val() || 'New',
+                house: $('#house').val() || '',
+                house_role: $('#houseRole').val() || '',
+                height: $('#height').val() || '',
+                weight: $('#weight').val() || '',
+                family_id: ($('#familyId').val() || '').trim(),
+                sssm_id: ($('#sssmId').val() || '').trim(),
+                blood_group: $('#bloodGroup').val() || '',
+                state: $('#state').val() || '',
+                district: ($('#district').val() || '').trim(),
+                pin_code: ($('#pinCode').val() || '').trim(),
+                nationality: ($('#nationality').val() || '').trim() || 'Indian',
+                residence_period: ($('#residencePeriod').val() || '').trim(),
+                guardian_name: ($('#guardianName').val() || '').trim(),
+                guardian_address: ($('#guardianAddress').val() || '').trim(),
+                guardian_mobile: ($('#guardianMobile').val() || '').trim(),
+                guardian_relation: $('#guardianRelation').val() || '',
+                father_occupation: ($('#fatherOccupation').val() || '').trim(),
+                caste_name: ($('#casteName').val() || '').trim(),
+                withdrawal_file_no: ($('#withdrawalFileNo').val() || '').trim(),
+                scholar_reg_no: ($('#scholarRegNo').val() || '').trim(),
+                last_school: ($('#lastSchool').val() || '').trim(),
+                account_holder: ($('#accountHolder').val() || '').trim(),
+                bank_branch_name: ($('#branchName').val() || '').trim(),
+                account_number: ($('#accountNumber').val() || '').trim(),
+                ifsc_code: ($('#ifscCode').val() || '').trim().toUpperCase(),
+                security_amount: parseFloat($('#securityAmount').val()) || 0,
+                transport_opt: $('#transportOpt').val() || 'No',
+                last_due_amount: parseFloat($('#lastDueAmount').val()) || 0,
+                other_info: ($('#otherInfo').val() || '').trim(),
+            };
+
             return {
                 name: $('#studentName').val().trim(),
                 father_name: $('#fatherName').val().trim(),
@@ -840,21 +881,19 @@
                 category: $('#category').val(),
                 religion: $('#religion').val(),
                 phone: $('#phone').val().trim(),
+                email: $('#email').val() ? $('#email').val().trim() : '',
                 address: $('#address').val().trim(),
+                aadhar_no: ($('#aadharNumber').val() || '').replace(/\s/g, ''),
                 class_id: parseInt($('#classSelect').val()),
                 section: $('#sectionSelect').val(),
+                session: $('#sessionSelect').val(),
                 admission_date: parseDateInput($('#admissionDate').val()),
                 roll_no: parseInt($('#rollNo').val()) || 0,
                 route_id: parseInt($('#routeSelect').val()) || null,
+                id_type: idTypeMap[idTypeVal] || 'Aadharshila ID',
                 status: $('#status').val(),
                 photo_url: photoUrl || null,
-                email: $('#email') ? $('#email').val() : '',
-                aadhar_no: ($('#aadharNumber').val() || '').replace(/\s/g, ''),
-                blood_group: $('#bloodGroup').val() || '',
-                state: $('#state').val() || '',
-                district: ($('#district').val() || '').trim(),
-                pin_code: ($('#pinCode').val() || '').trim(),
-                nationality: ($('#nationality').val() || '').trim() || 'Indian',
+                extra_data: JSON.stringify(extra),
             };
         }
 
@@ -958,6 +997,8 @@
                 if (!s || s.error) { showToast('Student not found', 'error'); return; }
                 $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit Student — ' + s.name);
                 document.title = 'Edit Student — EduNex1';
+
+                // ── Core DB fields ──
                 $('#admissionNo').val(s.admission_no || '');
                 $('#studentName').val(s.name || '');
                 $('#fatherName').val(s.father_name || '');
@@ -971,16 +1012,74 @@
                 $('#address').val(s.address || '');
                 $('#classSelect').val(s.class_id || '');
                 $('#sectionSelect').val(s.section || '');
+                $('#sessionSelect').val(s.session || '');
                 $('#rollNo').val(s.roll_no || '');
                 $('#admissionDate').val(formatDateForInput(s.admission_date));
                 $('#status').val(s.status || 'Active');
                 if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); uploadedPhotoUrl = s.photo_url; croppedPhotoBlob = null; }
                 if (s.aadhar_no) $('#aadharNumber').val(s.aadhar_no);
-                if (s.blood_group) $('#bloodGroup').val(s.blood_group);
-                if (s.state) $('#state').val(s.state);
-                if (s.district) $('#district').val(s.district);
-                if (s.pin_code) $('#pinCode').val(s.pin_code);
-                if (s.nationality) $('#nationality').val(s.nationality);
+
+                // ── id_type radio ──
+                if (s.id_type) {
+                    const idTypeReverseMap = { 'Unique ID': 'unique_id', 'Enrollment No.': 'enrollment_no', 'Aadharshila ID': 'aadharshila_id' };
+                    const radioVal = idTypeReverseMap[s.id_type] || 'aadharshila_id';
+                    $('input[name="idType"][value="' + radioVal + '"]').prop('checked', true);
+                }
+
+                // ── Parse extra_data JSON ──
+                let ex = {};
+                try { ex = s.extra_data ? (typeof s.extra_data === 'object' ? s.extra_data : JSON.parse(s.extra_data)) : {}; } catch(e) { ex = {}; }
+
+                // Scholar details
+                if (ex.pen) $('#pen').val(ex.pen);
+                if (ex.id_type_value) $('#idTypeValue').val(ex.id_type_value);
+                if (ex.stream) $('#stream').val(ex.stream);
+                if (ex.fee_category) $('#feeCategory').val(ex.fee_category);
+                if (ex.new_old) $('#newOld').val(ex.new_old);
+                if (ex.house) $('#house').val(ex.house);
+                if (ex.house_role) $('#houseRole').val(ex.house_role);
+                if (ex.height) $('#height').val(ex.height);
+                if (ex.weight) $('#weight').val(ex.weight);
+                if (ex.family_id) $('#familyId').val(ex.family_id);
+                if (ex.sssm_id) $('#sssmId').val(ex.sssm_id);
+                if (ex.blood_group) $('#bloodGroup').val(ex.blood_group);
+
+                // Address details
+                if (ex.state) $('#state').val(ex.state);
+                if (ex.district) $('#district').val(ex.district);
+                if (ex.pin_code) $('#pinCode').val(ex.pin_code);
+                if (ex.nationality) $('#nationality').val(ex.nationality);
+                if (ex.residence_period) $('#residencePeriod').val(ex.residence_period);
+
+                // Guardian details
+                if (ex.guardian_name) $('#guardianName').val(ex.guardian_name);
+                if (ex.guardian_address) $('#guardianAddress').val(ex.guardian_address);
+                if (ex.guardian_mobile) $('#guardianMobile').val(ex.guardian_mobile);
+                if (ex.guardian_relation) $('#guardianRelation').val(ex.guardian_relation);
+                if (ex.father_occupation) $('#fatherOccupation').val(ex.father_occupation);
+                if (ex.caste_name) $('#casteName').val(ex.caste_name);
+
+                // TC details
+                if (ex.withdrawal_file_no) $('#withdrawalFileNo').val(ex.withdrawal_file_no);
+                if (ex.scholar_reg_no) $('#scholarRegNo').val(ex.scholar_reg_no);
+                if (ex.last_school) $('#lastSchool').val(ex.last_school);
+
+                // Bank details
+                if (ex.account_holder) $('#accountHolder').val(ex.account_holder);
+                if (ex.bank_branch_name) $('#branchName').val(ex.bank_branch_name);
+                if (ex.account_number) $('#accountNumber').val(ex.account_number);
+                if (ex.ifsc_code) $('#ifscCode').val(ex.ifsc_code);
+                if (ex.security_amount) $('#securityAmount').val(ex.security_amount);
+
+                // Other details
+                if (ex.transport_opt === 'Yes') {
+                    $('#transportOpt').val('Yes');
+                    $('#routeGroup').show();
+                }
+                if (s.route_id) $('#routeSelect').val(s.route_id);
+                if (ex.last_due_amount) $('#lastDueAmount').val(ex.last_due_amount);
+                if (ex.other_info) $('#otherInfo').val(ex.other_info);
+
                 $('#consentCheck').prop('checked', true);
             } catch(e) { showToast('Error loading student', 'error'); console.error(e); }
         }

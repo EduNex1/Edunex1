@@ -56,7 +56,7 @@
                 allUsers = Array.isArray(uRes) ? uRes : (uRes.results || []);
                 allBranches = Array.isArray(bRes) ? bRes : [];
             }
-            let list = allUsers;
+            let list = allUsers.filter(u => !['student','parent','teacher','staff'].includes(u.role));
             if(filter){
                 const q = filter.toLowerCase();
                 list = list.filter(u =>

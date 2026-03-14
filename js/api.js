@@ -1,4 +1,29 @@
 
+/* Global HTML-escape utility – prevents stored XSS when inserting API data into the DOM */
+function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* CSV Export utility – downloads array of objects as a CSV file */
+function exportCSV(rows, columns, filename) {
+    if (!rows || !rows.length) { if (typeof showToast === 'function') showToast('No data to export', 'error'); return; }
+    filename = filename || 'export.csv';
+    var header = columns.map(function(c){ return '"' + (c.label || c.key).replace(/"/g, '""') + '"'; }).join(',');
+    var lines = rows.map(function(r){
+        return columns.map(function(c){
+            var v = typeof c.fn === 'function' ? c.fn(r) : (r[c.key] != null ? String(r[c.key]) : '');
+            return '"' + v.replace(/"/g, '""') + '"';
+        }).join(',');
+    });
+    var csv = '\uFEFF' + header + '\n' + lines.join('\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    if (typeof showToast === 'function') showToast('Exported ' + rows.length + ' records', 'success');
+}
+
 const API_BASE = 'https://vkis-api.schoolhub100.workers.dev';
 
 function getToken() { return localStorage.getItem('vkis_token'); }
@@ -28,6 +53,17 @@ async function api(endpoint, options = {}) {
             const sessionEndpoints = ['/api/students', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise'];
             if (sessionEndpoints.some(ep => endpoint.startsWith(ep) && (endpoint === ep || endpoint.charAt(ep.length) === '?'))) {
                 endpoint += (endpoint.includes('?') ? '&' : '?') + 'session=' + encodeURIComponent(sess);
+            }
+        }
+    }
+
+    // Auto-inject branch_id for selected branch
+    if (method === 'GET' && typeof getSelectedBranch === 'function' && !endpoint.includes('branch_id=')) {
+        const branchId = getSelectedBranch();
+        if (branchId) {
+            const skipBranchEndpoints = ['/api/auth/', '/api/branches', '/api/me'];
+            if (!skipBranchEndpoints.some(ep => endpoint.startsWith(ep))) {
+                endpoint += (endpoint.includes('?') ? '&' : '?') + 'branch_id=' + encodeURIComponent(branchId);
             }
         }
     }
@@ -435,13 +471,16 @@ async function sendEmailApi(data) { return api('/api/email/send', { method: 'POS
 
 async function getActivityLog() { return api('/api/activity-log'); }
 
-async function getFeeSlabs(classId) {
-    const params = classId ? `?class_id=${classId}` : '';
+async function getFeeSlabs(classId, session) {
+    let params = classId ? `?class_id=${classId}` : '';
+    if (session) params += (params ? '&' : '?') + `session=${encodeURIComponent(session)}`;
     return api(`/api/fee-slabs${params}`);
 }
 async function saveFeeSlabs(data) { return api('/api/fee-slabs', { method: 'POST', body: JSON.stringify(data) }); }
-async function deleteFeeSlabsByClass(classId, category) {
-    return api(`/api/fee-slabs?class_id=${classId}&category=${encodeURIComponent(category || 'Default')}`, { method: 'DELETE' });
+async function deleteFeeSlabsByClass(classId, category, session) {
+    let url = `/api/fee-slabs?class_id=${classId}&category=${encodeURIComponent(category || 'Default')}`;
+    if (session) url += `&session=${encodeURIComponent(session)}`;
+    return api(url, { method: 'DELETE' });
 }
 
 async function getFeeDiscounts(studentId) {
@@ -484,24 +523,12 @@ async function getCarryForward(studentId, currentSession) {
     return api(`/api/fee-carry-forward?student_id=${studentId}&current_session=${encodeURIComponent(currentSession)}`);
 }
 
-async function getGallery() { return api('/api/gallery'); }
 async function createGalleryItem(data) { return api('/api/gallery', { method: 'POST', body: JSON.stringify(data) }); }
 
 async function getStaffAttendance(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/attendance/staff${params ? '?' + params : ''}`);
 }
-
-async function getOptionSettings(branchId) {
-    const params = branchId ? `?branch_id=${encodeURIComponent(branchId)}` : '';
-    const rows = await api(`/api/option-settings${params}`);
-    if (!Array.isArray(rows)) return rows || {};
-    return rows.reduce((acc, row) => {
-        acc[row.setting_key] = row.setting_value;
-        return acc;
-    }, {});
-}
-async function saveOptionSettings(settings, branchId) { return api('/api/option-settings', { method: 'POST', body: JSON.stringify({ settings, branch_id: branchId || undefined }) }); }
 
 async function getTransferCertificates() { return api('/api/transfer-certificates'); }
 async function createTransferCertificate(data) { return api('/api/transfer-certificates', { method: 'POST', body: JSON.stringify(data) }); }

@@ -58,7 +58,7 @@
             let html = '';
             notices.forEach((n, i) => {
                 const color = colors[i % colors.length];
-                html += `<div style="margin-bottom:12px;padding:16px;background:#f8f9fa;border-radius:10px;border-left:4px solid ${color};"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;"><span style="font-size:14px;font-weight:700;color:#0d1b4a;">${n.title || 'Notice'}</span></div><p style="font-size:12px;color:#555;margin:0;">${n.description || n.content || ''}</p><div style="font-size:10px;color:#888;margin-top:6px;">Posted: ${n.date || n.created_at || ''}</div></div>`;
+                html += `<div style="margin-bottom:12px;padding:16px;background:#f8f9fa;border-radius:10px;border-left:4px solid ${color};"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;"><span style="font-size:14px;font-weight:700;color:#0d1b4a;">${escHtml(n.title) || 'Notice'}</span></div><p style="font-size:12px;color:#555;margin:0;">${escHtml(n.description || n.content || '')}</p><div style="font-size:10px;color:#888;margin-top:6px;">Posted: ${n.date || n.created_at || ''}</div></div>`;
             });
             $('#noticeArea').html(html);
         } catch (e) {

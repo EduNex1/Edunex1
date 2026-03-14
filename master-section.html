@@ -25,10 +25,6 @@
                         <h6 style="font-size:13px;font-weight:700;color:#0d1b4a;margin-bottom:12px;" id="formTitle"><i class="fas fa-plus-circle"></i> Add Section</h6>
                         <input type="hidden" id="editId">
                         <div class="row align-items-end" style="gap:0;">
-                            <div class="col-lg-3 col-md-4 col-6 form-group mb-0">
-                                <label class="form-label-sm">Select Class</label>
-                                <select class="form-control" id="sClass"><option value="">— All Classes —</option></select>
-                            </div>
                             <div class="col-lg-2 col-md-3 col-6 form-group mb-0">
                                 <label class="form-label-sm">Section Name</label>
                                 <input type="text" class="form-control" id="sName" placeholder="e.g. A, B, C...">
@@ -51,8 +47,6 @@
     $(async function(){
         initPage('master-section');
         let cache = [];
-        const classes = await getClasses();
-        classes.forEach(c=>$('#sClass').append(`<option value="${c.id}">${c.name}</option>`));
         async function load(){
             try { cache = await getSections(); } catch(e){ showToast('Failed to load','error'); }
             const rows = cache.map((s,i)=>`<tr><td class="text-center">${i+1}</td><td><strong>${s.name}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${s.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
@@ -73,7 +67,7 @@
             $('#editId').val(s.id);$('#sName').val(s.name);
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Section');
         };
-        window.cancelEdit=function(){$('#editId').val('');$('#sName').val('');$('#sClass').val('');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Section');};
+        window.cancelEdit=function(){$('#editId').val('');$('#sName').val('');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Section');};
         window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('sections',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
         await load();
     });

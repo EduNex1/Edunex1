@@ -41,18 +41,15 @@
                                 <label class="form-label-sm">Role <span style="color:red">*</span></label>
                                 <select class="form-control" id="uRole">
                                     <option value="">— Select Role —</option>
+                                    <option value="super_admin">Super Admin</option>
                                     <option value="branch_admin">Branch Admin</option>
-                                    <option value="teacher">Teacher</option>
-                                    <option value="staff">Staff</option>
                                     <option value="accountant">Accountant</option>
                                     <option value="librarian">Librarian</option>
-                                    <option value="parent">Parent</option>
-                                    <option value="student">Student</option>
                                 </select>
                             </div>
-                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                            <div class="col-lg-4 col-md-6 col-12 form-group" style="display:none;">
                                 <label class="form-label-sm">Linked Record ID</label>
-                                <input type="number" class="form-control" id="uLinkedId" placeholder="Optional student/staff/parent ID" min="1">
+                                <input type="number" class="form-control" id="uLinkedId" placeholder="Optional" min="1">
                                 <div class="readonly-note" id="linkedReadonlyNote" style="display:none;">Linked record ID is only set during creation in the current API.</div>
                             </div>
                             <div class="col-lg-4 col-md-6 col-12 form-group" id="singleBranchGroup">
@@ -120,6 +117,10 @@
             $('#uBranchesList').html(html || '<div class="readonly-note">No branches available.</div>');
             $('#uBranchesList .branch-check-item input').on('change', function(){ syncPrimaryFromChecks(); });
             syncPrimaryFromChecks();
+        }
+
+        if (!isSuperAdmin) {
+            $('#uRole option[value="super_admin"]').remove();
         }
 
         if (canAssignBranches) {

@@ -66,10 +66,11 @@
 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3><i class="fas fa-list-alt"></i> Salary List</h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -175,6 +176,7 @@
     <script src="js/main.js"></script>
     <script>
         const SALARY_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        let _displayedData = [];
         let payingId = null;
         let staffCache = [];
         let salaryCache = [];
@@ -222,6 +224,15 @@
             }
 
             list.sort((a, b) => b.id - a.id);
+
+            _displayedData = list.map(function(g) {
+                var staff = staffCache.find(function(s){ return s.id === g.staff_id; }) || {};
+                var gAllow = typeof g.allowances === 'string' ? JSON.parse(g.allowances || '{}') : (g.allowances || {});
+                var gDeduct = typeof g.deductions === 'string' ? JSON.parse(g.deductions || '{}') : (g.deductions || {});
+                var totalAllow = Object.values(gAllow).reduce(function(a,b){ return a + (Number(b)||0); }, 0);
+                var totalDeduct = Object.values(gDeduct).reduce(function(a,b){ return a + (Number(b)||0); }, 0);
+                return { employee_id: staff.employee_id || g.employee_id || '', name: staff.name || g.staff_name || '', month: g.month, year: g.year, basic_pay: g.total_basic_salary || g.basic || 0, total_allowances: totalAllow, total_deductions: totalDeduct, net_pay: g.net_salary || 0, status: g.status };
+            });
 
             const tbody = document.getElementById('salaryBody');
             if (!list.length) {
@@ -393,6 +404,21 @@
             printWin.document.close();
             setTimeout(() => { printWin.print(); }, 500);
         };
+
+        function exportData() {
+            if (!_displayedData.length) { showToast('No data to export', 'error'); return; }
+            exportCSV(_displayedData, [
+                { label: 'Employee ID', key: 'employee_id' },
+                { label: 'Name', key: 'name' },
+                { label: 'Month', key: 'month' },
+                { label: 'Year', key: 'year' },
+                { label: 'Basic Pay', key: 'basic_pay' },
+                { label: 'Total Allowances', key: 'total_allowances' },
+                { label: 'Total Deductions', key: 'total_deductions' },
+                { label: 'Net Pay', key: 'net_pay' },
+                { label: 'Status', key: 'status' }
+            ], 'salary-list.csv');
+        }
     </script>
 </body>
 

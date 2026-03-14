@@ -65,7 +65,11 @@
             const cs = $('#childSelect').empty();
             children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
             if(children.length) loadSyllabus();
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error(e);
+            $('#syllabusArea').html('<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:8px;"></i><p>Unable to load data. Please try again later.</p></div>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     async function loadSyllabus(){
         const opt = $('#childSelect option:selected');
@@ -78,10 +82,14 @@
             let html = '';
             syl.forEach((s,i) => {
                 const ci = i % sylColors.length;
-                html += `<div style="background:${sylBgs[ci]};border-radius:8px;padding:14px 16px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:${sylColors[ci]};font-size:14px;"><i class="fas fa-book" style="margin-right:6px;"></i>${s.subject_name||s.title||''}</strong></div><div style="font-size:12px;color:#555;margin-top:6px;">${s.description||s.content||''}</div></div>`;
+                html += `<div style="background:${sylBgs[ci]};border-radius:8px;padding:14px 16px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:${sylColors[ci]};font-size:14px;"><i class="fas fa-book" style="margin-right:6px;"></i>${escHtml(s.subject_name||s.title||'')}</strong></div><div style="font-size:12px;color:#555;margin-top:6px;">${escHtml(s.description||s.content||'')}</div></div>`;
             });
             $('#syllabusArea').html(html);
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error(e);
+            $('#syllabusArea').html('<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:8px;"></i><p>Unable to load syllabus. Please try again later.</p></div>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     }
     </script>
 </body>

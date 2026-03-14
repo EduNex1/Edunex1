@@ -67,10 +67,10 @@
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No subjects</td></tr>');
         }
         window.saveItem=async function(){
-            const name=$('#sName').val().trim(), is_activity=$('#sActivity').is(':checked')?1:0, editId=parseInt($('#editId').val())||0;
+            const name=$('#sName').val().trim(), is_activity=$('#sActivity').is(':checked')?1:0, editId=parseInt($('#editId').val())||0, serial=parseInt($('#sSerial').val())||0;
             if(!name){showToast('Enter subject name','error');return;}
             try {
-                const data={name, code:name.substring(0,3).toUpperCase(), has_practical:0, is_activity};
+                const data={name, code:name.substring(0,3).toUpperCase(), has_practical:0, is_activity, display_order:serial};
                 if(editId) await updateMasterData('subjects', editId, data);
                 else await createMasterData('subjects', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
@@ -78,7 +78,7 @@
         };
         window.editItem=function(id){
             const s=cache.find(x=>x.id===id); if(!s)return;
-            $('#editId').val(s.id);$('#sName').val(s.name);$('#sActivity').prop('checked',!!s.is_activity);$('#sSerial').val('');
+            $('#editId').val(s.id);$('#sName').val(s.name);$('#sActivity').prop('checked',!!s.is_activity);$('#sSerial').val(s.display_order||'');
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Subject');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#sName').val('');$('#sSerial').val('');$('#sActivity').prop('checked',false);$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Subject');};

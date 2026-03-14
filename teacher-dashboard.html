@@ -45,7 +45,7 @@
                 </div>
 
                 
-                <div class="stats-grid stats-grid-4">
+                <div class="stats-grid stats-grid-3">
                     <div class="stat-card">
                         <div class="stat-icon blue"><i class="fas fa-book-open"></i></div>
                         <div class="stat-info">
@@ -146,12 +146,12 @@
                     try {
                         var staff = await getStaffMember(user.linked_id);
                         if (staff && staff.name) {
-                            document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + staff.name + '!';
+                            document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + escHtml(staff.name) + '!';
                         }
                     } catch(e) {}
                 }
                 if (!document.querySelector('.dashboard-welcome-text').textContent.includes(',')) {
-                    document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + (user.login_id) + '!';
+                    document.querySelector('.dashboard-welcome-text').innerHTML = '<i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#ffd54f;"></i> Welcome, ' + escHtml(user.login_id) + '!';
                 }
             }
             loadTeacherDashboard();
@@ -174,12 +174,13 @@
                 document.getElementById('tMyClasses').textContent = assignmentList.length;
 
                 var studentMap = {};
-                for (var i = 0; i < assignmentList.length; i += 1) {
-                    var perm = assignmentList[i];
+                var studentResults = await Promise.all(assignmentList.map(function (perm) {
                     var sectionName = perm.section_name || '';
-                    var students = await getStudents({ class_id: perm.class_id, section: sectionName, status: 'Active' }) || [];
+                    return (getStudents({ class_id: perm.class_id, section: sectionName, status: 'Active' }) || Promise.resolve([])).then(function (s) { return s || []; }).catch(function () { return []; });
+                }));
+                studentResults.forEach(function (students) {
                     students.forEach(function (student) { studentMap[student.id] = student; });
-                }
+                });
                 var studentIds = Object.keys(studentMap);
                 document.getElementById('tMyStudents').textContent = studentIds.length;
 
@@ -213,12 +214,12 @@
             }
             rows.sort(function (left, right) { return Number(left.period || 0) - Number(right.period || 0); });
             document.getElementById('scheduleBody').innerHTML = rows.map(function (row) {
-                var classLabel = (row.class_name || 'Class') + (row.section ? '-' + row.section : '');
+                var classLabel = escHtml((row.class_name || 'Class') + (row.section ? '-' + row.section : ''));
                 return '<tr>' +
-                    '<td><span style="background:#e8eaf6;color:#0d1b4a;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">' + (row.period || '-') + '</span></td>' +
-                    '<td>' + (row.time || '-') + '</td>' +
+                    '<td><span style="background:#e8eaf6;color:#0d1b4a;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">' + escHtml(row.period || '-') + '</span></td>' +
+                    '<td>' + escHtml(row.time || '-') + '</td>' +
                     '<td class="name-cell">' + classLabel + '</td>' +
-                    '<td>' + (row.subject_name || '-') + '</td>' +
+                    '<td>' + escHtml(row.subject_name || '-') + '</td>' +
                     '</tr>';
             }).join('');
         }
@@ -231,8 +232,8 @@
             document.getElementById('noticeList').innerHTML = rows.map(function (row) {
                 return '<div class="activity-item">' +
                     '<div class="activity-dot blue"></div>' +
-                    '<div><div class="activity-text">' + (row.title || 'Notice') + '</div>' +
-                    '<div class="activity-time">' + (row.date || row.created_at || '') + (row.description ? ' — ' + row.description : '') + '</div></div>' +
+                    '<div><div class="activity-text">' + escHtml(row.title || 'Notice') + '</div>' +
+                    '<div class="activity-time">' + escHtml(row.date || row.created_at || '') + (row.description ? ' — ' + escHtml(row.description) : '') + '</div></div>' +
                     '</div>';
             }).join('');
         }

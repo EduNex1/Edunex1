@@ -133,7 +133,17 @@
         (async function () {
             initPage('result-subject-wise');
 
+            let gradingRules = [];
+            try { gradingRules = await getGradingSystem(); } catch(e) {}
+
             function getGrade(pct) {
+                if (gradingRules && gradingRules.length) {
+                    const sorted = gradingRules.slice().sort((a, b) => (b.min_percentage || 0) - (a.min_percentage || 0));
+                    for (const rule of sorted) {
+                        if (pct >= (rule.min_percentage || 0)) return rule.grade;
+                    }
+                    return sorted.length ? sorted[sorted.length - 1].grade : 'E';
+                }
                 if (pct >= 91) return 'A1'; if (pct >= 81) return 'A2'; if (pct >= 71) return 'B1';
                 if (pct >= 61) return 'B2'; if (pct >= 51) return 'C1'; if (pct >= 41) return 'C2';
                 if (pct >= 33) return 'D'; return 'E';

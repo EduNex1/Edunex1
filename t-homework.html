@@ -244,7 +244,10 @@
                 document.getElementById('hwSubject').value = '';
 
                 var sections = teacherPermissions.filter(function (p) { return p.class_id === classId; });
+                var addedSections = {};
                 sections.forEach(function (p) {
+                    if (addedSections[p.section_id]) return;
+                    addedSections[p.section_id] = true;
                     var opt = document.createElement('option');
                     opt.value = p.section_id;
                     opt.textContent = p.section_name;
@@ -301,8 +304,8 @@
                     html += '<tr>' +
                         '<td>' + (idx + 1) + '</td>' +
                         '<td>' + (hw.date || '—') + '</td>' +
-                        '<td><strong>' + (hw.subject_name || '—') + '</strong></td>' +
-                        '<td>' + (hw.title || '—') + '</td>' +
+                        '<td><strong>' + escHtml(hw.subject_name || '—') + '</strong></td>' +
+                        '<td>' + escHtml(hw.title || '—') + '</td>' +
                         '<td><span class="category-badge cat-general">' + (hw.type || '—') + '</span></td>' +
                         '<td>' + (hw.due_date || '—') + '</td>' +
                         '<td><span class="status-badge ' + statusClass + '">' + statusLabel + '</span></td>' +
@@ -341,8 +344,8 @@
                 var sec = sectionCache.find(function (s) { return s.id === parseInt(sectionId); });
                 var sectionName = sec ? sec.name : sectionId;
 
-                if (!date || !title || !type) {
-                    showToast('Please fill Date, Title and Type', 'error');
+                if (!date || !dueDate || !title || !type) {
+                    showToast('Please fill Date, Submission Date, Title and Type', 'error');
                     return;
                 }
 

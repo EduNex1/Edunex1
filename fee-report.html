@@ -61,10 +61,11 @@
 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3><i class="fas fa-chart-bar"></i> Fee Report</h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -122,6 +123,7 @@
     <script src="js/app.js"></script>
     <script src="js/main.js"></script>
     <script>
+        let _displayedData = [];
         const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
 
         $(document).ready(async function () {
@@ -160,6 +162,7 @@
 
             let deps;
             try { deps = await getFeeReport(filters); } catch(err){ showToast('Failed to load data','error'); return; }
+            _displayedData = deps || [];
 
             if (!deps.length) {
                 $('#reportArea').html('<div class="empty-state"><i class="fas fa-inbox"></i>No data found for selected filters</div>');
@@ -223,6 +226,20 @@
             if (!dateStr) return '-';
             const d = new Date(dateStr);
             return d.getDate().toString().padStart(2, '0') + ' ' + d.toLocaleDateString('en-IN', { month: 'short' }) + ' ' + d.getFullYear();
+        }
+
+        function exportData() {
+            if (!_displayedData.length) { showToast('No data to export', 'error'); return; }
+            exportCSV(_displayedData, [
+                { label: 'Receipt No', key: 'receipt_no' },
+                { label: 'Student Name', key: 'student_name' },
+                { label: 'Class', key: 'class_name' },
+                { label: 'Section', key: 'section' },
+                { label: 'Amount', fn: function(r) { return r.received_amount || r.amount || ''; } },
+                { label: 'Mode', fn: function(r) { return r.payment_mode || r.mode || ''; } },
+                { label: 'Date', fn: function(r) { return r.created_at || r.date || ''; } },
+                { label: 'Month', key: 'month' }
+            ], 'fee-report.csv');
         }
     </script>
 </body>

@@ -63,7 +63,11 @@
             const cs = $('#childSelect').empty();
             children.forEach(c => cs.append(`<option value="${c.id}" data-class="${c.class_id}">${c.name} \u2014 Class ${c.class_name||''}${c.section?'-'+c.section:''}</option>`));
             if(children.length) loadDatesheet();
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error(e);
+            $('#dsArea').html('<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:8px;"></i><p>Unable to load data. Please try again later.</p></div>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     async function loadDatesheet(){
         const opt = $('#childSelect option:selected');
@@ -73,18 +77,22 @@
             const ds = await getDatesheets({class_id: classId}) || [];
             if(!ds.length){ $('#dsArea').html('<p style="text-align:center;color:#888;">No datesheet available.</p>'); return; }
             const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Date</th><th>Day</th><th>Subject</th><th>Time</th></tr></thead><tbody>';
+            let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Exam</th><th>Date</th><th>Day</th><th>Subject</th><th>Time</th></tr></thead><tbody>';
             ds.forEach(d => {
                 const dt = (d.date || d.exam_date) ? new Date(d.date || d.exam_date) : null;
                 const dateStr = dt ? dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : (d.date || d.exam_date || '-');
                 const dayStr = dt ? days[dt.getDay()] : '';
                 const startTime = d.start_time || d.time_from || '';
                 const endTime = d.end_time || d.time_to || '';
-                html += `<tr><td><strong>${dateStr}</strong></td><td>${dayStr}</td><td><strong>${d.subject_name||''}</strong></td><td>${startTime} – ${endTime}</td></tr>`;
+                html += `<tr><td>${escHtml(d.exam_name||'-')}</td><td><strong>${dateStr}</strong></td><td>${dayStr}</td><td><strong>${escHtml(d.subject_name||'')}</strong></td><td>${startTime} – ${endTime}</td></tr>`;
             });
             html += '</tbody></table></div>';
             $('#dsArea').html(html);
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error(e);
+            $('#dsArea').html('<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle" style="font-size:24px;margin-bottom:8px;"></i><p>Unable to load datesheet. Please try again later.</p></div>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     }
     </script>
 </body>

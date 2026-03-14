@@ -167,7 +167,7 @@
                     <div class="chart-card">
                         <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                             <span><i class="fas fa-list-ol"></i> Subject-wise Results</span>
-
+                            <button class="btn btn-primary no-print" onclick="window.print()" style="font-size:12px;padding:4px 14px;"><i class="fas fa-print"></i> Print</button>
                         </div>
                         <div class="chart-card-body">
                             <div class="table-responsive">
@@ -218,6 +218,10 @@
             children = await getMyChildren() || [];
             const cs = $('#childSelect');
             children.forEach(c => cs.append(`<option value="${c.id}">${c.name} — Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
+            const urlChildId = new URLSearchParams(window.location.search).get('child_id');
+            if (urlChildId && cs.find('option[value="' + urlChildId + '"]').length) {
+                cs.val(urlChildId);
+            }
             const exams = await getExamNames() || [];
             const es = $('#examSelect');
             exams.forEach(e => es.append(`<option value="${e.id}">${e.name}</option>`));
@@ -273,7 +277,7 @@
 
             $('#noResult').hide();
             $('#resultArea').show();
-        } catch (e) { console.error(e); alert('Error loading results'); }
+        } catch (e) { console.error(e); showToast('Error loading results', 'error'); }
     }
     </script>
 </body>

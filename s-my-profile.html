@@ -183,7 +183,11 @@
 
             html += '</div></div>';
             $('#profileArea').html(html);
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#profileArea').html('<p style="text-align:center;color:#c00;">Unable to load profile. Please try again later.</p>');
+            showToast('Unable to load profile. Please try again.', 'error');
+        }
 
         $('#pwForm').on('submit', async function(e) {
             e.preventDefault();

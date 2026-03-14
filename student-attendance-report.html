@@ -203,10 +203,11 @@
 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3><i class="fas fa-chart-bar"></i> Student Attendance Report</h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -301,6 +302,7 @@
     <script src="js/main.js"></script>
 
     <script>
+        let _displayedData = [];
         $(async function () {
             initPage('student-attendance-report');
 
@@ -363,8 +365,9 @@
 
                 const orderBy = $('#orderBy').val();
                 if (orderBy === 'rollNo') students.sort((a,b) => (a.roll_no||0) - (b.roll_no||0));
-                else if (orderBy === 'name') students.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-                else if (orderBy === 'admissionNo') students.sort((a,b) => (a.admission_no||'').localeCompare(b.admission_no||''));
+                else if (orderBy === 'nameAZ') students.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+                else if (orderBy === 'nameZA') students.sort((a,b) => (b.name||'').localeCompare(a.name||''));
+                else if (orderBy === 'admNo') students.sort((a,b) => (a.admission_no||'').localeCompare(b.admission_no||''));
 
                 const byStudent = {};
                 records.forEach(r => {
@@ -373,6 +376,7 @@
                 });
 
                 let html = '';
+                _displayedData = [];
                 students.forEach(s => {
                     const recs = byStudent[s.id] || [];
                     const present = recs.filter(r => r.status === 'P').length;
@@ -380,6 +384,7 @@
                     const leave = recs.filter(r => r.status === 'L').length;
                     const total = recs.length;
                     const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+                    _displayedData.push({ admission_no: s.admission_no, name: s.name, roll_no: s.roll_no, present_days: present, absent_days: absent, late_days: leave, total_days: total, percentage: percentage });
                     const pctClass = percentage >= 80 ? 'high' : percentage >= 60 ? 'mid' : 'low';
                     const pctColor = percentage >= 80 ? '#2e7d32' : percentage >= 60 ? '#ef6c00' : '#c62828';
 
@@ -417,6 +422,20 @@
                 $('#reportArea').show();
             }
         });
+
+        function exportData() {
+            if (!_displayedData.length) { showToast('No data to export', 'error'); return; }
+            exportCSV(_displayedData, [
+                { label: 'Admission No', key: 'admission_no' },
+                { label: 'Student Name', key: 'name' },
+                { label: 'Roll No', key: 'roll_no' },
+                { label: 'Present Days', key: 'present_days' },
+                { label: 'Absent Days', key: 'absent_days' },
+                { label: 'Late Days', key: 'late_days' },
+                { label: 'Total Days', key: 'total_days' },
+                { label: 'Percentage', key: 'percentage' }
+            ], 'attendance-report.csv');
+        }
     </script>
 </body>
 

@@ -50,6 +50,9 @@
             </div>
         </div>
 
+                <div style="display:none;margin-bottom:12px;text-align:right;" id="printBtnWrap">
+                    <button class="btn btn-primary no-print" onclick="window.print()" style="font-size:12px;padding:4px 14px;"><i class="fas fa-print"></i> Print</button>
+                </div>
                 <div id="reportArea" style="display:none;"></div>
 
                 <div id="noReport" class="chart-card" style="text-align:center;padding:50px 20px;">
@@ -83,7 +86,7 @@
 
     async function loadReportCard() {
         const studentId = $('#childSelect').val();
-        if (!studentId) { $('#reportArea').hide(); $('#noReport').show(); return; }
+        if (!studentId) { $('#reportArea').hide(); $('#noReport').show(); $('#printBtnWrap').hide(); return; }
         const stu = children.find(c => c.id == studentId);
         try {
             const exams = await getExamNames() || [];
@@ -112,8 +115,9 @@
                 allHtml = `<div class="chart-card" style="margin-bottom:12px;"><div class="chart-card-header"><span><i class="fas fa-user-graduate"></i> ${stu.name}</span></div><div class="chart-card-body"><p style="margin:0;color:#666;font-size:13px;">Class ${stu.class_name || ''}${sec} | Roll No: ${stu.roll_no || '-'}</p></div></div>` + allHtml;
             }
             $('#reportArea').html(allHtml).show();
+            $('#printBtnWrap').show();
             $('#noReport').hide();
-        } catch (e) { console.error(e); alert('Error loading report card'); }
+        } catch (e) { console.error(e); showToast('Error loading results', 'error'); }
     }
     </script>
 </body>

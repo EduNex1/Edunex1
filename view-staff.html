@@ -389,12 +389,13 @@
                 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3>
                                     <i class="fas fa-users"></i> Staff Directory
                                 </h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -477,6 +478,7 @@
     <script src="js/main.js"></script>
 
     <script>
+        let _displayedData = [];
         $(document).ready(async function () {
             initPage('view-staff');
 
@@ -536,6 +538,7 @@
                     staff = staff.filter(s => (s.name||'').toLowerCase().includes(q) || (s.employee_id||'').toLowerCase().includes(q) || (s.phone||'').includes(q));
                 }
 
+                _displayedData = staff;
                 if ($.fn.DataTable.isDataTable('#staffTable')) { $('#staffTable').DataTable().destroy(); }
 
                 let html = '';
@@ -595,6 +598,23 @@
                 try { await deleteStaffMember(id); renderStaffTable(); showToast('Staff deleted', 'success'); }
                 catch(e){ showToast(e.message||'Failed to delete','error'); }
             });
+        }
+
+        function exportData() {
+            if (!_displayedData.length) { showToast('No data to export', 'error'); return; }
+            exportCSV(_displayedData, [
+                { label: 'Employee ID', key: 'employee_id' },
+                { label: 'Name', key: 'name' },
+                { label: 'Designation', fn: function(r) { return r.designation_name || r.designation || ''; } },
+                { label: 'Phone', key: 'phone' },
+                { label: 'Email', key: 'email' },
+                { label: 'Gender', key: 'gender' },
+                { label: 'DOB', key: 'dob' },
+                { label: 'Joining Date', key: 'joining_date' },
+                { label: 'Qualification', key: 'qualification' },
+                { label: 'Address', key: 'address' },
+                { label: 'Status', key: 'status' }
+            ], 'staff.csv');
         }
     </script>
 </body>

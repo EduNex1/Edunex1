@@ -211,7 +211,10 @@
                 var ss = document.getElementById('selSection');
                 ss.innerHTML = '<option value="">— Select Section —</option>';
                 document.getElementById('selSubject').value = '';
+                var addedSections = {};
                 teacherPermissions.filter(function (p) { return p.class_id === cid; }).forEach(function (p) {
+                    if (addedSections[p.section_id]) return;
+                    addedSections[p.section_id] = true;
                     var o = document.createElement('option'); o.value = p.section_id; o.textContent = p.section_name; ss.appendChild(o);
                 });
             });
@@ -236,7 +239,7 @@
                     var sec = sectionCache.find(function (s) { return s.id === parseInt(sectionId); });
                     var sectionName = sec ? sec.name : sectionId;
                     students = await getStudents({ class_id: classId, section: sectionName, status: 'Active' });
-                } catch (e) { console.error('Failed to load students', e); }
+                } catch (e) { console.error('Failed to load students', e); showToast('Failed to load students', 'error'); }
 
                 document.getElementById('statsRow').style.display = 'block';
                 document.getElementById('statTotal').textContent = students.length;

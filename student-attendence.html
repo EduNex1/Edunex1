@@ -40,6 +40,18 @@
             background: #ffebee;
         }
 
+        .att-status-select.late {
+            border-color: #ef6c00;
+            color: #ef6c00;
+            background: #fff3e0;
+        }
+
+        .att-status-select.halfday {
+            border-color: #6a1b9a;
+            color: #6a1b9a;
+            background: #f3e5f5;
+        }
+
         .att-remark {
             width: 100%;
             font-size: 11px;
@@ -319,8 +331,14 @@
                 if (!date) { showToast('Please select a date', 'error'); return; }
 
                 try {
-                    const students = await getStudents({ class_id: classId, section: section, status: 'Active' });
+                    let students = await getStudents({ class_id: classId, section: section, status: 'Active' });
                     const existing = await getStudentAttendance({ date: date, class_id: classId });
+
+                    const orderBy = $('#orderBy').val();
+                    if (orderBy === 'rollNo') students.sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
+                    else if (orderBy === 'nameAZ') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    else if (orderBy === 'nameZA') students.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+                    else if (orderBy === 'admNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
 
                     const classOpt = $('#filterClass option:selected').text();
                     const d = new Date(date);
@@ -332,7 +350,9 @@
                     let html = '';
                     students.forEach(s => {
                         const record = existing.find(a => a.student_id === s.id);
-                        const status = record ? record.status : 'Present';
+                        const status = record ? record.status : 'P';
+                        const statusCssMap = { P: 'present', A: 'absent', L: 'late', HD: 'halfday' };
+                        const cssClass = statusCssMap[status] || 'present';
                         const initial = (s.name || '?')[0].toUpperCase();
 
                         html += `<tr data-student-id="${s.id}">
@@ -342,9 +362,11 @@
                             <td style="font-weight:600;">${s.name}</td>
                             <td class="col-hide-md" style="color:#666;">${s.father_name||''}</td>
                             <td>
-                                <select class="att-status-select ${status.toLowerCase()}" data-student-id="${s.id}">
-                                    <option value="Present" ${status === 'Present' ? 'selected' : ''}>Present</option>
-                                    <option value="Absent" ${status === 'Absent' ? 'selected' : ''}>Absent</option>
+                                <select class="att-status-select ${cssClass}" data-student-id="${s.id}">
+                                    <option value="P" ${status === 'P' ? 'selected' : ''}>Present</option>
+                                    <option value="A" ${status === 'A' ? 'selected' : ''}>Absent</option>
+                                    <option value="L" ${status === 'L' ? 'selected' : ''}>Late</option>
+                                    <option value="HD" ${status === 'HD' ? 'selected' : ''}>Half Day</option>
                                 </select>
                             </td>
                             <td><input type="text" class="att-remark" data-student-id="${s.id}" value="" placeholder="Remark (optional)"></td>
@@ -362,19 +384,20 @@
             }
 
             $(document).on('change', '.att-status-select', function () {
-                const v = $(this).val().toLowerCase();
-                $(this).removeClass('present absent').addClass(v);
+                const v = $(this).val();
+                const cls = { P: 'present', A: 'absent', L: 'late', HD: 'halfday' }[v] || 'present';
+                $(this).removeClass('present absent late halfday').addClass(cls);
                 updateCheckAll();
             });
 
             function updateCheckAll() {
-                const allPresent = $('.att-status-select').length > 0 && $('.att-status-select').filter(function () { return $(this).val() !== 'Present'; }).length === 0;
+                const allPresent = $('.att-status-select').length > 0 && $('.att-status-select').filter(function () { return $(this).val() !== 'P'; }).length === 0;
                 $('#checkAllPresent').prop('checked', allPresent);
             }
 
             $('#checkAllPresent').on('change', function () {
                 if ($(this).is(':checked')) {
-                    $('.att-status-select').val('Present').removeClass('absent').addClass('present');
+                    $('.att-status-select').val('P').removeClass('absent late halfday').addClass('present');
                 }
             });
 

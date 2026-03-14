@@ -64,10 +64,14 @@
                 const t = h.type || 'Holiday';
                 const c = typeColors[t] || '#555';
                 const bg = typeBg[t] || '#f5f5f5';
-                html += `<tr><td>${i + 1}</td><td><strong>${h.name || h.title || '-'}</strong></td><td>${h.date || '-'}</td><td><span style="background:${bg};color:${c};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${t}</span></td></tr>`;
+                html += `<tr><td>${i + 1}</td><td><strong>${escHtml(h.name || h.title || '-')}</strong></td><td>${h.date || '-'}</td><td><span style="background:${bg};color:${c};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${escHtml(t)}</span></td></tr>`;
             });
             $('#holidayBody').html(html);
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#holidayBody').html('<tr><td colspan="4" class="text-center text-danger p-4">Unable to load holidays. Please try again later.</td></tr>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     </script>
 </body>

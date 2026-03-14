@@ -195,6 +195,7 @@
             if (typeof initPage === 'function') initPage('academic-syllabus');
 
             let uploadedFileName = '';
+            let uploadedFileUrl = '';
             let classCache = [], subjectCache = [], sylCache = [];
             try {
                 [classCache, subjectCache, sylCache] = await Promise.all([getClasses(), getSubjects(), getSyllabi()]);
@@ -216,13 +217,23 @@
                 resetAddForm();
             });
 
-            $('#addFile').on('change', function () {
+            $('#addFile').on('change', async function () {
                 const file = this.files[0];
                 if (file) {
                     uploadedFileName = file.name;
-                    $('#fileName').text(file.name);
+                    $('#fileName').text(file.name + ' (uploading...)');
+                    try {
+                        const result = await uploadFile(file);
+                        uploadedFileUrl = result.url || result.key || '';
+                        $('#fileName').text(file.name + ' (uploaded)');
+                    } catch(e) {
+                        uploadedFileUrl = '';
+                        $('#fileName').text(file.name + ' (upload failed)');
+                        showToast('File upload failed: ' + e.message, 'error');
+                    }
                 } else {
                     uploadedFileName = '';
+                    uploadedFileUrl = '';
                     $('#fileName').text('');
                 }
             });
@@ -280,7 +291,7 @@
                     subject_id: parseInt($('#addSubject').val()),
                     title: $('#addTitle').val().trim(),
                     note: $('#addNote').val().trim(),
-                    file_name: uploadedFileName,
+                    file_name: uploadedFileUrl || uploadedFileName,
                     status: $('#addStatus').val()
                 };
                 if (!data.class_id || !data.subject_id || !data.title) {
@@ -309,6 +320,7 @@
                 $('#addTitle, #addNote').val('');
                 $('#addFile').val('');
                 uploadedFileName = '';
+                uploadedFileUrl = '';
                 $('#fileName').text('');
                 $('#editId').val('');
                 $('#btnSave').html('<i class="fas fa-save"></i> Save');
@@ -324,7 +336,7 @@
                     $('#addStatus').val(s.status);
                     $('#addTitle').val(s.title);
                     $('#addNote').val(s.note);
-                    if (s.file_name) { uploadedFileName = s.file_name; $('#fileName').text(s.file_name); }
+                    if (s.file_name) { uploadedFileUrl = s.file_name; uploadedFileName = s.file_name; $('#fileName').text('File attached'); }
                     $('#editId').val(id);
                     $('#btnSave').html('<i class="fas fa-save"></i> Update');
                 }, 50);
@@ -341,8 +353,13 @@
                 });
             };
 
-            window.downloadFile = function (name) {
-                showToast('Download: ' + name, 'success');
+            window.downloadFile = function (fileRef) {
+                if (!fileRef) return;
+                if (fileRef.startsWith('http') || fileRef.startsWith('/api/')) {
+                    window.open(fileRef, '_blank');
+                } else {
+                    window.open(API_BASE + '/api/files/' + encodeURIComponent(fileRef), '_blank');
+                }
             };
         });
     </script>

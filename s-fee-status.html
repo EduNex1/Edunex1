@@ -189,24 +189,48 @@
                 getFeeSlabs(stu.class_id)
             ]);
 
-            const slabMonthly = (slabs||[]).reduce((s,x)=>s+Number(x.amount||0),0);
+            // Parse applicable months for each slab to build per-month charges
+            function _parseMonths(slab) {
+                try { const mp = typeof slab.months==='string'&&slab.months ? JSON.parse(slab.months) : (Array.isArray(slab.months)?slab.months:null); return Array.isArray(mp)?mp:SCHOOL_MONTHS; } catch(e){ return SCHOOL_MONTHS; }
+            }
+            function _modeLabel(slab) {
+                const mc = _parseMonths(slab).length;
+                if (slab.mode === 'Once' || mc === 1) return '(once)';
+                if (slab.mode === 'Yearly' || mc <= 1) return '/ yr';
+                if (mc === 12) return '/ mo';
+                return '(' + mc + ' months)';
+            }
             const transportFee = Number(stu.transport_fee||0);
             const oldBalance = Number(stu.old_balance||0);
-            const monthlyCharge = slabMonthly + transportFee;
-            const annualFee = monthlyCharge * 12;
+            // Filter slabs: exclude transport, match student category
+            const nonTransportSlabs = (slabs||[]).filter(function(x){ return !x.is_transport; });
+            const stuCat = stu.category || 'Default';
+            const catSlabs = nonTransportSlabs.filter(function(x){ return (x.category||'Default') === stuCat; });
+            const filteredSlabs = catSlabs.length ? catSlabs : nonTransportSlabs.filter(function(x){ return (x.category||'Default') === 'Default'; });
+            // Build per-month fee map
+            const monthFeeMap = {};
+            SCHOOL_MONTHS.forEach(m => { monthFeeMap[m] = transportFee; });
+            filteredSlabs.forEach(x => {
+                const applicableMonths = _parseMonths(x);
+                applicableMonths.forEach(m => { if (monthFeeMap.hasOwnProperty(m)) monthFeeMap[m] += Number(x.amount||0); });
+            });
+            let annualFee = SCHOOL_MONTHS.reduce((s,m) => s + monthFeeMap[m], 0);
+            if (!annualFee && Number(stu.fee_amount||0) > 0) annualFee = Number(stu.fee_amount);
+            const allMonthsSame = SCHOOL_MONTHS.every(m => monthFeeMap[m] === monthFeeMap[SCHOOL_MONTHS[0]]);
+            const monthlyCharge = allMonthsSame ? monthFeeMap[SCHOOL_MONTHS[0]] : 0;
 
             let bh = '';
-            if ((slabs||[]).length) {
-                (slabs||[]).forEach(s => {
-                    bh += '<div class="bd-row"><span class="bd-name">' + (s.particular_name||'Fee') + '</span><span class="bd-val">' + fmt(s.amount) + ' / mo</span></div>';
+            if (filteredSlabs.length) {
+                filteredSlabs.forEach(s => {
+                    bh += '<div class="bd-row"><span class="bd-name">' + (s.particular_name||'Fee') + '</span><span class="bd-val">' + fmt(s.amount) + ' ' + _modeLabel(s) + '</span></div>';
                 });
                 if (transportFee > 0) {
                     bh += '<div class="bd-row"><span class="bd-name"><i class="fas fa-bus" style="color:#2e7d32;margin-right:4px;"></i>' + (stu.route_name||'Transport') + '</span><span class="bd-val">' + fmt(transportFee) + ' / mo</span></div>';
                 }
-                bh += '<div class="bd-row bd-total"><span class="bd-name">Total Monthly</span><span class="bd-val">' + fmt(monthlyCharge) + '</span></div>';
+                bh += '<div class="bd-row bd-total"><span class="bd-name">' + (allMonthsSame ? 'Total Monthly' : 'Annual Total') + '</span><span class="bd-val">' + (allMonthsSame ? fmt(monthlyCharge) : fmt(annualFee)) + '</span></div>';
             } else if (transportFee > 0) {
                 bh += '<div class="bd-row"><span class="bd-name"><i class="fas fa-bus" style="color:#2e7d32;margin-right:4px;"></i>' + (stu.route_name||'Transport') + '</span><span class="bd-val">' + fmt(transportFee) + ' / mo</span></div>';
-                bh += '<div class="bd-row bd-total"><span class="bd-name">Total Monthly</span><span class="bd-val">' + fmt(monthlyCharge) + '</span></div>';
+                bh += '<div class="bd-row bd-total"><span class="bd-name">Total Monthly</span><span class="bd-val">' + fmt(transportFee) + '</span></div>';
             } else {
                 bh = '<p style="color:#888;text-align:center;margin:0;">Fee structure not configured yet.</p>';
             }
@@ -222,13 +246,32 @@
 
             const totalPaid = (deps||[]).reduce((s,x)=>s+Number(x.received_amount||0),0);
             const pending = Math.max(0, annualFee + oldBalance - totalPaid - totalDisc);
-            const paidMonths = SCHOOL_MONTHS.filter(m => {
-                const md = depositsByMonth[m]||[];
-                return md.reduce((s,x)=>s+Number(x.received_amount||0),0) >= monthlyCharge;
-            }).length;
+
+            // Pool-based month tile calculation: distribute total paid across months (Apr→Mar)
+            let paymentPool = totalPaid;
+            let paidMonths = 0;
+            if (paymentPool > 0 && oldBalance > 0) { paymentPool = Math.max(0, paymentPool - oldBalance); }
+            const blanketDiscPerMonth = SCHOOL_MONTHS.length > 0 ? blanketDiscTotal / SCHOOL_MONTHS.length : 0;
+
+            const monthStatus = {};
+            SCHOOL_MONTHS.forEach(m => {
+                const monthSpecDisc = monthSpecificDiscs[m] || 0;
+                const effectiveCharge = Math.max(0, monthFeeMap[m] - blanketDiscPerMonth - monthSpecDisc);
+                if (paymentPool >= effectiveCharge && effectiveCharge > 0) {
+                    paymentPool = Math.max(0, paymentPool - effectiveCharge);
+                    monthStatus[m] = { paid: true, due: 0, charge: effectiveCharge };
+                    paidMonths++;
+                } else if (paymentPool > 0 && effectiveCharge > 0) {
+                    const due = Math.max(0, effectiveCharge - paymentPool);
+                    monthStatus[m] = { paid: false, partial: paymentPool > 0, due: due, charge: effectiveCharge };
+                    paymentPool = 0;
+                } else {
+                    monthStatus[m] = { paid: false, partial: false, due: effectiveCharge, charge: effectiveCharge };
+                }
+            });
 
             $('#fTotal').text(fmt(annualFee));
-            $('#fTotalSub').text(fmt(monthlyCharge)+' \u00D7 12 months');
+            $('#fTotalSub').text(allMonthsSame ? fmt(monthlyCharge)+' \u00D7 12 months' : 'Includes monthly & periodic fees');
             $('#fPaid').text(fmt(totalPaid));
             $('#fPaidSub').text(paidMonths+' of 12 months paid');
             $('#fPending').text(fmt(pending));
@@ -243,18 +286,14 @@
             const currentMonth = now.toLocaleString('en-US',{month:'long'});
             let gh = '';
             SCHOOL_MONTHS.forEach(m => {
-                const md = depositsByMonth[m]||[];
-                const monthPaid = md.reduce((s,x)=>s+Number(x.received_amount||0),0);
-                const monthDisc = blanketDiscTotal + (monthSpecificDiscs[m]||0);
-                const effectiveCharge = Math.max(0, monthlyCharge - monthDisc);
-                const monthDue = Math.max(0, effectiveCharge - monthPaid);
+                const ms = monthStatus[m];
                 const isCurrent = m === currentMonth;
                 let badge, cls;
-                if (monthPaid >= effectiveCharge && effectiveCharge > 0) { badge = '\u2713 Paid'; cls = 'paid'; }
-                else if (monthPaid > 0 && monthPaid < effectiveCharge) { badge = '\u26A0 Partial'; cls = 'partial'; }
-                else if (SCHOOL_MONTHS.indexOf(m) > SCHOOL_MONTHS.indexOf(currentMonth) && monthlyCharge > 0) { badge = 'Upcoming'; cls = 'upcoming'; }
+                if (ms.paid) { badge = '\u2713 Paid'; cls = 'paid'; }
+                else if (ms.partial) { badge = '\u26A0 Partial'; cls = 'partial'; }
+                else if (SCHOOL_MONTHS.indexOf(m) > SCHOOL_MONTHS.indexOf(currentMonth) && ms.charge > 0) { badge = 'Upcoming'; cls = 'upcoming'; }
                 else { badge = '\u2717 Due'; cls = 'due'; }
-                gh += '<div class="month-tile '+cls+'"><div class="mt-name">'+m+(isCurrent?' <i class="fas fa-circle" style="font-size:5px;color:#304ffe;vertical-align:middle;"></i>':'')+'</div><div class="mt-amount">'+(monthPaid > 0 ? fmt(monthPaid) : fmt(effectiveCharge))+'</div><div class="mt-badge">'+badge+'</div>'+(monthDue > 0 && cls !== 'upcoming' ? '<div class="mt-due">Due: '+fmt(monthDue)+'</div>' : '')+'</div>';
+                gh += '<div class="month-tile '+cls+'"><div class="mt-name">'+m+(isCurrent?' <i class="fas fa-circle" style="font-size:5px;color:#304ffe;vertical-align:middle;"></i>':'')+'</div><div class="mt-amount">'+fmt(ms.charge)+'</div><div class="mt-badge">'+badge+'</div>'+(ms.due > 0 && cls !== 'upcoming' ? '<div class="mt-due">Due: '+fmt(ms.due)+'</div>' : '')+'</div>';
             });
             $('#monthGrid').html(gh);
 
@@ -267,7 +306,11 @@
                 });
                 $('#paymentList').html(ph);
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#monthGrid').html('<p style="text-align:center;color:#c00;">Unable to load fee status. Please try again later.</p>');
+            showToast('Unable to load fee data. Please try again.', 'error');
+        }
     });
     </script>
 </body>

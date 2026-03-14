@@ -290,7 +290,7 @@
 
             let branches = [];
             try { branches = await getBranches(); } catch(e) {}
-            const branch = branches.find(b => b.id === dep.branch_id) || {};
+            const branch = branches.find(b => Number(b.id) === Number(dep.branch_id)) || branches[0] || {};
 
             let feeRows = '';
             const items = dep.items || [];
@@ -315,7 +315,7 @@
                     ${branch.logo_url ? '<img src="'+branch.logo_url+'" style="height:48px;width:48px;object-fit:cover;border-radius:50%;margin:0 auto 6px;display:block;">' : ''}
                     <h3>${schoolName}</h3>
                     <div class="tagline">${branch.name || ''}</div>
-                    <div class="address">${schoolAddr} &nbsp;|&nbsp; ${schoolPhone}</div>
+                    <div class="address">${schoolAddr}${schoolAddr && schoolPhone ? ' &nbsp;|&nbsp; ' : ''}${schoolPhone}</div>
                 </div>
                 <div class="receipt-title-wrap"><span class="receipt-title">Fee Receipt</span></div>
 

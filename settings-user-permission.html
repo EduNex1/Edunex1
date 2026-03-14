@@ -69,6 +69,7 @@
         initPage('settings-user-permission');
         let usersCache = [];
         try { usersCache = await getUsers(); } catch(e) {}
+        usersCache = Array.isArray(usersCache) ? usersCache : (usersCache.results || []);
         usersCache.forEach(u=>$('#selUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
 
         $('#selUser').on('change', async function(){
@@ -100,7 +101,7 @@
                     module:m.key,
                     access:$(`input[data-mod="${m.key}"][data-type="access"]`).is(':checked'),
                     modify:$(`input[data-mod="${m.key}"][data-type="modify"]`).is(':checked'),
-                    delete:$(`input[data-mod="${m.key}"][data-type="delete"]`).is(':checked')
+                    can_delete:$(`input[data-mod="${m.key}"][data-type="delete"]`).is(':checked')
                 });
             });
             try {

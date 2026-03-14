@@ -211,7 +211,7 @@
             }
 
             const basicSalary = selectedStaff.basic_salary || 0;
-            const daysInMonth = 30;
+            const daysInMonth = new Date(currentYear, SALARY_MONTHS.indexOf(month) + 1, 0).getDate();
             const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
             const penaltyFraction = getPenaltyFraction();
             const leaveAllowed = getLeaveAllowed();
@@ -365,7 +365,8 @@
             $('#totalDeducted').val(totalDeducted);
 
             const basicSalary = parseInt($('#basicSalaryInput').val()) || 0;
-            const daysInMonth = 30;
+            const month = $('#fMonth').val();
+            const daysInMonth = new Date(currentYear, SALARY_MONTHS.indexOf(month) + 1, 0).getDate();
             const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
             const totalBasic = Math.round((basicSalary - (totalDeducted * salaryPerDay)) * 100) / 100;
 
@@ -432,7 +433,7 @@
             const half = parseInt($('#halfDays').val()) || 0;
             const totalDeducted = parseFloat($('#totalDeducted').val()) || 0;
             const basicSalary = parseInt($('#basicSalaryInput').val()) || 0;
-            const daysInMonth = 30;
+            const daysInMonth = new Date(currentYear, SALARY_MONTHS.indexOf(month) + 1, 0).getDate();
             const salaryPerDay = Math.round((basicSalary / daysInMonth) * 100) / 100;
             const totalBasicStr = ($('#totalBasicSalary').val() || '0').replace(/[₹,]/g, '');
             const totalBasic = parseFloat(totalBasicStr) || 0;

@@ -83,9 +83,16 @@
             children = await getMyChildren() || [];
             const cs = $('#childSelect').empty();
             children.forEach(c => cs.append('<option value="'+c.id+'">'+c.name+' \u2014 Class '+(c.class_name||'')+(c.section?'-'+c.section:'')+'</option>'));
+            var urlChildId = new URLSearchParams(window.location.search).get('child_id');
+            if (urlChildId && cs.find('option[value="' + urlChildId + '"]').length) {
+                cs.val(urlChildId);
+            }
             if (children.length) loadTransport();
             else $('#transportArea').html('<div class="tp-none"><i class="fas fa-child"></i><p>No children found.</p></div>');
-        } catch(e){ console.error(e); }
+        } catch(e){
+            console.error(e);
+            showToast('Unable to load transport data. Please try again.', 'error');
+        }
     });
 
     async function loadTransport(){

@@ -26,7 +26,6 @@ async function verifyJWT(token, secret) {
 
 const ALLOWED_ORIGINS = new Set([
     'https://edunex1.vercel.app',
-    'http://localhost:3000',
 ]);
 
 function json(data, status = 200) {
@@ -73,6 +72,37 @@ function generatePassword(len = 8) {
 
 function roundCurrency(value) {
     return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+}
+
+// Helper: fetch fee slabs for a student, filtering by session with fallback
+async function getStudentSlabs(env, branchId, classId, category, session) {
+    const cat = category || 'Default';
+    const sess = session || '';
+    // Try session-specific slabs first
+    let { results: slabs } = await env.DB.prepare(
+        `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND fs.session=? AND (fp.is_transport IS NULL OR fp.is_transport=0)`
+    ).bind(branchId, classId, cat, sess).all();
+    // Fallback to empty-session slabs if no session-specific found
+    if (!slabs.length && sess) {
+        ({ results: slabs } = await env.DB.prepare(
+            `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND (fs.session IS NULL OR fs.session='') AND (fp.is_transport IS NULL OR fp.is_transport=0)`
+        ).bind(branchId, classId, cat).all());
+    }
+    // Fallback to Default category
+    if (!slabs.length) {
+        ({ results: slabs } = await env.DB.prepare(
+            `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category='Default' AND (fs.session=? OR fs.session IS NULL OR fs.session='') AND (fp.is_transport IS NULL OR fp.is_transport=0)`
+        ).bind(branchId, classId, sess).all());
+    }
+    return slabs;
+}
+
+function computeSlabAnnual(slabs) {
+    return slabs.reduce((s, r) => {
+        let mc = 12;
+        try { const mp = typeof r.months === 'string' && r.months ? JSON.parse(r.months) : null; if (Array.isArray(mp)) mc = mp.length; } catch(e) {}
+        return s + Number(r.amount || 0) * mc;
+    }, 0);
 }
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -206,6 +236,21 @@ function isAdminRole(user) {
     return ['super_admin', 'branch_admin'].includes(user.role);
 }
 
+/* Resolve the effective branch_id for the current request.
+   - super_admin: uses branch_id from URL param (empty = all branches)
+   - branch_admin / multi-branch user: uses branch_id from URL param IF it's in their assigned branches, else their primary branch
+   - single-branch user: always their own branch_id */
+async function getEffectiveBranchId(req, env, user) {
+    const url = new URL(req.url);
+    const requested = url.searchParams.get('branch_id');
+    if (user.role === 'super_admin') return requested || '';
+    if (!requested) return user.branch_id;
+    // For non-super_admin, check if the requested branch is in their assigned branches
+    const assignedIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+    if (assignedIds.map(String).includes(String(requested))) return requested;
+    return user.branch_id;
+}
+
 async function getAccessibleStudentIdsForUser(env, user) {
     if (user.role === 'student') return user.linked_id ? [Number(user.linked_id)] : [];
     if (user.role === 'parent') {
@@ -273,10 +318,12 @@ function isValidISODate(value) {
 }
 
 async function getNextId(db, branchId, type, year) {
-    await db.prepare('UPDATE counters SET last_serial = last_serial + 1 WHERE branch_id = ? AND counter_type = ? AND year = ?')
-        .bind(branchId, type, year).run();
-    const row = await db.prepare('SELECT last_serial FROM counters WHERE branch_id = ? AND counter_type = ? AND year = ?')
-        .bind(branchId, type, year).first();
+    const updateStmt = db.prepare('UPDATE counters SET last_serial = last_serial + 1 WHERE branch_id = ? AND counter_type = ? AND year = ?')
+        .bind(branchId, type, year);
+    const selectStmt = db.prepare('SELECT last_serial FROM counters WHERE branch_id = ? AND counter_type = ? AND year = ?')
+        .bind(branchId, type, year);
+    const [, selectResult] = await db.batch([updateStmt, selectStmt]);
+    const row = selectResult.results && selectResult.results[0];
     if (!row) {
         await db.prepare('INSERT INTO counters (branch_id, counter_type, year, last_serial) VALUES (?, ?, ?, 1)')
             .bind(branchId, type, year).run();
@@ -482,7 +529,13 @@ router.get('/api/users', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (user.role === 'super_admin') {
-        const { results } = await env.DB.prepare('SELECT u.id, u.login_id, u.role, u.branch_id, u.is_active, u.last_login, u.created_at, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id ORDER BY u.created_at DESC').all();
+        const url = new URL(req.url);
+        const branchId = url.searchParams.get('branch_id');
+        let usersQ = 'SELECT u.id, u.login_id, u.role, u.branch_id, u.is_active, u.last_login, u.created_at, b.name as branch_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id';
+        const usersBinds = [];
+        if (branchId) { usersQ += ' WHERE u.branch_id=?'; usersBinds.push(branchId); }
+        usersQ += ' ORDER BY u.created_at DESC';
+        const { results } = usersBinds.length ? await env.DB.prepare(usersQ).bind(...usersBinds).all() : await env.DB.prepare(usersQ).all();
         for (const row of results || []) {
             row.branch_ids = await getUserAssignedBranchIds(env, row.id, row.branch_id);
         }
@@ -595,7 +648,7 @@ router.post('/api/change-password', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const d = await req.json();
     if (!d.current_password || !d.new_password) return json({ error: 'current_password and new_password required' }, 400);
-    if (d.new_password.length < 4) return json({ error: 'Password must be at least 4 characters' }, 400);
+    if (d.new_password.length < 6) return json({ error: 'Password must be at least 6 characters' }, 400);
     const me = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(user.id).first();
     if (!me || me.password_hash !== d.current_password) return json({ error: 'Current password is incorrect' }, 400);
     await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, user.id).run();
@@ -682,7 +735,8 @@ router.get('/api/user-permissions', async (req, env) => {
     const userId = url.searchParams.get('user_id');
     let q = 'SELECT * FROM user_permissions WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     if (userId) { q += ' AND user_id=?'; b.push(userId); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -703,7 +757,7 @@ router.post('/api/user-permissions', async (req, env) => {
     }
     for (const p of permissions) {
         await env.DB.prepare('INSERT INTO user_permissions (branch_id, user_id, module, access, modify, can_delete) VALUES (?,?,?,?,?,?)')
-            .bind(bid, user_id, p.module, p.access ? 1 : 0, p.modify ? 1 : 0, p.delete ? 1 : 0).run();
+            .bind(bid, user_id, p.module, p.access ? 1 : 0, p.modify ? 1 : 0, p.can_delete ? 1 : 0).run();
     }
     return json({ success: true });
 });
@@ -731,9 +785,10 @@ router.get('/api/students', async (req, env) => {
     const classId = url.searchParams.get('class_id');
     const section = url.searchParams.get('section');
     const status = url.searchParams.get('status') || 'Active';
-    let q = 'SELECT s.*, c.name as class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE 1=1';
+    let q = 'SELECT s.*, c.name as class_name, tr.name as route_name, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN classes c ON s.class_id = c.id LEFT JOIN transport_routes tr ON s.route_id = tr.id WHERE 1=1';
     const binds = [];
-    if (user.role !== 'super_admin') { q += ' AND s.branch_id = ?'; binds.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND s.branch_id = ?'; binds.push(effBranch); }
     if (classId && classId !== 'All') { q += ' AND s.class_id = ?'; binds.push(classId); }
     if (section && section !== 'All') { q += ' AND s.section = ?'; binds.push(section); }
     if (status !== 'All') { q += ' AND s.status = ?'; binds.push(status); }
@@ -769,7 +824,7 @@ router.get('/api/students', async (req, env) => {
 router.get('/api/students/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
-    const s = await env.DB.prepare('SELECT s.*, c.name as class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ?').bind(params.id).first();
+    const s = await env.DB.prepare('SELECT s.*, c.name as class_name, tr.name as route_name, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN classes c ON s.class_id = c.id LEFT JOIN transport_routes tr ON s.route_id = tr.id WHERE s.id = ?').bind(params.id).first();
     if (!s) return json({ error: 'Not found' }, 404);
     if (user.role !== 'super_admin' && s.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
     normalizePhotoUrls(req, s);
@@ -787,10 +842,22 @@ router.post('/api/students', async (req, env) => {
     const serial = await getNextId(env.DB, branchId, 'admission', yr);
     const admNo = `${code}${yr}${String(serial).padStart(3, '0')}`;
 
-    const r = await env.DB.prepare(`INSERT INTO students (branch_id, admission_no, photo_url, name, father_name, mother_name, dob, gender, category, religion, phone, email, address, aadhar_no, class_id, section, session, roll_no, route_id, admission_date, id_type, status, fee_amount, fee_paid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .bind(branchId, admNo, d.photo_url || '', d.name, d.father_name || '', d.mother_name || '', d.dob || '', d.gender || '', d.category || '', d.religion || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.class_id || null, d.section || '', d.session || '', d.roll_no || null, d.route_id || null, d.admission_date || new Date().toISOString().slice(0, 10), d.id_type || 'Aadharshila ID', 'Active', d.fee_amount || 0, 0).run();
+    const r = await env.DB.prepare(`INSERT INTO students (branch_id, admission_no, photo_url, name, father_name, mother_name, dob, gender, category, religion, phone, email, address, aadhar_no, class_id, section, session, roll_no, route_id, admission_date, id_type, status, fee_amount, fee_paid, extra_data) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(branchId, admNo, d.photo_url || '', d.name, d.father_name || '', d.mother_name || '', d.dob || '', d.gender || '', d.category || '', d.religion || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.class_id || null, d.section || '', d.session || '', d.roll_no || null, d.route_id || null, d.admission_date || new Date().toISOString().slice(0, 10), d.id_type || 'Aadharshila ID', 'Active', d.fee_amount || 0, 0, d.extra_data || '{}').run();
 
     const studentId = r.meta.last_row_id;
+
+    // Auto-compute fee_amount from slabs + transport for the student
+    try {
+        const finalSlabs = await getStudentSlabs(env, branchId, d.class_id, d.category, d.session);
+        const slabAnnual = computeSlabAnnual(finalSlabs);
+        const route = d.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(d.route_id).first() : null;
+        const tFee = route ? Number(route.fee||0)*12 : 0;
+        const computedFee = roundCurrency(slabAnnual + tFee);
+        if (computedFee > 0) {
+            await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, studentId).run();
+        }
+    } catch(e) { /* fee_amount stays as 0 if computation fails */ }
     const studentPwd = generatePassword();
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
         .bind(admNo, studentPwd, 'student', branchId, studentId).run();
@@ -813,7 +880,7 @@ router.put('/api/students/:id', async (req, env, params) => {
     const existing = await env.DB.prepare('SELECT * FROM students WHERE id = ?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
     if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare(`UPDATE students SET photo_url=?, name=?, father_name=?, mother_name=?, dob=?, gender=?, category=?, religion=?, phone=?, email=?, address=?, aadhar_no=?, class_id=?, section=?, session=?, roll_no=?, route_id=?, id_type=?, status=?, fee_amount=? WHERE id=?`)
+    await env.DB.prepare(`UPDATE students SET photo_url=?, name=?, father_name=?, mother_name=?, dob=?, gender=?, category=?, religion=?, phone=?, email=?, address=?, aadhar_no=?, class_id=?, section=?, session=?, roll_no=?, route_id=?, id_type=?, status=?, fee_amount=?, extra_data=? WHERE id=?`)
         .bind(
             d.photo_url ?? existing.photo_url ?? '',
             d.name ?? existing.name ?? '',
@@ -835,9 +902,50 @@ router.put('/api/students/:id', async (req, env, params) => {
             d.id_type ?? existing.id_type ?? 'Aadharshila ID',
             d.status ?? existing.status ?? 'Active',
             d.fee_amount ?? existing.fee_amount ?? 0,
+            d.extra_data ?? existing.extra_data ?? '{}',
             params.id
         ).run();
+    // Auto-recompute fee_amount if class or route changed
+    const finalClassId = d.class_id ?? existing.class_id;
+    const finalRouteId = d.route_id ?? existing.route_id;
+    const finalCategory = d.category ?? existing.category ?? 'Default';
+    const finalSession = d.session ?? existing.session ?? '';
+    if (d.fee_amount === undefined && finalClassId) {
+        try {
+            const bid = existing.branch_id;
+            const finalSlabs = await getStudentSlabs(env, bid, finalClassId, finalCategory, finalSession);
+            const slabAnnual = computeSlabAnnual(finalSlabs);
+            const route = finalRouteId ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(finalRouteId).first() : null;
+            const tFee = route ? Number(route.fee||0)*12 : 0;
+            const computedFee = roundCurrency(slabAnnual + tFee);
+            await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, params.id).run();
+        } catch(e) { /* keep existing fee_amount */ }
+    }
     return json({ success: true });
+});
+
+// Bulk recompute fee_amount for all active students
+router.post('/api/students/recompute-fees', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    const branchId = effBranch ? Number(effBranch) : Number(user.branch_id);
+    const { results: students } = await env.DB.prepare(
+        `SELECT s.id, s.class_id, s.category, s.session, s.route_id FROM students s WHERE s.branch_id=? AND s.status='Active'`
+    ).bind(branchId).all();
+    let updated = 0;
+    for (const stu of students) {
+        try {
+            const finalSlabs = await getStudentSlabs(env, branchId, stu.class_id, stu.category, stu.session);
+            const slabAnnual = computeSlabAnnual(finalSlabs);
+            const route = stu.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(stu.route_id).first() : null;
+            const tFee = route ? Number(route.fee||0)*12 : 0;
+            const computedFee = roundCurrency(slabAnnual + tFee);
+            await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, stu.id).run();
+            updated++;
+        } catch(e) { /* skip this student */ }
+    }
+    return json({ success: true, updated, total: students.length });
 });
 
 router.delete('/api/students/:id', async (req, env, params) => {
@@ -847,6 +955,19 @@ router.delete('/api/students/:id', async (req, env, params) => {
         const stu = await env.DB.prepare('SELECT id FROM students WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).first();
         if (!stu) return json({ error: 'Forbidden' }, 403);
     }
+    await env.DB.prepare('DELETE FROM student_attendance WHERE student_id=?').bind(params.id).run();
+    const { results: deposits } = await env.DB.prepare('SELECT id FROM fee_deposits WHERE student_id=?').bind(params.id).all();
+    if (deposits.length) {
+        const depositIds = deposits.map(d => d.id);
+        const phd = depositIds.map(() => '?').join(',');
+        await env.DB.prepare(`DELETE FROM fee_deposit_items WHERE deposit_id IN (${phd})`).bind(...depositIds).run();
+    }
+    await env.DB.prepare('DELETE FROM fee_deposits WHERE student_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM exam_results WHERE student_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM student_subjects WHERE student_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM book_issues WHERE student_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM fee_discounts WHERE student_id=?').bind(params.id).run();
+    await env.DB.prepare("DELETE FROM face_descriptors WHERE person_type='student' AND person_id=?").bind(params.id).run();
     await env.DB.prepare('DELETE FROM students WHERE id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM users WHERE linked_id=? AND role="student"').bind(params.id).run();
     return json({ success: true });
@@ -859,7 +980,8 @@ router.get('/api/staff', async (req, env) => {
     const url = new URL(req.url);
     let q = 'SELECT * FROM staff WHERE 1=1';
     const binds = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id = ?'; binds.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id = ?'; binds.push(effBranch); }
     const status = url.searchParams.get('status');
     if (status && status !== 'All') { q += ' AND status = ?'; binds.push(status); }
     const designation = url.searchParams.get('designation');
@@ -955,6 +1077,9 @@ router.delete('/api/staff/:id', async (req, env, params) => {
     if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM generated_salaries WHERE staff_id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM staff_attendance WHERE staff_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM teacher_permissions WHERE staff_id=?').bind(params.id).run();
+    await env.DB.prepare('DELETE FROM salary_settings WHERE staff_id=?').bind(params.id).run();
+    await env.DB.prepare("DELETE FROM face_descriptors WHERE person_type='staff' AND person_id=?").bind(params.id).run();
     await env.DB.prepare('DELETE FROM staff WHERE id=?').bind(params.id).run();
     await env.DB.prepare("DELETE FROM users WHERE linked_id=? AND role IN ('teacher','staff')").bind(params.id).run();
     return json({ success: true });
@@ -969,7 +1094,7 @@ function masterCRUD(table, nameField = 'name') {
     router.get(`/api/${table}`, async (req, env) => {
         const user = await authenticate(req, env);
         if (!user) return json({ error: 'Unauthorized' }, 401);
-        const bid = user.role === 'super_admin' ? new URL(req.url).searchParams.get('branch_id') : user.branch_id;
+        const bid = await getEffectiveBranchId(req, env, user);
         const q = bid ? `SELECT * FROM ${table} WHERE branch_id = ? ORDER BY id` : `SELECT * FROM ${table} ORDER BY id`;
         const { results } = bid ? await env.DB.prepare(q).bind(bid).all() : await env.DB.prepare(q).all();
         return json(results);
@@ -1004,11 +1129,13 @@ function masterCRUD(table, nameField = 'name') {
     router.delete(`/api/${table}/:id`, async (req, env, params) => {
         const user = await authenticate(req, env);
         if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+        let result;
         if (user.role === 'branch_admin') {
-            await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(params.id, user.branch_id).run();
+            result = await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(params.id, user.branch_id).run();
         } else {
-            await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(params.id).run();
+            result = await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(params.id).run();
         }
+        if (!result.meta.changes) return json({ error: 'Not found' }, 404);
         return json({ success: true });
     });
 }
@@ -1055,7 +1182,8 @@ router.get('/api/attendance/students', async (req, env) => {
     const toDate = url.searchParams.get('to_date');
     let q = 'SELECT sa.*, s.name, s.admission_no, s.roll_no, s.photo_url, s.father_name, s.class_id, s.section FROM student_attendance sa JOIN students s ON sa.student_id = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND sa.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND sa.branch_id=?'; b.push(effBranch); }
     if (date) { q += ' AND sa.date=?'; b.push(date); }
     if (month) { q += ' AND sa.date LIKE ?'; b.push(month + '%'); }
     if (fromDate) { q += ' AND sa.date>=?'; b.push(fromDate); }
@@ -1162,7 +1290,8 @@ router.get('/api/fee-deposits', async (req, env) => {
     const month = url.searchParams.get('month');
     let q = 'SELECT fd.*, s.name as student_name, s.admission_no, s.father_name, s.section, c.name as class_name FROM fee_deposits fd JOIN students s ON fd.student_id = s.id LEFT JOIN classes c ON s.class_id = c.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fd.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         if (studentId && Number(studentId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
         q += ' AND fd.student_id=?'; b.push(user.linked_id);
@@ -1201,7 +1330,8 @@ router.get('/api/fee-due-report', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const url = new URL(req.url);
-    const branchId = user.role === 'super_admin' ? Number(url.searchParams.get('branch_id') || 1) : Number(user.branch_id || 1);
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    const branchId = effBranch ? Number(effBranch) : 1;
     const classId = url.searchParams.get('class_id');
     const section = url.searchParams.get('section');
     const month = url.searchParams.get('month');
@@ -1236,25 +1366,34 @@ router.get('/api/fee-due-report', async (req, env) => {
 
     if (!students.length) return json([]);
 
-    const monthsToCheck = month ? [month] : MONTH_NAMES;
+    const SCHOOL_YEAR_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
+    const monthsToCheck = month ? [month] : SCHOOL_YEAR_MONTHS;
 
     const classIds = [...new Set(students.map(s => s.class_id).filter(Boolean))];
     const slabCache = {};
     for (const cid of classIds) {
-        const { results: slabs } = await env.DB.prepare(
-            `SELECT fs.amount, fs.category, fs.particular_id FROM fee_slabs fs
+        let slabQ = `SELECT fs.amount, fs.category, fs.particular_id FROM fee_slabs fs
              LEFT JOIN fee_particulars fp ON fs.particular_id = fp.id
-             WHERE fs.branch_id=? AND fs.class_id=? AND (fp.is_transport IS NULL OR fp.is_transport = 0)`
-        ).bind(branchId, cid).all();
+             WHERE fs.branch_id=? AND fs.class_id=? AND (fp.is_transport IS NULL OR fp.is_transport = 0)`;
+        const slabBinds = [branchId, cid];
+        if (session && session !== 'All') {
+            slabQ += ` AND (fs.session=? OR fs.session IS NULL OR fs.session='')`;
+            slabBinds.push(session);
+        }
+        const { results: slabs } = await env.DB.prepare(slabQ).bind(...slabBinds).all();
         slabCache[cid] = slabs;
     }
 
     const studentIds = students.map(s => s.id);
     const allDiscounts = {};
     if (studentIds.length) {
-        const { results: discRows } = await env.DB.prepare(
-            `SELECT student_id, month, amount FROM fee_discounts WHERE branch_id=? AND student_id IN (${studentIds.map(() => '?').join(',')})`
-        ).bind(branchId, ...studentIds).all();
+        let discQ = `SELECT student_id, month, amount FROM fee_discounts WHERE branch_id=? AND student_id IN (${studentIds.map(() => '?').join(',')})`;
+        const discBinds = [branchId, ...studentIds];
+        if (session && session !== 'All') {
+            discQ += ` AND (session=? OR session IS NULL OR session='')`;
+            discBinds.push(session);
+        }
+        const { results: discRows } = await env.DB.prepare(discQ).bind(...discBinds).all();
         for (const d of discRows) {
             if (!allDiscounts[d.student_id]) allDiscounts[d.student_id] = [];
             allDiscounts[d.student_id].push(d);
@@ -1287,24 +1426,54 @@ router.get('/api/fee-due-report', async (req, env) => {
         const slabs = catSlabs.length ? catSlabs : classSlabs.filter(s => (s.category || 'Default') === 'Default');
         const baseMonthlyFee = roundCurrency(slabs.reduce((sum, slab) => sum + Number(slab.amount || 0), 0));
         const transportFee = roundCurrency(student.transport_fee || 0);
-        let totalDue = roundCurrency(student.old_balance || 0);
         const oldBalance = roundCurrency(student.old_balance || 0);
         const dueMonths = [];
         const monthDetails = [];
 
         const stuDiscounts = allDiscounts[student.id] || [];
 
+        // Calculate total paid across ALL months (not just per-month)
+        let totalPaidAllMonths = 0;
+        for (const monthName of monthsToCheck) {
+            const deposits = allDeposits[`${student.id}_${monthName}`] || [];
+            totalPaidAllMonths += deposits.reduce((sum, item) => sum + Number(item.received_amount || 0), 0);
+        }
+        totalPaidAllMonths = roundCurrency(totalPaidAllMonths);
+
+        // Calculate total annual charge
+        let totalAnnualCharge = 0;
+        for (const monthName of monthsToCheck) {
+            const monthDiscs = stuDiscounts.filter(d => !d.month || d.month === '' || d.month === monthName);
+            const monthlyDiscount = roundCurrency(monthDiscs.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+            const monthlyCharge = Math.max(0, roundCurrency(baseMonthlyFee + transportFee - monthlyDiscount));
+            totalAnnualCharge += monthlyCharge;
+        }
+        totalAnnualCharge = roundCurrency(totalAnnualCharge);
+
+        // If total paid covers entire annual fee + old balance, skip — no dues
+        if (totalPaidAllMonths >= roundCurrency(totalAnnualCharge + oldBalance)) continue;
+
+        // Distribute payments across months: use remaining pool after each month
+        let paymentPool = totalPaidAllMonths;
+        let totalDue = oldBalance;
+
+        // First deduct old balance from pool
+        if (paymentPool > 0 && oldBalance > 0) {
+            paymentPool = Math.max(0, roundCurrency(paymentPool - oldBalance));
+        }
+
         for (const monthName of monthsToCheck) {
             const monthDiscs = stuDiscounts.filter(d => !d.month || d.month === '' || d.month === monthName);
             const monthlyDiscount = roundCurrency(monthDiscs.reduce((sum, item) => sum + Number(item.amount || 0), 0));
             const monthlyCharge = Math.max(0, roundCurrency(baseMonthlyFee + transportFee - monthlyDiscount));
 
-            const deposits = allDeposits[`${student.id}_${monthName}`] || [];
-
             let monthOutstanding = monthlyCharge;
-            if (deposits.length) {
-                const totalPaid = roundCurrency(deposits.reduce((sum, item) => sum + Number(item.received_amount || 0), 0));
-                monthOutstanding = Math.max(0, roundCurrency(monthlyCharge - totalPaid));
+            if (paymentPool >= monthlyCharge) {
+                paymentPool = roundCurrency(paymentPool - monthlyCharge);
+                monthOutstanding = 0;
+            } else if (paymentPool > 0) {
+                monthOutstanding = roundCurrency(monthlyCharge - paymentPool);
+                paymentPool = 0;
             }
 
             if (monthOutstanding > 0) {
@@ -1369,7 +1538,8 @@ router.get('/api/payment-requests', async (req, env) => {
         LEFT JOIN fee_deposits fd ON opr.receipt_id = fd.id
         WHERE 1=1`;
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND opr.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND opr.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         q += ' AND opr.student_id=?';
         b.push(user.linked_id);
@@ -1501,7 +1671,8 @@ router.get('/api/fee-report', async (req, env) => {
         LEFT JOIN classes c ON s.class_id = c.id
         WHERE 1=1`;
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fd.branch_id=?'; b.push(effBranch); }
     const fromDate = url.searchParams.get('from_date');
     const toDate = url.searchParams.get('to_date');
     const classId = url.searchParams.get('class_id');
@@ -1534,7 +1705,8 @@ router.get('/api/fee-report-headwise', async (req, env) => {
         LEFT JOIN fee_particulars fp ON fp.id = fdi.particular_id
         WHERE 1=1`;
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fd.branch_id=?'; b.push(effBranch); }
     const fromDate = url.searchParams.get('from_date');
     const toDate = url.searchParams.get('to_date');
     const classId = url.searchParams.get('class_id');
@@ -1558,7 +1730,8 @@ router.get('/api/expenses', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT e.*, eh.name as head_name, v.name as vendor_name FROM expenses e LEFT JOIN expense_heads eh ON e.head_id = eh.id LEFT JOIN vendors v ON e.vendor_id = v.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND e.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND e.branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY e.date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -1605,7 +1778,8 @@ router.get('/api/incomes', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT i.*, ih.name as head_name FROM incomes i JOIN income_heads ih ON i.head_id = ih.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND i.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND i.branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY i.date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -1695,7 +1869,8 @@ router.get('/api/exam-results', async (req, env) => {
     const studentId = url.searchParams.get('student_id');
     let q = 'SELECT er.*, s.name as student_name, sub.name as subject_name FROM exam_results er JOIN students s ON er.student_id = s.id JOIN subjects sub ON er.subject_id = sub.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND er.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND er.branch_id=?'; b.push(effBranch); }
     if (examId) { q += ' AND er.exam_id=?'; b.push(examId); }
     if (user.role === 'student') {
         if (studentId && Number(studentId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
@@ -1737,7 +1912,8 @@ router.get('/api/result-details', async (req, env) => {
     const studentId = url.searchParams.get('student_id');
     let q = 'SELECT rd.* FROM result_details rd JOIN students s ON rd.student_id = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND rd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND rd.branch_id=?'; b.push(effBranch); }
     if (examId) { q += ' AND rd.exam_id=?'; b.push(examId); }
     if (user.role === 'student') {
         if (studentId && Number(studentId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
@@ -1789,9 +1965,17 @@ router.post('/api/upload', async (req, env) => {
     const formData = await req.formData();
     const file = formData.get('file');
     if (!file) return json({ error: 'No file provided' }, 400);
+    if (file.size > 5 * 1024 * 1024) return json({ error: 'File size exceeds 5MB limit' }, 400);
     const ext = file.name.split('.').pop().toLowerCase();
     const allowed = ['jpg','jpeg','png','gif','pdf','doc','docx','xls','xlsx'];
     if (!allowed.includes(ext)) return json({ error: 'File type not allowed' }, 400);
+    const ALLOWED_CONTENT_TYPES = new Set([
+        'image/jpeg', 'image/png', 'image/gif',
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ]);
+    if (!ALLOWED_CONTENT_TYPES.has(file.type)) return json({ error: 'File content type not allowed' }, 400);
     const key = `${user.branch_id || 'global'}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
     await env.UPLOADS.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
     return json({ url: toAbsoluteFileUrl(req, `/api/files/${key}`), key });
@@ -1801,7 +1985,7 @@ router.get('/api/files/:path+', async (req, env, params) => {
     const key = params.path;
     const obj = await env.UPLOADS.get(key);
     if (!obj) return new Response('Not found', { status: 404 });
-    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream' } });
+    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', 'Content-Disposition': 'attachment', 'X-Content-Type-Options': 'nosniff' } });
 });
 
 router.get('/api/salary-settings', async (req, env) => {
@@ -1812,7 +1996,8 @@ router.get('/api/salary-settings', async (req, env) => {
     const staffId = url.searchParams.get('staff_id');
     let q = 'SELECT ss.*, CASE WHEN ss.component_type="allowance" THEN ah.name ELSE dh.name END as component_name FROM salary_settings ss LEFT JOIN allowance_heads ah ON ss.component_type="allowance" AND ss.component_id = ah.id LEFT JOIN deduction_heads dh ON ss.component_type="deduction" AND ss.component_id = dh.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND ss.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND ss.branch_id=?'; b.push(effBranch); }
     if (staffId) { q += ' AND ss.staff_id=?'; b.push(staffId); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -1851,7 +2036,8 @@ router.get('/api/salaries', async (req, env) => {
     const year = url.searchParams.get('year');
     let q = 'SELECT gs.*, s.name as staff_name, s.employee_id, s.designation FROM generated_salaries gs JOIN staff s ON gs.staff_id = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND gs.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND gs.branch_id=?'; b.push(effBranch); }
     if (month) { q += ' AND gs.month=?'; b.push(month); }
     if (year) { q += ' AND gs.year=?'; b.push(year); }
     q += ' ORDER BY gs.generated_date DESC';
@@ -1904,15 +2090,40 @@ router.post('/api/salaries/generate', async (req, env) => {
 
     const { month, year, staff_ids } = d;
     let generated = 0;
+    const bulkSettings = await getOptionSettingsMap(env, bid);
+    const bulkLeaveAllowed = Number(bulkSettings.salary_leave_per_month || 2);
+    const bulkPenaltyFraction = getLatePenaltyFraction(bulkSettings.salary_late_penalty || 'quarter');
     for (const sid of staff_ids) {
         const s = await env.DB.prepare('SELECT basic_salary FROM staff WHERE id=?').bind(sid).first();
         if (!s) continue;
         const { results: settings } = await env.DB.prepare('SELECT * FROM salary_settings WHERE staff_id=?').bind(sid).all();
         let totalAllow = 0, totalDeduct = 0;
-        settings.forEach(c => { if (c.component_type === 'allowance') totalAllow += c.amount; else totalDeduct += c.amount; });
-        const net = s.basic_salary + totalAllow - totalDeduct;
-        await env.DB.prepare('INSERT OR REPLACE INTO generated_salaries (branch_id, staff_id, month, year, basic, total_allowances, total_deductions, net_salary, status) VALUES (?,?,?,?,?,?,?,?,?)')
-            .bind(bid, sid, month, year, s.basic_salary, totalAllow, totalDeduct, net, 'Generated').run();
+        const allowancesMap = {};
+        const deductionsMap = {};
+        settings.forEach(c => {
+            if (c.component_type === 'allowance') { totalAllow += c.amount; allowancesMap[c.component_id] = c.amount; }
+            else { totalDeduct += c.amount; deductionsMap[c.component_id] = c.amount; }
+        });
+        const bulkBasic = roundCurrency(s.basic_salary || 0);
+        const bulkSalaryPerDay = roundCurrency(bulkBasic / 30);
+        const attendanceSummary = await getStaffAttendanceSummary(env, bid, sid, month, year);
+        const absentDays = Number(attendanceSummary?.absent_days ?? 0);
+        const lateDays = Number(attendanceSummary?.late_days ?? 0);
+        const halfDays = Number(attendanceSummary?.half_days ?? 0);
+        const excessAbsent = Math.max(0, absentDays - bulkLeaveAllowed);
+        const totalDeductedDays = roundCurrency(excessAbsent + (lateDays * bulkPenaltyFraction) + (halfDays * 0.5));
+        const totalBasicSalary = Math.max(0, roundCurrency(bulkBasic - (bulkSalaryPerDay * totalDeductedDays)));
+        totalAllow = roundCurrency(totalAllow);
+        totalDeduct = roundCurrency(totalDeduct);
+        const net = Math.max(0, roundCurrency(totalBasicSalary + totalAllow - totalDeduct));
+        await env.DB.prepare(`INSERT OR REPLACE INTO generated_salaries
+            (branch_id, staff_id, month, year, basic, total_allowances, total_deductions, net_salary,
+             absent_days, late_days, half_days, total_deducted_days, salary_per_day, total_basic_salary,
+             allowances, deductions, status, generated_date)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+            .bind(bid, sid, month, year, bulkBasic, totalAllow, totalDeduct, net,
+                absentDays, lateDays, halfDays, totalDeductedDays, bulkSalaryPerDay, totalBasicSalary,
+                JSON.stringify(allowancesMap), JSON.stringify(deductionsMap), 'Generated', new Date().toISOString().split('T')[0]).run();
         generated++;
     }
     return json({ success: true, generated });
@@ -1954,7 +2165,8 @@ router.get('/api/books', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT b.*, bt.name as type_name FROM books b LEFT JOIN book_types bt ON b.type_id = bt.id WHERE 1=1';
     const binds = [];
-    if (user.role !== 'super_admin') { q += ' AND b.branch_id=?'; binds.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND b.branch_id=?'; binds.push(effBranch); }
     q += ' ORDER BY b.title';
     const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2003,7 +2215,8 @@ router.get('/api/book-issues', async (req, env) => {
     const studentId = url.searchParams.get('student_id');
     let q = 'SELECT bi.*, b.title as book_title, b.author, bt.name as type_name, s.name as student_name, s.admission_no, s.class_id as student_class_id, s.section as student_section FROM book_issues bi JOIN books b ON bi.book_id = b.id LEFT JOIN book_types bt ON b.type_id = bt.id JOIN students s ON bi.student_id = s.id WHERE 1=1';
     const binds = [];
-    if (user.role !== 'super_admin') { q += ' AND bi.branch_id=?'; binds.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND bi.branch_id=?'; binds.push(effBranch); }
     if (status) { q += ' AND bi.status=?'; binds.push(status); }
     if (user.role === 'student') {
         if (studentId && Number(studentId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
@@ -2070,7 +2283,8 @@ router.get('/api/timetable', async (req, env) => {
     const subjectId = url.searchParams.get('subject_id');
     let q = 'SELECT t.*, sub.name as subject_name, s.name as teacher_name, c.name as class_name FROM timetable t LEFT JOIN subjects sub ON t.subject_id = sub.id LEFT JOIN staff s ON t.staff_id = s.id LEFT JOIN classes c ON t.class_id = c.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND t.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND t.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         const student = await env.DB.prepare('SELECT class_id, section FROM students WHERE branch_id=? AND id=?').bind(user.branch_id, user.linked_id).first();
         if (!student) return json([]);
@@ -2144,7 +2358,11 @@ router.put('/api/timetable/:id', async (req, env, params) => {
 router.delete('/api/timetable/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM timetable WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM timetable WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM timetable WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2157,7 +2375,8 @@ router.get('/api/course-schedules', async (req, env) => {
     const examId = url.searchParams.get('exam_id');
     let q = 'SELECT cs.*, c.name as class_name, sub.name as subject_name FROM course_schedules cs LEFT JOIN classes c ON cs.class_id = c.id LEFT JOIN subjects sub ON cs.subject_id = sub.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND cs.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND cs.branch_id=?'; b.push(effBranch); }
     if (classId) { q += ' AND cs.class_id=?'; b.push(classId); }
     if (subjectId) { q += ' AND cs.subject_id=?'; b.push(subjectId); }
     if (examId) { q += ' AND cs.exam_id=?'; b.push(examId); }
@@ -2188,7 +2407,11 @@ router.put('/api/course-schedules/:id', async (req, env, params) => {
 router.delete('/api/course-schedules/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM course_schedules WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        await env.DB.prepare('DELETE FROM course_schedules WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM course_schedules WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2197,7 +2420,8 @@ router.get('/api/activities', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT a.*, cg.name as group_name FROM activities a LEFT JOIN class_groups cg ON a.class_group_id = cg.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND a.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND a.branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY a.date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2225,7 +2449,11 @@ router.put('/api/activities/:id', async (req, env, params) => {
 router.delete('/api/activities/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM activities WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM activities WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM activities WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2234,7 +2462,8 @@ router.get('/api/class-groups', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT * FROM class_groups WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY name';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2262,7 +2491,11 @@ router.put('/api/class-groups/:id', async (req, env, params) => {
 router.delete('/api/class-groups/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM class_groups WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM class_groups WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM class_groups WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2274,7 +2507,8 @@ router.get('/api/homework', async (req, env) => {
     const section = url.searchParams.get('section');
     let q = 'SELECT h.*, sub.name as subject_name, c.name as class_name, s.name as teacher_name FROM homework h LEFT JOIN subjects sub ON h.subject_id = sub.id LEFT JOIN classes c ON h.class_id = c.id LEFT JOIN staff s ON h.assigned_by = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND h.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND h.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         const student = await env.DB.prepare('SELECT class_id, section FROM students WHERE branch_id=? AND id=?').bind(user.branch_id, user.linked_id).first();
         if (!student) return json([]);
@@ -2342,16 +2576,23 @@ router.delete('/api/homework/:id', async (req, env, params) => {
         const existing = await env.DB.prepare('SELECT assigned_by FROM homework WHERE branch_id=? AND id=?').bind(user.branch_id, params.id).first();
         if (!existing || Number(existing.assigned_by || 0) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
     }
-    await env.DB.prepare('DELETE FROM homework WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM homework WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else if (user.role === 'teacher') {
+        await env.DB.prepare('DELETE FROM homework WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM homework WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
 router.get('/api/date-sheets', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
-    let q = 'SELECT ds.*, en.name as exam_name FROM date_sheets ds LEFT JOIN exams e ON ds.exam_id = e.id LEFT JOIN exam_names en ON e.name = en.name WHERE 1=1';
+    let q = 'SELECT ds.*, en.name as exam_name, (SELECT COUNT(*) FROM datesheets WHERE sheet_id = ds.id) as entry_count FROM date_sheets ds LEFT JOIN exams e ON ds.exam_id = e.id LEFT JOIN exam_names en ON e.name = en.name WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND ds.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND ds.branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY ds.publish_date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2426,7 +2667,8 @@ router.get('/api/datesheets', async (req, env) => {
     const classId = url.searchParams.get('class_id');
     let q = 'SELECT ds.*, sub.name as subject_name, c.name as class_name, en.name as exam_name FROM datesheets ds LEFT JOIN subjects sub ON ds.subject_id = sub.id LEFT JOIN classes c ON ds.class_id = c.id LEFT JOIN exams e ON ds.exam_id = e.id LEFT JOIN exam_names en ON e.name = en.name WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND ds.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND ds.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         const student = await env.DB.prepare('SELECT class_id FROM students WHERE branch_id=? AND id=?').bind(user.branch_id, user.linked_id).first();
         if (!student) return json([]);
@@ -2462,7 +2704,8 @@ router.get('/api/vendors', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT * FROM vendors WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
 });
@@ -2508,7 +2751,8 @@ router.get('/api/bank-accounts', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT * FROM bank_accounts WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
 });
@@ -2554,7 +2798,8 @@ router.get('/api/cash-transactions', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT ct.*, ba.bank_name FROM cash_transactions ct LEFT JOIN bank_accounts ba ON ct.bank_id = ba.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND ct.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND ct.branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY ct.date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2616,7 +2861,8 @@ router.get('/api/email-log', async (req, env) => {
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     let q = 'SELECT * FROM email_log WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY sent_at DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2710,11 +2956,14 @@ router.get('/api/fee-slabs', async (req, env) => {
     const url = new URL(req.url);
     const classId = url.searchParams.get('class_id');
     const category = url.searchParams.get('category');
-    let q = 'SELECT fs.*, fp.name as particular_name, c.name as class_name FROM fee_slabs fs JOIN fee_particulars fp ON fs.particular_id = fp.id JOIN classes c ON fs.class_id = c.id WHERE 1=1';
+    const session = url.searchParams.get('session');
+    let q = 'SELECT fs.*, fp.name as particular_name, fp.mode as mode, fp.months as months, fp.is_transport as is_transport, c.name as class_name FROM fee_slabs fs JOIN fee_particulars fp ON fs.particular_id = fp.id JOIN classes c ON fs.class_id = c.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fs.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fs.branch_id=?'; b.push(effBranch); }
     if (classId) { q += ' AND fs.class_id=?'; b.push(classId); }
     if (category) { q += ' AND fs.category=?'; b.push(category); }
+    if (session) { q += ' AND (fs.session=? OR fs.session IS NULL OR fs.session=\'\')'; b.push(session); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
 });
@@ -2725,8 +2974,8 @@ router.post('/api/fee-slabs', async (req, env) => {
     const d = await req.json();
     const bid = user.branch_id || 1;
     for (const slab of (d.slabs || [d])) {
-        await env.DB.prepare('INSERT OR REPLACE INTO fee_slabs (branch_id, class_id, particular_id, amount, category) VALUES (?,?,?,?,?)')
-            .bind(bid, slab.class_id, slab.particular_id, slab.amount || 0, slab.category || 'Default').run();
+        await env.DB.prepare('INSERT OR REPLACE INTO fee_slabs (branch_id, class_id, particular_id, amount, category, session) VALUES (?,?,?,?,?,?)')
+            .bind(bid, slab.class_id, slab.particular_id, slab.amount || 0, slab.category || 'Default', slab.session || d.session || '').run();
     }
     return json({ success: true }, 201);
 });
@@ -2738,7 +2987,8 @@ router.get('/api/fee-discounts', async (req, env) => {
     const studentId = url.searchParams.get('student_id');
     let q = 'SELECT fd.*, s.name as student_name, s.admission_no FROM fee_discounts fd JOIN students s ON fd.student_id = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fd.branch_id=?'; b.push(effBranch); }
     if (studentId) { q += ' AND fd.student_id=?'; b.push(studentId); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2785,9 +3035,10 @@ router.delete('/api/fee-slabs', async (req, env) => {
     const url = new URL(req.url);
     const classId = url.searchParams.get('class_id');
     const category = url.searchParams.get('category') || 'Default';
+    const session = url.searchParams.get('session') || '';
     const bid = user.branch_id || 1;
     if (!classId) return json({ error: 'class_id required' }, 400);
-    await env.DB.prepare('DELETE FROM fee_slabs WHERE branch_id=? AND class_id=? AND category=?').bind(bid, classId, category).run();
+    await env.DB.prepare('DELETE FROM fee_slabs WHERE branch_id=? AND class_id=? AND category=? AND (session=? OR session IS NULL)').bind(bid, classId, category, session).run();
     return json({ success: true });
 });
 
@@ -2796,7 +3047,8 @@ router.get('/api/character-certificates', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT cc.*, s.name as student_name, s.admission_no, s.father_name, s.section, s.gender, s.class_id, s.session, c.name as class_name FROM character_certificates cc JOIN students s ON cc.student_id = s.id LEFT JOIN classes c ON s.class_id = c.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND cc.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND cc.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         q += ' AND cc.student_id=?'; b.push(user.linked_id);
     } else if (user.role === 'parent') {
@@ -2854,7 +3106,8 @@ router.get('/api/co-scholastic-areas', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT * FROM co_scholastic_areas WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
 });
@@ -2879,7 +3132,11 @@ router.put('/api/co-scholastic-areas/:id', async (req, env, params) => {
 router.delete('/api/co-scholastic-areas/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2891,7 +3148,8 @@ router.get('/api/co-scholastic-results', async (req, env) => {
     const studentId = url.searchParams.get('student_id');
     let q = 'SELECT cr.*, ca.name as area_name FROM co_scholastic_results cr LEFT JOIN co_scholastic_areas ca ON cr.area_id = ca.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND cr.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND cr.branch_id=?'; b.push(effBranch); }
     if (examId) { q += ' AND cr.exam_id=?'; b.push(examId); }
     if (studentId) { q += ' AND cr.student_id=?'; b.push(studentId); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
@@ -2916,7 +3174,8 @@ router.get('/api/teacher-permissions', async (req, env) => {
     const staffId = url.searchParams.get('staff_id');
     let q = 'SELECT tp.*, s.name as teacher_name, c.name as class_name, sub.name as subject_name FROM teacher_permissions tp LEFT JOIN staff s ON tp.staff_id = s.id LEFT JOIN classes c ON tp.class_id = c.id LEFT JOIN subjects sub ON tp.subject_id = sub.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND tp.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND tp.branch_id=?'; b.push(effBranch); }
     if (user.role === 'teacher') {
         if (staffId && Number(staffId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
         q += ' AND tp.staff_id=?';
@@ -2948,7 +3207,11 @@ router.put('/api/teacher-permissions/:id', async (req, env, params) => {
 router.delete('/api/teacher-permissions/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=?').bind(params.id).run();
+    if (user.role === 'branch_admin') {
+        await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+    } else {
+        await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=?').bind(params.id).run();
+    }
     return json({ success: true });
 });
 
@@ -2978,28 +3241,30 @@ router.post('/api/students/promote', async (req, env) => {
     for (const sid of student_ids) {
         const stu = await env.DB.prepare('SELECT id, class_id, session, category, route_id, old_balance FROM students WHERE id=?').bind(sid).first();
         if (!stu) continue;
-        const cat = stu.category || 'Default';
-        const { results: exactSlabs } = await env.DB.prepare(
-            `SELECT fs.amount FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id = fp.id
-             WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND (fp.is_transport IS NULL OR fp.is_transport = 0)`
-        ).bind(bid, stu.class_id, cat).all();
-        const slabs = exactSlabs.length ? exactSlabs
-            : (await env.DB.prepare(
-                `SELECT fs.amount FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id = fp.id
-                 WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND (fp.is_transport IS NULL OR fp.is_transport = 0)`
-            ).bind(bid, stu.class_id, 'Default').all()).results;
-        const slabMonthly = roundCurrency(slabs.reduce((s,r) => s + Number(r.amount||0), 0));
+        // Use session-aware slab helper for OLD class (before promotion)
+        const oldSlabs = await getStudentSlabs(env, bid, stu.class_id, stu.category, stu.session);
+        const annualSlabFee = roundCurrency(computeSlabAnnual(oldSlabs));
         const route = stu.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(stu.route_id).first() : null;
         const transportFee = roundCurrency(route ? Number(route.fee||0) : 0);
-        const annualFee = roundCurrency((slabMonthly + transportFee) * 12);
+        const annualFee = roundCurrency(annualSlabFee + transportFee * 12);
         const paidRow = await env.DB.prepare('SELECT COALESCE(SUM(received_amount),0) as total FROM fee_deposits WHERE student_id=? AND session=?').bind(sid, stu.session||'').first();
         const totalPaid = roundCurrency(paidRow ? paidRow.total : 0);
-        const discRow = await env.DB.prepare('SELECT COALESCE(SUM(amount),0) as total FROM fee_discounts WHERE student_id=? AND branch_id=?').bind(sid, bid).first();
+        // Session-filtered discounts
+        const discRow = await env.DB.prepare('SELECT COALESCE(SUM(amount),0) as total FROM fee_discounts WHERE student_id=? AND branch_id=? AND (session=? OR session IS NULL OR session=\'\')').bind(sid, bid, stu.session||'').first();
         const totalDisc = roundCurrency(discRow ? discRow.total : 0);
         const unpaid = Math.max(0, roundCurrency(annualFee - totalPaid - totalDisc));
         const newOldBalance = roundCurrency((stu.old_balance || 0) + unpaid);
         await env.DB.prepare('UPDATE students SET class_id=?, section=?, session=?, old_balance=?, fee_paid=0 WHERE id=?')
             .bind(to_class_id, to_section||'', to_session||'', newOldBalance, sid).run();
+        // Recompute fee_amount for the NEW class and session
+        try {
+            const newSlabs = await getStudentSlabs(env, bid, to_class_id, stu.category, to_session);
+            const newSlabAnnual = computeSlabAnnual(newSlabs);
+            const newRoute = stu.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(stu.route_id).first() : null;
+            const newTFee = newRoute ? Number(newRoute.fee||0)*12 : 0;
+            const newFeeAmount = roundCurrency(newSlabAnnual + newTFee);
+            await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(newFeeAmount, sid).run();
+        } catch(e) { /* keep existing fee_amount */ }
         if (Array.isArray(subject_ids)) {
             await env.DB.prepare('DELETE FROM student_subjects WHERE student_id=?').bind(sid).run();
             for (const subjectId of subject_ids) {
@@ -3063,10 +3328,15 @@ router.put('/api/exams/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const fields = []; const vals = [];
-    for (const [k,v] of Object.entries(d)) { if (!['id','branch_id'].includes(k)) { fields.push(`${k}=?`); vals.push(v); } }
+    for (const [k,v] of Object.entries(d)) { if (!['id','branch_id'].includes(k) && SAFE_COL_RE.test(k)) { fields.push(`${k}=?`); vals.push(v); } }
     if (!fields.length) return json({ error: 'No fields' }, 400);
-    vals.push(params.id);
-    await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=?`).bind(...vals).run();
+    if (user.role === 'branch_admin') {
+        vals.push(params.id, user.branch_id);
+        await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=? AND branch_id=?`).bind(...vals).run();
+    } else {
+        vals.push(params.id);
+        await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=?`).bind(...vals).run();
+    }
     return json({ success: true });
 });
 
@@ -3084,7 +3354,8 @@ router.get('/api/gallery', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT * FROM gallery WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     q += ' ORDER BY date DESC';
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -3127,7 +3398,8 @@ router.get('/api/attendance/staff', async (req, env) => {
     const toDate = url.searchParams.get('to_date');
     let q = 'SELECT sa.*, s.name, s.employee_id, s.father_name, s.designation, s.photo_url, s.phone, s.email FROM staff_attendance sa JOIN staff s ON sa.staff_id = s.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND sa.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND sa.branch_id=?'; b.push(effBranch); }
     if (date) { q += ' AND sa.date=?'; b.push(date); }
     if (fromDate) { q += ' AND sa.date>=?'; b.push(fromDate); }
     if (toDate) { q += ' AND sa.date<=?'; b.push(toDate); }
@@ -3187,7 +3459,8 @@ router.get('/api/transfer-certificates', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     let q = 'SELECT * FROM transfer_certificates WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
     if (user.role === 'student') {
         q += ' AND student_id=?'; b.push(user.linked_id);
     } else if (user.role === 'parent') {
@@ -3265,7 +3538,8 @@ router.get('/api/transport-mapping', async (req, env) => {
     const routeId = url.searchParams.get('route_id');
     let q = 'SELECT tm.*, v.vehicle_no, v.driver_name, tr.name as route_name, tr.fee as route_fee FROM transport_mapping tm LEFT JOIN vehicles v ON tm.vehicle_id = v.id LEFT JOIN transport_routes tr ON tm.route_id = tr.id WHERE 1=1';
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND tm.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND tm.branch_id=?'; b.push(effBranch); }
     if (user.role === 'student' || user.role === 'parent') {
         const allowedIds = await getAccessibleStudentIdsForUser(env, user);
         if (!allowedIds.length) return json([]);
@@ -3331,12 +3605,8 @@ router.get('/api/dashboard/stats', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const url = new URL(req.url);
-    let bid = user.branch_id;
-    if (user.role === 'super_admin') {
-        const qBid = url.searchParams.get('branch_id');
-        if (qBid) bid = parseInt(qBid);
-    }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    const bid = effBranch ? Number(effBranch) : 0;
     const bFilter = bid ? ' WHERE branch_id = ?' : '';
     const bAnd = bid ? ' AND branch_id = ?' : '';
     const bArr = bid ? [bid] : [];
@@ -3393,27 +3663,37 @@ router.get('/api/dashboard/stats', async (req, env) => {
         ? await env.DB.prepare(`SELECT COALESCE(SUM(received_amount),0) as total_paid FROM fee_deposits WHERE branch_id=?`).bind(bid).first()
         : await env.DB.prepare(`SELECT COALESCE(SUM(received_amount),0) as total_paid FROM fee_deposits`).first();
     const activeStudentsForFee = bid
-        ? (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.branch_id=? AND s.status='Active'`).bind(bid).all()).results
-        : (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.status='Active'`).all()).results;
+        ? (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.session, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.branch_id=? AND s.status='Active'`).bind(bid).all()).results
+        : (await env.DB.prepare(`SELECT s.id, s.class_id, s.category, s.session, s.old_balance, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN transport_routes tr ON s.route_id=tr.id WHERE s.status='Active'`).all()).results;
     const allSlabs = bid
-        ? (await env.DB.prepare('SELECT class_id, category, amount FROM fee_slabs WHERE branch_id=?').bind(bid).all()).results
-        : (await env.DB.prepare('SELECT class_id, category, amount FROM fee_slabs').all()).results;
+        ? (await env.DB.prepare('SELECT fs.class_id, fs.category, fs.session, fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND (fp.is_transport IS NULL OR fp.is_transport=0)').bind(bid).all()).results
+        : (await env.DB.prepare('SELECT fs.class_id, fs.category, fs.session, fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE (fp.is_transport IS NULL OR fp.is_transport=0)').all()).results;
+    function slabAnnual(slabList, transportFee) {
+        const fee = slabList.reduce((s,r) => {
+            let mc = 12; try { const mp = typeof r.months==='string'&&r.months ? JSON.parse(r.months) : null; if (Array.isArray(mp)) mc = mp.length; } catch(e){}
+            return s + Number(r.amount||0) * mc;
+        }, 0);
+        return fee + Number(transportFee||0) * 12;
+    }
     let totalExpected = 0;
     for (const st of activeStudentsForFee) {
         const cat = st.category || 'Default';
-        let stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat);
-        if (!stuSlabs.length) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === 'Default');
-        const monthly = stuSlabs.reduce((s,r) => s + Number(r.amount||0), 0) + Number(st.transport_fee||0);
-        totalExpected += monthly * 12 + Number(st.old_balance||0);
+        const sess = st.session || '';
+        // Filter slabs by class, category, and session (with fallback to empty session)
+        let stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (sl.session||'') === sess);
+        if (!stuSlabs.length && sess) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (!sl.session || sl.session === ''));
+        if (!stuSlabs.length) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === 'Default' && ((sl.session||'') === sess || !sl.session || sl.session === ''));
+        totalExpected += slabAnnual(stuSlabs, st.transport_fee) + Number(st.old_balance||0);
     }
     totalExpected = roundCurrency(totalExpected);
     const feeTotals = { total_expected: totalExpected, total_paid: feeCollected ? feeCollected.total_paid : 0 };
     const dueStudents = activeStudentsForFee.filter(st => {
         const cat = st.category || 'Default';
-        let stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat);
-        if (!stuSlabs.length) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === 'Default');
-        const monthly = stuSlabs.reduce((s,r) => s + Number(r.amount||0), 0) + Number(st.transport_fee||0);
-        return (monthly * 12 + Number(st.old_balance||0)) > 0;
+        const sess = st.session || '';
+        let stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (sl.session||'') === sess);
+        if (!stuSlabs.length && sess) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (!sl.session || sl.session === ''));
+        if (!stuSlabs.length) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === 'Default' && ((sl.session||'') === sess || !sl.session || sl.session === ''));
+        return (slabAnnual(stuSlabs, st.transport_fee) + Number(st.old_balance||0)) > 0;
     });
     const studentsDue = { count: dueStudents.length };
 
@@ -3527,7 +3807,8 @@ router.get('/api/face-descriptors', async (req, env) => {
         LEFT JOIN staff st ON fd.person_type='staff' AND fd.person_id=st.id
         WHERE 1=1`;
     const b = [];
-    if (user.role !== 'super_admin') { q += ' AND fd.branch_id=?'; b.push(user.branch_id); }
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fd.branch_id=?'; b.push(effBranch); }
     if (personType) { q += ' AND fd.person_type=?'; b.push(personType); }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -3560,7 +3841,8 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
 export default {
     async fetch(request, env) {
         const origin = request.headers.get('Origin') || '';
-        const originAllowed = ALLOWED_ORIGINS.has(origin);
+        const originAllowed = ALLOWED_ORIGINS.has(origin) ||
+            (env.DEV_MODE === 'true' && origin === 'http://localhost:3000');
         const corsH = {
             'Access-Control-Allow-Origin': originAllowed ? origin : '',
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',

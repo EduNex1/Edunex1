@@ -167,6 +167,21 @@
     object-fit: cover;
 }
 
+.admin-img-initials {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d1b4a, #1a3a7a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
 .simple-user-menu .dropdown-menu {
     min-width: 190px;
     border: 1px solid #e5e7eb;
@@ -198,6 +213,16 @@ html,
 body {
     height: 100%;
     overflow: hidden;
+}
+
+/* Let printed pages overflow naturally (the dashboard wrapper
+   already clips on-screen, but print must not be clipped). */
+@media print {
+    html,
+    body {
+        overflow: visible !important;
+        height: auto !important;
+    }
 }
 
 #wrapper.wrapper {
@@ -426,7 +451,8 @@ body {
         padding: 8px 10px;
     }
 
-    .simple-user-menu .admin-img img {
+    .simple-user-menu .admin-img img,
+    .simple-user-menu .admin-img-initials {
         width: 34px;
         height: 34px;
     }
@@ -559,7 +585,8 @@ body {
         border: none;
     }
 
-    .simple-user-menu .admin-img img {
+    .simple-user-menu .admin-img img,
+    .simple-user-menu .admin-img-initials {
         width: 32px;
         height: 32px;
     }
@@ -815,9 +842,11 @@ body {
         border-radius: 8px;
     }
 
-    .simple-user-menu .admin-img img {
+    .simple-user-menu .admin-img img,
+    .simple-user-menu .admin-img-initials {
         width: 28px;
         height: 28px;
+        font-size: 11px;
     }
 }
 
@@ -2579,28 +2608,9 @@ a.btn-outline-navy:hover {
     }
 }
 
-@media print {
-    body * {
-        visibility: hidden;
-    }
-
-    #printArea,
-    #printArea * {
-        visibility: visible;
-    }
-
-    #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-    }
-
-    .certificate-preview {
-        border: 3px solid #000;
-        padding: 50px;
-    }
-}
+/* Print styles are handled entirely by print-all.css.
+   Removed aggressive "body * { visibility:hidden }" rule that
+   blanked pages lacking a #printArea element. */
 
 .action-btn,
 .action-icon {

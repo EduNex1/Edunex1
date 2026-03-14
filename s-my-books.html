@@ -65,10 +65,14 @@
                 const status = b.return_date ? 'Returned' : 'Issued';
                 const sColor = b.return_date ? '#2e7d32' : '#ef6c00';
                 const sBg = b.return_date ? '#e8f5e9' : '#fff3e0';
-                html += `<tr><td>${i + 1}</td><td><strong>${b.book_title || b.title || '-'}</strong></td><td>${b.issue_date || '-'}</td><td>${b.due_date || '-'}</td><td><span style="background:${sBg};color:${sColor};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${status}</span></td></tr>`;
+                html += `<tr><td>${i + 1}</td><td><strong>${escHtml(b.book_title || b.title || '-')}</strong></td><td>${b.issue_date || '-'}</td><td>${b.due_date || '-'}</td><td><span style="background:${sBg};color:${sColor};padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;">${status}</span></td></tr>`;
             });
             $('#booksBody').html(html);
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            $('#booksBody').html('<tr><td colspan="5" class="text-center text-danger p-4">Unable to load books. Please try again later.</td></tr>');
+            showToast('Unable to load data. Please try again.', 'error');
+        }
     });
     </script>
 </body>

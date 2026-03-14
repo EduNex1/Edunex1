@@ -279,8 +279,9 @@
 
             const orderBy = $('#orderBy').val();
             if (orderBy === 'rollNo') students.sort((a, b) => (a.roll_no || 0) - (b.roll_no || 0));
-            else if (orderBy === 'name') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            else if (orderBy === 'admissionNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
+            else if (orderBy === 'nameAZ') students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            else if (orderBy === 'nameZA') students.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+            else if (orderBy === 'admNo') students.sort((a, b) => (a.admission_no || '').localeCompare(b.admission_no || ''));
 
             selectedStudentIds = [];
             $('#selectAll').prop('checked', false);
@@ -366,7 +367,6 @@
                 }
             );
         }
-        window._promoteStudentsAPI = promoteStudents;
     </script>
 </body>
 

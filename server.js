@@ -90,6 +90,10 @@ const routes = {
     '/email-staff': 'email-staff.html',
     '/email-report': 'email-report.html',
 
+    '/sms-report': 'sms-report.html',
+    '/sms-staff': 'sms-staff.html',
+    '/sms-students': 'sms-students.html',
+
     '/result-student-wise': 'result-student-wise.html',
     '/result-subject-wise': 'result-subject-wise.html',
     '/consolidated-marks': 'consolidated-marks.html',

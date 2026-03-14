@@ -71,10 +71,11 @@
 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3><i class="fas fa-exclamation-triangle"></i> Fee Due Report</h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -160,6 +161,7 @@
     <script src="js/main.js"></script>
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <script>
+        let _displayedData = [];
         const FEE_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];
 
         let feeQuill;
@@ -283,6 +285,7 @@
                 btn.prop('disabled', false).html('<i class="fas fa-search"></i> Search');
             }
 
+            _displayedData = dueRows;
             if (!dueRows.length) {
                 const hasFilters = fClass || fMonth;
                 const msg = hasFilters ? 'All students have cleared their fees!' : 'No results found. Please select a class and try again.';
@@ -374,6 +377,21 @@
                 .replaceAll('{SECTION}', stu.section)
                 .replaceAll('{DUE_AMOUNT}', Number(stu.due).toLocaleString('en-IN'))
                 .replaceAll('{MONTH}', stu.months);
+        }
+
+        function exportData() {
+            if (!_displayedData.length) { showToast('No data to export', 'error'); return; }
+            exportCSV(_displayedData, [
+                { label: 'Admission No', key: 'admission_no' },
+                { label: 'Student Name', fn: function(r) { return r.name || r.student_name || ''; } },
+                { label: 'Father Name', key: 'father_name' },
+                { label: 'Class', key: 'class_name' },
+                { label: 'Section', key: 'section' },
+                { label: 'Phone', key: 'phone' },
+                { label: 'Total Fee', fn: function(r) { return r.total_fee != null ? r.total_fee : ''; } },
+                { label: 'Total Paid', fn: function(r) { return r.total_paid != null ? r.total_paid : ''; } },
+                { label: 'Balance', fn: function(r) { return r.balance != null ? r.balance : (r.total_due != null ? r.total_due : ''); } }
+            ], 'fee-due-report.csv');
         }
     </script>
 </body>

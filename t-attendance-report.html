@@ -130,7 +130,10 @@
         classSelect.on('change', function () {
             const classId = Number(this.value);
             const sectionSelect = $('#repSection').empty().append('<option value="">Select Section</option>');
+            const seenSections = {};
             teacherPermissions.filter(function (perm) { return Number(perm.class_id) === classId; }).forEach(function (perm) {
+                if (seenSections[perm.section_name]) return;
+                seenSections[perm.section_name] = true;
                 sectionSelect.append(`<option value="${perm.section_name}">${perm.section_name}</option>`);
             });
         });

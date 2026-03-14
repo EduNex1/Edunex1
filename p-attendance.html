@@ -136,7 +136,7 @@
                         <div class="stat-icon green"><i class="fas fa-check"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Present</div>
-                            <div class="stat-number" id="sPres">22</div>
+                            <div class="stat-number" id="sPres">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -144,7 +144,7 @@
                         <div class="stat-icon red"><i class="fas fa-times"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Absent</div>
-                            <div class="stat-number" id="sAbs">1</div>
+                            <div class="stat-number" id="sAbs">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                         <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Late</div>
-                            <div class="stat-number" id="sLate">1</div>
+                            <div class="stat-number" id="sLate">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -160,7 +160,7 @@
                         <div class="stat-icon blue"><i class="fas fa-percentage"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Percentage</div>
-                            <div class="stat-number" id="sPerc">92%</div>
+                            <div class="stat-number" id="sPerc">--</div>
                             <div class="stat-sub">Overall</div>
                         </div>
                     </div>
@@ -210,12 +210,19 @@
 
         $(async function () {
             initPage('p-attendance');
-            try { childrenCache = await getMyChildren(); } catch(e) {}
+            try { childrenCache = await getMyChildren(); } catch(e) {
+                console.error(e);
+                showToast('Unable to load data. Please try again.', 'error');
+            }
             var sel = $('#childSelect');
             sel.empty();
             childrenCache.forEach(function(c) {
                 sel.append('<option value="' + c.id + '">' + c.name + ' — ' + (c.class_name || '') + '-' + (c.section || '') + '</option>');
             });
+            var urlChildId = new URLSearchParams(window.location.search).get('child_id');
+            if (urlChildId && sel.find('option[value="' + urlChildId + '"]').length) {
+                sel.val(urlChildId);
+            }
             await loadAttendance();
         });
 
@@ -227,7 +234,10 @@
             var monthStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
             attendanceCache = [];
             if (studentId) {
-                try { attendanceCache = await getStudentAttendance({ student_id: studentId, month: monthStr }); } catch(e) {}
+                try { attendanceCache = await getStudentAttendance({ student_id: studentId, month: monthStr }); } catch(e) {
+                    console.error(e);
+                    showToast('Unable to load attendance. Please try again.', 'error');
+                }
             }
             renderCalendar();
         }

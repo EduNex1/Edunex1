@@ -377,7 +377,7 @@
                                     <td>${i + 1}</td>
                                     <td class="sub-name">${r.subject.name}</td>
                                     <td>${r.result ? (r.result.max_marks || '—') : '—'}</td>
-                                    <td>${r.result ? (r.result.theory_marks || '—') : '—'}</td>
+                                    <td>${r.result ? ((r.result.theory_marks || 0) + (r.result.practical_marks || 0) || '—') : '—'}</td>
                                     <td>${r.result ? (r.result.grade || '—') : '—'}</td>
                                 </tr>`).join('')}
                             </tbody>

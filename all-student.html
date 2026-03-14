@@ -176,10 +176,11 @@
                 
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1">
+                        <div class="heading-layout1" style="display:flex;align-items:center;justify-content:space-between;">
                             <div class="item-title">
                                 <h3><i class="fas fa-user-graduate"></i> All Students</h3>
                             </div>
+                            <button class="btn btn-sm" onclick="exportData()" style="background:#fff;border:1px solid #d0d0d0;color:#0d1b4a;font-size:12px;padding:5px 14px;border-radius:6px;" title="Export CSV"><i class="fas fa-file-csv"></i> Export</button>
                         </div>
 
                         
@@ -234,7 +235,6 @@
                                         <th class="col-hide-xl">Gender</th>
                                         <th class="col-hide-lg">Category</th>
                                         <th class="col-hide-md">Phone</th>
-                                        <th class="col-hide-xl">Fee</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -290,6 +290,7 @@
             return { class_id: $('#filterClass').val(), section: $('#filterSection').val(), category: $('#filterCategory').val(), session: $('#filterSession').val(), status: $('#filterStatus').val() };
         }
 
+        let _displayedStudents = [];
         let _classCache = null;
         async function loadClasses() {
             if(!_classCache) { _classCache = await getClasses(); if(!Array.isArray(_classCache)) _classCache = []; }
@@ -307,12 +308,13 @@
                 const classMap = {};
                 classes.forEach(c => { classMap[c.id] = c.name; });
 
+                _displayedStudents = students.map(s => Object.assign({}, s, { class_name: classMap[s.class_id] || '' }));
+
                 if ($.fn.DataTable.isDataTable('#studentTable')) { $('#studentTable').DataTable().destroy(); }
 
                 let html = '';
                 students.forEach(s => {
                     const className = classMap[s.class_id] || '-';
-                    let feeHtml = (s.fee_paid||0) > 0 ? `<span class="fee-partial">₹${(s.fee_paid||0).toLocaleString('en-IN')}</span>` : '<span class="fee-due">No Payment</span>';
                     const photoUrl = s.photo_url || 'img/default-student.png';
                     html += `<tr>
                     <td class="student-photo-cell col-hide-sm"><img src="${photoUrl}" alt="${s.name}"></td>
@@ -322,7 +324,6 @@
                     <td class="col-hide-xl">${s.gender||''}</td>
                     <td class="col-hide-lg"><span class="category-badge cat-${(s.category||'').toLowerCase()}">${s.category||''}</span></td>
                     <td class="col-hide-md">${s.phone||''}</td>
-                    <td class="col-hide-xl">${feeHtml}</td>
                     <td><span class="status-badge ${s.status === 'Active' ? 'status-active' : 'status-tc'}">${s.status||''}</span></td>
                     <td style="white-space:nowrap;">
                         <button class="action-btn action-btn-view" title="View" onclick="viewStudent(${s.id})"><i class="fas fa-eye"></i></button>
@@ -332,10 +333,10 @@
                 </tr>`;
                 });
                 document.getElementById('studentTableBody').innerHTML = html;
-                $('#studentTable').DataTable({ "pageLength": 10, "language": { "search": "<i class='fas fa-search'></i>", "searchPlaceholder": "Search..." }, "columnDefs": [{ "orderable": false, "targets": [0, 9] }] });
+                $('#studentTable').DataTable({ "pageLength": 10, "language": { "search": "<i class='fas fa-search'></i>", "searchPlaceholder": "Search..." }, "columnDefs": [{ "orderable": false, "targets": [0, 8] }] });
             } catch(e) {
                 console.error('Load students error:', e);
-                document.getElementById('studentTableBody').innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Failed to load students</td></tr>';
+                document.getElementById('studentTableBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Failed to load students</td></tr>';
             }
             setTimeout(() => { tableWrapper.classList.remove('table-loading-overlay'); }, 150);
         }
@@ -350,6 +351,29 @@
                 try { await deleteStudent(id); renderStudentTable(); showToast('Student deleted', 'success'); }
                 catch(e){ showToast(e.message||'Failed to delete','error'); }
             });
+        }
+        function exportData() {
+            if (!_displayedStudents || _displayedStudents.length === 0) {
+                showToast('No student data to export', 'error');
+                return;
+            }
+            exportCSV(_displayedStudents, [
+                { key: 'admission_no', label: 'Admission No' },
+                { key: 'name', label: 'Name' },
+                { key: 'father_name', label: 'Father Name' },
+                { key: 'mother_name', label: 'Mother Name' },
+                { key: 'class_name', label: 'Class' },
+                { key: 'section', label: 'Section' },
+                { key: 'gender', label: 'Gender' },
+                { key: 'dob', label: 'DOB' },
+                { key: 'phone', label: 'Phone' },
+                { key: 'email', label: 'Email' },
+                { key: 'category', label: 'Category' },
+                { key: 'religion', label: 'Religion' },
+                { key: 'address', label: 'Address' },
+                { key: 'session', label: 'Session' },
+                { key: 'status', label: 'Status' }
+            ], 'students.csv');
         }
     </script>
 </body>

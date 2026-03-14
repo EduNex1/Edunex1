@@ -375,21 +375,35 @@
                         
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
-                                <div class="section-header"><i class="fas fa-rupee-sign"></i> Fee & Login Credentials
+                                <div class="section-header"><i class="fas fa-rupee-sign"></i> Monthly Fee Status
+                                </div>
+                                <div class="detail-card-body">
+                                    <div class="row" style="margin-bottom:10px;">
+                                        <div class="col-4 text-center">
+                                            <div style="font-size:11px;color:#666;">Monthly Fee</div>
+                                            <div style="font-size:16px;font-weight:700;color:#1a237e;" id="dMonthlyFee">-</div>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <div style="font-size:11px;color:#666;">Total Paid</div>
+                                            <div style="font-size:16px;font-weight:700;color:#2e7d32;" id="dTotalPaid">-</div>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <div style="font-size:11px;color:#666;">Total Due</div>
+                                            <div style="font-size:16px;font-weight:700;color:#c62828;" id="dTotalDue">-</div>
+                                        </div>
+                                    </div>
+                                    <div id="monthlyFeeGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-key"></i> Login Credentials
                                 </div>
                                 <div class="detail-card-body">
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="detail-field"><label>Total Fee</label>
-                                                <div class="field-value" id="dFeeTotal"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="detail-field"><label>Fee Paid</label>
-                                                <div class="field-value" id="dFeePaid"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12" style="margin-top:8px;margin-bottom:4px;"><strong style="font-size:11px;color:#304ffe;"><i class="fas fa-user-graduate"></i> Student Login</strong></div>
+                                        <div class="col-12" style="margin-bottom:4px;"><strong style="font-size:11px;color:#304ffe;"><i class="fas fa-user-graduate"></i> Student Login</strong></div>
                                         <div class="col-md-6">
                                             <div class="detail-field"><label>Student Login ID</label>
                                                 <div class="field-value" id="dLoginId"
@@ -524,10 +538,55 @@
             setText('dAddress', s.address || '-');
             setText('dRoute', route ? route.name : (s.route_id ? ('Route #' + s.route_id) : 'No Route'));
 
-            setText('dFeeTotal', 'Slab-based (see details)');
-            var feePaidEl = document.getElementById('dFeePaid');
-            var feePaid = s.fee_paid || 0;
-            feePaidEl.innerHTML = '₹' + feePaid.toLocaleString('en-IN') + ' collected';
+            // Fetch monthly fee status for this student
+            try {
+                var allSlabs = await getFeeSlabs(s.class_id);
+                var nonTransport = Array.isArray(allSlabs) ? allSlabs.filter(function(x) { return !x.is_transport; }) : [];
+                var studentCat = s.category || 'Default';
+                var catSlabs = nonTransport.filter(function(x) { return (x.category || 'Default') === studentCat; });
+                var slabs = catSlabs.length ? catSlabs : nonTransport.filter(function(x) { return (x.category || 'Default') === 'Default'; });
+                var monthlySlabFee = slabs.reduce(function(sum, x) { return sum + Number(x.amount||0); }, 0);
+                var transportFee = Number(s.transport_fee||0);
+                var monthlyFee = monthlySlabFee + transportFee;
+                setText('dMonthlyFee', '₹' + monthlyFee.toLocaleString('en-IN'));
+
+                var dueData = await getFeeDueReport({ student_id: s.id });
+                var stuDue = Array.isArray(dueData) && dueData.length ? dueData[0] : null;
+                var dueMonthsMap = {};
+                var monthDetailsMap = {};
+                if (stuDue) {
+                    (stuDue.due_months || []).forEach(function(m) { dueMonthsMap[m] = true; });
+                    (stuDue.month_details || []).forEach(function(md) { monthDetailsMap[md.month] = md; });
+                }
+
+                var allMonths = ['April','May','June','July','August','September','October','November','December','January','February','March'];
+                var totalPaid = Number(s.fee_paid || 0);
+                var totalDue = stuDue ? Number(stuDue.total_due || 0) : 0;
+                var gridHtml = '';
+                allMonths.forEach(function(m) {
+                    var isPaid = !dueMonthsMap[m];
+                    var detail = monthDetailsMap[m];
+                    var dueAmt = detail ? detail.due_amount : 0;
+                    if (isPaid) {
+                        gridHtml += '<div style="background:#e8f5e9;border-radius:6px;padding:6px 4px;text-align:center;">' +
+                            '<div style="font-size:10px;color:#666;">' + m.substring(0,3) + '</div>' +
+                            '<div style="font-size:11px;font-weight:600;color:#2e7d32;"><i class="fas fa-check-circle"></i> Paid</div></div>';
+                    } else {
+                        gridHtml += '<div style="background:#ffebee;border-radius:6px;padding:6px 4px;text-align:center;">' +
+                            '<div style="font-size:10px;color:#666;">' + m.substring(0,3) + '</div>' +
+                            '<div style="font-size:11px;font-weight:600;color:#c62828;">₹' + dueAmt.toLocaleString('en-IN') + '</div></div>';
+                    }
+                });
+                document.getElementById('monthlyFeeGrid').innerHTML = gridHtml;
+                setText('dTotalPaid', '₹' + totalPaid.toLocaleString('en-IN'));
+                setText('dTotalDue', '₹' + totalDue.toLocaleString('en-IN'));
+                if (totalDue <= 0) document.getElementById('dTotalDue').style.color = '#2e7d32';
+            } catch(feeErr) {
+                console.error('Fee status fetch error:', feeErr);
+                setText('dMonthlyFee', '-');
+                setText('dTotalPaid', '-');
+                setText('dTotalDue', '-');
+            }
             setText('dLoginId', s.admission_no || '-');
 
             try {

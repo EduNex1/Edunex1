@@ -114,7 +114,7 @@
                 </div>
 
                 <div class="chart-card" style="margin-bottom:16px;">
-                    <div class="chart-card-header"><i class="fas fa-user-graduate" style="color:#304ffe;"></i> <span id="stuNameLabel">Aarav Sharma — Class 5-A</span></div>
+                    <div class="chart-card-header"><i class="fas fa-user-graduate" style="color:#304ffe;"></i> <span id="stuNameLabel">Loading...</span></div>
                     <div class="chart-card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
                         <div style="margin-left:auto;font-weight:700;color:#0d1b4a;">
                             <span id="monthLabel">March 2026</span>
@@ -134,7 +134,7 @@
                         <div class="stat-icon green"><i class="fas fa-check"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Present</div>
-                            <div class="stat-number" id="sPres">22</div>
+                            <div class="stat-number" id="sPres">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -142,7 +142,7 @@
                         <div class="stat-icon red"><i class="fas fa-times"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Absent</div>
-                            <div class="stat-number" id="sAbs">1</div>
+                            <div class="stat-number" id="sAbs">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                         <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Late</div>
-                            <div class="stat-number" id="sLate">1</div>
+                            <div class="stat-number" id="sLate">--</div>
                             <div class="stat-sub">Days</div>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                         <div class="stat-icon blue"><i class="fas fa-percentage"></i></div>
                         <div class="stat-info">
                             <div class="stat-label">Attendance</div>
-                            <div class="stat-number" id="sPerc">92%</div>
+                            <div class="stat-number" id="sPerc">--</div>
                             <div class="stat-sub">Overall</div>
                         </div>
                     </div>
@@ -202,11 +202,23 @@
     <script>
         var currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear();
         var attendanceData = {};
-        $(function () { initPage('s-my-attendance'); loadAttendance(); });
+        var cachedStudent = null;
+        $(async function () {
+            initPage('s-my-attendance');
+            try {
+                var children = await getMyChildren();
+                var stu = children && children[0];
+                if (!stu) { $('#stuNameLabel').text('Student not found'); return; }
+                cachedStudent = stu;
+                var sec = stu.section ? '-' + stu.section : '';
+                $('#stuNameLabel').text(stu.name + ' \u2014 Class ' + (stu.class_name || '') + sec);
+            } catch(e) { $('#stuNameLabel').text('Unable to load student'); }
+            loadAttendance();
+        });
         function changeMonth(d) { currentMonth += d; if (currentMonth > 11) { currentMonth = 0; currentYear++; } if (currentMonth < 0) { currentMonth = 11; currentYear--; } loadAttendance(); }
         async function loadAttendance() {
-            var user = JSON.parse(localStorage.getItem('vkis_user') || '{}');
-            var studentId = user.linked_id || user.id;
+            if (!cachedStudent) { renderCalendar(); return; }
+            var studentId = cachedStudent.id;
             var monthStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0');
             try {
                 var records = await getStudentAttendance({ student_id: studentId, month: monthStr });

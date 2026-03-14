@@ -104,30 +104,30 @@
         }
         const activeBranch = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
         let o = {};
-        try { o = await getOptionSettings(activeBranch || undefined); } catch(e) {}
+        try { o = await getOptionSettings(activeBranch || undefined); } catch(e) { showToast('Failed to load option settings','error'); }
 
         $('#startMonth').val(o['academic_start_month'] || 'April');
-        $('#chkFeeDueInstall').prop('checked', o['enable_fee_due_installment'] === 'true' || o['enable_fee_due_installment'] === true);
-        $('#chkFeeDuePortal').prop('checked', o['enable_fee_due_student_portal'] === 'true' || o['enable_fee_due_student_portal'] === true);
-        $('#chkDiscountReceipt').prop('checked', o['enable_discount_in_receipt'] === 'true' || o['enable_discount_in_receipt'] === true);
-        $('#chkSundayWork').prop('checked', o['enable_sunday_working'] === 'true' || o['enable_sunday_working'] === true);
+        $('#chkFeeDueInstall').prop('checked', o['enable_fee_due_installment'] === '1' || o['enable_fee_due_installment'] === 1 || o['enable_fee_due_installment'] === true);
+        $('#chkFeeDuePortal').prop('checked', o['enable_fee_due_student_portal'] === '1' || o['enable_fee_due_student_portal'] === 1 || o['enable_fee_due_student_portal'] === true);
+        $('#chkDiscountReceipt').prop('checked', o['enable_discount_in_receipt'] === '1' || o['enable_discount_in_receipt'] === 1 || o['enable_discount_in_receipt'] === true);
+        $('#chkSundayWork').prop('checked', o['enable_sunday_working'] === '1' || o['enable_sunday_working'] === 1 || o['enable_sunday_working'] === true);
         $('#zohoApiKey').val(o['zoho_api_key'] || '');
         $('#zohoFromEmail').val(o['zoho_from_email'] || '');
         $('#zohoFromName').val(o['zoho_from_name'] || '');
-        $('#chkFeeDepoEmail').prop('checked', o['enable_fee_deposit_email'] === 'true' || o['enable_fee_deposit_email'] === true);
-        $('#chkAdmissionEmail').prop('checked', o['enable_admission_email'] === 'true' || o['enable_admission_email'] === true);
-        $('#chkAbsentEmail').prop('checked', o['enable_absent_email_auto'] === 'true' || o['enable_absent_email_auto'] === true);
-        $('#chkPresentEmail').prop('checked', o['enable_present_email_auto'] === 'true' || o['enable_present_email_auto'] === true);
+        $('#chkFeeDepoEmail').prop('checked', o['enable_fee_deposit_email'] === '1' || o['enable_fee_deposit_email'] === 1 || o['enable_fee_deposit_email'] === true);
+        $('#chkAdmissionEmail').prop('checked', o['enable_admission_email'] === '1' || o['enable_admission_email'] === 1 || o['enable_admission_email'] === true);
+        $('#chkAbsentEmail').prop('checked', o['enable_absent_email_auto'] === '1' || o['enable_absent_email_auto'] === 1 || o['enable_absent_email_auto'] === true);
+        $('#chkPresentEmail').prop('checked', o['enable_present_email_auto'] === '1' || o['enable_present_email_auto'] === 1 || o['enable_present_email_auto'] === true);
         $('#billNote').val(o['fee_demand_bill_note'] || '');
 
         window.updateAcademic = async function(){
             try {
                 await saveOptionSettings({
                     academic_start_month: $('#startMonth').val(),
-                    enable_fee_due_installment: $('#chkFeeDueInstall').is(':checked'),
-                    enable_fee_due_student_portal: $('#chkFeeDuePortal').is(':checked'),
-                    enable_discount_in_receipt: $('#chkDiscountReceipt').is(':checked'),
-                    enable_sunday_working: $('#chkSundayWork').is(':checked')
+                    enable_fee_due_installment: $('#chkFeeDueInstall').is(':checked') ? '1' : '0',
+                    enable_fee_due_student_portal: $('#chkFeeDuePortal').is(':checked') ? '1' : '0',
+                    enable_discount_in_receipt: $('#chkDiscountReceipt').is(':checked') ? '1' : '0',
+                    enable_sunday_working: $('#chkSundayWork').is(':checked') ? '1' : '0'
                 }, activeBranch || undefined);
                 showToast('Academic settings updated','success');
             } catch(e) { showToast('Error saving settings','error'); }
@@ -147,10 +147,10 @@
         window.updateEmailNotif = async function(){
             try {
                 await saveOptionSettings({
-                    enable_fee_deposit_email: $('#chkFeeDepoEmail').is(':checked'),
-                    enable_admission_email: $('#chkAdmissionEmail').is(':checked'),
-                    enable_absent_email_auto: $('#chkAbsentEmail').is(':checked'),
-                    enable_present_email_auto: $('#chkPresentEmail').is(':checked')
+                    enable_fee_deposit_email: $('#chkFeeDepoEmail').is(':checked') ? '1' : '0',
+                    enable_admission_email: $('#chkAdmissionEmail').is(':checked') ? '1' : '0',
+                    enable_absent_email_auto: $('#chkAbsentEmail').is(':checked') ? '1' : '0',
+                    enable_present_email_auto: $('#chkPresentEmail').is(':checked') ? '1' : '0'
                 }, activeBranch || undefined);
                 showToast('Email notification settings updated','success');
             } catch(e) { showToast('Error saving settings','error'); }

@@ -703,6 +703,19 @@
                 } catch (e) {
                     console.error('Dashboard API error:', e);
                     showToast && showToast('Failed to load dashboard data', 'error');
+                    document.getElementById('totalStudents').textContent = '--';
+                    document.getElementById('activeStudentsSub').textContent = '';
+                    document.getElementById('totalStaff').textContent = '--';
+                    document.getElementById('teachersSub').textContent = '';
+                    document.getElementById('feeCollected').textContent = '--';
+                    document.getElementById('feeCollectedSub').textContent = '';
+                    document.getElementById('feePending').textContent = '--';
+                    document.getElementById('feePendingSub').textContent = '';
+                    document.getElementById('totalClasses').textContent = '--';
+                    document.getElementById('classesSub').textContent = '';
+                    document.getElementById('totalSubjects').textContent = '--';
+                    document.getElementById('recentAdmissions').innerHTML = '<tbody><tr><td colspan="4" style="text-align:center;color:#c62828;padding:16px;">Unable to load data.</td></tr></tbody>';
+                    document.getElementById('activeStaffList').innerHTML = '<p class="text-muted text-center py-3" style="font-size:11px;color:#c62828;">Unable to load staff data.</p>';
                     return;
                 }
 
