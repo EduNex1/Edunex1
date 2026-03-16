@@ -68,24 +68,49 @@
     $(async function(){
         initPage('settings-user-permission');
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+
+        const curUser = typeof getUser === 'function' ? getUser() : null;
+        const curUserId = curUser ? curUser.id : 0;
+        const isSuperAdm = curUser && curUser.role === 'super_admin';
+
+        // For branch_admin: fetch own permissions to know which modules they can grant
+        let myPerms = [];
+        if (!isSuperAdm) {
+            try { myPerms = await getUserPermissions(curUserId); } catch(e) {}
+            myPerms = Array.isArray(myPerms) ? myPerms : [];
+        }
+
+        // Visible modules: super_admin sees all 16; branch_admin sees only their accessible modules
+        const visibleModules = isSuperAdm
+            ? PLATFORM_MODULES
+            : PLATFORM_MODULES.filter(m => {
+                const _p = myPerms.find(x => x.module === m.key);
+                return !!(_p && _p.access);
+            });
+
+        if (!isSuperAdm && visibleModules.length === 0) {
+            $('#selUser').closest('.filter-card').after('<div class="alert alert-warning" style="font-size:12px;margin-top:8px;"><i class="fas fa-info-circle"></i> You have no module permissions assigned. Contact Super Admin first.</div>');
+        }
+
         let usersCache = [];
         try { usersCache = await getUsers(); } catch(e) {}
         usersCache = Array.isArray(usersCache) ? usersCache : (usersCache.results || []);
-        usersCache.forEach(u=>$('#selUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
+        // Exclude current user from dropdown (cannot edit own permissions)
+        usersCache.filter(u => u.id !== curUserId).forEach(u => $('#selUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
 
         $('#selUser').on('change', async function(){
             const uid=parseInt($(this).val())||0;
             if(!uid){$('#permSection').slideUp(200);return;}
             let dbPerms = [];
             try { dbPerms = await getUserPermissions(uid); } catch(e) {}
-            const rows = PLATFORM_MODULES.map((m,i)=>{
+            const rows = visibleModules.map((m,i)=>{
                 const p = dbPerms.find(x => x.module === m.key);
                 return `<tr>
                 <td class="text-center">${i+1}</td>
                 <td><strong>${m.name}</strong></td>
-                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="access" ${p && p.access?'checked':''}></td>
-                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="modify" ${p && p.modify?'checked':''}></td>
-                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="delete" ${p && p.can_delete?'checked':''}></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="access" ${p && p.access?'checked':''} ></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="modify" ${p && p.modify?'checked':''} ></td>
+                <td class="text-center"><input type="checkbox" class="perm-check" data-mod="${m.key}" data-type="delete" ${p && p.can_delete?'checked':''} ></td>
                 <td><span class="desc-text">${m.desc}</span></td>
             </tr>`;
             }).join('');
@@ -97,7 +122,7 @@
             const uid=parseInt($('#selUser').val())||0;
             if(!uid){showToast('Select a user','error');return;}
             const perms=[];
-            PLATFORM_MODULES.forEach(m=>{
+            visibleModules.forEach(m=>{
                 perms.push({
                     module:m.key,
                     access:$(`input[data-mod="${m.key}"][data-type="access"]`).is(':checked'),
@@ -110,7 +135,7 @@
                 showToast('Permissions updated','success');
             } catch(e) { showToast('Error saving permissions','error'); }
         };
-        window.cancelPerms=function(){ $('#selUser').val(''); $('#permSection').slideUp(200); };
+    window.cancelPerms=function(){ $('#selUser').val(''); $('#permSection').slideUp(200); };
     });
     </script>
 </body>

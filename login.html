@@ -204,6 +204,12 @@
             var result = await loginUser(uid, pw);
 
             if (result && result.token) {
+                if (result.user && result.user.role !== 'super_admin') {
+                    try {
+                        const perms = await getUserPermissions(result.user.id);
+                        if (typeof setUserPerms === 'function') setUserPerms(Array.isArray(perms) ? perms : []);
+                    } catch(e) { /* ignore */ }
+                }
                 window.location.href = '/dashboard';
             } else {
                 var msg = (result && result.error) ? result.error : 'Invalid User ID or Password.';

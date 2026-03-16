@@ -30,7 +30,9 @@ function getToken() { return localStorage.getItem('vkis_token'); }
 function setToken(token) { localStorage.setItem('vkis_token', token); }
 function getUser() { try { return JSON.parse(localStorage.getItem('vkis_user')); } catch { return null; } }
 function setUser(user) { localStorage.setItem('vkis_user', JSON.stringify(user)); }
-function clearAuth() { localStorage.removeItem('vkis_token'); localStorage.removeItem('vkis_user'); }
+function clearAuth() { localStorage.removeItem('vkis_token'); localStorage.removeItem('vkis_user'); localStorage.removeItem('vkis_permissions'); }
+function getUserPerms() { try { return JSON.parse(localStorage.getItem('vkis_permissions')); } catch { return null; } }
+function setUserPerms(perms) { localStorage.setItem('vkis_permissions', JSON.stringify(perms)); }
 function isLoggedIn() { return !!getToken(); }
 
 function requireAuth() {

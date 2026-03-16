@@ -749,13 +749,22 @@ router.post('/api/user-permissions', async (req, env) => {
     const targetUser = await env.DB.prepare('SELECT id, branch_id FROM users WHERE id = ?').bind(user_id).first();
     if (!targetUser) return json({ error: 'User not found' }, 404);
     if (user.role === 'branch_admin' && targetUser.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    // Branch admin cannot edit their own permissions
+    if (user.role === 'branch_admin' && user_id === user.id) return json({ error: 'Cannot edit own permissions' }, 403);
+    // Branch admin can only grant modules they themselves have access to
+    let filteredPermissions = permissions;
+    if (user.role === 'branch_admin') {
+        const { results: myPerms } = await env.DB.prepare('SELECT module FROM user_permissions WHERE user_id = ? AND access = 1').bind(user.id).all();
+        const myAccessSet = new Set(myPerms.map(p => p.module));
+        filteredPermissions = permissions.filter(p => myAccessSet.has(p.module));
+    }
     const bid = targetUser.branch_id || user.branch_id || 0;
     if (bid) {
         await env.DB.prepare('DELETE FROM user_permissions WHERE branch_id=? AND user_id=?').bind(bid, user_id).run();
     } else {
         await env.DB.prepare('DELETE FROM user_permissions WHERE user_id=?').bind(user_id).run();
     }
-    for (const p of permissions) {
+    for (const p of filteredPermissions) {
         await env.DB.prepare('INSERT INTO user_permissions (branch_id, user_id, module, access, modify, can_delete) VALUES (?,?,?,?,?,?)')
             .bind(bid, user_id, p.module, p.access ? 1 : 0, p.modify ? 1 : 0, p.can_delete ? 1 : 0).run();
     }
