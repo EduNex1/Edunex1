@@ -54,6 +54,7 @@
     <script>
     $(async function(){
         initPage('t-datesheet');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         try {
             const data = await getDatesheets() || [];
             if (!data.length) { $('#datesheetBody').html('<tr><td colspan="5" style="text-align:center;color:#888;">No datesheet available.</td></tr>'); return; }

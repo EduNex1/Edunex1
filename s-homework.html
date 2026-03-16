@@ -130,6 +130,7 @@
     <script>
     $(async function () {
         initPage('s-homework');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             const stu = children && children[0];

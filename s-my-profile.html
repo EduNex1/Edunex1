@@ -115,6 +115,7 @@
     }
     $(async function () {
         initPage('s-my-profile');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             const s = children && children[0];

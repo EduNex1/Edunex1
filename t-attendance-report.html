@@ -92,6 +92,7 @@
         let teacherPermissions = [];
         let sectionCache = [];
         initPage('t-attendance-report');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         $('#repMonth').val(new Date().toISOString().slice(0, 7));
 
         try { sectionCache = await getSections(); } catch (e) { console.error(e); }

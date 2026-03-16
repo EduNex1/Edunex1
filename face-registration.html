@@ -313,6 +313,7 @@
 
     $(document).ready(async function () {
         initPage('face-registration');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         await loadModels();
         await loadClasses();
         await loadDesignations();

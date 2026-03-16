@@ -154,7 +154,8 @@
         let bankCache = [];
         let txnCache = [];
 
-        if(typeof initPage==='function') initPage('cash-deposit-withdraw');
+        if(typeof initPage==='function') 
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         try { bankCache = await getBankAccounts(); } catch(e){ showToast('Failed to load bank accounts','error'); }
         try { txnCache = await getCashTransactions(); } catch(e){ showToast('Failed to load transactions','error'); }

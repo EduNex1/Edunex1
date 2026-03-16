@@ -431,6 +431,7 @@
     <script>
         $(async function () {
             initPage('student-attendance-report');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             const params = new URLSearchParams(window.location.search);
             const studentId = parseInt(params.get('id'));

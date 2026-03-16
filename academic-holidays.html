@@ -156,6 +156,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('academic-holidays');
+            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let cache = [];
             try { cache = await getHolidays(); } catch(e) { console.error('Failed to load holidays', e); }

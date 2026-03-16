@@ -51,6 +51,7 @@
     <script>
     $(async function(){
         initPage('t-syllabus');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         try {
             const syllabi = await getSyllabi() || [];
             if (!syllabi.length) { $('#syllabusArea').html('<p style="text-align:center;color:#888;">No syllabus available.</p>'); return; }

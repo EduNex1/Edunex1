@@ -180,6 +180,7 @@
     <script>
     $(document).ready(async function () {
         initPage('face-settings');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         await loadSettings();
 
         $('#btnSave').click(saveSettings);

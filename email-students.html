@@ -194,6 +194,7 @@
 
         (async function () {
             initPage('email-students');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try {
                 const [classes, students, branches] = await Promise.all([

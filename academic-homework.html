@@ -214,6 +214,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('academic-homework');
+            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classCache = [], subjectCache = [], sectionCache = [], hwCache = [];
             try { [classCache, subjectCache, sectionCache, hwCache] = await Promise.all([getClasses(), getSubjects(), getSections(), getHomework()]); } catch(e) { console.error('Failed to load data', e); }

@@ -91,6 +91,7 @@
     <script>
     $(async function(){
         initPage('settings-users');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         const currentUser = typeof getUser === 'function' ? getUser() : null;
         const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
         const isBranchAdmin = currentUser && currentUser.role === 'branch_admin';

@@ -274,6 +274,7 @@
 
     $(document).ready(async function () {
         initPage('face-attendance');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         todayStr = new Date().toISOString().split('T')[0];
         startClock();
 

@@ -94,6 +94,7 @@
 
     (async function(){
         initPage('t-enter-marks');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         const user = getUser();
         if (!user || !user.linked_id) return;
         try {

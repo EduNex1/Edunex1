@@ -208,6 +208,7 @@
     <script>
     $(async function(){
         initPage('t-my-profile');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         const user = getUser();
         if (!user || !user.linked_id) {
             $('#profileState').html('<p style="text-align:center;color:#c62828;padding:20px;">Teacher account not linked.</p>');

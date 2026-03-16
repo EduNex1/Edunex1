@@ -90,6 +90,7 @@
     <script>
     $(function(){
         initPage('t-my-attendance');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         $('#attendanceMonth').val(new Date().toISOString().slice(0, 7));
         loadMyAttendance();
     });

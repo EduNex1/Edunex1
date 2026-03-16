@@ -186,6 +186,7 @@
 
         $(async function () {
             initPage('promote-class');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             [classCache, subjectCache] = await Promise.all([getClasses(), getSubjects()]);
 
             await populateClassDropdown(document.getElementById('fromClass'), false);
@@ -272,6 +273,7 @@
             if (!fromClassId) { showToast('Select From Class', 'error'); return; }
             if (!toClassId) { showToast('Select To Class', 'error'); return; }
             if (!toSection) { showToast('Select To Section', 'error'); return; }
+            if (!toSession) { showToast('Select Target Session', 'error'); return; }
 
             try { studentCache = await getStudents({ class_id: fromClassId }); } catch(e) { studentCache = []; }
             let students = studentCache.filter(s => s.status === 'Active');

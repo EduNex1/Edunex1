@@ -188,7 +188,8 @@
 
     <script>
         window.location.href = '/master-class';
-        $(document).ready(function () { initPage('add-class'); });
+        $(document).ready(function () { initPage('add-class');
+        $(document).ready(function () { if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return; });
     </script>
 </body>
 

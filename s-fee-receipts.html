@@ -195,6 +195,7 @@
 
     $(async function () {
         initPage('s-fee-receipts');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             const stu = children && children[0];

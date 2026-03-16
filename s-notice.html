@@ -51,6 +51,7 @@
     <script>
     $(async function () {
         initPage('s-notice');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const notices = await getNotices() || [];
             if (!notices.length) { $('#noticeArea').html('<p style="text-align:center;color:#888;padding:20px;">No notices posted yet.</p>'); return; }

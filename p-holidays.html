@@ -53,6 +53,7 @@
     <script>
     $(async function () {
         initPage('p-holidays');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             const holidays = await getHolidays() || [];
             if (!holidays.length) { $('#holidayBody').html('<tr><td colspan="4" style="text-align:center;color:#888;">No holidays found.</td></tr>'); return; }

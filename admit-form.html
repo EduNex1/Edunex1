@@ -761,6 +761,7 @@
 
         $(document).ready(function () {
             initPage('new-admission');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             $('#admissionNo').val('(Auto-generated)');
 
             populateClassDropdown(document.getElementById('classSelect'), false);
@@ -776,7 +777,17 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const editId = urlParams.get('edit');
-            if (editId) { loadStudentForEdit(parseInt(editId)); }
+            if (editId) {
+                Promise.all([
+                    populateClassDropdown(document.getElementById('classSelect'), false),
+                    populateSectionDropdown(document.getElementById('sectionSelect'), false),
+                    populateSessionDropdown(document.getElementById('sessionSelect'), false),
+                    populateReligionDropdown(document.getElementById('religion')),
+                    populateRouteDropdown(document.getElementById('routeSelect')),
+                    populateHouseDropdown(document.getElementById('house')),
+                    populateStreamDropdown(document.getElementById('stream'))
+                ]).then(() => loadStudentForEdit(parseInt(editId)));
+            }
 
             $('#photoInput').on('change', function (e) {
                 const file = e.target.files[0];
@@ -975,9 +986,9 @@
 
         function validateForm() {
             let v = true;
-            const req = ['studentName', 'fatherName', 'motherName', 'dob', 'gender', 'category', 'phone', 'email', 'address', 'classSelect', 'sectionSelect'];
+            const req = ['studentName', 'fatherName', 'motherName', 'dob', 'gender', 'category', 'phone', 'email', 'address', 'classSelect', 'sectionSelect', 'sessionSelect'];
             $('.is-invalid').removeClass('is-invalid'); $('.field-error').remove();
-            const labels = { studentName: 'Student name is required', fatherName: "Father's name is required", motherName: "Mother's name is required", dob: 'Date of birth is required', gender: 'Please select gender', category: 'Please select category', phone: 'Mobile number is required', email: 'Email is required', address: 'Address is required', classSelect: 'Please select class', sectionSelect: 'Please select section' };
+            const labels = { studentName: 'Student name is required', fatherName: "Father's name is required", motherName: "Mother's name is required", dob: 'Date of birth is required', gender: 'Please select gender', category: 'Please select category', phone: 'Mobile number is required', email: 'Email is required', address: 'Address is required', classSelect: 'Please select class', sectionSelect: 'Please select section', sessionSelect: 'Please select session' };
             req.forEach(id => {
                 const el = document.getElementById(id);
                 if (!el.value) { $(el).addClass('is-invalid'); $(el).closest('.form-group').append(`<small class="field-error" style="color:#c62828;font-size:10px;display:block;margin-top:2px;">${labels[id]}</small>`); v = false; }

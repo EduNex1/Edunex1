@@ -57,6 +57,7 @@
     <script>
     $(async function(){
         initPage('master-subject');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
             try { cache = await getSubjects(); } catch(e){ showToast('Failed to load','error'); }

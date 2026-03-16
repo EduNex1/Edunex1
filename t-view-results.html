@@ -89,6 +89,7 @@
 
     (async function(){
         initPage('t-view-results');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         const user = getUser();
         if (!user || !user.linked_id) return;
         try {

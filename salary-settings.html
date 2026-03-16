@@ -125,6 +125,7 @@
         let salaryOpts = {};
         $(async function () {
             if (typeof initPage === 'function') initPage('salary-settings');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try { salaryOpts = await getOptionSettings(); } catch(e) {}
 

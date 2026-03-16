@@ -50,6 +50,7 @@
     <script>
     $(async function () {
         initPage('p-notice');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             const notices = await getNotices() || [];
             if (!notices.length) { $('#noticeArea').html('<p style="text-align:center;color:#888;">No notices posted yet.</p>'); return; }

@@ -563,10 +563,12 @@
 
         $(async function () {
             initPage('character-certificate');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classCache = [], studentCache = [], certCache = [], branches = [], sessions = [];
             try { [classCache, certCache, branches, sessions] = await Promise.all([getClasses(), getCharacterCertificates(), getBranches(), getAcademicSessions()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
             const currentSession = sessions.find(s => s.status === 'Active');
 
             $('.cc-tab').on('click', function () {

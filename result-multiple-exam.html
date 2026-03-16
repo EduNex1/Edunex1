@@ -214,6 +214,7 @@
     <script>
         (async function () {
             initPage('result-multiple-exam');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let gradingRules = [];
             try { gradingRules = await getGradingSystem(); } catch(e) {}
@@ -235,7 +236,8 @@
 
             let classCache = [], examCache = [], subjectCache = [], coAreas = [], branches = [], studentCache = [];
             try { [classCache, examCache, subjectCache, coAreas, branches] = await Promise.all([getClasses(), getExams(), getSubjects(), getCoScholasticAreas(), getBranches()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
 
             classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
 

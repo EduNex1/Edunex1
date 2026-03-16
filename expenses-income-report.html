@@ -127,6 +127,7 @@
     <script>
         $(document).ready(function(){
             if(typeof initPage==='function') initPage('expenses-income-report');
+            if(typeof initPage==='function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             var _u = typeof getUser === 'function' ? getUser() : null;
             if (_u && _u.school_name) document.getElementById('reportSchoolName').textContent = _u.school_name;
             buildReport();

@@ -201,6 +201,7 @@
             var currentPerm = null;
 
             initPage('t-homework');
+            if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
 
             try { sectionCache = await getSections(); } catch (e) { console.error('Failed to load sections', e); }
 

@@ -175,6 +175,7 @@
 
     $(async function () {
         initPage('s-fee-status');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             const stu = children && children[0];
@@ -186,7 +187,7 @@
             const [deps, discs, slabs] = await Promise.all([
                 getFeeDeposits({ student_id: stu.id }),
                 getFeeDiscounts(stu.id),
-                getFeeSlabs(stu.class_id)
+                getFeeSlabs(stu.class_id, stu.session)
             ]);
 
             // Parse applicable months for each slab to build per-month charges

@@ -187,6 +187,7 @@
     <script>
         (async function () {
             initPage('result-single-exam');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             function getGrade(pct) {
                 if (pct >= 91) return 'A1'; if (pct >= 81) return 'A2'; if (pct >= 71) return 'B1';
@@ -199,7 +200,8 @@
 
             let classCache = [], examCache = [], subjectCache = [], studentCache = [], coAreas = [], branches = [];
             try { [classCache, examCache, subjectCache, coAreas, branches] = await Promise.all([getClasses(), getExams(), getSubjects(), getCoScholasticAreas(), getBranches()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
 
             classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
             examCache.forEach(e => document.getElementById('fExam').innerHTML += `<option value="${e.id}">${e.name}</option>`);

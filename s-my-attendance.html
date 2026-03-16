@@ -205,6 +205,7 @@
         var cachedStudent = null;
         $(async function () {
             initPage('s-my-attendance');
+            if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
             try {
                 var children = await getMyChildren();
                 var stu = children && children[0];

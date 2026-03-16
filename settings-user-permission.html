@@ -67,6 +67,7 @@
 
     $(async function(){
         initPage('settings-user-permission');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let usersCache = [];
         try { usersCache = await getUsers(); } catch(e) {}
         usersCache = Array.isArray(usersCache) ? usersCache : (usersCache.results || []);

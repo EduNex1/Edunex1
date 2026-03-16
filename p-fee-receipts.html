@@ -204,6 +204,7 @@
 
     $(async function(){
         initPage('p-fee-receipts');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             children = await getMyChildren() || [];
             const cs = $('#childSelect').empty();

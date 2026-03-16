@@ -431,6 +431,7 @@
     <script>
         $(async function () {
             initPage('staff-attendance-report');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             const params = new URLSearchParams(window.location.search);
             const staffId = parseInt(params.get('id'));

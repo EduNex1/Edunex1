@@ -66,6 +66,7 @@
     <script>
     $(async function(){
         initPage('master-exam-name');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
             try { cache = await getExamNames(); } catch(e){ showToast('Failed to load','error'); }

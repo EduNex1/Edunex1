@@ -132,6 +132,7 @@
     <script>
         (async function () {
             initPage('result-subject-wise');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let gradingRules = [];
             try { gradingRules = await getGradingSystem(); } catch(e) {}

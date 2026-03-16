@@ -55,6 +55,7 @@
     <script>
     $(async function(){
         initPage('master-academic-session');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         let editId = null;
         async function load(){

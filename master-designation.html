@@ -56,6 +56,7 @@
     <script>
     $(async function(){
         initPage('master-designation');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
             try { cache = await getDesignations(); } catch(e){ showToast('Failed to load','error'); }

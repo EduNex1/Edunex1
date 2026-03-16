@@ -709,11 +709,13 @@
     <script>
         $(async function () {
             initPage('staff-id-card');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             let selectedStaff = [], currentOrientation = 'portrait', currentDesign = '1';
             let staffCache = [], designationCache = [], branches = [];
 
             try { [staffCache, designationCache, branches] = await Promise.all([getStaff(), getDesignations(), getBranches()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
             const shortName = (school.school_name || '').split(' ').map(w => w[0]).join('').substring(0, 4);
 
             function waveSvgTop(light) { return `<svg viewBox="0 0 500 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 C80,22 160,30 250,24 C340,18 420,26 500,8 L500,28 L0,28 Z" fill="#fff"/><path d="M0,0 C80,22 160,30 250,24 C340,18 420,26 500,8" fill="none" stroke="${light}" stroke-width="2.5" opacity="0.6"/></svg>`; }

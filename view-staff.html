@@ -481,6 +481,7 @@
         let _displayedData = [];
         $(document).ready(async function () {
             initPage('view-staff');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try {
                 const desigs = await getDesignations();

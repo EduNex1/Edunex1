@@ -122,6 +122,7 @@
     let _displayedData = [];
     $(async function() {
         initPage('library-books');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let bookTypes = [], booksCache = [];
         try { [bookTypes, booksCache] = await Promise.all([getMasterData('book_types'), getBooks()]); } catch(e) { console.error('Failed to load data', e); }

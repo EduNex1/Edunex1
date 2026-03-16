@@ -623,7 +623,8 @@
 
     <script>
         $(async function () {
-            initPage('admit-card');
+            
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let selectedStudents = [];
             let currentExam = null;
@@ -631,7 +632,8 @@
             let studentCache = [], classCache = [], examCache = [], subjectCache = [], branches = [], sessions = [], datesheetCache = [];
 
             try { [classCache, examCache, subjectCache, branches, sessions] = await Promise.all([getClasses(), getExamNames(), getSubjects(), getBranches(), getAcademicSessions()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
             const currentSession = sessions.find(s => s.status === 'Active') || {};
 
             classCache.forEach(c => $('#filterClass').append(`<option value="${c.id}">${c.name}</option>`));

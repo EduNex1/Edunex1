@@ -312,7 +312,8 @@
     <script src="js/main.js"></script>
     <script>
         $(document).ready(async function () {
-            if (typeof initPage === 'function') initPage('fee-deposit');
+            
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let selectedStudent = null;
             let totalAmount = 0;
@@ -396,7 +397,8 @@
                 try {
                     selectedStudent = await getStudent(id);
                     if (!selectedStudent) return;
-                    feeSlabCache = await getFeeSlabs(selectedStudent.class_id);
+                    const _sess = typeof getSelectedSession === 'function' ? getSelectedSession() : '';
+                    feeSlabCache = await getFeeSlabs(selectedStudent.class_id, _sess);
                     refreshParticularCharges(selectedStudent);
                     $('#monthPartSection').slideDown(200);
                     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -536,7 +538,7 @@
                 const late = parseFloat($('#sLateFee').val()) || 0;
                 const conc = parseFloat($('#sConcession').val()) || 0;
                 const oldBal = getOldBalance();
-                const grand = totalAmount + late + oldBal - conc;
+                const grand = Math.max(0, totalAmount + late + oldBal - conc);
                 const received = parseFloat($('#sReceived').val()) || 0;
                 const balance = grand - received;
 
@@ -558,7 +560,7 @@
                 const late = parseFloat($('#sLateFee').val()) || 0;
                 const conc = parseFloat($('#sConcession').val()) || 0;
                 const oldBal = getOldBalance();
-                const grand = totalAmount + late + oldBal - conc;
+                const grand = Math.max(0, totalAmount + late + oldBal - conc);
                 const balance = grand - received;
 
                 try {
@@ -581,6 +583,7 @@
                         total_amount: totalAmount,
                         late_fee: late,
                         concession: conc,
+                        old_balance: oldBal,
                         grand_total: grand,
                         received_amount: received,
                         balance: balance,

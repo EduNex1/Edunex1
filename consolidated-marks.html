@@ -138,10 +138,12 @@
     <script>
         (async function () {
             initPage('consolidated-marks');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classCache = [], examCache = [], subjectCache = [], branches = [], studentCache = [], coAreas = [];
             try { [classCache, examCache, subjectCache, branches, coAreas] = await Promise.all([getClasses(), getExamNames(), getSubjects(), getBranches(), getCoScholasticAreas()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
 
             classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
             examCache.forEach(e => document.getElementById('fExam').innerHTML += `<option value="${e.id}">${e.name}</option>`);

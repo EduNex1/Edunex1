@@ -181,6 +181,7 @@
 
         (async function () {
             initPage('email-staff');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try {
                 const [staff, branches] = await Promise.all([

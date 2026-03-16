@@ -567,11 +567,13 @@
     <script>
         $(async function () {
             initPage('transfer-certificate');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             let editingTcId = null;
             let classCache = [], studentCache = [], tcCache = [], branches = [], sessions = [];
 
             try { [classCache, branches, sessions, tcCache] = await Promise.all([getClasses(), getBranches(), getAcademicSessions(), getTransferCertificates()]); } catch(e) {}
-            const school = branches[0] || {};
+            const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+            const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
             const currentSession = sessions.find(s => s.status === 'Active') || {};
             let tcCounter = tcCache.length + 1;
 

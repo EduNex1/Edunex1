@@ -136,6 +136,7 @@
     <script>
         $(async function () {
             initPage('dashboard');
+            if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
             var now = new Date();
             document.getElementById('todayDate').textContent = now.getDate() + ' ' + now.toLocaleString('en-IN', { month: 'long' }) + ' ' + now.getFullYear();
             var user = typeof getUser === 'function' ? getUser() : null;

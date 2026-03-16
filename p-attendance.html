@@ -210,6 +210,7 @@
 
         $(async function () {
             initPage('p-attendance');
+            if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
             try { childrenCache = await getMyChildren(); } catch(e) {
                 console.error(e);
                 showToast('Unable to load data. Please try again.', 'error');

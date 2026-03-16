@@ -82,6 +82,7 @@
     <script>
     $(async function(){
         initPage('settings-exam');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let instrCache = [];
         let gradesCache = [];

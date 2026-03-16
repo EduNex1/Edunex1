@@ -60,6 +60,7 @@
     const sylBgs   = ['#fff3e0','#e3f2fd','#e8f5e9','#e8eaf6','#e0f2f1','#f3e5f5','#ffebee'];
     $(async function(){
         initPage('p-syllabus');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             children = await getMyChildren() || [];
             const cs = $('#childSelect').empty();

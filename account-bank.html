@@ -132,6 +132,7 @@
 
         $(document).ready(async function(){
             if(typeof initPage==='function') initPage('account-bank');
+            if(typeof initPage==='function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             await renderList();
         });
 

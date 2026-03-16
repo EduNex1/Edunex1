@@ -220,8 +220,20 @@
         }
 
         let sessionsCache = [];
-        try { sessionsCache = await getMasterData('academic_sessions'); } catch(e){}
-        sessionsCache.forEach(s=>{ $('#sAcademic').append(`<option value="${s.name}">${s.name}</option>`); $('#sErp').append(`<option value="${s.name}">${s.name}</option>`); });
+        async function loadBranchSessions(branchId) {
+            try { sessionsCache = await getMasterData('academic_sessions', branchId || undefined); } catch(e){ sessionsCache = []; }
+            const defaultAcademic = '<option value="">— Select —</option>';
+            const defaultErp = '<option value="">— Select —</option>';
+            let academicHtml = defaultAcademic;
+            let erpHtml = defaultErp;
+            sessionsCache.forEach(s => {
+                academicHtml += `<option value="${s.name}">${s.name}</option>`;
+                erpHtml += `<option value="${s.name}">${s.name}</option>`;
+            });
+            $('#sAcademic').html(academicHtml);
+            $('#sErp').html(erpHtml);
+        }
+        await loadBranchSessions();
 
         let croppedLogoBlob = null;
         let pendingLogoPreview = '';
@@ -288,6 +300,7 @@
             croppedLogoBlob = null;
             pendingLogoPreview = '';
             $('#logoFile').val('');
+            await loadBranchSessions(branchId);
             const bs = branchesCache.find(x=>x.id===branchId);
             if(bs){
                 $('#sName').val(bs.school_name||''); $('#sBoard').val(bs.board||''); $('#sPrincipal').val(bs.principal_name||'');

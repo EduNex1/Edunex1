@@ -109,6 +109,7 @@
     <script>
     $(async function() {
         initPage('transport-vehicles');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let vehicleCache = [];
         let editId = null;

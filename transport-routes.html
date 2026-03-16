@@ -210,6 +210,7 @@
     <script>
         $(async function () {
             initPage('transport-routes');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let routeCache = [];
             let editId = null;

@@ -54,6 +54,7 @@
     <script>
     $(async function(){
         initPage('settings-activity-log');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         const currentUser = typeof getUser === 'function' ? getUser() : null;
         const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
         let usersCache = [];

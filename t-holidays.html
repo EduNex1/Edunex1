@@ -54,6 +54,7 @@
     <script>
     $(async function(){
         initPage('t-holidays');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         try {
             const holidays = await getHolidays() || [];
             if (!holidays.length) { $('#holidayBody').html('<tr><td colspan="4" style="text-align:center;color:#888;">No holidays found.</td></tr>'); return; }

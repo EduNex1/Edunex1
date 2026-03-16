@@ -50,6 +50,7 @@
     <script>
     $(async function(){
         initPage('master-homework-type');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
             try { cache = await getHomeworkTypes(); } catch(e){ showToast('Failed to load','error'); }

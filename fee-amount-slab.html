@@ -152,6 +152,7 @@
     <script>
     $(async function() {
         initPage('fee-amount-slab');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let classCache = [], particularCache = [], slabRows = [];
         try {

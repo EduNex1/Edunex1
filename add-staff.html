@@ -387,7 +387,8 @@
         }
 
         $(document).ready(async function () {
-            initPage('add-staff');
+            
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             populateDesignationDropdown(document.getElementById('designation'), false);
 

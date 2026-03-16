@@ -214,6 +214,7 @@
     let children = [];
     $(async function () {
         initPage('p-results');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             children = await getMyChildren() || [];
             const cs = $('#childSelect');

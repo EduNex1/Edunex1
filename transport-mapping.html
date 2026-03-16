@@ -203,6 +203,7 @@
     <script>
         $(function () {
             initPage('transport-mapping');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let editId = null;
             let vehiclesList = [];

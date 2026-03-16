@@ -307,6 +307,7 @@
         let _displayedData = [];
         $(async function () {
             initPage('staff-attendance-report');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let staffCache = [];
             try { staffCache = await getStaff({ status: 'Active' }); } catch(e) {}

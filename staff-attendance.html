@@ -292,7 +292,8 @@
 
     <script>
         $(async function () {
-            initPage('staff-attendance');
+            
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let staffCache = [], designationCache = [];
             try { [staffCache, designationCache] = await Promise.all([getStaff({ status: 'Active' }), getDesignations()]); } catch(e) {}

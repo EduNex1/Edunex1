@@ -91,7 +91,8 @@
     <script>
         let editingId = null;
         let cache = [];
-        $(document).ready(async function(){ if(typeof initPage==='function') initPage('expense-head'); await renderList(); });
+        $(document).ready(async function(){ if(typeof initPage==='function') initPage('expense-head');
+        $(document).ready(async function(){ if(typeof initPage==='function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return; await renderList(); });
 
         async function renderList(){
             try { cache = await getExpenseHeads(); } catch(e){ cache = []; }

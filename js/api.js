@@ -58,12 +58,24 @@ async function api(endpoint, options = {}) {
     }
 
     // Auto-inject branch_id for selected branch
-    if (method === 'GET' && typeof getSelectedBranch === 'function' && !endpoint.includes('branch_id=')) {
+    if (typeof getSelectedBranch === 'function') {
         const branchId = getSelectedBranch();
         if (branchId) {
             const skipBranchEndpoints = ['/api/auth/', '/api/branches', '/api/me'];
             if (!skipBranchEndpoints.some(ep => endpoint.startsWith(ep))) {
-                endpoint += (endpoint.includes('?') ? '&' : '?') + 'branch_id=' + encodeURIComponent(branchId);
+                if (method === 'GET') {
+                    if (!endpoint.includes('branch_id=')) {
+                        endpoint += (endpoint.includes('?') ? '&' : '?') + 'branch_id=' + encodeURIComponent(branchId);
+                    }
+                } else if ((method === 'POST' || method === 'PUT') && fetchOptions.body) {
+                    try {
+                        const bodyObj = JSON.parse(fetchOptions.body);
+                        if (!bodyObj.branch_id) {
+                            bodyObj.branch_id = branchId;
+                            fetchOptions.body = JSON.stringify(bodyObj);
+                        }
+                    } catch(e) {}
+                }
             }
         }
     }

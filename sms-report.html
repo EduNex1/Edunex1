@@ -120,6 +120,7 @@
     <script>
     (async function(){
         initPage('sms-report');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let smsCache = [];
         try { smsCache = await getSmsLog(); } catch(e){ showToast('Failed to load SMS log','error'); }

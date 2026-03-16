@@ -480,6 +480,7 @@
     <script>
         $(document).ready(async function () {
             initPage('student-list');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             const urlParams = new URLSearchParams(window.location.search);
             const studentId = parseInt(urlParams.get('id'));
@@ -514,7 +515,11 @@
 
             var photoBox = document.getElementById('dPhoto');
             if (s.photo_url) {
-                photoBox.innerHTML = '<img src="' + s.photo_url + '" alt="' + s.name + '">';
+                var img = document.createElement('img');
+                img.src = s.photo_url;
+                img.alt = s.name || '';
+                photoBox.innerHTML = '';
+                photoBox.appendChild(img);
             }
 
             setText('dName', s.name);
@@ -540,7 +545,7 @@
 
             // Fetch monthly fee status for this student
             try {
-                var allSlabs = await getFeeSlabs(s.class_id);
+                var allSlabs = await getFeeSlabs(s.class_id, s.session);
                 var nonTransport = Array.isArray(allSlabs) ? allSlabs.filter(function(x) { return !x.is_transport; }) : [];
                 var studentCat = s.category || 'Default';
                 var catSlabs = nonTransport.filter(function(x) { return (x.category || 'Default') === studentCat; });
@@ -589,36 +594,47 @@
             }
             setText('dLoginId', s.admission_no || '-');
 
-            try {
-                var creds = await getUserCredentials('student', s.id);
-                var pwEl = document.getElementById('dPassword');
-                var sPw = creds.student_password || '';
-                pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                pwEl.title = 'Click to reveal';
-                pwEl.style.cursor = 'pointer';
-                pwEl.onclick = function() {
-                    if (pwEl.dataset.revealed === '1') { pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; pwEl.dataset.revealed = '0'; }
-                    else { pwEl.textContent = sPw || '-'; pwEl.dataset.revealed = '1'; }
-                };
-                setText('dParentLoginId', creds.parent_login_id || 'No parent login');
-                var ppEl = document.getElementById('dParentPassword');
-                var pPw = creds.parent_password || '';
-                if (creds.parent_login_id) {
-                    ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                    ppEl.title = 'Click to reveal';
-                    ppEl.style.cursor = 'pointer';
-                    ppEl.onclick = function() {
-                        if (ppEl.dataset.revealed === '1') { ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; ppEl.dataset.revealed = '0'; }
-                        else { ppEl.textContent = pPw || '-'; ppEl.dataset.revealed = '1'; }
+            var _curUser = typeof getUser === 'function' ? getUser() : null;
+            var _isAdmin = _curUser && (_curUser.role === 'super_admin' || _curUser.role === 'branch_admin');
+            if (_isAdmin) {
+                try {
+                    var creds = await getUserCredentials('student', s.id);
+                    var pwEl = document.getElementById('dPassword');
+                    var sPw = creds.student_password || '';
+                    pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                    pwEl.title = 'Click to reveal';
+                    pwEl.style.cursor = 'pointer';
+                    pwEl.onclick = function() {
+                        if (pwEl.dataset.revealed === '1') { pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; pwEl.dataset.revealed = '0'; }
+                        else { pwEl.textContent = sPw || '-'; pwEl.dataset.revealed = '1'; }
                     };
-                } else {
-                    ppEl.textContent = '-';
-                    ppEl.classList.add('field-muted');
+                    setText('dParentLoginId', creds.parent_login_id || 'No parent login');
+                    var ppEl = document.getElementById('dParentPassword');
+                    var pPw = creds.parent_password || '';
+                    if (creds.parent_login_id) {
+                        ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                        ppEl.title = 'Click to reveal';
+                        ppEl.style.cursor = 'pointer';
+                        ppEl.onclick = function() {
+                            if (ppEl.dataset.revealed === '1') { ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; ppEl.dataset.revealed = '0'; }
+                            else { ppEl.textContent = pPw || '-'; ppEl.dataset.revealed = '1'; }
+                        };
+                    } else {
+                        ppEl.textContent = '-';
+                        ppEl.classList.add('field-muted');
+                    }
+                } catch(e) {
+                    document.getElementById('dPassword').textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                    setText('dParentLoginId', '-');
+                    document.getElementById('dParentPassword').textContent = '-';
                 }
-            } catch(e) {
-                document.getElementById('dPassword').textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                setText('dParentLoginId', '-');
-                document.getElementById('dParentPassword').textContent = '-';
+            } else {
+                // Hide entire credential card for non-admin roles
+                var credCard = document.getElementById('dPassword');
+                if (credCard) {
+                    var card = credCard.closest('.detail-card');
+                    if (card) card.style.display = 'none';
+                }
             }
 
             var subjectContainer = document.getElementById('dSubjects');

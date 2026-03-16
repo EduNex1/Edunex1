@@ -200,6 +200,7 @@
     <script>
         $(function () {
             initPage('transport-registration');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             $('#vehicleForm').on('submit', async function (e) {
                 e.preventDefault();

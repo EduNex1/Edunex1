@@ -125,6 +125,7 @@
     <script>
     $(async function() {
         initPage('fee-particulars');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         const FEE_MODES = ['Monthly','Quarterly','Half-Yearly','Yearly','Once'];
         const ALL_MONTHS = ['April','May','June','July','August','September','October','November','December','January','February','March'];

@@ -130,6 +130,7 @@
     <script>
     $(async function() {
         initPage('library-return');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let classCache = [], sectionCache = [], issuesCache = [], optSettings = {};
         try {

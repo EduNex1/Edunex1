@@ -51,6 +51,7 @@
     <script>
     $(async function(){
         initPage('t-timetable');
+        if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
         try {
             const user = getUser();
             if (!user || !user.linked_id) { $('#ttArea').html('<p style="text-align:center;color:#888;">Teacher account not linked.</p>'); return; }

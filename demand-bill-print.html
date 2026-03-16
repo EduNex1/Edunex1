@@ -296,7 +296,7 @@
                 if (class_id) filters.class_id = class_id;
                 if (section) filters.section = section;
                 [particularCache, studentCache, sessions, slabCache, routeCache] = await Promise.all([
-                    getFeeParticulars(), getStudents(filters), getAcademicSessions(), getFeeSlabs(class_id), getTransportRoutes()
+                    getFeeParticulars(), getStudents(filters), getAcademicSessions(), getFeeSlabs(class_id, storedSession || undefined), getTransportRoutes()
                 ]);
             } catch(e) {
                 $('#billContent').html('<div class="no-data"><i class="fas fa-exclamation-triangle" style="font-size:36px;display:block;margin-bottom:10px;"></i>Failed to load data. Please try again.</div>');

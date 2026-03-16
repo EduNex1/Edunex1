@@ -153,6 +153,7 @@
 
         (async function () {
             initPage('sms-staff');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try {
                 const [staff, subjects, templates, branches, opts] = await Promise.all([
@@ -165,7 +166,8 @@
                 staffCache = staff || [];
                 subjectCache = subjects || [];
                 smsTemplates = templates || [];
-                branchInfo = (branches && branches[0]) || {};
+                const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+                branchInfo = (_selBr ? (branches || []).find(b => String(b.id) === String(_selBr)) : null) || (branches && branches[0]) || {};
                 optSettings = opts || {};
                 if (optSettings['msg91_tpl_general']) document.getElementById('fMsg91Tpl').value = optSettings['msg91_tpl_general'];
             } catch(e) { console.error(e); }

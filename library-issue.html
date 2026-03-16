@@ -117,6 +117,7 @@
     <script>
     $(async function() {
         initPage('library-issue');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
         let selectedStudent = null;
         let classCache = [], sectionCache = [], bookTypes = [], booksCache = [], optSettings = {};

@@ -54,6 +54,7 @@
     <script>
     $(async function(){
         initPage('master-exam-group');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         let examNamesCache = [];
         try { examNamesCache = await getExamNames(); } catch(e){}

@@ -49,6 +49,7 @@
     <script>
     $(function(){
         initPage('settings-users');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let allUsers = [], allBranches = [];
         async function load(filter){
             if(!allUsers.length){

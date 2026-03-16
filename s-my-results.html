@@ -188,6 +188,7 @@
     let myStudent = null;
     $(async function () {
         initPage('s-my-results');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             if (!children || !children.length) { $('#noResult').html('<p style="color:#c00;">Student record not found.</p>'); return; }

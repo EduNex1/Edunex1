@@ -54,6 +54,7 @@
     <script>
     $(async function () {
         initPage('s-my-books');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         try {
             const children = await getMyChildren();
             const stu = children && children[0];

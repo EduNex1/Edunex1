@@ -200,6 +200,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('academic-timetable');
+            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
             let classCache = [], sectionCache = [], subjectCache = [], periodCache = [], staffCache = [], ttCache = [];

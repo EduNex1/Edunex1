@@ -143,6 +143,7 @@
             var sectionCache = [];
 
             initPage('t-mark-attendance');
+            if (typeof requireRoles === 'function' && !requireRoles(['teacher'])) return;
             document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
 
             try { sectionCache = await getSections(); } catch (e) { console.error('Failed to load sections', e); }

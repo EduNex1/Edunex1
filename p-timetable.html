@@ -59,6 +59,7 @@
     const ttBgs = ['#fff3e0','#e3f2fd','#e8f5e9','#f3e5f5','#e0f2f1','#fce4ec','#e8eaf6','#fff8e1','#fbe9e7'];
     $(async function(){
         initPage('p-timetable');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         try {
             children = await getMyChildren() || [];
             const cs = $('#childSelect').empty();

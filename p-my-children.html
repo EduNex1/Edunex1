@@ -201,6 +201,7 @@
 
         $(function () {
             initPage('p-my-children');
+            if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
             loadChildren();
         });
 

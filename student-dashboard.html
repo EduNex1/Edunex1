@@ -150,6 +150,7 @@
     <script>
     $(async function(){
         initPage('dashboard');
+        if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
         const now = new Date();
         document.getElementById('todayDate').textContent = now.getDate()+' '+now.toLocaleString('en-IN',{month:'long'})+' '+now.getFullYear();
         const user = typeof getUser==='function'?getUser():null;
@@ -171,7 +172,7 @@
             $('#sAdmNo').text(stu.admission_no||'');
 
             const deps = await getFeeDeposits({student_id:stu.id})||[];
-            const slabs = await getFeeSlabs(stu.class_id)||[];
+            const slabs = await getFeeSlabs(stu.class_id, stu.session)||[];
             // Filter: exclude transport, match student category
             const nonTransport = slabs.filter(function(x){ return !x.is_transport; });
             const stuCat = stu.category || 'Default';

@@ -168,7 +168,8 @@
 
     <script>
         window.location.href = '/add-staff';
-        $(document).ready(function () { initPage('add-teacher'); });
+        $(document).ready(function () { initPage('add-teacher');
+        $(document).ready(function () { if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return; });
     </script>
 </body>
 

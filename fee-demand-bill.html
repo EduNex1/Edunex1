@@ -260,6 +260,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('fee-demand-bill');
+            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             const FEE_MONTHS = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
 

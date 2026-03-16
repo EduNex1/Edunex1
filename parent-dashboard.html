@@ -131,6 +131,7 @@
     let children = [];
     $(async function(){
         initPage('dashboard');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
         const now = new Date();
         document.getElementById('todayDate').textContent = now.getDate()+' '+now.toLocaleString('en-IN',{month:'long'})+' '+now.getFullYear();
         const user = typeof getUser==='function'?getUser():null;
@@ -169,7 +170,7 @@
         try {
             const deps = await getFeeDeposits({student_id:child.id})||[];
             const totalPaid = deps.reduce((sum,row)=>sum+Number(row.received_amount||0),0);
-            const slabs = await getFeeSlabs(child.class_id)||[];
+            const slabs = await getFeeSlabs(child.class_id, child.session)||[];
             // Filter: exclude transport, match student category
             const nonTransport = slabs.filter(function(x){ return !x.is_transport; });
             const childCat = child.category || 'Default';

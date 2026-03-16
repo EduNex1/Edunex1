@@ -307,6 +307,7 @@
     <script>
         $(async function () {
             initPage('student-attendance-stats');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classCache = [], sectionCache = [];
             try { [classCache, sectionCache] = await Promise.all([getClasses(), getSections()]); } catch(e) {}

@@ -108,6 +108,7 @@
     <script>
     $(async function() {
         initPage('library-book-type');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
 
         async function loadTypes() {

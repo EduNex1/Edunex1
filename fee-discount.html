@@ -115,6 +115,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('fee-discount');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classCache = [], sectionCache = [], studentCache = [], particularCache = [];
             try { [classCache, sectionCache, particularCache] = await Promise.all([getClasses(), getSections(), getFeeParticulars()]); } catch(e) {}
@@ -148,19 +149,27 @@
                 const cls = classCache.find(c => c.id === stu.class_id);
 
                 let existingDiscounts = [];
+                const _discSess = typeof getSelectedSession === 'function' ? getSelectedSession() : '';
                 try { existingDiscounts = await getFeeDiscounts(stuId); } catch(e) {}
                 const discountMap = {};
-                existingDiscounts.forEach(d => { discountMap[d.particular_id] = (discountMap[d.particular_id] || 0) + d.amount; });
+                existingDiscounts.filter(d => !_discSess || !d.session || d.session === _discSess)
+                    .forEach(d => { discountMap[d.particular_id] = (discountMap[d.particular_id] || 0) + d.amount; });
+
+                // Fetch class-specific fee slabs
+                let slabCache = [];
+                try { slabCache = await getFeeSlabs(stu.class_id, _discSess || undefined); } catch(e) {}
+                const slabMap = {};
+                slabCache.forEach(sl => { slabMap[sl.particular_id] = sl.amount; });
 
                 let rows = '';
                 particularCache.forEach((p, i) => {
                     const disc = discountMap[p.id] || 0;
-                    const charge = p.charge || 0;
+                    const charge = slabMap[p.id] != null ? slabMap[p.id] : (p.charge || 0);
                     rows += `<tr>
                         <td style="font-weight:600;">${i + 1}</td>
                         <td style="font-weight:600;">${p.name}</td>
                         <td>₹${charge.toLocaleString('en-IN')}</td>
-                        <td><input type="number" class="disc-input" data-pid="${p.id}" value="${disc}" min="0" max="${charge}" placeholder="0"></td>
+                        <td><input type="number" class="disc-input" data-pid="${p.id}" data-charge="${charge}" value="${disc}" min="0" max="${charge}" placeholder="0"></td>
                         <td class="net-val" style="font-weight:700;">₹${(charge - disc).toLocaleString('en-IN')}</td>
                     </tr>`;
                 });
@@ -197,9 +206,7 @@
                 $('#successMsg').hide();
 
                 $(document).off('input', '.disc-input').on('input', '.disc-input', function () {
-                    const pid = $(this).data('pid');
-                    const part = particularCache.find(p => p.id === pid);
-                    const charge = part ? (part.charge || 0) : 0;
+                    const charge = parseFloat($(this).data('charge')) || 0;
                     let disc = parseInt($(this).val()) || 0;
                     if (disc < 0) disc = 0;
                     if (disc > charge) disc = charge;
@@ -209,13 +216,16 @@
 
                 $(document).off('click', '#btnSaveDiscount').on('click', '#btnSaveDiscount', async function () {
                     try {
-                        await Promise.all(existingDiscounts.map(d => deleteFeeDiscount(d.id)));
+                        const sessDiscs = _discSess
+                            ? existingDiscounts.filter(d => !d.session || d.session === _discSess)
+                            : existingDiscounts;
+                        await Promise.all(sessDiscs.map(d => deleteFeeDiscount(d.id)));
                         const promises = [];
                         $('.disc-input').each(function () {
                             const pid = $(this).data('pid');
                             const amt = parseInt($(this).val()) || 0;
                             if (amt > 0) {
-                                promises.push(createFeeDiscount({ student_id: parseInt(stuId), particular_id: pid, amount: amt, reason: 'Fee discount updated', category: 'General' }));
+                                promises.push(createFeeDiscount({ student_id: parseInt(stuId), particular_id: pid, amount: amt, reason: 'Fee discount updated', category: 'General', session: _discSess }));
                             }
                         });
                         await Promise.all(promises);

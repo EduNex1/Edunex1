@@ -145,6 +145,7 @@
 
         (async function () {
             if (typeof initPage === 'function') initPage('salary-generate');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             try {
                 [staffCache, allowanceHeads, deductionHeads, salaryOpts, existingSalaries] = await Promise.all([

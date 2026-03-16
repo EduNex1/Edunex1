@@ -392,6 +392,7 @@
     <script>
         $(async function () {
             if (typeof initPage === 'function') initPage('academic-datesheet');
+            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let currentSheetId = null;
             let examCache = [], classCache = [], subjectCache = [], sheetCache = [], entryCache = [];

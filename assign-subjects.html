@@ -178,6 +178,7 @@
 
         $(document).ready(async function () {
             initPage('assign-subjects');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             populateClassDropdown(document.getElementById('classFilter'), false);
             populateSectionDropdown(document.getElementById('sectionFilter'), true);
             populateSubjectDropdown(document.getElementById('subjectSelect'), false);
