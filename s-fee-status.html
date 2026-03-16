@@ -176,6 +176,14 @@
     $(async function () {
         initPage('s-fee-status');
         if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
+        // Check if fee due report is enabled for student portal
+        try {
+            const pubSettings = await getPublicSettings();
+            if (pubSettings && pubSettings['enable_fee_due_student_portal'] !== '1' && pubSettings['enable_fee_due_student_portal'] !== 1) {
+                $('#feeBreakdownInfo').closest('.card-body').html('<div style="text-align:center;padding:40px 20px;"><i class="fas fa-lock" style="font-size:36px;color:#bbb;margin-bottom:12px;display:block;"></i><h5 style="color:#555;">Fee status is not available</h5><p style="color:#888;font-size:12px;">Please contact school office for fee information.</p></div>');
+                return;
+            }
+        } catch(e) {}
         try {
             const children = await getMyChildren();
             const stu = children && children[0];

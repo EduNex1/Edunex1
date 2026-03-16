@@ -292,6 +292,9 @@
             try { branches = await getBranches(); } catch(e) {}
             const branch = branches.find(b => Number(b.id) === Number(dep.branch_id)) || branches[0] || {};
 
+            let showDiscount = true;
+            try { const _opts = await getOptionSettings(); showDiscount = _opts['enable_discount_in_receipt'] === '1' || _opts['enable_discount_in_receipt'] === 1; } catch(e) {}
+
             let feeRows = '';
             const items = dep.items || [];
             items.forEach((item, i) => {
@@ -338,7 +341,7 @@
 
                 <div class="receipt-summary">
                     <table>
-                        <tr><td class="lbl">Late Fee</td><td class="val">₹${(dep.late_fee || 0).toLocaleString('en-IN')}</td><td class="lbl">Concession</td><td class="val">₹${(dep.concession || 0).toLocaleString('en-IN')}</td></tr>
+                        <tr><td class="lbl">Late Fee</td><td class="val">₹${(dep.late_fee || 0).toLocaleString('en-IN')}</td>${showDiscount ? '<td class="lbl">Concession</td><td class="val">₹'+(dep.concession || 0).toLocaleString('en-IN')+'</td>' : '<td></td><td></td>'}</tr>
                         <tr><td class="lbl">Grand Total</td><td class="val">₹${(dep.grand_total || 0).toLocaleString('en-IN')}</td><td class="lbl">Payment Mode</td><td class="val">${dep.payment_mode || ''}</td></tr>
                         <tr><td class="lbl">Amount Received</td><td class="val">₹${(dep.received_amount || 0).toLocaleString('en-IN')}</td><td class="lbl">Balance</td><td class="val">₹${(dep.balance || 0).toLocaleString('en-IN')}</td></tr>
                     </table>

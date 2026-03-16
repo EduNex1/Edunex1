@@ -325,6 +325,9 @@
                 }
             } catch(e) {}
 
+            let billNoteText = '';
+            try { const _opts = await getOptionSettings(); billNoteText = _opts['fee_demand_bill_note'] || ''; } catch(e) {}
+
             const currentSession = sessions.find(s => s.status === 'Active');
             const sessionName = storedSession || (currentSession ? currentSession.name : '');
 
@@ -445,7 +448,7 @@
                     </table>
 
                     <div class="bill-note">
-                        <strong>Note:</strong> Please deposit the fee at the school office during working hours. For any queries, contact: ${school.phone || 'school office'}.
+                        <strong>Note:</strong> ${billNoteText || ('Please deposit the fee at the school office during working hours. For any queries, contact: ' + (school.phone || 'school office') + '.')}
                     </div>
 
                     <div class="bill-sig">

@@ -207,6 +207,7 @@ async function getOptionSettings(branchId) {
     }, {});
 }
 async function saveOptionSettings(settings, branchId) { return api('/api/option-settings', { method: 'POST', body: JSON.stringify({ settings, branch_id: branchId || undefined }) }); }
+async function getPublicSettings() { return api('/api/public-settings'); }
 
 async function getMyChildren() { return api('/api/my-children'); }
 

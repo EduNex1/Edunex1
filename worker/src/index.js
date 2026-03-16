@@ -879,6 +879,13 @@ router.post('/api/students', async (req, env) => {
                 .bind(d.phone, parentPwd, 'parent', branchId, studentId).run();
         }
     }
+    try {
+        if (d.email) {
+            await tryAutoEmail(env, branchId, 'enable_admission_email', d.email, d.name,
+                'Admission Confirmed \u2014 ' + admNo,
+                '<p>Dear <strong>' + d.name + '</strong>,</p><p>Admission confirmed. Admission No: <strong>' + admNo + '</strong></p><p>Student Login: <strong>' + admNo + '</strong> | Password: <strong>' + studentPwd + '</strong></p>' + (parentPwd ? '<p>Parent Login: <strong>' + (d.phone||'') + '</strong> | Password: <strong>' + parentPwd + '</strong></p>' : '') + '<p>Welcome!</p>');
+        }
+    } catch(e) {}
     return json({ id: studentId, admission_no: admNo, student_password: studentPwd, parent_password: parentPwd }, 201);
 });
 
@@ -1175,6 +1182,26 @@ router.post('/api/attendance/students', async (req, env) => {
         await env.DB.prepare('INSERT OR REPLACE INTO student_attendance (branch_id, student_id, date, status, remark, marked_by) VALUES (?,?,?,?,?,?)')
             .bind(bid, r.student_id, date, r.status, r.remark || '', user.id).run();
     }
+    // Auto email for absent/present students
+    try {
+        const _absIds = (records||[]).filter(r => r.status === 'Absent').map(r => r.student_id).filter(Boolean);
+        const _presIds = (records||[]).filter(r => r.status === 'Present').map(r => r.student_id).filter(Boolean);
+        const _allIds = [...new Set([..._absIds, ..._presIds])];
+        if (_allIds.length) {
+            const _sett = await getOptionSettingsMap(env, bid);
+            const _doAbs = _sett['enable_absent_email_auto'] === '1';
+            const _doPres = _sett['enable_present_email_auto'] === '1';
+            if ((_doAbs && _absIds.length) || (_doPres && _presIds.length)) {
+                const _ph = _allIds.map(() => '?').join(',');
+                const { results: _stuList } = await env.DB.prepare('SELECT id, name, email FROM students WHERE id IN (' + _ph + ')').bind(..._allIds).all();
+                const _sm = {}; _stuList.forEach(s => { _sm[s.id] = s; });
+                const _ep = [];
+                if (_doAbs) _absIds.forEach(sid => { const s = _sm[sid]; if (s && s.email) _ep.push(tryAutoEmail(env, bid, 'enable_absent_email_auto', s.email, s.name, 'Attendance Alert \u2014 ' + s.name + ' Absent (' + date + ')', '<p>Dear Parent,</p><p>Your ward <strong>' + s.name + '</strong> was marked <strong style="color:red;">Absent</strong> on <strong>' + date + '</strong>.</p>')); });
+                if (_doPres) _presIds.forEach(sid => { const s = _sm[sid]; if (s && s.email) _ep.push(tryAutoEmail(env, bid, 'enable_present_email_auto', s.email, s.name, 'Attendance \u2014 ' + s.name + ' Present (' + date + ')', '<p>Dear Parent,</p><p>Your ward <strong>' + s.name + '</strong> was marked <strong style="color:green;">Present</strong> on <strong>' + date + '</strong>.</p>')); });
+                await Promise.all(_ep);
+            }
+        }
+    } catch(e) {}
     return json({ success: true, count: records.length });
 });
 
@@ -1250,7 +1277,12 @@ router.post('/api/attendance/auto-absent', async (req, env) => {
     const d = new Date(date + 'T00:00:00');
     const dayOfWeek = d.getDay(); // 0=Sunday
 
-    if (dayOfWeek === 0) return json({ success: true, skipped: true, reason: 'Sunday' });
+    if (dayOfWeek === 0) {
+        const sundaySettings = await getOptionSettingsMap(env, bid);
+        if (sundaySettings.enable_sunday_working !== '1') {
+            return json({ success: true, skipped: true, reason: 'Sunday' });
+        }
+    }
 
     const { results: holidays } = await env.DB.prepare(
         'SELECT id FROM holidays WHERE branch_id=? AND date=?'
@@ -1332,6 +1364,14 @@ router.post('/api/fee-deposits', async (req, env) => {
     const bid = user.branch_id || 1;
     const result = await createFeeDepositRecord(env, bid, d);
     if (result.error) return json({ error: result.error }, result.status || 400);
+    try {
+        const _stu = await env.DB.prepare('SELECT name, email FROM students WHERE id=?').bind(d.student_id).first();
+        if (_stu && _stu.email) {
+            await tryAutoEmail(env, bid, 'enable_fee_deposit_email', _stu.email, _stu.name,
+                'Fee Receipt ' + result.receipt_no + ' \u2014 ' + (d.month || ''),
+                '<p>Dear <strong>' + _stu.name + '</strong>,</p><p>Your fee payment of <strong>\u20B9' + (d.received_amount||0) + '</strong> for <strong>' + (d.month||'') + '</strong> has been received.</p><p>Receipt No: <strong>' + result.receipt_no + '</strong></p><p>Thank you.</p>');
+        }
+    } catch(e) {}
     return json(result, 201);
 });
 
@@ -2897,6 +2937,19 @@ async function sendViaZoho(apiKey, fromEmail, fromName, toEmail, toName, subject
     return data;
 }
 
+async function tryAutoEmail(env, branchId, settingKey, toEmail, toName, subject, htmlBody) {
+    try {
+        if (!toEmail || !toEmail.includes('@')) return;
+        const settings = await getOptionSettingsMap(env, branchId);
+        if (settings[settingKey] !== '1') return;
+        const apiKey = settings['zoho_api_key'];
+        if (!apiKey) return;
+        const fromEmail = settings['zoho_from_email'] || 'noreply@edunex1.com';
+        const fromName = settings['zoho_from_name'] || 'EduNex1';
+        await sendViaZoho(apiKey, fromEmail, fromName, toEmail, toName || toEmail, subject, htmlBody);
+    } catch(e) { /* silent */ }
+}
+
 router.post('/api/email/send', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -3423,6 +3476,16 @@ router.get('/api/attendance/staff', async (req, env) => {
 });
 
 const SENSITIVE_SETTINGS = new Set(['zoho_api_key', 'zoho_token', 'api_key', 'secret_key', 'smtp_password', 'sms_api_key']);
+const PUBLIC_SETTINGS = new Set(['enable_fee_due_student_portal', 'enable_fee_due_installment', 'enable_discount_in_receipt', 'academic_start_month', 'enable_sunday_working']);
+router.get('/api/public-settings', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    const bid = Number(user.branch_id || 1);
+    const { results } = await env.DB.prepare('SELECT setting_key, setting_value FROM option_settings WHERE branch_id=?').bind(bid).all();
+    const map = {};
+    results.forEach(r => { if (PUBLIC_SETTINGS.has(r.setting_key)) map[r.setting_key] = r.setting_value; });
+    return json(map);
+});
 router.get('/api/option-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
