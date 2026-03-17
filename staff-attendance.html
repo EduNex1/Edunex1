@@ -292,7 +292,7 @@
 
     <script>
         $(async function () {
-            
+            initPage('staff-attendance');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let staffCache = [], designationCache = [];
