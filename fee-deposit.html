@@ -312,6 +312,7 @@
     <script src="js/main.js"></script>
     <script>
         $(document).ready(async function () {
+            initPage('fee-deposit');
             
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 

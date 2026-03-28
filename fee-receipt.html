@@ -133,7 +133,8 @@
     <script>
         let _displayedData = [];
         $(document).ready(async function () {
-            if (typeof initPage === 'function') 
+
+            if(typeof initPage==='function') initPage('fee-receipt');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let classesCache = [];
@@ -265,3 +266,4 @@
 </body>
 
 </html>
+
