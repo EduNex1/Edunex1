@@ -959,7 +959,7 @@ function initPage(activeMenu) {
                 if (_u && _u.id) {
                     var freshPerms = await getUserPermissions(_u.id);
                     if (typeof setUserPerms === 'function' && Array.isArray(freshPerms)) {
-                        var oldStr = localStorage.getItem('vkis_permissions');
+                        var oldStr = JSON.stringify((typeof getUserPerms === 'function' ? getUserPerms() : []) || []);
                         var newStr = JSON.stringify(freshPerms);
                         if (oldStr !== newStr) {
                             setUserPerms(freshPerms);

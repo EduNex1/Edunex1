@@ -65,10 +65,10 @@
                             <div class="col-lg-4 col-md-6 col-12 form-group" id="pwdGroup">
                                 <label class="form-label-sm">Password <span style="color:red">*</span></label>
                                 <div style="position:relative;">
-                                    <input type="password" class="form-control" id="uPassword" placeholder="Min 6 characters" minlength="6">
+                                    <input type="password" class="form-control" id="uPassword" placeholder="Min 8 characters" minlength="8">
                                     <button type="button" onclick="togglePwd()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:13px;"><i class="fas fa-eye" id="pwdIcon"></i></button>
                                 </div>
-                                <div class="pwd-hint">Minimum 6 characters</div>
+                                <div class="pwd-hint">Minimum 8 characters</div>
                             </div>
                             <div class="col-lg-4 col-md-6 col-12 form-group">
                                 <label class="form-label-sm">Status</label>
@@ -199,7 +199,7 @@
             } else if(!branch_id){
                 showToast('Select branch','error');return;
             }
-            if(!editId && password.length<6){showToast('Password must be at least 6 characters','error');return;}
+            if((!editId && password.length<8) || (editId && password && password.length<8)){showToast('Password must be at least 8 characters','error');return;}
             const data = editId ? { is_active } : { branch_id, role, login_id, linked_id };
             if (canAssignBranches) {
                 const parsedBranchIds = branch_ids.map(v => parseInt(v)).filter(Boolean);

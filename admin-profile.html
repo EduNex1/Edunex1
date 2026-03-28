@@ -80,7 +80,7 @@
                                     </div>
                                     <div class="col-lg-6 col-12 form-group">
                                         <label class="form-label-sm">New Password</label>
-                                        <input type="password" class="form-control" id="newPw" placeholder="Min 4 characters" oninput="checkPwStrength()">
+                                        <input type="password" class="form-control" id="newPw" placeholder="Min 8 characters" oninput="checkPwStrength()">
                                         <div class="pw-strength" id="pwStrength"></div>
                                     </div>
                                     <div class="col-lg-6 col-12 form-group">
@@ -137,10 +137,10 @@
         window.checkPwStrength = function(){
             const pw = $('#newPw').val();
             const el = $('#pwStrength');
-            if(pw.length < 4){ el.html('<span style="color:#e53935;">Too short</span>'); }
-            else if(pw.length < 6){ el.html('<span style="color:#ff9800;">Weak</span>'); }
-            else if(pw.length < 8){ el.html('<span style="color:#2196f3;">Fair</span>'); }
-            else { el.html('<span style="color:#43a047;">Strong</span>'); }
+            if(pw.length < 8){ el.html('<span style="color:#e53935;">Minimum 8 characters</span>'); }
+            else if(pw.length < 10){ el.html('<span style="color:#ff9800;">Good</span>'); }
+            else if(pw.length < 12){ el.html('<span style="color:#2196f3;">Strong</span>'); }
+            else { el.html('<span style="color:#43a047;">Very strong</span>'); }
         };
 
         window.doChangePassword = async function(){
@@ -148,7 +148,7 @@
             const newPw = $('#newPw').val().trim();
             const confirm = $('#confirmPw').val().trim();
             if(!current){ showToast('Enter current password','error'); return; }
-            if(newPw.length < 4){ showToast('New password must be at least 4 characters','error'); return; }
+            if(newPw.length < 8){ showToast('New password must be at least 8 characters','error'); return; }
             if(newPw !== confirm){ showToast('Passwords do not match','error'); return; }
             try {
                 const res = await changePassword(current, newPw);

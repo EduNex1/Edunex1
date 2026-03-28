@@ -176,8 +176,7 @@
         let vendorsCache = [];
 
         $(document).ready(async function(){
-
-            if(typeof initPage==='function') initPage('account-expenses');
+            if(typeof initPage==='function') 
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             await populateDropdowns();
             await renderList();
@@ -258,6 +257,10 @@
 
         function clearFilters(){ $('#fFrom,#fTo,#fKeyword').val(''); $('#fHead,#fVendor,#fMode').val(''); renderList(); }
 
+        function safeHtml(value) {
+            return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+        }
+
         async function renderList(){
             const fFrom=$('#fFrom').val(), fTo=$('#fTo').val(), fHead=$('#fHead').val(),
                   fVendor=$('#fVendor').val(), fMode=$('#fMode').val(),
@@ -275,6 +278,13 @@
             if(fMode) list=list.filter(e=>e.payment_mode===fMode);
             if(fKey) list=list.filter(e=>{
                 return (e.description||'').toLowerCase().includes(fKey)||(e.head_name||'').toLowerCase().includes(fKey)||(e.vendor_name||'').toLowerCase().includes(fKey);
+            });
+            list = list.map(function(e){
+                return Object.assign({}, e, {
+                    head_name: safeHtml(e.head_name || '-'),
+                    vendor_name: safeHtml(e.vendor_name || '-'),
+                    description: safeHtml(e.description || '-')
+                });
             });
 
             const tb=$('#listBody');
@@ -314,4 +324,3 @@
     </script>
 </body>
 </html>
-

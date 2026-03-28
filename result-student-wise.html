@@ -243,8 +243,7 @@
                 stuSel.innerHTML = '<option value="">— Select Student —</option>';
                 if (!classId) return;
                 try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
-                const sections = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
-                sections.forEach(s => secSel.innerHTML += `<option value="${s}">${s}</option>`);
+                await populateSectionSelect(secSel, { classId, students: studentCache, placeholder: 'Select Section' });
                 secSel.onchange = function () { populateStudents(this.value); };
             };
 

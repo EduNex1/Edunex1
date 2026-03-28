@@ -645,8 +645,7 @@
                 $('#filterSection').html('<option value="All">All Sections</option>');
                 if (!classId) return;
                 try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
-                const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
-                secs.forEach(sec => $('#filterSection').append(`<option value="${sec}">${sec}</option>`));
+                await populateSectionSelect($('#filterSection')[0], { classId, students: studentCache, includeAll: true, placeholder: 'All Sections' });
             });
 
             $('#withDateSheet').on('change', function () { showDateSheet = $(this).is(':checked'); });

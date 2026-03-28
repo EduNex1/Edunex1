@@ -329,8 +329,7 @@
         let incomeHeadsCache = [];
 
         $(document).ready(async function () {
-
-            if(typeof initPage==='function') initPage('account-income');
+            if (typeof initPage === 'function') 
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             await populateDropdowns();
             await renderList();
@@ -397,6 +396,10 @@
 
         function clearFilters() { $('#fFrom,#fTo,#fKeyword').val(''); $('#fHead').val(''); renderList(); }
 
+        function safeHtml(value) {
+            return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+        }
+
         async function renderList() {
             const fFrom = $('#fFrom').val(), fTo = $('#fTo').val(), fHead = $('#fHead').val(),
                 fKey = $('#fKeyword').val().toLowerCase().trim();
@@ -411,6 +414,12 @@
             if (fHead) list = list.filter(e => e.head_id === parseInt(fHead));
             if (fKey) list = list.filter(e => {
                 return (e.description || '').toLowerCase().includes(fKey) || (e.head_name || '').toLowerCase().includes(fKey);
+            });
+            list = list.map(function(e) {
+                return Object.assign({}, e, {
+                    head_name: safeHtml(e.head_name || '-'),
+                    description: safeHtml(e.description || '-')
+                });
             });
 
             const tb = $('#listBody');

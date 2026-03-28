@@ -26,13 +26,62 @@ function exportCSV(rows, columns, filename) {
 
 const API_BASE = 'https://vkis-api.schoolhub100.workers.dev';
 
-function getToken() { return localStorage.getItem('vkis_token'); }
-function setToken(token) { localStorage.setItem('vkis_token', token); }
-function getUser() { try { return JSON.parse(localStorage.getItem('vkis_user')); } catch { return null; } }
-function setUser(user) { localStorage.setItem('vkis_user', JSON.stringify(user)); }
-function clearAuth() { localStorage.removeItem('vkis_token'); localStorage.removeItem('vkis_user'); localStorage.removeItem('vkis_permissions'); }
-function getUserPerms() { try { return JSON.parse(localStorage.getItem('vkis_permissions')); } catch { return null; } }
-function setUserPerms(perms) { localStorage.setItem('vkis_permissions', JSON.stringify(perms)); }
+const authStorage = {
+    getItem: function(key) {
+        var sessionValue = null;
+        try { sessionValue = sessionStorage.getItem(key); } catch (e) {}
+        if (sessionValue != null) return sessionValue;
+        try {
+            var legacyValue = localStorage.getItem(key);
+            if (legacyValue != null) {
+                sessionStorage.setItem(key, legacyValue);
+                localStorage.removeItem(key);
+            }
+            return legacyValue;
+        } catch (e) {
+            return sessionValue;
+        }
+    },
+    setItem: function(key, value) {
+        try { sessionStorage.setItem(key, value); } catch (e) {}
+        try { localStorage.removeItem(key); } catch (e) {}
+    },
+    removeItem: function(key) {
+        try { sessionStorage.removeItem(key); } catch (e) {}
+        try { localStorage.removeItem(key); } catch (e) {}
+    }
+};
+
+function appendAuthTokenToFileUrl(value, token) {
+    if (!value || typeof value !== 'string' || value.indexOf('/api/files/') === -1 || !token) return value;
+    try {
+        var url = new URL(value, API_BASE);
+        if (!url.searchParams.get('auth_token')) url.searchParams.set('auth_token', token);
+        return url.toString();
+    } catch (e) {
+        return value;
+    }
+}
+
+function secureApiPayload(data, token) {
+    if (Array.isArray(data)) return data.map(function(item){ return secureApiPayload(item, token); });
+    if (data && typeof data === 'object') {
+        var next = {};
+        Object.keys(data).forEach(function(key){
+            next[key] = secureApiPayload(data[key], token);
+        });
+        return next;
+    }
+    return appendAuthTokenToFileUrl(data, token);
+}
+
+function getToken() { return authStorage.getItem('vkis_token'); }
+function setToken(token) { authStorage.setItem('vkis_token', token); }
+function getUser() { try { return JSON.parse(authStorage.getItem('vkis_user')); } catch { return null; } }
+function setUser(user) { authStorage.setItem('vkis_user', JSON.stringify(user)); }
+function clearAuth() { authStorage.removeItem('vkis_token'); authStorage.removeItem('vkis_user'); authStorage.removeItem('vkis_permissions'); }
+function getUserPerms() { try { return JSON.parse(authStorage.getItem('vkis_permissions')); } catch { return null; } }
+function setUserPerms(perms) { authStorage.setItem('vkis_permissions', JSON.stringify(perms)); }
 function isLoggedIn() { return !!getToken(); }
 
 function requireAuth() {
@@ -86,7 +135,7 @@ async function api(endpoint, options = {}) {
     if (res.status === 401 && !endpoint.includes('/auth/login')) {
         clearAuth(); window.location.href = '/'; return null;
     }
-    const data = await res.json();
+    const data = secureApiPayload(await res.json(), token);
     if (!res.ok) throw new Error(data.error || 'Server error');
     return data;
 }
@@ -189,6 +238,74 @@ async function getExamNames(filters = {}) {
 async function getNotices() { return getMasterData('notices'); }
 async function getHolidays() { return getMasterData('holidays'); }
 async function getAcademicSessions() { return getMasterData('academic_sessions'); }
+
+function normalizeSectionLabel(value) {
+    return String(value || '').trim();
+}
+
+async function getAvailableSections(classId, studentRows) {
+    const names = new Set();
+
+    try {
+        const masterSections = await getSections();
+        if (Array.isArray(masterSections)) {
+            masterSections.forEach((section) => {
+                const name = normalizeSectionLabel(section && (section.name || section.title || section.section));
+                if (name) names.add(name);
+            });
+        }
+    } catch (e) {}
+
+    const rows = Array.isArray(studentRows) ? studentRows : [];
+    rows.forEach((student) => {
+        const name = normalizeSectionLabel(student && student.section);
+        if (name) names.add(name);
+    });
+
+    if (!names.size && classId) {
+        try {
+            const students = await getStudents({ class_id: classId });
+            if (Array.isArray(students)) {
+                students.forEach((student) => {
+                    const name = normalizeSectionLabel(student && student.section);
+                    if (name) names.add(name);
+                });
+            }
+        } catch (e) {}
+    }
+
+    return Array.from(names).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+}
+
+async function populateSectionSelect(selectElement, options = {}) {
+    if (!selectElement) return [];
+
+    const includeAll = !!options.includeAll;
+    const placeholder = options.placeholder || (includeAll ? 'All Sections' : 'Select Section');
+    const emptyValue = includeAll ? 'All' : '';
+    const sections = await getAvailableSections(options.classId || '', options.students || []);
+
+    let html = `<option value="${emptyValue}">${placeholder}</option>`;
+    if (!sections.length) {
+        selectElement.innerHTML = `<option value="${emptyValue}">No sections available</option>`;
+        selectElement.disabled = true;
+        return [];
+    }
+
+    sections.forEach((section) => {
+        html += `<option value="${section}">${section}</option>`;
+    });
+    selectElement.disabled = false;
+    selectElement.innerHTML = html;
+
+    if (options.selectedValue && sections.includes(options.selectedValue)) {
+        selectElement.value = options.selectedValue;
+    } else {
+        selectElement.value = emptyValue;
+    }
+
+    return sections;
+}
 async function getPeriods() { return getMasterData('periods'); }
 async function getHouses() { return getMasterData('houses'); }
 async function getStreams() { return getMasterData('streams'); }
@@ -361,11 +478,15 @@ async function uploadFile(file) {
     const token = getToken();
     const formData = new FormData();
     formData.append('file', file);
+    if (typeof getSelectedBranch === 'function') {
+        var branchId = getSelectedBranch();
+        if (branchId) formData.append('branch_id', branchId);
+    }
     const res = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST', body: formData,
         headers: { 'Authorization': `Bearer ${token}` }
     });
-    const data = await res.json();
+    const data = secureApiPayload(await res.json(), token);
     if (!res.ok) throw new Error(data.error || 'Upload failed');
     return data;
 }
@@ -485,6 +606,8 @@ async function deleteCashTransaction(id) { return api(`/api/cash-transactions/${
 
 async function getEmailLog() { return api('/api/email-log'); }
 async function sendEmailApi(data) { return api('/api/email/send', { method: 'POST', body: JSON.stringify(data) }); }
+async function getSmsLog() { return api('/api/sms-log'); }
+async function sendRealSms(data) { return api('/api/sms/send', { method: 'POST', body: JSON.stringify(data) }); }
 
 async function getActivityLog() { return api('/api/activity-log'); }
 

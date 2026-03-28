@@ -67,11 +67,11 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-12 form-group">
                                     <label>New Password <span style="color:red;">*</span></label>
-                                    <input type="password" id="pwNew" class="form-control" required minlength="4">
+                                    <input type="password" id="pwNew" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-12 form-group">
                                     <label>Confirm New Password <span style="color:red;">*</span></label>
-                                    <input type="password" id="pwConfirm" class="form-control" required minlength="4">
+                                    <input type="password" id="pwConfirm" class="form-control" required minlength="8" placeholder="Repeat new password">
                                 </div>
                                 <div class="col-12 form-group" style="margin-top:8px;">
                                     <button type="submit" class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" style="font-size:12px;padding:9px 20px;">
@@ -98,6 +98,9 @@
     <script src="js/main.js"></script>
     <script>
     let children = [];
+    function safeHtml(value) {
+        return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+    }
     $(async function () {
         initPage('p-my-profile');
         if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
@@ -112,12 +115,12 @@
                 const initials = parentName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 let pHtml = `<div style="text-align:center;padding-bottom:12px;">
                     <div style="width:64px;height:64px;border-radius:50%;background:#304ffe;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin-bottom:10px;">${initials}</div>
-                    <h4 style="color:#0d1b4a;margin:0;">${parentName}</h4>
+                    <h4 style="color:#0d1b4a;margin:0;">${safeHtml(parentName)}</h4>
                     <p style="color:#888;font-size:12px;margin-top:2px;">Parent / Guardian</p>
                 </div>`;
                 const pFields = [['Phone', phone],['Email', email],['Father Name', c.father_name||'-'],['Mother Name', c.mother_name||'-'],['Address', c.address||'-'],['Children Linked', children.length]];
                 pFields.forEach(f=>{
-                    pHtml+=`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:13px;">${f[0]}</span><span style="font-weight:600;font-size:13px;color:#0d1b4a;">${f[1]}</span></div>`;
+                    pHtml+=`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:13px;">${safeHtml(f[0])}</span><span style="font-weight:600;font-size:13px;color:#0d1b4a;">${safeHtml(f[1])}</span></div>`;
                 });
                 $('#parentProfileArea').html(pHtml);
             } else {
@@ -129,9 +132,9 @@
                     const ini = (c.name||'').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                     coHtml+=`<div style="background:#f8f9ff;border-radius:8px;padding:14px;text-align:center;">
                         <div style="width:44px;height:44px;border-radius:50%;background:#304ffe;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin-bottom:6px;">${ini}</div>
-                        <div style="font-weight:600;color:#0d1b4a;font-size:13px;">${c.name}</div>
-                        <div style="color:#888;font-size:11px;">Class ${c.class_name||''}${c.section?'-'+c.section:''} | Roll: ${c.roll_no||'-'}</div>
-                        <div style="color:#888;font-size:11px;">Adm No: ${c.admission_no||'-'}</div>
+                        <div style="font-weight:600;color:#0d1b4a;font-size:13px;">${safeHtml(c.name)}</div>
+                        <div style="color:#888;font-size:11px;">Class ${safeHtml(c.class_name||'')}${c.section?'-'+safeHtml(c.section):''} | Roll: ${safeHtml(c.roll_no||'-')}</div>
+                        <div style="color:#888;font-size:11px;">Adm No: ${safeHtml(c.admission_no||'-')}</div>
                     </div>`;
                 });
                 coHtml+='</div>';
@@ -140,7 +143,7 @@
                 $('#childrenOverview').html('<span style="color:#888;">No children found.</span>');
             }
             const cs = $('#childSelect');
-            children.forEach(c => cs.append(`<option value="${c.id}">${c.name} \u2014 Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}</option>`));
+            children.forEach(c => cs.append($('<option>').val(c.id).text(`${c.name || ''} \u2014 Class ${c.class_name || ''}${c.section ? '-' + c.section : ''}`)));
             if (children.length === 1) { cs.val(children[0].id); loadProfile(); }
         } catch (e) {
             console.error(e);
@@ -154,14 +157,14 @@
         if (!s) { $('#profileArea').html(''); return; }
         const initials = (s.name || '').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
         const fields = [['Admission No', s.admission_no || '-'],['Class', (s.class_name || '') + (s.section ? ' - ' + s.section : '')],['Roll No', s.roll_no || '-'],['DOB', s.dob || '-'],['Gender', s.gender || '-'],['Father', s.father_name || '-'],['Mother', s.mother_name || '-'],['Phone', s.phone || '-'],['Email', s.email || '-'],['Address', s.address || '-'],['Category', s.category || '-'],['Status', s.status || '-']];
-        let rows = fields.map(f => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:13px;">${f[0]}</span><span style="font-weight:600;font-size:13px;color:#0d1b4a;">${f[1]}</span></div>`).join('');
-        $('#profileArea').html(`<div class="chart-card" style="margin-bottom:16px;"><div class="chart-card-header"><i class="fas fa-user"></i> Student Profile</div><div class="chart-card-body" style="text-align:center;padding-bottom:0;"><div style="width:64px;height:64px;border-radius:50%;background:#304ffe;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin-bottom:10px;">${initials}</div><h4 style="color:#0d1b4a;margin:0;">${s.name}</h4><p style="color:#888;font-size:12px;">Student</p></div><div class="chart-card-body">${rows}</div></div>`);
+        let rows = fields.map(f => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;font-size:13px;">${safeHtml(f[0])}</span><span style="font-weight:600;font-size:13px;color:#0d1b4a;">${safeHtml(f[1])}</span></div>`).join('');
+        $('#profileArea').html(`<div class="chart-card" style="margin-bottom:16px;"><div class="chart-card-header"><i class="fas fa-user"></i> Student Profile</div><div class="chart-card-body" style="text-align:center;padding-bottom:0;"><div style="width:64px;height:64px;border-radius:50%;background:#304ffe;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin-bottom:10px;">${initials}</div><h4 style="color:#0d1b4a;margin:0;">${safeHtml(s.name)}</h4><p style="color:#888;font-size:12px;">Student</p></div><div class="chart-card-body">${rows}</div></div>`);
     }
     $('#pwForm').on('submit', async function(e) {
         e.preventDefault();
         var cur=$('#pwCurrent').val(), nw=$('#pwNew').val(), cf=$('#pwConfirm').val();
         if (nw !== cf) { showToast('New passwords do not match', 'error'); return; }
-        if (nw.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+        if (nw.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
         try { await changePassword(cur, nw); showToast('Password changed successfully', 'success'); $('#pwCurrent').val(''); $('#pwNew').val(''); $('#pwConfirm').val(''); }
         catch (err) { showToast(err.message || 'Failed to change password', 'error'); }
     });

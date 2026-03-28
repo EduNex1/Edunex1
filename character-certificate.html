@@ -592,8 +592,7 @@
                 $('#ccFormFields').hide();
                 if (!cid) return;
                 try { studentCache = await getStudents({ class_id: cid }); } catch(e) { studentCache = []; }
-                const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section).filter(Boolean))].sort();
-                secs.forEach(sec => { $('#ccSection').append(`<option value="${sec}">${sec}</option>`); });
+                await populateSectionSelect($('#ccSection')[0], { classId: cid, students: studentCache, includeAll: true, placeholder: 'All Sections' });
                 populateStudentDropdown();
             });
 

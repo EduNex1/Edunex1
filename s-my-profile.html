@@ -80,11 +80,11 @@
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-12 form-group">
                                     <label>New Password <span style="color:red;">*</span></label>
-                                    <input type="password" id="pwNew" class="form-control" required minlength="4">
+                                    <input type="password" id="pwNew" class="form-control" required minlength="8" placeholder="Minimum 8 characters">
                                 </div>
                                 <div class="col-lg-4 col-md-6 col-12 form-group">
                                     <label>Confirm New Password <span style="color:red;">*</span></label>
-                                    <input type="password" id="pwConfirm" class="form-control" required minlength="4">
+                                    <input type="password" id="pwConfirm" class="form-control" required minlength="8" placeholder="Repeat new password">
                                 </div>
                                 <div class="col-12 form-group" style="margin-top:8px;">
                                     <button type="submit" class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" style="font-size:12px;padding:9px 20px;">
@@ -110,8 +110,11 @@
     <script src="js/app.js"></script>
     <script src="js/main.js"></script>
     <script>
+    function safeHtml(value) {
+        return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+    }
     function pf(label, val) {
-        return '<div class="col-xl-3 col-lg-3 col-md-4 col-6 profile-field"><label>' + label + '</label><div class="pf-value">' + (val || '-') + '</div></div>';
+        return '<div class="col-xl-3 col-lg-3 col-md-4 col-6 profile-field"><label>' + safeHtml(label) + '</label><div class="pf-value">' + safeHtml(val || '-') + '</div></div>';
     }
     $(async function () {
         initPage('s-my-profile');
@@ -122,7 +125,7 @@
             if (!s) { $('#profileArea').html('<div class="chart-card" style="text-align:center;padding:40px;"><p style="color:#888;">Profile not found.</p></div>'); return; }
             const initials = (s.name || '').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
             const photoHtml = s.photo_url
-                ? '<img src="' + s.photo_url + '" alt="Photo">'
+                ? '<img src="' + safeHtml(s.photo_url) + '" alt="Photo">'
                 : '<span class="initials">' + initials + '</span>';
 
             let html = '<div class="card profile-card"><div class="card-body">';
@@ -165,7 +168,7 @@
 
             html += '<div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details</div>';
             html += '<div class="row">';
-            html += '<div class="col-xl-6 col-lg-6 col-12 profile-field"><label>Address</label><div class="pf-value">' + (s.address || '-') + '</div></div>';
+            html += '<div class="col-xl-6 col-lg-6 col-12 profile-field"><label>Address</label><div class="pf-value">' + safeHtml(s.address || '-') + '</div></div>';
             html += pf('State', s.state);
             html += pf('District', s.district);
             html += pf('Pin Code', s.pin_code || s.pincode);
@@ -194,7 +197,7 @@
             e.preventDefault();
             var cur=$('#pwCurrent').val(),nw=$('#pwNew').val(),cf=$('#pwConfirm').val();
             if(nw!==cf){showToast('New passwords do not match','error');return;}
-            if(nw.length<4){showToast('Password must be at least 4 characters','error');return;}
+            if(nw.length<8){showToast('Password must be at least 8 characters','error');return;}
             try{await changePassword(cur,nw);showToast('Password changed successfully','success');$('#pwCurrent').val('');$('#pwNew').val('');$('#pwConfirm').val('');}catch(err){showToast(err.message||'Failed to change password','error');}
         });
     });

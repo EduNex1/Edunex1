@@ -450,12 +450,11 @@
                                         <div class="col-md-6">
                                             <div class="detail-field"><label>Password</label>
                                                 <div class="field-value" id="dPassword"
-                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
-                                                    title="Click to reveal"></div>
+                                                    style="font-family:monospace;font-size:11px;"></div>
                                             </div>
                                             <div id="resetPwStaffArea" style="display:none;margin-top:6px;">
                                                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                                                    <input type="text" id="newStaffPw" placeholder="New password (min 4 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
+                                                    <input type="text" id="newStaffPw" placeholder="New password (min 8 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
                                                     <div style="display:flex;gap:6px;">
                                                         <button onclick="doResetStaffPw()" style="background:#0d1b4a;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"><i class="fas fa-save"></i> Save</button>
                                                         <button onclick="$('#resetPwStaffArea').hide();$('#btnResetStaffPw').show();" style="background:#f0f0f0;color:#555;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Cancel</button>
@@ -595,26 +594,13 @@
             if (_isAdmin) {
                 document.getElementById('btnResetStaffPw').style.display = 'inline-block';
                 window._currentStaffId = s.id;
-            try {
-                var creds = await getUserCredentials('staff', s.id);
+                try { await getUserCredentials('staff', s.id); } catch(e) {}
                 var pwEl = document.getElementById('dPassword');
-                window._currentStaffRealPw = creds.password || '';
-                var realPw = window._currentStaffRealPw;
-                pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                pwEl.title = 'Click to reveal';
-                pwEl.style.cursor = 'pointer';
-                pwEl.onclick = function() {
-                    if (pwEl.dataset.revealed === '1') {
-                        pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                        pwEl.dataset.revealed = '0';
-                    } else {
-                        pwEl.textContent = window._currentStaffRealPw || '-';
-                        pwEl.dataset.revealed = '1';
-                    }
-                };
-            } catch(e) {
-                document.getElementById('dPassword').textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-            }
+                pwEl.textContent = 'Hidden for security';
+                pwEl.classList.add('field-muted');
+                pwEl.title = '';
+                pwEl.style.cursor = 'default';
+                pwEl.onclick = null;
             }
 
             document.getElementById('detailsContent').style.display = 'block';
@@ -622,15 +608,13 @@
 
         async function doResetStaffPw() {
             var newPw = document.getElementById('newStaffPw').value.trim();
-            if (!newPw || newPw.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+            if (!newPw || newPw.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
             try {
                 var res = await adminResetPassword('staff', window._currentStaffId, newPw);
                 if (res.error) { showToast(res.error, 'error'); return; }
-                showToast('Password reset successfully!', 'success');
-                window._currentStaffRealPw = newPw;
+                showToast('Password reset successfully. Share it securely with the staff member.', 'success');
                 var pwEl = document.getElementById('dPassword');
-                pwEl.textContent = newPw;
-                pwEl.dataset.revealed = '1';
+                pwEl.textContent = 'Hidden for security';
                 document.getElementById('newStaffPw').value = '';
                 document.getElementById('resetPwStaffArea').style.display = 'none';
                 document.getElementById('btnResetStaffPw').style.display = 'inline-block';

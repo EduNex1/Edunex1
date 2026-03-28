@@ -413,12 +413,11 @@
                                         <div class="col-md-6">
                                             <div class="detail-field"><label>Student Password</label>
                                                 <div class="field-value" id="dPassword"
-                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
-                                                    title="Click to reveal"></div>
+                                                    style="font-family:monospace;font-size:11px;"></div>
                                             </div>
                                             <div id="resetPwStudentArea" style="display:none;margin-top:6px;">
                                                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                                                    <input type="text" id="newStudentPw" placeholder="New password (min 4 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
+                                                    <input type="text" id="newStudentPw" placeholder="New password (min 8 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
                                                     <div style="display:flex;gap:6px;">
                                                         <button onclick="doResetStudentPw()" style="background:#0d1b4a;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"><i class="fas fa-save"></i> Save</button>
                                                         <button onclick="$('#resetPwStudentArea').hide();$('#btnResetStudentPw').show();" style="background:#f0f0f0;color:#555;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Cancel</button>
@@ -437,12 +436,11 @@
                                         <div class="col-md-6">
                                             <div class="detail-field"><label>Parent Password</label>
                                                 <div class="field-value" id="dParentPassword"
-                                                    style="cursor:pointer;font-family:monospace;font-size:11px;"
-                                                    title="Click to reveal"></div>
+                                                    style="font-family:monospace;font-size:11px;"></div>
                                             </div>
                                             <div id="resetPwParentArea" style="display:none;margin-top:6px;">
                                                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                                                    <input type="text" id="newParentPw" placeholder="New password (min 4 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
+                                                    <input type="text" id="newParentPw" placeholder="New password (min 8 chars)" style="flex:1;min-width:140px;font-size:11px;height:30px;border:1px solid #ddd;border-radius:5px;padding:0 8px;">
                                                     <div style="display:flex;gap:6px;">
                                                         <button onclick="doResetParentPw()" style="background:#0d1b4a;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;"><i class="fas fa-save"></i> Save</button>
                                                         <button onclick="$('#resetPwParentArea').hide();$('#btnResetParentPw').show();" style="background:#f0f0f0;color:#555;border:none;border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Cancel</button>
@@ -521,6 +519,14 @@
             document.getElementById('notFoundArea').style.display = 'block';
         }
 
+        function safeHtml(value) {
+            return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+        }
+
+        function safeCategoryClass(value) {
+            return String(value || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        }
+
         async function renderStudentProfile(s, routes, subjects) {
             const className = s.class_name || '-';
             const statusBadge = s.status === 'Active'
@@ -555,7 +561,7 @@
             setText('dMother', s.mother_name);
             setText('dDob', formatDate(s.dob));
             setText('dGender', s.gender);
-            setHtml('dCategory', '<span class="category-badge cat-' + (s.category || '').toLowerCase() + '">' + (s.category || '-') + '</span>');
+            setHtml('dCategory', '<span class="category-badge cat-' + safeCategoryClass(s.category) + '">' + safeHtml(s.category || '-') + '</span>');
             setText('dReligion', s.religion);
 
             setText('dPhone', s.phone);
@@ -622,26 +628,14 @@
                 try {
                     var creds = await getUserCredentials('student', s.id);
                     var pwEl = document.getElementById('dPassword');
-                    window._currentStudentPw = creds.student_password || '';
-                    pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                    pwEl.title = 'Click to reveal';
-                    pwEl.style.cursor = 'pointer';
-                    pwEl.onclick = function() {
-                        if (pwEl.dataset.revealed === '1') { pwEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; pwEl.dataset.revealed = '0'; }
-                        else { pwEl.textContent = window._currentStudentPw || '-'; pwEl.dataset.revealed = '1'; }
-                    };
+                    pwEl.textContent = 'Hidden for security';
+                    pwEl.classList.add('field-muted');
                     setText('dParentLoginId', creds.parent_login_id || 'No parent login');
                     var ppEl = document.getElementById('dParentPassword');
-                    window._currentParentPw = creds.parent_password || '';
                     if (creds.parent_login_id) {
                         document.getElementById('btnResetParentPw').style.display = 'inline-block';
-                        ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-                        ppEl.title = 'Click to reveal';
-                        ppEl.style.cursor = 'pointer';
-                        ppEl.onclick = function() {
-                            if (ppEl.dataset.revealed === '1') { ppEl.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; ppEl.dataset.revealed = '0'; }
-                            else { ppEl.textContent = window._currentParentPw || '-'; ppEl.dataset.revealed = '1'; }
-                        };
+                        ppEl.textContent = 'Hidden for security';
+                        ppEl.classList.add('field-muted');
                     } else {
                         ppEl.textContent = '-';
                         ppEl.classList.add('field-muted');
@@ -663,7 +657,7 @@
             var subjectContainer = document.getElementById('dSubjects');
             if (subjects && subjects.length) {
                 subjectContainer.innerHTML = subjects.map(function (subject) {
-                    return '<span class="subject-badge">' + subject.subject_name + (subject.code ? ' (' + subject.code + ')' : '') + '</span>';
+                    return '<span class="subject-badge">' + safeHtml(subject.subject_name || '') + (subject.code ? ' (' + safeHtml(subject.code) + ')' : '') + '</span>';
                 }).join('');
             } else {
                 subjectContainer.innerHTML = '<span style="color:#999;font-size:11px;">No subjects assigned</span>';
@@ -674,15 +668,14 @@
 
         async function doResetStudentPw() {
             var newPw = document.getElementById('newStudentPw').value.trim();
-            if (!newPw || newPw.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+            if (!newPw || newPw.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
             try {
                 var res = await adminResetPassword('student', window._currentStudentId, newPw);
                 if (res.error) { showToast(res.error, 'error'); return; }
-                showToast('Student password reset successfully!', 'success');
-                window._currentStudentPw = newPw;
+                showToast('Student password reset successfully. Share it securely with the student.', 'success');
                 var pwEl = document.getElementById('dPassword');
-                pwEl.textContent = newPw;
-                pwEl.dataset.revealed = '1';
+                pwEl.textContent = 'Hidden for security';
+                pwEl.classList.add('field-muted');
                 document.getElementById('newStudentPw').value = '';
                 document.getElementById('resetPwStudentArea').style.display = 'none';
                 document.getElementById('btnResetStudentPw').style.display = 'inline-block';
@@ -691,15 +684,14 @@
 
         async function doResetParentPw() {
             var newPw = document.getElementById('newParentPw').value.trim();
-            if (!newPw || newPw.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+            if (!newPw || newPw.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
             try {
                 var res = await adminResetPassword('parent', window._currentStudentId, newPw);
                 if (res.error) { showToast(res.error, 'error'); return; }
-                showToast('Parent password reset successfully!', 'success');
-                window._currentParentPw = newPw;
+                showToast('Parent password reset successfully. Share it securely with the parent.', 'success');
                 var ppEl = document.getElementById('dParentPassword');
-                ppEl.textContent = newPw;
-                ppEl.dataset.revealed = '1';
+                ppEl.textContent = 'Hidden for security';
+                ppEl.classList.add('field-muted');
                 document.getElementById('newParentPw').value = '';
                 document.getElementById('resetPwParentArea').style.display = 'none';
                 document.getElementById('btnResetParentPw').style.display = 'inline-block';

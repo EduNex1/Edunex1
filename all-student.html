@@ -291,6 +291,14 @@
             return { class_id: $('#filterClass').val(), section: $('#filterSection').val(), category: $('#filterCategory').val(), session: $('#filterSession').val(), status: $('#filterStatus').val() };
         }
 
+        function safeHtml(value) {
+            return typeof escHtml === 'function' ? escHtml(value) : String(value || '');
+        }
+
+        function safeCategoryClass(value) {
+            return String(value || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        }
+
         let _displayedStudents = [];
         let _classCache = null;
         async function loadClasses() {
@@ -318,16 +326,24 @@
                 let html = '';
                 students.forEach(s => {
                     const className = classMap[s.class_id] || '-';
-                    const photoUrl = s.photo_url || 'img/default-student.png';
+                    const photoUrl = safeHtml(s.photo_url || 'img/default-student.png');
+                    const studentName = safeHtml(s.name || '');
+                    const admissionNo = safeHtml(s.admission_no || '');
+                    const fatherName = safeHtml(s.father_name || '');
+                    const section = safeHtml(s.section || '');
+                    const gender = safeHtml(s.gender || '');
+                    const category = safeHtml(s.category || '');
+                    const phone = safeHtml(s.phone || '');
+                    const statusText = safeHtml(s.status || '');
                     html += `<tr>
-                    <td class="student-photo-cell col-hide-sm"><img src="${photoUrl}" alt="${s.name}"></td>
-                    <td class="col-hide-md">${s.admission_no||''}</td>
-                    <td class="student-name-cell"><div class="s-name">${s.name||''}</div><div class="s-father">${s.father_name||''}</div></td>
-                    <td class="class-sec-cell">${className}-${s.section||''}</td>
-                    <td class="col-hide-xl">${s.gender||''}</td>
-                    <td class="col-hide-lg"><span class="category-badge cat-${(s.category||'').toLowerCase()}">${s.category||''}</span></td>
-                    <td class="col-hide-md">${s.phone||''}</td>
-                    <td><span class="status-badge ${s.status === 'Active' ? 'status-active' : 'status-tc'}">${s.status||''}</span></td>
+                    <td class="student-photo-cell col-hide-sm"><img src="${photoUrl}" alt="${studentName}"></td>
+                    <td class="col-hide-md">${admissionNo}</td>
+                    <td class="student-name-cell"><div class="s-name">${studentName}</div><div class="s-father">${fatherName}</div></td>
+                    <td class="class-sec-cell">${safeHtml(className)}-${section}</td>
+                    <td class="col-hide-xl">${gender}</td>
+                    <td class="col-hide-lg"><span class="category-badge cat-${safeCategoryClass(s.category)}">${category}</span></td>
+                    <td class="col-hide-md">${phone}</td>
+                    <td><span class="status-badge ${s.status === 'Active' ? 'status-active' : 'status-tc'}">${statusText}</span></td>
                     <td style="white-space:nowrap;">
                         <button class="action-btn action-btn-view" title="View" onclick="viewStudent(${s.id})"><i class="fas fa-eye"></i></button>
                         ${_isAdminRole ? `<button class="action-btn action-btn-edit" title="Edit" onclick="editStudent(${s.id})"><i class="fas fa-pen"></i></button>

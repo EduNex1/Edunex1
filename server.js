@@ -13,7 +13,18 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(__dirname, { index: false }));
+const STATIC_DIRS = ['css', 'fonts', 'img', 'js', 'webfonts', 'weights'];
+STATIC_DIRS.forEach((dir) => {
+    app.use(`/${dir}`, express.static(path.join(__dirname, dir), {
+        index: false,
+        fallthrough: false,
+        dotfiles: 'deny'
+    }));
+});
+
+app.get('/style.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'style.css'));
+});
 
 const routes = {
     '/': 'login.html',
@@ -192,10 +203,20 @@ const routes = {
     '/s-my-profile': 's-my-profile.html',
 };
 
+const allowedPages = new Set(Object.values(routes));
+
 Object.entries(routes).forEach(([route, file]) => {
     app.get(route, (req, res) => {
         res.sendFile(path.join(__dirname, file));
     });
+});
+
+app.get('/:pageFile', (req, res, next) => {
+    const { pageFile } = req.params;
+    if (!pageFile || !pageFile.endsWith('.html') || !allowedPages.has(pageFile)) {
+        return next();
+    }
+    res.sendFile(path.join(__dirname, pageFile));
 });
 
 app.use((req, res) => {

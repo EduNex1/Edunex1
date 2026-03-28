@@ -24,9 +24,9 @@ async function verifyJWT(token, secret) {
     } catch { return null; }
 }
 
-const ALLOWED_ORIGINS = new Set([
+const DEFAULT_ALLOWED_ORIGINS = [
     'https://edunex1.vercel.app',
-]);
+];
 
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff' } });
@@ -68,6 +68,73 @@ function generatePassword(len = 8) {
     const arr = new Uint8Array(len);
     crypto.getRandomValues(arr);
     return Array.from(arr, b => chars[b % chars.length]).join('');
+}
+
+const PASSWORD_HASH_PREFIX = 'pbkdf2_sha256';
+const PASSWORD_HASH_ITERATIONS = 100000;
+
+function toBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function fromBase64(value) {
+    return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+}
+
+function timingSafeEqual(a, b) {
+    if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array) || a.length !== b.length) {
+        return false;
+    }
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+    return diff === 0;
+}
+
+async function hashPassword(password, iterations = PASSWORD_HASH_ITERATIONS) {
+    const salt = new Uint8Array(16);
+    crypto.getRandomValues(salt);
+    const key = await crypto.subtle.importKey('raw', enc.encode(String(password || '')), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({
+        name: 'PBKDF2',
+        hash: 'SHA-256',
+        salt,
+        iterations
+    }, key, 256);
+    return `${PASSWORD_HASH_PREFIX}$${iterations}$${toBase64(salt)}$${toBase64(bits)}`;
+}
+
+async function verifyPassword(password, storedHash) {
+    if (!storedHash) return false;
+    if (!storedHash.startsWith(`${PASSWORD_HASH_PREFIX}$`)) {
+        return String(password || '') === storedHash;
+    }
+    const parts = storedHash.split('$');
+    if (parts.length !== 4) return false;
+    const iterations = Number(parts[1]);
+    const salt = fromBase64(parts[2]);
+    const expected = fromBase64(parts[3]);
+    const key = await crypto.subtle.importKey('raw', enc.encode(String(password || '')), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({
+        name: 'PBKDF2',
+        hash: 'SHA-256',
+        salt,
+        iterations
+    }, key, expected.length * 8);
+    return timingSafeEqual(new Uint8Array(bits), expected);
+}
+
+function getJwtSecret(env) {
+    return env.WORKER_JWT_SECRET || env.JWT_SECRET || '';
+}
+
+async function upgradePasswordHashIfNeeded(env, userId, password, storedHash) {
+    if (!storedHash || storedHash.startsWith(`${PASSWORD_HASH_PREFIX}$`)) return;
+    try {
+        const nextHash = await hashPassword(password);
+        await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(nextHash, userId).run();
+    } catch (error) {
+        console.warn('Password hash upgrade skipped:', error && error.message ? error.message : error);
+    }
 }
 
 function roundCurrency(value) {
@@ -184,7 +251,7 @@ class Router {
 async function authenticate(request, env) {
     const auth = request.headers.get('Authorization');
     if (!auth || !auth.startsWith('Bearer ')) return null;
-    return verifyJWT(auth.slice(7), env.JWT_SECRET);
+    return verifyJWT(auth.slice(7), getJwtSecret(env));
 }
 
 async function getUserAssignedBranchIds(env, userId, fallbackBranchId) {
@@ -251,6 +318,180 @@ async function getEffectiveBranchId(req, env, user) {
     return user.branch_id;
 }
 
+async function getWritableBranchId(req, env, user, explicitBranchId) {
+    const requested = Number(explicitBranchId || new URL(req.url).searchParams.get('branch_id') || 0);
+    if (user.role === 'super_admin') {
+        return requested || Number(user.branch_id || 0) || 1;
+    }
+    const assignedIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+    if (requested && assignedIds.map(Number).includes(requested)) {
+        return requested;
+    }
+    return Number(user.branch_id || assignedIds[0] || 1);
+}
+
+async function userCanAccessBranch(env, user, branchId) {
+    const targetBranchId = Number(branchId || 0);
+    if (!user || !targetBranchId) return false;
+    if (user.role === 'super_admin') return true;
+    const assignedIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
+    return assignedIds.map(Number).includes(targetBranchId);
+}
+
+function normalizeExamName(value) {
+    return String(value || '').trim();
+}
+
+async function syncBranchExamsFromMaster(env, branchId) {
+    const resolvedBranchId = Number(branchId || 0);
+    if (!resolvedBranchId) return [];
+    const { results: masterRows } = await env.DB.prepare(
+        'SELECT id, name FROM exam_names WHERE branch_id=? ORDER BY id ASC'
+    ).bind(resolvedBranchId).all();
+    if (!masterRows.length) return [];
+
+    const { results: examRows } = await env.DB.prepare(
+        'SELECT id, name FROM exams WHERE branch_id=?'
+    ).bind(resolvedBranchId).all();
+    const existingNames = new Set(
+        (examRows || [])
+            .map(row => normalizeExamName(row.name).toLowerCase())
+            .filter(Boolean)
+    );
+
+    const inserts = [];
+    for (const master of masterRows) {
+        const examName = normalizeExamName(master.name);
+        if (!examName) continue;
+        const key = examName.toLowerCase();
+        if (existingNames.has(key)) continue;
+        existingNames.add(key);
+        inserts.push(
+            env.DB.prepare('INSERT INTO exams (branch_id, name, group_id, session) VALUES (?,?,?,?)')
+                .bind(resolvedBranchId, examName, null, '')
+        );
+    }
+
+    if (inserts.length) {
+        await env.DB.batch(inserts);
+    }
+
+    const { results } = await env.DB.prepare(
+        'SELECT * FROM exams WHERE branch_id=? ORDER BY id DESC'
+    ).bind(resolvedBranchId).all();
+    return results || [];
+}
+
+async function resolveExamIdForWrite(env, branchId, rawExamId, fallbackName = '') {
+    const resolvedBranchId = Number(branchId || 0);
+    if (!resolvedBranchId) throw new Error('Branch is required');
+
+    const numericExamId = Number(rawExamId || 0);
+    if (numericExamId > 0) {
+        const existingById = await env.DB.prepare(
+            'SELECT id FROM exams WHERE branch_id=? AND id=?'
+        ).bind(resolvedBranchId, numericExamId).first();
+        if (existingById) return Number(existingById.id);
+    }
+
+    const requestedName = normalizeExamName(fallbackName);
+    let resolvedName = requestedName;
+
+    if (numericExamId > 0 && !resolvedName) {
+        const masterRow = await env.DB.prepare(
+            'SELECT name FROM exam_names WHERE branch_id=? AND id=?'
+        ).bind(resolvedBranchId, numericExamId).first();
+        if (masterRow) resolvedName = normalizeExamName(masterRow.name);
+    }
+
+    if (!resolvedName && String(rawExamId || '').trim()) {
+        resolvedName = normalizeExamName(rawExamId);
+    }
+
+    if (!resolvedName) {
+        throw new Error('Please select a valid exam');
+    }
+
+    const existingByName = await env.DB.prepare(
+        'SELECT id FROM exams WHERE branch_id=? AND lower(name)=lower(?) ORDER BY CASE WHEN session IS NULL OR session=\'\' THEN 0 ELSE 1 END, id ASC LIMIT 1'
+    ).bind(resolvedBranchId, resolvedName).first();
+    if (existingByName) return Number(existingByName.id);
+
+    const insertResult = await env.DB.prepare(
+        'INSERT INTO exams (branch_id, name, group_id, session) VALUES (?,?,?,?)'
+    ).bind(resolvedBranchId, resolvedName, null, '').run();
+    return Number(insertResult.meta.last_row_id || 0);
+}
+
+function getAllowedOrigins(env) {
+    const configured = String(env.ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+    return new Set(configured.length ? configured : DEFAULT_ALLOWED_ORIGINS);
+}
+
+async function getFileAccessUser(request, env) {
+    const authUser = await authenticate(request, env);
+    if (authUser) return authUser;
+    const token = new URL(request.url).searchParams.get('auth_token');
+    if (!token) return null;
+    return verifyJWT(token, getJwtSecret(env));
+}
+
+async function ensureBranchAccess(env, user, table, id) {
+    const record = await env.DB.prepare(`SELECT branch_id FROM ${table} WHERE id=?`).bind(id).first();
+    if (!record) return { error: 'Not found', status: 404 };
+    if (!(await userCanAccessBranch(env, user, record.branch_id))) {
+        return { error: 'Forbidden', status: 403 };
+    }
+    return record;
+}
+
+function normalizeSmsPhoneNumber(phone, countryCode = '91') {
+    const digits = String(phone || '').replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.length === 10) return `${countryCode}${digits}`;
+    if (digits.length >= 11 && digits.length <= 15) return digits;
+    return '';
+}
+
+async function sendViaMsg91(apiKey, payload) {
+    const response = await fetch('https://api.msg91.com/api/v5/flow/', {
+        method: 'POST',
+        headers: {
+            authkey: apiKey,
+            'content-type': 'application/json',
+            accept: 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.type === 'error') {
+        throw new Error(data.message || 'MSG91 API error');
+    }
+    return data;
+}
+
+function buildMsg91Recipients(recipients, defaultVariables = {}, fallbackMessage = '') {
+    return (Array.isArray(recipients) ? recipients : []).map((recipient) => {
+        const phone = normalizeSmsPhoneNumber(recipient.phone);
+        if (!phone) return null;
+        const row = { mobiles: phone };
+        const mergedVariables = { ...defaultVariables, ...(recipient.variables || {}) };
+        const entries = Object.entries(mergedVariables).filter(([, value]) => value !== undefined && value !== null && value !== '');
+        if (!entries.length && fallbackMessage) {
+            row.VAR1 = fallbackMessage;
+            return row;
+        }
+        entries.forEach(([key, value], index) => {
+            const normalizedKey = /^var\d+$/i.test(key) ? key.toUpperCase() : `VAR${index + 1}`;
+            row[normalizedKey] = String(value);
+        });
+        return row;
+    }).filter(Boolean);
+}
+
 async function getAccessibleStudentIdsForUser(env, user) {
     if (user.role === 'student') return user.linked_id ? [Number(user.linked_id)] : [];
     if (user.role === 'parent') {
@@ -309,7 +550,7 @@ function buildTeacherAssignmentClause(assignments, classField, sectionField, sub
 async function getStudentForCertificate(env, user, studentId) {
     const student = await env.DB.prepare('SELECT * FROM students WHERE id = ?').bind(studentId).first();
     if (!student) return null;
-    if (user.role !== 'super_admin' && Number(student.branch_id) !== Number(user.branch_id)) return null;
+    if (!(await userCanAccessBranch(env, user, student.branch_id))) return null;
     return student;
 }
 
@@ -395,12 +636,15 @@ router.post('/api/auth/login', async (req, env) => {
     const user = await env.DB.prepare('SELECT u.*, b.code as branch_code, b.school_name FROM users u LEFT JOIN branches b ON u.branch_id = b.id WHERE u.login_id = ? AND u.is_active = 1')
         .bind(login_id).first();
 
-    if (!user || user.password_hash !== password) return json({ error: 'Invalid credentials' }, 401);
+    if (!user || !(await verifyPassword(password, user.password_hash))) {
+        return json({ error: 'Invalid credentials' }, 401);
+    }
+    await upgradePasswordHashIfNeeded(env, user.id, password, user.password_hash);
     if (role && user.role !== role && !(role === 'admin' && user.role === 'branch_admin')) {
         return json({ error: 'Invalid role for this user' }, 401);
     }
 
-    const token = await signJWT({ id: user.id, login_id: user.login_id, role: user.role, branch_id: user.branch_id, linked_id: user.linked_id }, env.JWT_SECRET);
+    const token = await signJWT({ id: user.id, login_id: user.login_id, role: user.role, branch_id: user.branch_id, linked_id: user.linked_id }, getJwtSecret(env));
     await env.DB.prepare('UPDATE users SET last_login = datetime("now") WHERE id = ?').bind(user.id).run();
     const branchIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
 
@@ -558,7 +802,7 @@ router.post('/api/users', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    let branchId = user.role === 'super_admin' ? Number(d.branch_id) : Number(d.branch_id || user.branch_id);
+    let branchId = await getWritableBranchId(req, env, user, d.branch_id);
     if (!branchId) return json({ error: 'branch_id is required' }, 400);
     if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot create super admin' }, 403);
 
@@ -572,8 +816,9 @@ router.post('/api/users', async (req, env) => {
     const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.login_id).first();
     if (existing) return json({ error: 'Login ID already exists' }, 409);
     const pwd = d.password || generatePassword();
+    const pwdHash = await hashPassword(pwd);
     const inserted = await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id, is_active) VALUES (?,?,?,?,?,1)')
-        .bind(d.login_id, pwd, d.role, branchId, d.linked_id || null).run();
+        .bind(d.login_id, pwdHash, d.role, branchId, d.linked_id || null).run();
     const newUserId = inserted.meta.last_row_id;
     await setUserBranchAssignments(env, newUserId, requestedBranchIds, branchId);
     await logActivity(env, {
@@ -600,7 +845,7 @@ router.put('/api/users/:id', async (req, env, params) => {
     }
     const sets = []; const vals = [];
     if (d.is_active !== undefined) { sets.push('is_active=?'); vals.push(d.is_active); }
-    if (d.password) { sets.push('password_hash=?'); vals.push(d.password); }
+    if (d.password) { sets.push('password_hash=?'); vals.push(await hashPassword(d.password)); }
     if (d.role && ['super_admin','branch_admin'].includes(user.role)) {
         if (user.role === 'branch_admin' && d.role === 'super_admin') return json({ error: 'Cannot assign super admin role' }, 403);
         sets.push('role=?'); vals.push(d.role);
@@ -648,10 +893,11 @@ router.post('/api/change-password', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const d = await req.json();
     if (!d.current_password || !d.new_password) return json({ error: 'current_password and new_password required' }, 400);
-    if (d.new_password.length < 4) return json({ error: 'Password must be at least 4 characters' }, 400);
+    if (d.new_password.length < 8) return json({ error: 'Password must be at least 8 characters' }, 400);
     const me = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(user.id).first();
-    if (!me || me.password_hash !== d.current_password) return json({ error: 'Current password is incorrect' }, 400);
-    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, user.id).run();
+    if (!me || !(await verifyPassword(d.current_password, me.password_hash))) return json({ error: 'Current password is incorrect' }, 400);
+    const nextHash = await hashPassword(d.new_password);
+    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(nextHash, user.id).run();
     return json({ success: true });
 });
 
@@ -660,35 +906,36 @@ router.post('/api/admin-reset-password', async (req, env) => {
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     if (!d.type || !d.linked_id || !d.new_password) return json({ error: 'type, linked_id and new_password required' }, 400);
-    if (d.new_password.length < 4) return json({ error: 'Password must be at least 4 characters' }, 400);
+    if (d.new_password.length < 8) return json({ error: 'Password must be at least 8 characters' }, 400);
     const linkedId = d.linked_id;
     const type = d.type; // 'staff' or 'student' or 'parent'
     let roleFilter;
     if (type === 'staff') {
         if (user.role === 'branch_admin') {
-            const staff = await env.DB.prepare('SELECT id FROM staff WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
-            if (!staff) return json({ error: 'Forbidden' }, 403);
+            const access = await ensureBranchAccess(env, user, 'staff', linkedId);
+            if (access.error) return json({ error: access.error }, access.status);
         }
         roleFilter = "u.role IN ('teacher','staff')";
     } else if (type === 'student') {
         if (user.role === 'branch_admin') {
-            const stu = await env.DB.prepare('SELECT id FROM students WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
-            if (!stu) return json({ error: 'Forbidden' }, 403);
+            const access = await ensureBranchAccess(env, user, 'students', linkedId);
+            if (access.error) return json({ error: access.error }, access.status);
         }
         roleFilter = "u.role = 'student'";
     } else if (type === 'parent') {
-        const student = await env.DB.prepare('SELECT phone FROM students WHERE id = ?').bind(linkedId).first();
+        const student = await env.DB.prepare('SELECT phone, branch_id FROM students WHERE id = ?').bind(linkedId).first();
         if (!student || !student.phone) return json({ error: 'Student has no phone for parent login' }, 404);
+        if (user.role === 'branch_admin' && !(await userCanAccessBranch(env, user, student.branch_id))) return json({ error: 'Forbidden' }, 403);
         const parentUser = await env.DB.prepare("SELECT id FROM users WHERE login_id = ? AND role = 'parent'").bind(student.phone).first();
         if (!parentUser) return json({ error: 'Parent user not found' }, 404);
-        await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, parentUser.id).run();
+        await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(await hashPassword(d.new_password), parentUser.id).run();
         return json({ success: true });
     } else {
         return json({ error: 'Invalid type. Use staff, student, or parent' }, 400);
     }
     const targetUser = await env.DB.prepare(`SELECT u.id FROM users u WHERE u.linked_id = ? AND ${roleFilter}`).bind(linkedId).first();
     if (!targetUser) return json({ error: 'User account not found for this ' + type }, 404);
-    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, targetUser.id).run();
+    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(await hashPassword(d.new_password), targetUser.id).run();
     return json({ success: true });
 });
 
@@ -728,8 +975,9 @@ router.post('/api/super-admins', async (req, env) => {
     const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.login_id.trim()).first();
     if (existing) return json({ error: 'Login ID already exists' }, 409);
     const password = typeof generatePassword === 'function' ? generatePassword() : 'Admin@123';
+    const passwordHash = await hashPassword(password);
     await env.DB.prepare("INSERT INTO users (login_id, password_hash, name, email, role, is_active) VALUES (?,?,?,?,'super_admin',1)")
-        .bind(d.login_id.trim(), password, d.name.trim(), d.email ? d.email.trim() : '').run();
+        .bind(d.login_id.trim(), passwordHash, d.name.trim(), d.email ? d.email.trim() : '').run();
     return json({ success: true, login_id: d.login_id.trim(), password });
 });
 
@@ -740,26 +988,25 @@ router.get('/api/user-credentials/:type/:id', async (req, env, params) => {
     const linkedId = params.id;
     if (type === 'staff') {
         if (user.role === 'branch_admin') {
-            const staff = await env.DB.prepare('SELECT id FROM staff WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
-            if (!staff) return json({ error: 'Forbidden' }, 403);
+            const access = await ensureBranchAccess(env, user, 'staff', linkedId);
+            if (access.error) return json({ error: access.error }, access.status);
         }
-        const row = await env.DB.prepare("SELECT u.login_id, u.password_hash FROM users u WHERE u.linked_id = ? AND u.role IN ('teacher','staff')").bind(linkedId).first();
-        if (!row) return json({ login_id: null, password: null });
-        return json({ login_id: row.login_id, password: row.password_hash });
+        const row = await env.DB.prepare("SELECT u.login_id FROM users u WHERE u.linked_id = ? AND u.role IN ('teacher','staff')").bind(linkedId).first();
+        if (!row) return json({ login_id: null, password_retrievable: false });
+        return json({ login_id: row.login_id, password_retrievable: false });
     } else if (type === 'student') {
         if (user.role === 'branch_admin') {
-            const stu = await env.DB.prepare('SELECT id FROM students WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
-            if (!stu) return json({ error: 'Forbidden' }, 403);
+            const access = await ensureBranchAccess(env, user, 'students', linkedId);
+            if (access.error) return json({ error: access.error }, access.status);
         }
         const student = await env.DB.prepare('SELECT admission_no, phone FROM students WHERE id = ?').bind(linkedId).first();
         if (!student) return json({ error: 'Not found' }, 404);
-        const studentUser = await env.DB.prepare("SELECT u.login_id, u.password_hash FROM users u WHERE u.linked_id = ? AND u.role = 'student'").bind(linkedId).first();
-        const parentUser = student.phone ? await env.DB.prepare("SELECT u.login_id, u.password_hash FROM users u WHERE u.login_id = ? AND u.role = 'parent'").bind(student.phone).first() : null;
+        const studentUser = await env.DB.prepare("SELECT u.login_id FROM users u WHERE u.linked_id = ? AND u.role = 'student'").bind(linkedId).first();
+        const parentUser = student.phone ? await env.DB.prepare("SELECT u.login_id FROM users u WHERE u.login_id = ? AND u.role = 'parent'").bind(student.phone).first() : null;
         return json({
             student_login_id: studentUser ? studentUser.login_id : null,
-            student_password: studentUser ? studentUser.password_hash : null,
             parent_login_id: parentUser ? parentUser.login_id : null,
-            parent_password: parentUser ? parentUser.password_hash : null
+            password_retrievable: false
         });
     }
     return json({ error: 'Invalid type' }, 400);
@@ -785,7 +1032,7 @@ router.post('/api/user-permissions', async (req, env) => {
     const { user_id, permissions } = await req.json();
     const targetUser = await env.DB.prepare('SELECT id, branch_id FROM users WHERE id = ?').bind(user_id).first();
     if (!targetUser) return json({ error: 'User not found' }, 404);
-    if (user.role === 'branch_admin' && targetUser.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (user.role === 'branch_admin' && !(await userCanAccessBranch(env, user, targetUser.branch_id))) return json({ error: 'Forbidden' }, 403);
     // Branch admin cannot edit their own permissions
     if (user.role === 'branch_admin' && user_id === user.id) return json({ error: 'Cannot edit own permissions' }, 403);
     // Branch admin can only grant modules they themselves have access to
@@ -872,7 +1119,7 @@ router.get('/api/students/:id', async (req, env, params) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const s = await env.DB.prepare('SELECT s.*, c.name as class_name, tr.name as route_name, COALESCE(tr.fee,0) as transport_fee FROM students s LEFT JOIN classes c ON s.class_id = c.id LEFT JOIN transport_routes tr ON s.route_id = tr.id WHERE s.id = ?').bind(params.id).first();
     if (!s) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && s.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, s.branch_id))) return json({ error: 'Forbidden' }, 403);
     normalizePhotoUrls(req, s);
     return json(s);
 });
@@ -881,7 +1128,7 @@ router.post('/api/students', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const branchId = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
+    const branchId = await getWritableBranchId(req, env, user, d.branch_id);
     const branch = await env.DB.prepare('SELECT code FROM branches WHERE id = ?').bind(branchId).first();
     const code = branch ? branch.code : 'SCH';
     const yr = new Date().getFullYear();
@@ -905,15 +1152,17 @@ router.post('/api/students', async (req, env) => {
         }
     } catch(e) { /* fee_amount stays as 0 if computation fails */ }
     const studentPwd = generatePassword();
+    const studentPwdHash = await hashPassword(studentPwd);
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
-        .bind(admNo, studentPwd, 'student', branchId, studentId).run();
+        .bind(admNo, studentPwdHash, 'student', branchId, studentId).run();
     let parentPwd = null;
     if (d.phone) {
         const existing = await env.DB.prepare('SELECT id FROM users WHERE login_id = ?').bind(d.phone).first();
         if (!existing) {
             parentPwd = generatePassword();
+            const parentPwdHash = await hashPassword(parentPwd);
             await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
-                .bind(d.phone, parentPwd, 'parent', branchId, studentId).run();
+                .bind(d.phone, parentPwdHash, 'parent', branchId, studentId).run();
         }
     }
     try {
@@ -932,7 +1181,7 @@ router.put('/api/students/:id', async (req, env, params) => {
     const d = await req.json();
     const existing = await env.DB.prepare('SELECT * FROM students WHERE id = ?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare(`UPDATE students SET photo_url=?, name=?, father_name=?, mother_name=?, dob=?, gender=?, category=?, religion=?, phone=?, email=?, address=?, aadhar_no=?, class_id=?, section=?, session=?, roll_no=?, route_id=?, id_type=?, status=?, fee_amount=?, extra_data=? WHERE id=?`)
         .bind(
             d.photo_url ?? existing.photo_url ?? '',
@@ -1005,8 +1254,8 @@ router.delete('/api/students/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'branch_admin') {
-        const stu = await env.DB.prepare('SELECT id FROM students WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).first();
-        if (!stu) return json({ error: 'Forbidden' }, 403);
+        const access = await ensureBranchAccess(env, user, 'students', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
     await env.DB.prepare('DELETE FROM student_attendance WHERE student_id=?').bind(params.id).run();
     const { results: deposits } = await env.DB.prepare('SELECT id FROM fee_deposits WHERE student_id=?').bind(params.id).all();
@@ -1052,7 +1301,7 @@ router.get('/api/staff/:id', async (req, env, params) => {
         LEFT JOIN users u ON u.linked_id = s.id AND u.role IN ('teacher','staff')
         WHERE s.id = ?`).bind(params.id).first();
     if (!s) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(s.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, s.branch_id))) return json({ error: 'Forbidden' }, 403);
     return json(s);
 });
 
@@ -1060,21 +1309,22 @@ router.post('/api/staff', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const branchId = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
+    const branchId = await getWritableBranchId(req, env, user, d.branch_id);
     const branch = await env.DB.prepare('SELECT code FROM branches WHERE id = ?').bind(branchId).first();
     const code = branch ? branch.code : 'SCH';
     const yr = new Date().getFullYear();
     const serial = await getNextId(env.DB, branchId, 'employee', yr);
     const empId = `${code}-EMP${yr}${String(serial).padStart(3, '0')}`;
 
-    const r = await env.DB.prepare(`INSERT INTO staff (branch_id, employee_id, photo_url, name, father_name, dob, gender, designation, qualification, phone, email, address, aadhar_no, joining_date, basic_salary, bank_name, account_no, ifsc_code, pan_no, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .bind(branchId, empId, d.photo_url || '', d.name, d.father_name || '', d.dob || '', d.gender || '', d.designation || '', d.qualification || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.joining_date || '', d.basic_salary || 0, d.bank_name || '', d.account_no || '', d.ifsc_code || '', d.pan_no || '', 'Active').run();
+    const r = await env.DB.prepare(`INSERT INTO staff (branch_id, employee_id, photo_url, name, father_name, dob, gender, designation, qualification, phone, email, address, aadhar_no, joining_date, basic_salary, bank_name, account_no, ifsc_code, pan_no, status, extra_data) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(branchId, empId, d.photo_url || '', d.name, d.father_name || '', d.dob || '', d.gender || '', d.designation || '', d.qualification || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.joining_date || '', d.basic_salary || 0, d.bank_name || '', d.account_no || '', d.ifsc_code || '', d.pan_no || '', 'Active', d.extra_data || '{}').run();
 
     const staffId = r.meta.last_row_id;
     const staffRole = (d.designation === 'Teacher' || d.designation === 'Vice Principal') ? 'teacher' : 'staff';
     const staffPwd = generatePassword();
+    const staffPwdHash = await hashPassword(staffPwd);
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
-        .bind(empId, staffPwd, staffRole, branchId, staffId).run();
+        .bind(empId, staffPwdHash, staffRole, branchId, staffId).run();
     return json({ id: staffId, employee_id: empId, password: staffPwd }, 201);
 });
 
@@ -1084,7 +1334,7 @@ router.put('/api/staff/:id', async (req, env, params) => {
     const d = await req.json();
     const existing = await env.DB.prepare('SELECT * FROM staff WHERE id = ?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (user.role !== 'teacher' && !(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'teacher') {
         if (Number(user.linked_id) !== Number(params.id)) return json({ error: 'Forbidden' }, 403);
         await env.DB.prepare('UPDATE staff SET photo_url=?, phone=?, email=?, address=? WHERE id=?')
@@ -1097,7 +1347,7 @@ router.put('/api/staff/:id', async (req, env, params) => {
             ).run();
         return json({ success: true });
     }
-    await env.DB.prepare(`UPDATE staff SET photo_url=?, name=?, father_name=?, dob=?, gender=?, designation=?, qualification=?, phone=?, email=?, address=?, aadhar_no=?, joining_date=?, basic_salary=?, bank_name=?, account_no=?, ifsc_code=?, pan_no=?, status=? WHERE id=?`)
+    await env.DB.prepare(`UPDATE staff SET photo_url=?, name=?, father_name=?, dob=?, gender=?, designation=?, qualification=?, phone=?, email=?, address=?, aadhar_no=?, joining_date=?, basic_salary=?, bank_name=?, account_no=?, ifsc_code=?, pan_no=?, status=?, extra_data=? WHERE id=?`)
         .bind(
             d.photo_url ?? existing.photo_url ?? '',
             d.name ?? existing.name,
@@ -1117,6 +1367,7 @@ router.put('/api/staff/:id', async (req, env, params) => {
             d.ifsc_code ?? existing.ifsc_code ?? '',
             d.pan_no ?? existing.pan_no ?? '',
             d.status ?? existing.status ?? 'Active',
+            d.extra_data ?? existing.extra_data ?? '{}',
             params.id
         ).run();
     return json({ success: true });
@@ -1127,7 +1378,7 @@ router.delete('/api/staff/:id', async (req, env, params) => {
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const existing = await env.DB.prepare('SELECT * FROM staff WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM generated_salaries WHERE staff_id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM staff_attendance WHERE staff_id=?').bind(params.id).run();
     await env.DB.prepare('DELETE FROM teacher_permissions WHERE staff_id=?').bind(params.id).run();
@@ -1156,7 +1407,7 @@ function masterCRUD(table, nameField = 'name') {
         const user = await authenticate(req, env);
         if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
         const d = await req.json();
-        const bid = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
+        const bid = await getWritableBranchId(req, env, user, d.branch_id);
         const cols = sanitizeCols(Object.keys(d));
         if (!cols.length) return json({ error: 'No valid fields' }, 400);
         const vals = cols.map(k => d[k]);
@@ -1172,22 +1423,21 @@ function masterCRUD(table, nameField = 'name') {
         if (!cols.length) return json({ error: 'No valid fields' }, 400);
         const sets = cols.map(k => `${k}=?`);
         const vals = cols.map(k => d[k]);
-        if (user.role === 'branch_admin') {
-            await env.DB.prepare(`UPDATE ${table} SET ${sets.join(',')} WHERE id=? AND branch_id=?`).bind(...vals, params.id, user.branch_id).run();
-        } else {
-            await env.DB.prepare(`UPDATE ${table} SET ${sets.join(',')} WHERE id=?`).bind(...vals, params.id).run();
+        if (user.role !== 'super_admin') {
+            const access = await ensureBranchAccess(env, user, table, params.id);
+            if (access.error) return json({ error: access.error }, access.status);
         }
+        await env.DB.prepare(`UPDATE ${table} SET ${sets.join(',')} WHERE id=?`).bind(...vals, params.id).run();
         return json({ success: true });
     });
     router.delete(`/api/${table}/:id`, async (req, env, params) => {
         const user = await authenticate(req, env);
         if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-        let result;
-        if (user.role === 'branch_admin') {
-            result = await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(params.id, user.branch_id).run();
-        } else {
-            result = await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(params.id).run();
+        if (user.role !== 'super_admin') {
+            const access = await ensureBranchAccess(env, user, table, params.id);
+            if (access.error) return json({ error: access.error }, access.status);
         }
+        const result = await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(params.id).run();
         if (!result.meta.changes) return json({ error: 'Not found' }, 404);
         return json({ success: true });
     });
@@ -1201,8 +1451,8 @@ function masterCRUD(table, nameField = 'name') {
 router.post('/api/attendance/students', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin', 'teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { date, records } = await req.json();
-    const bid = user.branch_id || 1;
+    const { date, records, branch_id } = await req.json();
+    const bid = await getWritableBranchId(req, env, user, branch_id);
     if (user.role === 'teacher') {
         const assignments = await getTeacherAssignments(env, user);
         if (!assignments.length) return json({ error: 'No class assigned' }, 403);
@@ -1295,8 +1545,8 @@ router.get('/api/attendance/students', async (req, env) => {
 router.post('/api/attendance/staff', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { date, records } = await req.json();
-    const bid = user.branch_id || 1;
+    const { date, records, branch_id } = await req.json();
+    const bid = await getWritableBranchId(req, env, user, branch_id);
     for (const r of records) {
         await env.DB.prepare('INSERT OR REPLACE INTO staff_attendance (branch_id, staff_id, date, status, remark) VALUES (?,?,?,?,?)')
             .bind(bid, r.staff_id, date, r.status, r.remark || '').run();
@@ -1307,9 +1557,9 @@ router.post('/api/attendance/staff', async (req, env) => {
 router.post('/api/attendance/auto-absent', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { date } = await req.json();
+    const { date, branch_id } = await req.json();
     if (!date) return json({ error: 'Date required' }, 400);
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, branch_id);
 
     const d = new Date(date + 'T00:00:00');
     const dayOfWeek = d.getDay(); // 0=Sunday
@@ -1398,7 +1648,7 @@ router.post('/api/fee-deposits', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const result = await createFeeDepositRecord(env, bid, d);
     if (result.error) return json({ error: result.error }, result.status || 400);
     try {
@@ -1601,7 +1851,7 @@ router.get('/api/fee-deposits/:id', async (req, env, params) => {
     let q = 'SELECT fd.*, s.name as student_name, s.admission_no, s.father_name, s.section, c.name as class_name FROM fee_deposits fd JOIN students s ON fd.student_id = s.id LEFT JOIN classes c ON s.class_id = c.id WHERE fd.id=?';
     const row = await env.DB.prepare(q).bind(id).first();
     if (!row) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && row.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'student' && Number(row.student_id) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'parent') {
         const allowedIds = await getAccessibleStudentIdsForUser(env, user);
@@ -1667,7 +1917,7 @@ router.get('/api/payment-requests/:id', async (req, env, params) => {
         LEFT JOIN fee_deposits fd ON opr.receipt_id = fd.id
         WHERE opr.id=?`).bind(params.id).first();
     if (!row) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(row.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'student' && Number(row.student_id) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
     if (user.role === 'parent') {
         const allowedIds = await getAccessibleStudentIdsForUser(env, user);
@@ -1714,7 +1964,7 @@ router.put('/api/payment-requests/:id', async (req, env, params) => {
 
     const row = await env.DB.prepare('SELECT * FROM online_payment_requests WHERE id=?').bind(params.id).first();
     if (!row) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(row.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (row.status !== 'Requested') return json({ error: 'This request has already been reviewed' }, 409);
 
     let receiptInfo = null;
@@ -1827,7 +2077,7 @@ router.post('/api/expenses', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO expenses (branch_id, date, head_id, amount, description, vendor_id, payment_mode, reference_no) VALUES (?,?,?,?,?,?,?,?)')
         .bind(bid, d.date, d.head_id, d.amount, d.description || '', d.vendor_id || null, d.payment_mode || '', d.reference_no || '').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -1837,24 +2087,23 @@ router.put('/api/expenses/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE expenses SET date=?, head_id=?, amount=?, description=?, vendor_id=?, payment_mode=?, reference_no=? WHERE id=? AND branch_id=?')
-            .bind(d.date, d.head_id, d.amount, d.description || '', d.vendor_id || null, d.payment_mode || '', d.reference_no || '', params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE expenses SET date=?, head_id=?, amount=?, description=?, vendor_id=?, payment_mode=?, reference_no=? WHERE id=?')
-            .bind(d.date, d.head_id, d.amount, d.description || '', d.vendor_id || null, d.payment_mode || '', d.reference_no || '', params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'expenses', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE expenses SET date=?, head_id=?, amount=?, description=?, vendor_id=?, payment_mode=?, reference_no=? WHERE id=?')
+        .bind(d.date, d.head_id, d.amount, d.description || '', d.vendor_id || null, d.payment_mode || '', d.reference_no || '', params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/expenses/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM expenses WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM expenses WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'expenses', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM expenses WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -1875,7 +2124,7 @@ router.post('/api/incomes', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO incomes (branch_id, date, head_id, amount, description, payment_mode, reference_no) VALUES (?,?,?,?,?,?,?)')
         .bind(bid, d.date, d.head_id, d.amount, d.description || '', d.payment_mode || '', d.reference_no || '').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -1885,33 +2134,33 @@ router.put('/api/incomes/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE incomes SET date=?, head_id=?, amount=?, description=?, payment_mode=?, reference_no=? WHERE id=? AND branch_id=?')
-            .bind(d.date, d.head_id, d.amount, d.description || '', d.payment_mode || '', d.reference_no || '', params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE incomes SET date=?, head_id=?, amount=?, description=?, payment_mode=?, reference_no=? WHERE id=?')
-            .bind(d.date, d.head_id, d.amount, d.description || '', d.payment_mode || '', d.reference_no || '', params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'incomes', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE incomes SET date=?, head_id=?, amount=?, description=?, payment_mode=?, reference_no=? WHERE id=?')
+        .bind(d.date, d.head_id, d.amount, d.description || '', d.payment_mode || '', d.reference_no || '', params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/incomes/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM incomes WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM incomes WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'incomes', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM incomes WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
 router.post('/api/exam-results', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin', 'teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { exam_id, results: marks } = await req.json();
-    const bid = user.branch_id || 1;
+    const { exam_id, results: marks, branch_id } = await req.json();
+    const bid = await getWritableBranchId(req, env, user, branch_id);
     if (!exam_id || !Array.isArray(marks) || !marks.length) return json({ error: 'exam_id and results are required' }, 400);
+    const resolvedExamId = await resolveExamIdForWrite(env, bid, exam_id);
     let teacherAssignments = [];
     if (user.role === 'teacher') {
         teacherAssignments = await getTeacherAssignments(env, user);
@@ -1942,7 +2191,7 @@ router.post('/api/exam-results', async (req, env) => {
             }
         }
         await env.DB.prepare('INSERT OR REPLACE INTO exam_results (branch_id, exam_id, student_id, subject_id, theory_marks, practical_marks, total_marks, max_marks, min_marks, grade) VALUES (?,?,?,?,?,?,?,?,?,?)')
-            .bind(bid, exam_id, m.student_id, m.subject_id, theoryMarks, practicalMarks, totalMarks, maxMarks, minMarks, m.grade || '').run();
+            .bind(bid, resolvedExamId, m.student_id, m.subject_id, theoryMarks, practicalMarks, totalMarks, maxMarks, minMarks, m.grade || '').run();
     }
     return json({ success: true });
 });
@@ -2032,16 +2281,17 @@ router.post('/api/result-details', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
+    const resolvedExamId = await resolveExamIdForWrite(env, bid, d.exam_id);
     if (user.role === 'teacher') {
         const assignments = await getTeacherAssignments(env, user);
         if (!assignments.length) return json({ error: 'No class assigned' }, 403);
         const student = await env.DB.prepare('SELECT class_id, section FROM students WHERE branch_id=? AND id=?').bind(bid, d.student_id).first();
         if (!student || !teacherHasAssignment(assignments, student.class_id, student.section)) return json({ error: 'Forbidden' }, 403);
     }
-    await env.DB.prepare('DELETE FROM result_details WHERE branch_id=? AND student_id=? AND exam_id=?').bind(bid, d.student_id, d.exam_id).run();
+    await env.DB.prepare('DELETE FROM result_details WHERE branch_id=? AND student_id=? AND exam_id=?').bind(bid, d.student_id, resolvedExamId).run();
     await env.DB.prepare('INSERT INTO result_details (branch_id, student_id, exam_id, attendance, remark, height, weight, result, division, rank, result_date, promoted_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
-        .bind(bid, d.student_id, d.exam_id, d.attendance||'', d.remark||'', d.height||'', d.weight||'', d.result||'Pass', d.division||'', d.rank||null, d.result_date||'', d.promoted_to||'').run();
+        .bind(bid, d.student_id, resolvedExamId, d.attendance||'', d.remark||'', d.height||'', d.weight||'', d.result||'Pass', d.division||'', d.rank||null, d.result_date||'', d.promoted_to||'').run();
     return json({ success: true });
 });
 
@@ -2062,16 +2312,32 @@ router.post('/api/upload', async (req, env) => {
         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ]);
     if (!ALLOWED_CONTENT_TYPES.has(file.type)) return json({ error: 'File content type not allowed' }, 400);
-    const key = `${user.branch_id || 'global'}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const branchId = await getWritableBranchId(req, env, user, Number(formData.get('branch_id')) || 0);
+    const key = `${branchId || 'global'}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
     await env.UPLOADS.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
     return json({ url: toAbsoluteFileUrl(req, `/api/files/${key}`), key });
 });
 
 router.get('/api/files/:path+', async (req, env, params) => {
+    const user = await getFileAccessUser(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
     const key = params.path;
+    const branchId = Number(String(key || '').split('/')[0] || 0);
+    if (branchId && !(await userCanAccessBranch(env, user, branchId))) {
+        return json({ error: 'Forbidden' }, 403);
+    }
     const obj = await env.UPLOADS.get(key);
     if (!obj) return new Response('Not found', { status: 404 });
-    return new Response(obj.body, { headers: { 'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream', 'Content-Disposition': 'attachment', 'X-Content-Type-Options': 'nosniff' } });
+    const contentType = obj.httpMetadata?.contentType || 'application/octet-stream';
+    const inline = contentType.startsWith('image/') || contentType === 'application/pdf';
+    return new Response(obj.body, {
+        headers: {
+            'Content-Type': contentType,
+            'Content-Disposition': inline ? 'inline' : 'attachment',
+            'Cache-Control': 'private, max-age=60',
+            'X-Content-Type-Options': 'nosniff'
+        }
+    });
 });
 
 router.get('/api/salary-settings', async (req, env) => {
@@ -2093,7 +2359,7 @@ router.post('/api/salary-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const existing = await env.DB.prepare('SELECT id FROM salary_settings WHERE branch_id=? AND staff_id=? AND component_type=? AND component_id=?')
         .bind(bid, d.staff_id, d.component_type, d.component_id).first();
     if (existing) return json({ error: 'This salary component already exists for the selected staff member' }, 409);
@@ -2105,11 +2371,11 @@ router.post('/api/salary-settings', async (req, env) => {
 router.delete('/api/salary-settings/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM salary_settings WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM salary_settings WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'salary_settings', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM salary_settings WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2135,7 +2401,7 @@ router.post('/api/salaries/generate', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
 
     if (d.staff_id && !d.staff_ids) {
         const staff = await env.DB.prepare('SELECT id, branch_id, basic_salary FROM staff WHERE id=?').bind(d.staff_id).first();
@@ -2220,7 +2486,7 @@ router.put('/api/salaries/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const existing = await env.DB.prepare('SELECT id, branch_id FROM generated_salaries WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const allowedFields = ['status', 'payment_date', 'payment_mode', 'remark'];
     const fields = []; const vals = [];
@@ -2241,7 +2507,7 @@ router.delete('/api/salaries/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const existing = await env.DB.prepare('SELECT id, branch_id FROM generated_salaries WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM generated_salaries WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
@@ -2262,7 +2528,7 @@ router.post('/api/books', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.role === 'super_admin' ? (d.branch_id || 1) : user.branch_id;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO books (branch_id, book_no, title, author, isbn, publisher, type_id, quantity, available, rack_no, cost) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
         .bind(bid, d.book_no||'', d.title, d.author||'', d.isbn||'', d.publisher||'', d.type_id||null, d.quantity||1, d.quantity||1, d.rack_no||'', d.cost||0).run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -2272,24 +2538,23 @@ router.put('/api/books/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE books SET book_no=?, title=?, author=?, isbn=?, publisher=?, type_id=?, quantity=?, rack_no=?, cost=? WHERE id=? AND branch_id=?')
-            .bind(d.book_no||'', d.title, d.author||'', d.isbn||'', d.publisher||'', d.type_id||null, d.quantity||1, d.rack_no||'', d.cost||0, params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE books SET book_no=?, title=?, author=?, isbn=?, publisher=?, type_id=?, quantity=?, rack_no=?, cost=? WHERE id=?')
-            .bind(d.book_no||'', d.title, d.author||'', d.isbn||'', d.publisher||'', d.type_id||null, d.quantity||1, d.rack_no||'', d.cost||0, params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'books', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE books SET book_no=?, title=?, author=?, isbn=?, publisher=?, type_id=?, quantity=?, rack_no=?, cost=? WHERE id=?')
+        .bind(d.book_no||'', d.title, d.author||'', d.isbn||'', d.publisher||'', d.type_id||null, d.quantity||1, d.rack_no||'', d.cost||0, params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/books/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM books WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM books WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'books', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM books WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2327,7 +2592,7 @@ router.post('/api/book-issues', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','staff'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const book = await env.DB.prepare('SELECT id, branch_id, available FROM books WHERE id=?').bind(d.book_id).first();
     if (!book) return json({ error: 'Book not found' }, 404);
     const student = await env.DB.prepare('SELECT id, branch_id FROM students WHERE id=?').bind(d.student_id).first();
@@ -2350,7 +2615,7 @@ router.put('/api/book-issues/:id/return', async (req, env, params) => {
     const d = await req.json();
     const issue = await env.DB.prepare('SELECT * FROM book_issues WHERE id=?').bind(params.id).first();
     if (!issue) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(issue.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, issue.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (issue.status === 'Returned') return json({ error: 'Book is already returned' }, 400);
     await env.DB.prepare('UPDATE book_issues SET return_date=?, status=?, fine=? WHERE id=?')
         .bind(d.return_date || new Date().toISOString().slice(0,10), 'Returned', d.fine||0, params.id).run();
@@ -2410,7 +2675,7 @@ router.post('/api/timetable', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const body = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, body.branch_id);
     if (body.entries) {
         for (const e of body.entries) {
             const existing = await env.DB.prepare('SELECT id FROM timetable WHERE branch_id=? AND class_id=? AND section=? AND day=? AND period=?')
@@ -2433,8 +2698,9 @@ router.put('/api/timetable/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const existing = await env.DB.prepare('SELECT id FROM timetable WHERE branch_id=? AND class_id=? AND section=? AND day=? AND period=? AND id<>?')
-        .bind(user.branch_id || 1, d.class_id, d.section||'', d.day, d.period, params.id).first();
+        .bind(bid, d.class_id, d.section||'', d.day, d.period, params.id).first();
     if (existing) return json({ error: `Timetable entry already exists for ${d.day} period ${d.period}` }, 409);
     await env.DB.prepare('UPDATE timetable SET class_id=?, section=?, day=?, period=?, subject_id=?, staff_id=?, time=? WHERE id=?')
         .bind(d.class_id, d.section||'', d.day, d.period, d.subject_id||null, d.staff_id||null, d.time||null, params.id).run();
@@ -2444,11 +2710,11 @@ router.put('/api/timetable/:id', async (req, env, params) => {
 router.delete('/api/timetable/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM timetable WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM timetable WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'timetable', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM timetable WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2475,9 +2741,10 @@ router.post('/api/course-schedules', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
+    const resolvedExamId = d.exam_id ? await resolveExamIdForWrite(env, bid, d.exam_id) : null;
     const r = await env.DB.prepare('INSERT INTO course_schedules (branch_id, class_id, subject_id, exam_id, schedule, topic, assignment) VALUES (?,?,?,?,?,?,?)')
-        .bind(bid, d.class_id, d.subject_id, d.exam_id||null, d.schedule, d.topic, d.assignment||'').run();
+        .bind(bid, d.class_id, d.subject_id, resolvedExamId, d.schedule, d.topic, d.assignment||'').run();
     return json({ id: r.meta.last_row_id }, 201);
 });
 
@@ -2485,8 +2752,20 @@ router.put('/api/course-schedules/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
+    let targetBranchId = null;
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'course_schedules', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
+        targetBranchId = access.branch_id;
+    }
+    if (!targetBranchId) {
+        const existing = await env.DB.prepare('SELECT branch_id FROM course_schedules WHERE id=?').bind(params.id).first();
+        if (!existing) return json({ error: 'Not found' }, 404);
+        targetBranchId = existing.branch_id;
+    }
+    const resolvedExamId = d.exam_id ? await resolveExamIdForWrite(env, targetBranchId, d.exam_id) : null;
     await env.DB.prepare('UPDATE course_schedules SET class_id=?, subject_id=?, exam_id=?, schedule=?, topic=?, assignment=? WHERE id=?')
-        .bind(d.class_id, d.subject_id, d.exam_id||null, d.schedule, d.topic, d.assignment||'', params.id).run();
+        .bind(d.class_id, d.subject_id, resolvedExamId, d.schedule, d.topic, d.assignment||'', params.id).run();
     return json({ success: true });
 });
 
@@ -2494,10 +2773,10 @@ router.delete('/api/course-schedules/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     if (user.role !== 'super_admin') {
-        await env.DB.prepare('DELETE FROM course_schedules WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM course_schedules WHERE id=?').bind(params.id).run();
+        const access = await ensureBranchAccess(env, user, 'course_schedules', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM course_schedules WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2517,7 +2796,7 @@ router.post('/api/activities', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO activities (branch_id, date, class_group_id, event, description) VALUES (?,?,?,?,?)')
         .bind(bid, d.date, d.class_group_id||null, d.event, d.description||'').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -2527,6 +2806,10 @@ router.put('/api/activities/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'activities', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
+    }
     await env.DB.prepare('UPDATE activities SET date=?, class_group_id=?, event=?, description=? WHERE id=?')
         .bind(d.date, d.class_group_id||null, d.event, d.description||'', params.id).run();
     return json({ success: true });
@@ -2535,11 +2818,11 @@ router.put('/api/activities/:id', async (req, env, params) => {
 router.delete('/api/activities/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM activities WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM activities WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'activities', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM activities WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2559,7 +2842,7 @@ router.post('/api/class-groups', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO class_groups (branch_id, name, class_ids) VALUES (?,?,?)')
         .bind(bid, d.name, d.class_ids||'').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -2569,6 +2852,10 @@ router.put('/api/class-groups/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'class_groups', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
+    }
     await env.DB.prepare('UPDATE class_groups SET name=?, class_ids=? WHERE id=?')
         .bind(d.name, d.class_ids||'', params.id).run();
     return json({ success: true });
@@ -2577,11 +2864,11 @@ router.put('/api/class-groups/:id', async (req, env, params) => {
 router.delete('/api/class-groups/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM class_groups WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM class_groups WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'class_groups', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM class_groups WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2630,7 +2917,7 @@ router.post('/api/homework', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     if (user.role === 'teacher') {
         const assignments = await getTeacherAssignments(env, user);
         if (!teacherHasAssignment(assignments, d.class_id, d.section, d.subject_id)) return json({ error: 'Forbidden' }, 403);
@@ -2663,7 +2950,9 @@ router.delete('/api/homework/:id', async (req, env, params) => {
         if (!existing || Number(existing.assigned_by || 0) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
     }
     if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM homework WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
+        const access = await ensureBranchAccess(env, user, 'homework', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
+        await env.DB.prepare('DELETE FROM homework WHERE id=?').bind(params.id).run();
     } else if (user.role === 'teacher') {
         await env.DB.prepare('DELETE FROM homework WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
     } else {
@@ -2688,9 +2977,10 @@ router.post('/api/date-sheets', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
+    const resolvedExamId = await resolveExamIdForWrite(env, bid, d.exam_id, d.exam_name);
     const { results } = await env.DB.prepare('INSERT INTO date_sheets (branch_id, exam_id, publish_date, status) VALUES (?,?,?,?) RETURNING *')
-        .bind(bid, d.exam_id, d.publish_date||null, d.status||'Draft').all();
+        .bind(bid, resolvedExamId, d.publish_date||null, d.status||'Draft').all();
     return json(results[0], 201);
 });
 
@@ -2698,8 +2988,11 @@ router.put('/api/date-sheets/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
+    const access = await ensureBranchAccess(env, user, 'date_sheets', params.id);
+    if (access.error) return json({ error: access.error }, access.status);
+    const resolvedExamId = await resolveExamIdForWrite(env, access.branch_id, d.exam_id, d.exam_name);
     await env.DB.prepare('UPDATE date_sheets SET exam_id=?, publish_date=?, status=? WHERE id=?')
-        .bind(d.exam_id, d.publish_date||null, d.status||'Draft', params.id).run();
+        .bind(resolvedExamId, d.publish_date||null, d.status||'Draft', params.id).run();
     return json({ success: true });
 });
 
@@ -2723,9 +3016,11 @@ router.post('/api/date-sheets/:id/entries', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
+    const sheet = await env.DB.prepare('SELECT exam_id FROM date_sheets WHERE id=?').bind(params.id).first();
+    const exam_id = sheet ? sheet.exam_id : (d.exam_id || 0);
     const { results } = await env.DB.prepare('INSERT INTO datesheets (branch_id, sheet_id, exam_id, class_id, subject_id, date, time_from, time_to) VALUES (?,?,?,?,?,?,?,?) RETURNING *')
-        .bind(bid, params.id, d.exam_id||0, d.class_id, d.subject_id, d.date||null, d.time_from||null, d.time_to||null).all();
+        .bind(bid, params.id, exam_id, d.class_id, d.subject_id, d.date||null, d.time_from||null, d.time_to||null).all();
     return json(results[0], 201);
 });
 
@@ -2800,7 +3095,7 @@ router.post('/api/vendors', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO vendors (branch_id, name, phone, email, address, gst_no) VALUES (?,?,?,?,?,?)')
         .bind(bid, d.name, d.phone||'', d.email||'', d.address||'', d.gst_no||'').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -2810,24 +3105,23 @@ router.put('/api/vendors/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE vendors SET name=?, phone=?, email=?, address=?, gst_no=? WHERE id=? AND branch_id=?')
-            .bind(d.name, d.phone||'', d.email||'', d.address||'', d.gst_no||'', params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE vendors SET name=?, phone=?, email=?, address=?, gst_no=? WHERE id=?')
-            .bind(d.name, d.phone||'', d.email||'', d.address||'', d.gst_no||'', params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'vendors', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE vendors SET name=?, phone=?, email=?, address=?, gst_no=? WHERE id=?')
+        .bind(d.name, d.phone||'', d.email||'', d.address||'', d.gst_no||'', params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/vendors/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM vendors WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM vendors WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'vendors', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM vendors WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2847,7 +3141,7 @@ router.post('/api/bank-accounts', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO bank_accounts (branch_id, bank_name, account_no, ifsc_code, branch_name, balance) VALUES (?,?,?,?,?,?)')
         .bind(bid, d.bank_name, d.account_no||'', d.ifsc_code||'', d.branch_name||'', d.balance||0).run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -2857,24 +3151,23 @@ router.put('/api/bank-accounts/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE bank_accounts SET bank_name=?, account_no=?, ifsc_code=?, branch_name=?, balance=? WHERE id=? AND branch_id=?')
-            .bind(d.bank_name, d.account_no||'', d.ifsc_code||'', d.branch_name||'', d.balance||0, params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE bank_accounts SET bank_name=?, account_no=?, ifsc_code=?, branch_name=?, balance=? WHERE id=?')
-            .bind(d.bank_name, d.account_no||'', d.ifsc_code||'', d.branch_name||'', d.balance||0, params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'bank_accounts', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE bank_accounts SET bank_name=?, account_no=?, ifsc_code=?, branch_name=?, balance=? WHERE id=?')
+        .bind(d.bank_name, d.account_no||'', d.ifsc_code||'', d.branch_name||'', d.balance||0, params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/bank-accounts/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM bank_accounts WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM bank_accounts WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'bank_accounts', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM bank_accounts WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -2895,7 +3188,7 @@ router.post('/api/cash-transactions', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     await env.DB.prepare('INSERT INTO cash_transactions (branch_id, date, type, amount, bank_id, description, reference_no) VALUES (?,?,?,?,?,?,?)')
         .bind(bid, d.date, d.type, d.amount, d.bank_id||null, d.description||'', d.reference_no||'').run();
     if (d.bank_id) {
@@ -2912,7 +3205,7 @@ router.put('/api/cash-transactions/:id', async (req, env, params) => {
     const d = await req.json();
     const old = await env.DB.prepare('SELECT * FROM cash_transactions WHERE id=?').bind(id).first();
     if (!old) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && old.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, old.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (old.bank_id) {
         const revDelta = old.type === 'deposit' ? -old.amount : old.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(revDelta, old.bank_id).run();
@@ -2932,7 +3225,7 @@ router.delete('/api/cash-transactions/:id', async (req, env, params) => {
     const id = params.id;
     const old = await env.DB.prepare('SELECT * FROM cash_transactions WHERE id=?').bind(id).first();
     if (!old) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && old.branch_id !== user.branch_id) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, old.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (old.bank_id) {
         const revDelta = old.type === 'deposit' ? -old.amount : old.amount;
         await env.DB.prepare('UPDATE bank_accounts SET balance = balance + ? WHERE id=?').bind(revDelta, old.bank_id).run();
@@ -2991,7 +3284,7 @@ router.post('/api/email/send', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
 
     const { results: settings } = await env.DB.prepare(
         "SELECT setting_key, setting_value FROM option_settings WHERE branch_id=? AND setting_key IN ('zoho_api_key','zoho_from_email','zoho_from_name')"
@@ -3035,6 +3328,75 @@ router.post('/api/email/send', async (req, env) => {
     return json({ success: true, sent_count: sentCount, failed_count: failCount });
 });
 
+router.get('/api/sms-log', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    let q = 'SELECT * FROM sms_log WHERE 1=1';
+    const b = [];
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
+    q += ' ORDER BY sent_at DESC';
+    const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
+    return json(results);
+});
+
+router.post('/api/sms/send', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const d = await req.json();
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
+    const settings = await getOptionSettingsMap(env, bid);
+    const apiKey = settings.sms_api_key || '';
+    const flowId = String(d.template_id || settings.msg91_tpl_general || '').trim();
+    if (!apiKey) return json({ error: 'MSG91 API key not configured. Go to Settings -> Option Settings.' }, 400);
+    if (!flowId) return json({ error: 'MSG91 Flow / Template ID is required' }, 400);
+
+    const recipients = buildMsg91Recipients(d.recipients, d.variables || {}, d.message || '');
+    if (!recipients.length) return json({ error: 'No valid recipients provided' }, 400);
+
+    const payload = { flow_id: flowId, recipients };
+    const sender = String(d.sender || settings.msg91_sender || '').trim();
+    const route = String(d.route || settings.msg91_route || '').trim();
+    if (sender) payload.sender = sender;
+    if (route) payload.route = route;
+
+    const logStmt = env.DB.prepare('INSERT INTO sms_log (branch_id, type, recipient_type, recipient_id, phone, message, status) VALUES (?,?,?,?,?,?,?)');
+    const logBatch = [];
+    try {
+        await sendViaMsg91(apiKey, payload);
+        recipients.forEach((recipient, index) => {
+            const original = (Array.isArray(d.recipients) ? d.recipients[index] : {}) || {};
+            logBatch.push(logStmt.bind(
+                bid,
+                d.type || 'manual',
+                d.recipient_type || '',
+                original.recipient_id || null,
+                recipient.mobiles,
+                d.message || '',
+                'Sent'
+            ));
+        });
+        if (logBatch.length) await env.DB.batch(logBatch);
+        return json({ success: true, sent_count: recipients.length, failed_count: 0 });
+    } catch (error) {
+        recipients.forEach((recipient, index) => {
+            const original = (Array.isArray(d.recipients) ? d.recipients[index] : {}) || {};
+            logBatch.push(logStmt.bind(
+                bid,
+                d.type || 'manual',
+                d.recipient_type || '',
+                original.recipient_id || null,
+                recipient.mobiles,
+                d.message || '',
+                'Failed'
+            ));
+        });
+        if (logBatch.length) await env.DB.batch(logBatch);
+        return json({ error: error.message || 'SMS sending failed' }, 502);
+    }
+});
+
 router.get('/api/activity-log', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -3071,7 +3433,7 @@ router.post('/api/fee-slabs', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     for (const slab of (d.slabs || [d])) {
         await env.DB.prepare('INSERT OR REPLACE INTO fee_slabs (branch_id, class_id, particular_id, amount, category, session) VALUES (?,?,?,?,?,?)')
             .bind(bid, slab.class_id, slab.particular_id, slab.amount || 0, slab.category || 'Default', slab.session || d.session || '').run();
@@ -3097,7 +3459,7 @@ router.post('/api/fee-discounts', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     await env.DB.prepare('INSERT INTO fee_discounts (branch_id, student_id, particular_id, month, amount, reason, category) VALUES (?,?,?,?,?,?,?)')
         .bind(bid, d.student_id, d.particular_id||null, d.month||'', d.amount||0, d.reason||'', d.category||'').run();
     return json({ success: true }, 201);
@@ -3107,24 +3469,23 @@ router.put('/api/fee-discounts/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('UPDATE fee_discounts SET student_id=?, particular_id=?, month=?, amount=?, reason=?, category=? WHERE id=? AND branch_id=?')
-            .bind(d.student_id, d.particular_id||null, d.month||'', d.amount||0, d.reason||'', d.category||'', params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('UPDATE fee_discounts SET student_id=?, particular_id=?, month=?, amount=?, reason=?, category=? WHERE id=?')
-            .bind(d.student_id, d.particular_id||null, d.month||'', d.amount||0, d.reason||'', d.category||'', params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'fee_discounts', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('UPDATE fee_discounts SET student_id=?, particular_id=?, month=?, amount=?, reason=?, category=? WHERE id=?')
+        .bind(d.student_id, d.particular_id||null, d.month||'', d.amount||0, d.reason||'', d.category||'', params.id).run();
     return json({ success: true });
 });
 
 router.delete('/api/fee-discounts/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM fee_discounts WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM fee_discounts WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'fee_discounts', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM fee_discounts WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -3135,7 +3496,7 @@ router.delete('/api/fee-slabs', async (req, env) => {
     const classId = url.searchParams.get('class_id');
     const category = url.searchParams.get('category') || 'Default';
     const session = url.searchParams.get('session') || '';
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, url.searchParams.get('branch_id'));
     if (!classId) return json({ error: 'class_id required' }, 400);
     await env.DB.prepare('DELETE FROM fee_slabs WHERE branch_id=? AND class_id=? AND category=? AND (session=? OR session IS NULL)').bind(bid, classId, category, session).run();
     return json({ success: true });
@@ -3170,7 +3531,7 @@ router.post('/api/character-certificates', async (req, env) => {
     if (!student) return json({ error: 'Student not found' }, 404);
     if (d.date && !isValidISODate(d.date)) return json({ error: 'Invalid certificate date' }, 400);
     if (d.date && d.date > new Date().toISOString().slice(0,10)) return json({ error: 'Certificate date cannot be in the future' }, 400);
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO character_certificates (branch_id, student_id, serial_no, format, conduct, date, purpose, remarks, created_date) VALUES (?,?,?,?,?,?,?,?,?)').bind(bid, d.student_id, d.serial_no || '', d.format || 'cbse', d.conduct || '', d.date || new Date().toISOString().slice(0,10), d.purpose || '', d.remarks || '', new Date().toISOString().slice(0,10)).run();
     return json({ id: r.meta.last_row_id }, 201);
 });
@@ -3181,7 +3542,7 @@ router.put('/api/character-certificates/:id', async (req, env, params) => {
     const d = await req.json();
     const existing = await env.DB.prepare('SELECT branch_id FROM character_certificates WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     const student = await getStudentForCertificate(env, user, d.student_id);
     if (!student) return json({ error: 'Student not found' }, 404);
     if (d.date && !isValidISODate(d.date)) return json({ error: 'Invalid certificate date' }, 400);
@@ -3195,7 +3556,7 @@ router.delete('/api/character-certificates/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const existing = await env.DB.prepare('SELECT branch_id FROM character_certificates WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM character_certificates WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
@@ -3215,7 +3576,7 @@ router.post('/api/co-scholastic-areas', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO co_scholastic_areas (branch_id, name) VALUES (?,?)').bind(bid, d.name).run();
     return json({ id: r.meta.last_row_id }, 201);
 });
@@ -3231,11 +3592,11 @@ router.put('/api/co-scholastic-areas/:id', async (req, env, params) => {
 router.delete('/api/co-scholastic-areas/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'co_scholastic_areas', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM co_scholastic_areas WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -3258,10 +3619,11 @@ router.get('/api/co-scholastic-results', async (req, env) => {
 router.post('/api/co-scholastic-results', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { exam_id, student_id, results: entries } = await req.json();
-    const bid = user.branch_id || 1;
+    const { exam_id, student_id, results: entries, branch_id } = await req.json();
+    const bid = await getWritableBranchId(req, env, user, branch_id);
+    const resolvedExamId = await resolveExamIdForWrite(env, bid, exam_id);
     for (const e of entries) {
-        await env.DB.prepare('INSERT OR REPLACE INTO co_scholastic_results (branch_id, student_id, exam_id, area_id, grade, discipline) VALUES (?,?,?,?,?,?)').bind(bid, student_id, exam_id, e.area_id, e.grade || '', e.discipline || '').run();
+        await env.DB.prepare('INSERT OR REPLACE INTO co_scholastic_results (branch_id, student_id, exam_id, area_id, grade, discipline) VALUES (?,?,?,?,?,?)').bind(bid, student_id, resolvedExamId, e.area_id, e.grade || '', e.discipline || '').run();
     }
     return json({ success: true });
 });
@@ -3288,7 +3650,7 @@ router.post('/api/teacher-permissions', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO teacher_permissions (branch_id, staff_id, class_id, section_id, subject_id, modules) VALUES (?,?,?,?,?,?)')
         .bind(bid, d.staff_id, d.class_id, d.section_id||null, d.subject_id||null, d.modules||'').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -3306,11 +3668,11 @@ router.put('/api/teacher-permissions/:id', async (req, env, params) => {
 router.delete('/api/teacher-permissions/:id', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=? AND branch_id=?').bind(params.id, user.branch_id).run();
-    } else {
-        await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=?').bind(params.id).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'teacher_permissions', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare('DELETE FROM teacher_permissions WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
 
@@ -3335,8 +3697,8 @@ router.post('/api/student-subjects', async (req, env) => {
 router.post('/api/students/promote', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const { student_ids, to_class_id, to_section, to_session, subject_ids } = await req.json();
-    const bid = user.branch_id || 1;
+    const { student_ids, to_class_id, to_section, to_session, subject_ids, branch_id } = await req.json();
+    const bid = await getWritableBranchId(req, env, user, branch_id);
     for (const sid of student_ids) {
         const stu = await env.DB.prepare('SELECT id, class_id, session, category, route_id, old_balance FROM students WHERE id=?').bind(sid).first();
         if (!stu) continue;
@@ -3394,6 +3756,7 @@ router.get('/api/exams', async (req, env) => {
     const branchId = Number(url.searchParams.get('branch_id') || 0);
     if (user.role === 'super_admin') {
         if (branchId) {
+            await syncBranchExamsFromMaster(env, branchId);
             q += ' AND branch_id=?';
             b.push(branchId);
         }
@@ -3402,6 +3765,7 @@ router.get('/api/exams', async (req, env) => {
         const selectedBranchId = branchId && assignedBranchIds.includes(branchId)
             ? branchId
             : Number(user.branch_id || assignedBranchIds[0] || 0);
+        await syncBranchExamsFromMaster(env, selectedBranchId);
         q += ' AND branch_id=?';
         b.push(selectedBranchId);
     }
@@ -3416,7 +3780,7 @@ router.post('/api/exams', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO exams (branch_id, name, group_id, session) VALUES (?,?,?,?)')
         .bind(bid, d.name, d.group_id||null, d.session||'').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -3429,13 +3793,12 @@ router.put('/api/exams/:id', async (req, env, params) => {
     const fields = []; const vals = [];
     for (const [k,v] of Object.entries(d)) { if (!['id','branch_id'].includes(k) && SAFE_COL_RE.test(k)) { fields.push(`${k}=?`); vals.push(v); } }
     if (!fields.length) return json({ error: 'No fields' }, 400);
-    if (user.role === 'branch_admin') {
-        vals.push(params.id, user.branch_id);
-        await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=? AND branch_id=?`).bind(...vals).run();
-    } else {
-        vals.push(params.id);
-        await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=?`).bind(...vals).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, 'exams', params.id);
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    vals.push(params.id);
+    await env.DB.prepare(`UPDATE exams SET ${fields.join(',')} WHERE id=?`).bind(...vals).run();
     return json({ success: true });
 });
 
@@ -3464,7 +3827,7 @@ router.post('/api/gallery', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const r = await env.DB.prepare('INSERT INTO gallery (branch_id, title, description, image_url, date, status, photos) VALUES (?,?,?,?,?,?,?)')
         .bind(bid, d.title, d.description||'', d.image_url||'', d.date||new Date().toISOString().slice(0,10), d.status||'Published', d.photos||'[]').run();
     return json({ id: r.meta.last_row_id }, 201);
@@ -3517,7 +3880,7 @@ const PUBLIC_SETTINGS = new Set(['enable_fee_due_student_portal', 'enable_fee_du
 router.get('/api/public-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
-    const bid = Number(user.branch_id || 1);
+    const bid = Number(await getWritableBranchId(req, env, user));
     const { results } = await env.DB.prepare('SELECT setting_key, setting_value FROM option_settings WHERE branch_id=?').bind(bid).all();
     const map = {};
     results.forEach(r => { if (PUBLIC_SETTINGS.has(r.setting_key)) map[r.setting_key] = r.setting_value; });
@@ -3527,15 +3890,7 @@ router.get('/api/option-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const url = new URL(req.url);
-    let bid;
-    if (user.role === 'super_admin') {
-        bid = Number(url.searchParams.get('branch_id') || user.branch_id || 1);
-    } else {
-        const assigned = await getUserAssignedBranchIds(env, user.id, user.branch_id);
-        const requested = Number(url.searchParams.get('branch_id') || user.branch_id || 1);
-        bid = assigned.includes(requested) ? requested : Number(user.branch_id || 1);
-    }
+    const bid = Number(await getWritableBranchId(req, env, user));
     const { results } = await env.DB.prepare('SELECT * FROM option_settings WHERE branch_id=?').bind(bid).all();
     if (user.role === 'branch_admin') {
         return json(results.filter(r => !SENSITIVE_SETTINGS.has(r.setting_key)));
@@ -3547,14 +3902,7 @@ router.post('/api/option-settings', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    let bid;
-    if (user.role === 'super_admin') {
-        bid = Number(d.branch_id || user.branch_id || 1);
-    } else {
-        const assigned = await getUserAssignedBranchIds(env, user.id, user.branch_id);
-        const requested = Number(d.branch_id || user.branch_id || 1);
-        bid = assigned.includes(requested) ? requested : Number(user.branch_id || 1);
-    }
+    const bid = Number(await getWritableBranchId(req, env, user, d.branch_id));
     for (const [key, value] of Object.entries(d.settings || {})) {
         if (user.role === 'branch_admin' && SENSITIVE_SETTINGS.has(key)) continue;
         await env.DB.prepare('INSERT OR REPLACE INTO option_settings (branch_id, setting_key, setting_value) VALUES (?,?,?)')
@@ -3596,10 +3944,8 @@ router.post('/api/transfer-certificates', async (req, env) => {
     if (d.issue_date < d.date_of_leaving) return json({ error: 'Issue date cannot be before leaving date' }, 400);
     const tomorrowUtc = new Date(Date.now() + 86400000).toISOString().slice(0,10);
     if (d.issue_date > tomorrowUtc) return json({ error: 'Issue date cannot be in the future' }, 400);
-    const requestedBranchId = Number(d.branch_id) || null;
-    const bid = user.role === 'super_admin'
-        ? Number(requestedBranchId || student.branch_id || user.branch_id || 1)
-        : Number(user.branch_id || student.branch_id || 1);
+    const requestedBranchId = Number(d.branch_id) || Number(student.branch_id) || null;
+    const bid = Number(await getWritableBranchId(req, env, user, requestedBranchId));
     const r = await env.DB.prepare(
         `INSERT INTO transfer_certificates (branch_id, student_id, tc_no, admission_no, student_name, father_name, mother_name, dob, dob_words, nationality, category, religion, gender, class_id, section, last_class_studied, date_of_admission, date_of_leaving, qualified_for_promotion, fees_paid_up_to_date, scholarship, general_conduct, character, reason_for_leaving, remarks, issue_date, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(bid, d.student_id, d.tc_no, d.admission_no, d.student_name, d.father_name, d.mother_name, d.dob, d.dob_words, d.nationality || 'Indian', d.category, d.religion, d.gender, d.class_id, d.section, d.last_class_studied, d.date_of_admission, d.date_of_leaving, d.qualified_for_promotion || 'Yes', d.fees_paid_up_to_date || 'Yes', d.scholarship || 'None', d.general_conduct || 'Good', d.character || 'Good', d.reason_for_leaving, d.remarks, d.issue_date, d.status || 'Issued').run();
@@ -3613,7 +3959,7 @@ router.put('/api/transfer-certificates/:id', async (req, env, params) => {
     const id = parseInt(params.id);
     const existing = await env.DB.prepare('SELECT branch_id FROM transfer_certificates WHERE id=?').bind(id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     if (d.student_id) {
         const student = await getStudentForCertificate(env, user, d.student_id);
         if (!student) return json({ error: 'Student not found' }, 404);
@@ -3635,7 +3981,7 @@ router.delete('/api/transfer-certificates/:id', async (req, env, params) => {
     const id = parseInt(params.id);
     const existing = await env.DB.prepare('SELECT branch_id FROM transfer_certificates WHERE id=?').bind(id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM transfer_certificates WHERE id=?').bind(id).run();
     return json({ success: true });
 });
@@ -3676,7 +4022,7 @@ router.post('/api/transport-mapping', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const vehicle = await env.DB.prepare('SELECT id, branch_id FROM vehicles WHERE id=?').bind(d.vehicle_id).first();
     const route = await env.DB.prepare('SELECT id, branch_id, fee FROM transport_routes WHERE id=?').bind(d.route_id).first();
     if (!vehicle || !route) return json({ error: 'Vehicle or route not found' }, 404);
@@ -3691,7 +4037,7 @@ router.put('/api/transport-mapping/:id', async (req, env, params) => {
     const d = await req.json();
     const existing = await env.DB.prepare('SELECT branch_id FROM transport_mapping WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     const vehicle = await env.DB.prepare('SELECT id, branch_id FROM vehicles WHERE id=?').bind(d.vehicle_id).first();
     const route = await env.DB.prepare('SELECT id, branch_id, fee FROM transport_routes WHERE id=?').bind(d.route_id).first();
     if (!vehicle || !route) return json({ error: 'Vehicle or route not found' }, 404);
@@ -3705,7 +4051,7 @@ router.delete('/api/transport-mapping/:id', async (req, env, params) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const existing = await env.DB.prepare('SELECT branch_id FROM transport_mapping WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    if (user.role !== 'super_admin' && Number(existing.branch_id) !== Number(user.branch_id)) return json({ error: 'Forbidden' }, 403);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
     await env.DB.prepare('DELETE FROM transport_mapping WHERE id=?').bind(params.id).run();
     return json({ success: true });
 });
@@ -3850,7 +4196,7 @@ router.post('/api/master/:table', async (req, env, params) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const data = await req.json();
-    const bid = user.role === 'super_admin' ? (data.branch_id || user.branch_id) : user.branch_id;
+    const bid = await getWritableBranchId(req, env, user, data.branch_id);
     if (!bid) return json({ error: 'branch_id required' }, 400);
     data.branch_id = bid;
     const table = params.table;
@@ -3873,11 +4219,11 @@ router.put('/api/master/:table/:id', async (req, env, params) => {
     if (!cols.length) return json({ error: 'No valid fields' }, 400);
     const sets = cols.map(k => `${k}=?`).join(',');
     const vals = cols.map(k => data[k]);
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare(`UPDATE ${table} SET ${sets} WHERE id=? AND branch_id=?`).bind(...vals, parseInt(params.id), user.branch_id).run();
-    } else {
-        await env.DB.prepare(`UPDATE ${table} SET ${sets} WHERE id=?`).bind(...vals, parseInt(params.id)).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, table, parseInt(params.id));
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare(`UPDATE ${table} SET ${sets} WHERE id=?`).bind(...vals, parseInt(params.id)).run();
     return json({ ok: true });
 });
 
@@ -3887,11 +4233,11 @@ router.delete('/api/master/:table/:id', async (req, env, params) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const table = params.table;
-    if (user.role === 'branch_admin') {
-        await env.DB.prepare(`DELETE FROM ${table} WHERE id=? AND branch_id=?`).bind(parseInt(params.id), user.branch_id).run();
-    } else {
-        await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(parseInt(params.id)).run();
+    if (user.role !== 'super_admin') {
+        const access = await ensureBranchAccess(env, user, table, parseInt(params.id));
+        if (access.error) return json({ error: access.error }, access.status);
     }
+    await env.DB.prepare(`DELETE FROM ${table} WHERE id=?`).bind(parseInt(params.id)).run();
     return json({ ok: true });
 });
 
@@ -3929,7 +4275,7 @@ router.post('/api/face-descriptors', async (req, env) => {
     const d = await req.json();
     if (!d.person_type || !d.person_id || !d.descriptors) return json({ error: 'Missing fields' }, 400);
     if (!['student','staff'].includes(d.person_type)) return json({ error: 'Invalid person_type' }, 400);
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, d.branch_id);
     const desc = typeof d.descriptors === 'string' ? d.descriptors : JSON.stringify(d.descriptors);
     const r = await env.DB.prepare('INSERT OR REPLACE INTO face_descriptors (branch_id, person_type, person_id, descriptors) VALUES (?,?,?,?)')
         .bind(bid, d.person_type, d.person_id, desc).run();
@@ -3939,7 +4285,7 @@ router.post('/api/face-descriptors', async (req, env) => {
 router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const bid = user.branch_id || 1;
+    const bid = await getWritableBranchId(req, env, user, new URL(req.url).searchParams.get('branch_id'));
     let q = 'DELETE FROM face_descriptors WHERE person_type=? AND person_id=?';
     const b = [params.type, params.personId];
     if (user.role !== 'super_admin') { q += ' AND branch_id=?'; b.push(bid); }
@@ -3950,7 +4296,8 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
 export default {
     async fetch(request, env) {
         const origin = request.headers.get('Origin') || '';
-        const originAllowed = ALLOWED_ORIGINS.has(origin) ||
+        const allowedOrigins = getAllowedOrigins(env);
+        const originAllowed = allowedOrigins.has(origin) ||
             (env.DEV_MODE === 'true' && origin === 'http://localhost:3000');
         const corsH = {
             'Access-Control-Allow-Origin': originAllowed ? origin : '',

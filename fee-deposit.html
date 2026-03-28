@@ -350,8 +350,7 @@
                 if (!classId) { $('#selSection').html('<option value="">Select Section</option>'); $('#selStudent').html('<option value="">Select Student</option>'); hideMonthPart(); return; }
                 try {
                     const studs = await getStudents({ class_id: classId, status: 'Active' });
-                    const secs = [...new Set(studs.map(s => s.section).filter(Boolean))].sort();
-                    $('#selSection').html('<option value="">Select Section</option>' + secs.map(s => `<option>${s}</option>`).join(''));
+                    await populateSectionSelect($('#selSection')[0], { classId, students: studs, placeholder: 'Select Section' });
                     $('#selStudent').html('<option value="">Select Student</option>');
                 } catch(e) { console.error(e); }
                 hideMonthPart();

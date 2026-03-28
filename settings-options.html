@@ -71,6 +71,32 @@
                     </div>
 
                     
+                    <div class="section-card" id="smsSettingsCard">
+                        <h5 class="section-title"><i class="fas fa-sms"></i> SMS Integration (MSG91)</h5>
+                        <div class="note-box"><i class="fas fa-info-circle"></i> SMS sending ke liye MSG91 Flow ID aur API settings yahin save hongi. Branch-wise configuration selected branch ke hisaab se load/save hoti hai.</div>
+                        <div class="note-box" id="smsBranchAdminNote" style="display:none;"><i class="fas fa-shield-alt"></i> Branch Admin MSG91 API key change nahi kar sakta. Super Admin se API key configure karwa dein, aap sender/route/template values update kar sakte hain.</div>
+                        <div class="row" style="gap:0;">
+                            <div class="col-lg-4 col-md-6 col-12 form-group" id="smsApiKeyGroup">
+                                <label class="form-label-sm">MSG91 API Key *</label>
+                                <input type="password" class="form-control" id="smsApiKey" placeholder="Paste MSG91 auth key">
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-12 form-group">
+                                <label class="form-label-sm">Sender ID</label>
+                                <input type="text" class="form-control" id="msg91Sender" placeholder="SCHOOL" maxlength="30">
+                            </div>
+                            <div class="col-lg-2 col-md-3 col-12 form-group">
+                                <label class="form-label-sm">Route</label>
+                                <input type="text" class="form-control" id="msg91Route" placeholder="4">
+                            </div>
+                            <div class="col-lg-4 col-md-6 col-12 form-group">
+                                <label class="form-label-sm">Default Flow / Template ID *</label>
+                                <input type="text" class="form-control" id="msg91TplGeneral" placeholder="MSG91 flow or template ID">
+                            </div>
+                        </div>
+                        <button class="btn btn-sm mt-2" style="background:#0d1b4a;color:#fff;font-size:13px;padding:8px 28px;" onclick="updateSmsSettings()"><i class="fas fa-save"></i> Save SMS Settings</button>
+                    </div>
+
+                    
                     <div class="section-card">
                         <h5 class="section-title"><i class="fas fa-bell"></i> Email Notification Settings</h5>
                         <div class="opt-check"><input type="checkbox" id="chkFeeDepoEmail"><label for="chkFeeDepoEmail">Enable fee deposit email notification</label></div>
@@ -100,8 +126,13 @@
         initPage('settings-options');
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         const currentUser = getUser();
+        const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
         if (currentUser && currentUser.role === 'super_admin') {
             $('#zohoEmailCard').show();
+        }
+        if (!isSuperAdmin) {
+            $('#smsBranchAdminNote').show();
+            $('#smsApiKeyGroup').hide();
         }
         const activeBranch = (typeof getSelectedBranch === 'function') ? getSelectedBranch() : null;
         let o = {};
@@ -115,6 +146,10 @@
         $('#zohoApiKey').val(o['zoho_api_key'] || '');
         $('#zohoFromEmail').val(o['zoho_from_email'] || '');
         $('#zohoFromName').val(o['zoho_from_name'] || '');
+        $('#smsApiKey').val(o['sms_api_key'] || '');
+        $('#msg91Sender').val(o['msg91_sender'] || '');
+        $('#msg91Route').val(o['msg91_route'] || '');
+        $('#msg91TplGeneral').val(o['msg91_tpl_general'] || '');
         $('#chkFeeDepoEmail').prop('checked', o['enable_fee_deposit_email'] === '1' || o['enable_fee_deposit_email'] === 1 || o['enable_fee_deposit_email'] === true);
         $('#chkAdmissionEmail').prop('checked', o['enable_admission_email'] === '1' || o['enable_admission_email'] === 1 || o['enable_admission_email'] === true);
         $('#chkAbsentEmail').prop('checked', o['enable_absent_email_auto'] === '1' || o['enable_absent_email_auto'] === 1 || o['enable_absent_email_auto'] === true);
@@ -144,6 +179,21 @@
                 }, activeBranch || undefined);
                 showToast('Zoho Email settings saved successfully','success');
             } catch(e) { showToast('Error saving email settings','error'); }
+        };
+        window.updateSmsSettings = async function(){
+            const flowId = $('#msg91TplGeneral').val().trim();
+            if (!flowId) { showToast('Default Flow / Template ID is required','error'); return; }
+            if (isSuperAdmin && !$('#smsApiKey').val().trim()) { showToast('MSG91 API Key is required for super admin setup','error'); return; }
+            const settings = {
+                msg91_sender: $('#msg91Sender').val().trim(),
+                msg91_route: $('#msg91Route').val().trim(),
+                msg91_tpl_general: flowId
+            };
+            if (isSuperAdmin) settings.sms_api_key = $('#smsApiKey').val().trim();
+            try {
+                await saveOptionSettings(settings, activeBranch || undefined);
+                showToast('SMS settings updated successfully','success');
+            } catch(e) { showToast('Error saving SMS settings','error'); }
         };
         window.updateEmailNotif = async function(){
             try {

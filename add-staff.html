@@ -356,6 +356,8 @@
         let isEditMode = false;
         let editStaffId = null;
         let uploadedDocs = [];
+        let croppedPhotoBlob = null;
+        let uploadedPhotoUrl = '';
 
         $(document).ready(async function () {
             initPage('add-staff');
@@ -404,16 +406,36 @@
                 e.preventDefault();
                 if (!validateForm()) return;
 
-                const formData = getStaffFormData();
-
                 if (isEditMode) {
                     try {
+                        let photoUrl = uploadedPhotoUrl || ($('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : '');
+                        if (croppedPhotoBlob) {
+                            const uploadResult = await uploadFile(new File([croppedPhotoBlob], `staff-photo-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+                            if (!uploadResult || uploadResult.error || !uploadResult.url) {
+                                throw new Error((uploadResult && uploadResult.error) || 'Photo upload failed');
+                            }
+                            photoUrl = uploadResult.url;
+                            uploadedPhotoUrl = uploadResult.url;
+                            croppedPhotoBlob = null;
+                        }
+                        const formData = getStaffFormData(photoUrl);
                         await updateStaffMember(editStaffId, formData);
                         showToast('Staff updated successfully!', 'success');
                         setTimeout(() => { window.location.href = 'view-staff.html'; }, 1500);
                     } catch(err) { showToast('Error: ' + err.message, 'error'); }
                 } else {
                     try {
+                        let photoUrl = uploadedPhotoUrl || ($('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : '');
+                        if (croppedPhotoBlob) {
+                            const uploadResult = await uploadFile(new File([croppedPhotoBlob], `staff-photo-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+                            if (!uploadResult || uploadResult.error || !uploadResult.url) {
+                                throw new Error((uploadResult && uploadResult.error) || 'Photo upload failed');
+                            }
+                            photoUrl = uploadResult.url;
+                            uploadedPhotoUrl = uploadResult.url;
+                            croppedPhotoBlob = null;
+                        }
+                        const formData = getStaffFormData(photoUrl);
                         const newStaff = await createStaffMember(formData);
                         showSuccessOverlay({ ...formData, ...newStaff });
                     } catch(err) { showToast('Error: ' + err.message, 'error'); }
@@ -421,7 +443,21 @@
             });
         });
 
-        function getStaffFormData() {
+        function serializeUploadedDocs() {
+            return uploadedDocs.map(function (doc) {
+                return {
+                    id: doc.id,
+                    name: doc.name,
+                    fileName: doc.fileName,
+                    size: doc.size,
+                    type: doc.type,
+                    url: doc.url || '',
+                    uploaded_at: doc.uploaded_at || ''
+                };
+            });
+        }
+
+        function getStaffFormData(photoUrl) {
             return {
                 name: $('#staffName').val().trim(),
                 father_name: $('#fatherName').val().trim(),
@@ -440,7 +476,8 @@
                 ifsc_code: $('#ifsc').val().trim().toUpperCase(),
                 pan_no: $('#panNumber').val().trim().toUpperCase(),
                 status: $('#status').val(),
-                photo_url: $('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : '',
+                photo_url: photoUrl || '',
+                extra_data: JSON.stringify({ documents: serializeUploadedDocs() })
             };
         }
 
@@ -478,27 +515,32 @@
             if (!window._cropper) return;
             const canvas = window._cropper.getCroppedCanvas({ width: 300, height: 360, imageSmoothingQuality: 'high' });
             const croppedData = canvas.toDataURL('image/jpeg', 0.9);
+            canvas.toBlob(function (blob) { croppedPhotoBlob = blob; uploadedPhotoUrl = ''; }, 'image/jpeg', 0.9);
             $('#photoPreview').attr('src', croppedData).show();
             $('#uploadPlaceholder').hide();
             closeCropModal();
         }
 
         /* ─── Document Upload ─── */
-        function addDocument() {
+        async function addDocument() {
             const name = $('#docName').val().trim();
             const fileInput = document.getElementById('docFileInput');
             const file = fileInput.files[0];
             if (!name) { showToast('Please enter a document name', 'error'); return; }
             if (!file) { showToast('Please select a file', 'error'); return; }
-            const reader = new FileReader();
-            reader.onload = function (ev) {
-                uploadedDocs.push({ id: Date.now(), name: name, fileName: file.name, size: file.size, type: file.type, data: ev.target.result });
+            try {
+                const uploadResult = await uploadFile(file);
+                if (!uploadResult || uploadResult.error || !uploadResult.url) {
+                    throw new Error((uploadResult && uploadResult.error) || 'Document upload failed');
+                }
+                uploadedDocs.push({ id: Date.now(), name: name, fileName: file.name, size: file.size, type: file.type, url: uploadResult.url, uploaded_at: new Date().toISOString() });
                 renderDocList();
                 $('#docName').val('');
                 fileInput.value = '';
-                showToast(`"${name}" added successfully`, 'success');
-            };
-            reader.readAsDataURL(file);
+                showToast(`"${name}" uploaded successfully`, 'success');
+            } catch (err) {
+                showToast(err.message || 'Failed to upload document', 'error');
+            }
         }
 
         function removeDoc(id) { uploadedDocs = uploadedDocs.filter(d => d.id !== id); renderDocList(); }
@@ -510,7 +552,8 @@
             uploadedDocs.forEach(d => {
                 const sizeKB = (d.size / 1024).toFixed(1);
                 const icon = d.type.includes('pdf') ? 'fa-file-pdf' : d.type.includes('image') ? 'fa-file-image' : 'fa-file';
-                html += `<div class="doc-item"><div class="doc-icon"><i class="fas ${icon}"></i></div><div class="doc-info"><div class="doc-label">${d.name}</div><div class="doc-name">${d.fileName}</div><div class="doc-size">${sizeKB} KB</div></div><button type="button" class="doc-remove" onclick="removeDoc(${d.id})" title="Remove"><i class="fas fa-times"></i></button></div>`;
+                const openLink = d.url ? `<a href="${d.url}" target="_blank" rel="noopener" class="doc-name">${d.fileName}</a>` : `<div class="doc-name">${d.fileName}</div>`;
+                html += `<div class="doc-item"><div class="doc-icon"><i class="fas ${icon}"></i></div><div class="doc-info"><div class="doc-label">${d.name}</div>${openLink}<div class="doc-size">${sizeKB} KB</div></div><button type="button" class="doc-remove" onclick="removeDoc(${d.id})" title="Remove"><i class="fas fa-times"></i></button></div>`;
             });
             container.html(html);
         }
@@ -583,7 +626,21 @@
                 $('#bankName').val(s.bank_name || '');
                 $('#bankAccount').val(s.account_no || '');
                 $('#ifsc').val(s.ifsc_code || '');
-                if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); }
+                if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); uploadedPhotoUrl = s.photo_url; croppedPhotoBlob = null; }
+                let extra = {};
+                try { extra = s.extra_data ? (typeof s.extra_data === 'object' ? s.extra_data : JSON.parse(s.extra_data)) : {}; } catch (e) { extra = {}; }
+                uploadedDocs = Array.isArray(extra.documents) ? extra.documents.map(function (doc, index) {
+                    return {
+                        id: doc.id || (Date.now() + index),
+                        name: doc.name || 'Document',
+                        fileName: doc.fileName || doc.name || 'file',
+                        size: Number(doc.size) || 0,
+                        type: doc.type || '',
+                        url: doc.url || '',
+                        uploaded_at: doc.uploaded_at || ''
+                    };
+                }) : [];
+                renderDocList();
             } catch(e) { showToast('Error loading staff', 'error'); console.error(e); }
         }
 
@@ -611,6 +668,8 @@
                 $('#teachingSubjects').val(null).trigger('change');
                 $('#photoPreview').hide();
                 $('#uploadPlaceholder').show();
+                croppedPhotoBlob = null;
+                uploadedPhotoUrl = '';
                 uploadedDocs = [];
                 renderDocList();
             }, 50);

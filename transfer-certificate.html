@@ -649,9 +649,7 @@
                 $('#tcFormFields').hide();
                 if (!cid) return;
                 try { studentCache = await getStudents({ class_id: cid }); } catch(e) { studentCache = []; }
-                const activeStudents = studentCache.filter(s => s.status === 'Active');
-                const secs = [...new Set(activeStudents.map(s => s.section))].sort();
-                secs.forEach(sec => { $('#tcSection').append(`<option value="${sec}">${sec}</option>`); });
+                await populateSectionSelect($('#tcSection')[0], { classId: cid, students: studentCache, includeAll: true, placeholder: 'All Sections' });
                 populateStudentDropdown();
             });
 
@@ -816,9 +814,7 @@
                 if (tc.class_id) {
                     $('#tcClass').val(tc.class_id);
                     try { studentCache = await getStudents({ class_id: tc.class_id }); } catch(e) { studentCache = []; }
-                    const secs = [...new Set(studentCache.filter(s => s.status === 'Active').map(s => s.section))].sort();
-                    $('#tcSection').html('<option value="All">All Sections</option>');
-                    secs.forEach(sec => { $('#tcSection').append(`<option value="${sec}">${sec}</option>`); });
+                    await populateSectionSelect($('#tcSection')[0], { classId: tc.class_id, students: studentCache, includeAll: true, placeholder: 'All Sections', selectedValue: tc.section || 'All' });
                     if (tc.section) $('#tcSection').val(tc.section);
                     populateStudentDropdown();
                     if (tc.student_id) {
