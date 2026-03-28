@@ -112,10 +112,10 @@
         let cache = [];
 
         async function loadTypes() {
-            try { cache = await getMasterData('book_types'); } catch(e){ cache = []; }
+            try { cache = await getMasterData('book_types'); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache = []; }
             const rows = cache.map((t, i) => `<tr>
                 <td class="text-center">${i + 1}</td>
-                <td>${t.name}</td>
+                <td>${escHtml(t.name)}</td>
                 <td>
                     <button class="action-btn action-btn-edit" title="Edit" onclick="editType(${t.id})"><i class="fas fa-pen"></i></button>
                     <button class="action-btn action-btn-delete" title="Delete" onclick="removeType(${t.id})"><i class="fas fa-trash-alt"></i></button>
@@ -128,7 +128,7 @@
             const name = $('#typeName').val().trim();
             if (!name) { showToast('Enter a type name', 'error'); return; }
             try { await createMasterData('book_types', {name}); $('#typeName').val(''); await loadTypes(); showToast('Book type added', 'success'); }
-            catch(e){ showToast('Failed to add','error'); }
+            catch(e){ showToast(e.message||'Failed to add','error'); }
         };
 
         window.editType = function(id) {
@@ -144,13 +144,13 @@
             const name = $('#editTypeName').val().trim();
             if (!name) { showToast('Enter a name', 'error'); return; }
             try { await updateMasterData('book_types', id, {name}); $('#editTypeModal').modal('hide'); await loadTypes(); showToast('Book type updated', 'success'); }
-            catch(e){ showToast('Failed to update','error'); }
+            catch(e){ showToast(e.message||'Failed to update','error'); }
         };
 
         window.removeType = async function(id) {
             if (!confirm('Delete this book type?')) return;
             try { await deleteMasterData('book_types', id); await loadTypes(); showToast('Book type deleted', 'success'); }
-            catch(e){ showToast('Failed to delete','error'); }
+            catch(e){ showToast(e.message||'Failed to delete','error'); }
         };
 
         await loadTypes();

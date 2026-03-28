@@ -63,11 +63,11 @@
         }
         buildChecks([]);
         async function load(){
-            try { cache = await getExamGroups(); } catch(e){ showToast('Failed to load','error'); }
+            try { cache = await getExamGroups(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
             const rows = cache.map((g,i)=>{
                 const ids = g.exam_ids ? (typeof g.exam_ids==='string' ? JSON.parse(g.exam_ids) : g.exam_ids) : [];
                 const tags = ids.map(eid=>{const e=examNamesCache.find(x=>x.id===eid);return e?`<span class="exam-tag">${e.name}</span>`:'';}).join('');
-                return `<tr><td class="text-center">${i+1}</td><td><strong>${g.name}</strong></td><td>${tags||'<span class="text-muted">—</span>'}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${g.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${g.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                return `<tr><td class="text-center">${i+1}</td><td><strong>${escHtml(g.name)}</strong></td><td>${tags||'<span class="text-muted">—</span>'}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${g.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${g.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No exam groups</td></tr>');
         }
@@ -81,7 +81,7 @@
                 if(editId) await updateMasterData('exam_groups', editId, data);
                 else await createMasterData('exam_groups', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const g=cache.find(x=>x.id===id); if(!g)return;
@@ -90,7 +90,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Exam Group');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#gName').val('');buildChecks([]);$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Exam Group');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('exam_groups',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('exam_groups',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

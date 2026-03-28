@@ -59,8 +59,8 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getDesignations(); } catch(e){ showToast('Failed to load','error'); }
-            const rows = cache.map((d,i)=>`<tr><td class="text-center">${d.display_order||i+1}</td><td><strong>${d.name}</strong></td><td>${d.attendance==='Yes'?'<span class="yes-badge">Yes</span>':'<span class="no-badge">No</span>'}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${d.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${d.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            try { cache = await getDesignations(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
+            const rows = cache.map((d,i)=>`<tr><td class="text-center">${d.display_order||i+1}</td><td><strong>${escHtml(d.name)}</strong></td><td>${d.attendance==='Yes'?'<span class="yes-badge">Yes</span>':'<span class="no-badge">No</span>'}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${d.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${d.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
             $('#listBody').html(rows||'<tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No designations</td></tr>');
         }
         window.saveItem=async function(){
@@ -71,7 +71,7 @@
                 if(editId) await updateMasterData('designations', editId, data);
                 else await createMasterData('designations', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const d=cache.find(x=>x.id===id); if(!d)return;
@@ -79,7 +79,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Designation');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#dName').val('');$('#dSerial').val('');$('#dAttendance').val('Yes');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Designation');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('designations',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('designations',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

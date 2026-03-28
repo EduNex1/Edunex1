@@ -263,12 +263,12 @@
 
         $(document).ready(async function () {
             if (typeof initPage === 'function') initPage('deduction-head');
-            if (typeof initPage === 'function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             await renderList();
         });
 
         async function renderList() {
-            try { cache = await getMasterData('deduction_heads'); } catch(e){ cache = []; }
+            try { cache = await getMasterData('deduction_heads'); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache = []; }
             const tbody = document.getElementById('headBody');
             if (!cache.length) {
                 tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state"><i class="fas fa-minus-circle"></i>No deduction heads added yet</div></td></tr>';
@@ -278,7 +278,7 @@
             cache.forEach((h, i) => {
                 html += `<tr>
                     <td style="font-weight:600;color:#555;">${i + 1}</td>
-                    <td style="font-weight:600;">${h.name}</td>
+                    <td style="font-weight:600;">${escHtml(h.name)}</td>
                     <td>
                         <button class="action-icon edit" title="Edit" onclick="editHead(${h.id})"><i class="fas fa-pen"></i></button>
                         <button class="action-icon delete" title="Delete" onclick="removeHead(${h.id})" style="margin-left:4px;"><i class="fas fa-trash-alt"></i></button>
@@ -316,7 +316,7 @@
                 $('#headName').val('');
                 $('#addFormCard').slideUp(200);
                 await renderList();
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         }
 
         function editHead(id) {
@@ -333,7 +333,7 @@
             if (!h) return;
             showConfirmModal('Delete Deduction Head', `Are you sure you want to delete "<strong>${h.name}</strong>"?`, async function () {
                 try { await deleteMasterData('deduction_heads', id); showToast('Deduction head deleted!', 'success'); await renderList(); }
-                catch(e){ showToast('Failed','error'); }
+                catch(e){ showToast(e.message||'Failed to delete','error'); }
             });
         }
 

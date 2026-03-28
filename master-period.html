@@ -53,8 +53,8 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getPeriods(); } catch(e){ showToast('Failed to load','error'); }
-            const rows = cache.map((p,i)=>`<tr><td class="text-center">${p.display_order||i+1}</td><td><strong>${p.name}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${p.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${p.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            try { cache = await getPeriods(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
+            const rows = cache.map((p,i)=>`<tr><td class="text-center">${p.display_order||i+1}</td><td><strong>${escHtml(p.name)}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${p.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${p.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No periods</td></tr>');
         }
         window.saveItem=async function(){
@@ -65,7 +65,7 @@
                 if(editId) await updateMasterData('periods', editId, data);
                 else await createMasterData('periods', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const p=cache.find(x=>x.id===id); if(!p)return;
@@ -73,7 +73,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Period');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#pName').val('');$('#pSerial').val('');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Period');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('periods',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('periods',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

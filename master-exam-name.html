@@ -69,10 +69,10 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getExamNames(); } catch(e){ showToast('Failed to load','error'); }
+            try { cache = await getExamNames(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
             const rows = cache.map((e,i)=>{
                 const st = e.status==='Published'?'<span class="status-published">Published</span>':'<span class="status-draft">Draft</span>';
-                return `<tr><td class="text-center">${e.display_order||i+1}</td><td><strong>${e.name}</strong></td><td class="text-center">${e.min_marks||0}</td><td class="text-center">${e.max_marks||100}</td><td>${st}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                return `<tr><td class="text-center">${e.display_order||i+1}</td><td><strong>${escHtml(e.name)}</strong></td><td class="text-center">${e.min_marks||0}</td><td class="text-center">${e.max_marks||100}</td><td>${st}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No exam names</td></tr>');
         }
@@ -84,7 +84,7 @@
                 if(editId) await updateMasterData('exam_names', editId, data);
                 else await createMasterData('exam_names', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const e=cache.find(x=>x.id===id); if(!e)return;
@@ -92,7 +92,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Exam Name');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#eName').val('');$('#eSerial').val('');$('#eMin').val('');$('#eMax').val('');$('#eStatus').val('Published');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Exam Name');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('exam_names',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('exam_names',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

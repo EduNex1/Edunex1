@@ -53,9 +53,9 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getClasses(); } catch(e){ showToast('Failed to load','error'); }
+            try { cache = await getClasses(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
             cache.sort((left, right) => (left.display_order || 0) - (right.display_order || 0) || (left.id || 0) - (right.id || 0));
-            const rows = cache.map((c,i)=>`<tr><td class="text-center">${c.display_order || i+1}</td><td><strong>${c.name}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${c.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${c.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            const rows = cache.map((c,i)=>`<tr><td class="text-center">${c.display_order || i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${c.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${c.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No classes</td></tr>');
         }
         window.saveItem=async function(){
@@ -67,7 +67,7 @@
                 if(editId) await updateMasterData('classes', editId, data);
                 else await createMasterData('classes', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const c=cache.find(x=>x.id===id); if(!c)return;
@@ -75,7 +75,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Class');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#cName').val('');$('#cSerial').val('');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Class');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('classes',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('classes',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

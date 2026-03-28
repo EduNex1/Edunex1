@@ -132,9 +132,10 @@ async function getMasterData(table, branchId) {
     const params = branchId ? `?branch_id=${branchId}` : '';
     return api(`/api/${table}${params}`);
 }
-async function createMasterData(table, data) { return api(`/api/${table}`, { method: 'POST', body: JSON.stringify(data) }); }
-async function updateMasterData(table, id, data) { return api(`/api/${table}/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
-async function deleteMasterData(table, id) { return api(`/api/${table}/${id}`, { method: 'DELETE' }); }
+async function createMasterData(table, data) { var r = await api(`/api/${table}`, { method: 'POST', body: JSON.stringify(data) }); _invalidateMasterCache(); return r; }
+async function updateMasterData(table, id, data) { var r = await api(`/api/${table}/${id}`, { method: 'PUT', body: JSON.stringify(data) }); _invalidateMasterCache(); return r; }
+async function deleteMasterData(table, id) { var r = await api(`/api/${table}/${id}`, { method: 'DELETE' }); _invalidateMasterCache(); return r; }
+function _invalidateMasterCache() { if(typeof _dropdownCache==='object' && _dropdownCache) { for(var k in _dropdownCache) delete _dropdownCache[k]; } }
 
 async function getClasses() { return getMasterData('classes'); }
 async function getSections() { return getMasterData('sections'); }

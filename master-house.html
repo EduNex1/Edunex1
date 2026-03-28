@@ -54,8 +54,8 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getHouses(); } catch(e){ showToast('Failed to load','error'); }
-            const rows = cache.map((h,i)=>`<tr><td class="text-center">${i+1}</td><td><strong>${h.name}</strong></td><td><span class="color-dot" style="background:${h.color}"></span> <span style="font-size:11px;color:#888;">${h.color}</span></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${h.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${h.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            try { cache = await getHouses(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
+            const rows = cache.map((h,i)=>`<tr><td class="text-center">${i+1}</td><td><strong>${escHtml(h.name)}</strong></td><td><span class="color-dot" style="background:${h.color}"></span> <span style="font-size:11px;color:#888;">${h.color}</span></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${h.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${h.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
             $('#listBody').html(rows||'<tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No houses</td></tr>');
         }
         window.saveItem=async function(){
@@ -66,7 +66,7 @@
                 if(editId) await updateMasterData('houses', editId, data);
                 else await createMasterData('houses', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const h=cache.find(x=>x.id===id); if(!h)return;
@@ -74,7 +74,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit House');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#hName').val('');$('#hColor').val('#1e88e5');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add House');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('houses',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('houses',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

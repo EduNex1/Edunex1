@@ -91,16 +91,19 @@
     <script>
         let editingId = null;
         let cache = [];
-        $(document).ready(async function(){ if(typeof initPage==='function') initPage('expense-head');
-        $(document).ready(async function(){ if(typeof initPage==='function') if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return; await renderList(); });
+        $(document).ready(async function(){
+            if(typeof initPage==='function') initPage('expense-head');
+            if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            await renderList();
+        });
 
         async function renderList(){
-            try { cache = await getExpenseHeads(); } catch(e){ cache = []; }
+            try { cache = await getExpenseHeads(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache = []; }
             const tb=$('#headBody');
             if(!cache.length){ tb.html('<tr><td colspan="3"><div class="empty-state"><i class="fas fa-tags"></i>No expense heads added yet</div></td></tr>'); return; }
             let h='';
             cache.forEach((e,i)=>{
-                h+=`<tr><td style="font-weight:600;color:#555;">${i+1}</td><td style="font-weight:600;">${e.name}</td><td style="white-space:nowrap;"><button class="action-icon edit" title="Edit" onclick="editHead(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-icon delete" title="Delete" onclick="removeHead(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                h+=`<tr><td style="font-weight:600;color:#555;">${i+1}</td><td style="font-weight:600;">${escHtml(e.name)}</td><td style="white-space:nowrap;"><button class="action-icon edit" title="Edit" onclick="editHead(${e.id})"><i class="fas fa-pen"></i></button> <button class="action-icon delete" title="Delete" onclick="removeHead(${e.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             });
             tb.html(h);
         }
@@ -113,12 +116,12 @@
                 if(editingId){ await updateMasterData('expense_heads', editingId, {name:n}); showToast('Expense head updated!','success'); editingId=null; }
                 else{ await createMasterData('expense_heads', {name:n}); showToast('Expense head added!','success'); }
                 $('#headName').val(''); $('#addFormCard').slideUp(200); await renderList();
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         }
         function editHead(id){ const h=cache.find(e=>e.id===id); if(!h) return; editingId=id; $('#headName').val(h.name); $('#addFormCard').slideDown(200); $('#headName').focus(); }
         function removeHead(id){
             const h=cache.find(e=>e.id===id); if(!h) return;
-            showConfirmModal('Delete Expense Head',`Delete "<strong>${h.name}</strong>"?`,async function(){ try{ await deleteMasterData('expense_heads',id); showToast('Expense head deleted!','success'); await renderList(); }catch(e){showToast('Failed','error');} });
+            showConfirmModal('Delete Expense Head',`Delete "<strong>${escHtml(h.name)}</strong>"?`,async function(){ try{ await deleteMasterData('expense_heads',id); showToast('Expense head deleted!','success'); await renderList(); }catch(e){showToast(e.message||'Failed to delete','error');} });
         }
         $(document).on('keydown','#headName',function(e){ if(e.key==='Enter'){e.preventDefault();saveHead();} });
     </script>

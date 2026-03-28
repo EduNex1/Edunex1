@@ -59,7 +59,7 @@
         let cache = [];
         let editId = null;
         async function load(){
-            try { cache = await getAcademicSessions(); } catch(e){ showToast('Failed to load','error'); }
+            try { cache = await getAcademicSessions(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
             const rows = cache.map((s,i)=>{
                 const isActive = s.status === 'Active';
                 const statusBadge = isActive
@@ -68,7 +68,7 @@
                 const setActiveBtn = !isActive
                     ? `<button class="action-btn" style="background:#e8f5e9;color:#2e7d32;" title="Set Active" onclick="setActive(${s.id})"><i class="fas fa-check"></i></button>`
                     : '';
-                return `<tr><td class="text-center">${i+1}</td><td><strong>${s.name}</strong></td><td>${s.start_date||'—'}</td><td>${s.end_date||'—'}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${setActiveBtn}<button class="action-btn" style="background:#e3f2fd;color:#1565c0;" title="Edit" onclick="editItem(${s.id})"><i class="fas fa-edit"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                return `<tr><td class="text-center">${i+1}</td><td><strong>${escHtml(s.name)}</strong></td><td>${s.start_date||'—'}</td><td>${s.end_date||'—'}</td><td>${statusBadge}</td><td style="white-space:nowrap;">${setActiveBtn}<button class="action-btn" style="background:#e3f2fd;color:#1565c0;" title="Edit" onclick="editItem(${s.id})"><i class="fas fa-edit"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="6" class="text-center text-muted" style="padding:30px;">No sessions</td></tr>');
         }
@@ -90,7 +90,7 @@
                 }
                 $('#sName').val(''); $('#sStartDate').val(''); $('#sEndDate').val(''); $('#sStatus').val('Inactive');
                 await load();
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const s = cache.find(x=>x.id===id);
@@ -112,9 +112,9 @@
                 const sess = cache.find(x=>x.id===id);
                 if (sess) sessionStorage.setItem('vkis_selected_session', sess.name);
                 showToast('Session set as Active','success');
-            } catch(e){ showToast('Failed to set active','error'); }
+            } catch(e){ showToast(e.message||'Failed to set active','error'); }
         };
-        window.del=async function(id){if(!confirm('Delete this session?'))return; try{ await deleteMasterData('academic_sessions',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete this session?'))return; try{ await deleteMasterData('academic_sessions',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

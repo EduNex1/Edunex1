@@ -53,8 +53,8 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getHomeworkTypes(); } catch(e){ showToast('Failed to load','error'); }
-            const rows = cache.map((t,i)=>`<tr><td class="text-center">${t.display_order||i+1}</td><td><strong>${t.name}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${t.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${t.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+            try { cache = await getHomeworkTypes(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
+            const rows = cache.map((t,i)=>`<tr><td class="text-center">${t.display_order||i+1}</td><td><strong>${escHtml(t.name)}</strong></td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${t.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${t.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No homework types</td></tr>');
         }
         window.saveItem=async function(){
@@ -65,7 +65,7 @@
                 if(editId) await updateMasterData('homework_types', editId, data);
                 else await createMasterData('homework_types', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const t=cache.find(x=>x.id===id); if(!t)return;
@@ -73,7 +73,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Homework Type');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#tName').val('');$('#tSerial').val('');$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Homework Type');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('homework_types',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('homework_types',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>

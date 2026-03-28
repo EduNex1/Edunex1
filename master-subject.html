@@ -60,10 +60,10 @@
         if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
         let cache = [];
         async function load(){
-            try { cache = await getSubjects(); } catch(e){ showToast('Failed to load','error'); }
+            try { cache = await getSubjects(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
             const rows = cache.map((s,i)=>{
                 const actBadge = s.is_activity?'<span class="activity-badge">Activity</span>':'';
-                return `<tr><td class="text-center">${i+1}</td><td><strong>${s.name}</strong>${actBadge}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${s.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                return `<tr><td class="text-center">${i+1}</td><td><strong>${escHtml(s.name)}</strong>${actBadge}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${s.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No subjects</td></tr>');
         }
@@ -71,11 +71,11 @@
             const name=$('#sName').val().trim(), is_activity=$('#sActivity').is(':checked')?1:0, editId=parseInt($('#editId').val())||0, serial=parseInt($('#sSerial').val())||0;
             if(!name){showToast('Enter subject name','error');return;}
             try {
-                const data={name, code:name.substring(0,3).toUpperCase(), has_practical:0, is_activity, display_order:serial};
+                const data={name, is_activity, display_order:serial};
                 if(editId) await updateMasterData('subjects', editId, data);
                 else await createMasterData('subjects', data);
                 cancelEdit(); await load(); showToast(editId?'Updated':'Added','success');
-            } catch(e){ showToast('Failed to save','error'); }
+            } catch(e){ showToast(e.message||'Failed to save','error'); }
         };
         window.editItem=function(id){
             const s=cache.find(x=>x.id===id); if(!s)return;
@@ -83,7 +83,7 @@
             $('#formTitle').html('<i class="fas fa-edit"></i> Edit Subject');
         };
         window.cancelEdit=function(){$('#editId').val('');$('#sName').val('');$('#sSerial').val('');$('#sActivity').prop('checked',false);$('#formTitle').html('<i class="fas fa-plus-circle"></i> Add Subject');};
-        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('subjects',id); await load(); showToast('Deleted','success'); }catch(e){showToast('Failed','error');}};
+        window.del=async function(id){if(!confirm('Delete?'))return; try{ await deleteMasterData('subjects',id); await load(); showToast('Deleted','success'); }catch(e){showToast(e.message||'Failed to delete','error');}};
         await load();
     });
     </script>
