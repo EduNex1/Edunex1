@@ -9,8 +9,18 @@
 
 function requireRoles(allowedRoles, redirectTo) {
     var user = typeof getUser === 'function' ? getUser() : null;
-    if (!user || !allowedRoles.includes(user.role)) {
-        window.location.href = redirectTo || '/dashboard';
+    if (!user) { window.location.href = redirectTo || '/'; return false; }
+    var effectiveRole = user.role;
+    // Treat 'staff' same as 'teacher' for permission purposes
+    if (effectiveRole === 'staff' && allowedRoles.includes('teacher')) effectiveRole = 'teacher';
+    if (!allowedRoles.includes(effectiveRole)) {
+        if (!redirectTo) {
+            if (user.role === 'teacher' || user.role === 'staff') redirectTo = '/teacher-dashboard';
+            else if (user.role === 'student') redirectTo = '/student-dashboard';
+            else if (user.role === 'parent') redirectTo = '/parent-dashboard';
+            else redirectTo = '/dashboard';
+        }
+        window.location.href = redirectTo;
         return false;
     }
     return true;
@@ -918,6 +928,13 @@ function initPage(activeMenu) {
     if (path.startsWith('/t-') || path === '/teacher-dashboard') role = 'teacher';
     else if (path.startsWith('/p-') || path === '/parent-dashboard') role = 'parent';
     else if (path.startsWith('/s-') || path === '/student-dashboard' || path === '/student-dashboard.html') role = 'student';
+
+    // Override: if user role is teacher/staff/student/parent, always use their portal sidebar
+    if (user) {
+        if ((user.role === 'teacher' || user.role === 'staff') && !['super_admin','branch_admin'].includes(user.role)) role = 'teacher';
+        else if (user.role === 'student') role = 'student';
+        else if (user.role === 'parent') role = 'parent';
+    }
 
     if (role === 'teacher') {
         renderHeader(user ? (user.name || user.login_id) : 'Teacher User', 'Teacher');

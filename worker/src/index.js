@@ -648,10 +648,47 @@ router.post('/api/change-password', async (req, env) => {
     if (!user) return json({ error: 'Unauthorized' }, 401);
     const d = await req.json();
     if (!d.current_password || !d.new_password) return json({ error: 'current_password and new_password required' }, 400);
-    if (d.new_password.length < 6) return json({ error: 'Password must be at least 6 characters' }, 400);
+    if (d.new_password.length < 4) return json({ error: 'Password must be at least 4 characters' }, 400);
     const me = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(user.id).first();
     if (!me || me.password_hash !== d.current_password) return json({ error: 'Current password is incorrect' }, 400);
     await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, user.id).run();
+    return json({ success: true });
+});
+
+router.post('/api/admin-reset-password', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const d = await req.json();
+    if (!d.type || !d.linked_id || !d.new_password) return json({ error: 'type, linked_id and new_password required' }, 400);
+    if (d.new_password.length < 4) return json({ error: 'Password must be at least 4 characters' }, 400);
+    const linkedId = d.linked_id;
+    const type = d.type; // 'staff' or 'student' or 'parent'
+    let roleFilter;
+    if (type === 'staff') {
+        if (user.role === 'branch_admin') {
+            const staff = await env.DB.prepare('SELECT id FROM staff WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
+            if (!staff) return json({ error: 'Forbidden' }, 403);
+        }
+        roleFilter = "u.role IN ('teacher','staff')";
+    } else if (type === 'student') {
+        if (user.role === 'branch_admin') {
+            const stu = await env.DB.prepare('SELECT id FROM students WHERE id = ? AND branch_id = ?').bind(linkedId, user.branch_id).first();
+            if (!stu) return json({ error: 'Forbidden' }, 403);
+        }
+        roleFilter = "u.role = 'student'";
+    } else if (type === 'parent') {
+        const student = await env.DB.prepare('SELECT phone FROM students WHERE id = ?').bind(linkedId).first();
+        if (!student || !student.phone) return json({ error: 'Student has no phone for parent login' }, 404);
+        const parentUser = await env.DB.prepare("SELECT id FROM users WHERE login_id = ? AND role = 'parent'").bind(student.phone).first();
+        if (!parentUser) return json({ error: 'Parent user not found' }, 404);
+        await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, parentUser.id).run();
+        return json({ success: true });
+    } else {
+        return json({ error: 'Invalid type. Use staff, student, or parent' }, 400);
+    }
+    const targetUser = await env.DB.prepare(`SELECT u.id FROM users u WHERE u.linked_id = ? AND ${roleFilter}`).bind(linkedId).first();
+    if (!targetUser) return json({ error: 'User account not found for this ' + type }, 404);
+    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(d.new_password, targetUser.id).run();
     return json({ success: true });
 });
 

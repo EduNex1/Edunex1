@@ -376,6 +376,7 @@ async function updateUser(id, data) { return api(`/api/users/${id}`, { method: '
 async function deleteUser(id) { return api(`/api/users/${id}`, { method: 'DELETE' }); }
 async function changePassword(currentPassword, newPassword) { return api('/api/change-password', { method: 'POST', body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) }); }
 async function getUserCredentials(type, id) { return api(`/api/user-credentials/${type}/${id}`); }
+async function adminResetPassword(type, linkedId, newPassword) { return api('/api/admin-reset-password', { method: 'POST', body: JSON.stringify({ type, linked_id: linkedId, new_password: newPassword }) }); }
 async function getMyProfile() { return api('/api/me'); }
 async function updateMyProfile(data) { return api('/api/me', { method: 'PUT', body: JSON.stringify(data) }); }
 async function getSuperAdmins() { return api('/api/super-admins'); }

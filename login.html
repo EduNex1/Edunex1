@@ -174,7 +174,14 @@
 
     <script src="js/api.js"></script>
     <script>
-        if (isLoggedIn()) { window.location.href = '/dashboard'; }
+        if (isLoggedIn()) {
+            var _u = getUser();
+            var _r = _u ? _u.role : '';
+            if (_r === 'teacher' || _r === 'staff') window.location.href = '/teacher-dashboard';
+            else if (_r === 'parent') window.location.href = '/parent-dashboard';
+            else if (_r === 'student') window.location.href = '/student-dashboard';
+            else window.location.href = '/dashboard';
+        }
 
         function togglePassword() {
             var pw = document.getElementById('password');
@@ -210,7 +217,11 @@
                         if (typeof setUserPerms === 'function') setUserPerms(Array.isArray(perms) ? perms : []);
                     } catch(e) { /* ignore */ }
                 }
-                window.location.href = '/dashboard';
+                var _role = (result.user && result.user.role) || '';
+                if (_role === 'teacher' || _role === 'staff') window.location.href = '/teacher-dashboard';
+                else if (_role === 'parent') window.location.href = '/parent-dashboard';
+                else if (_role === 'student') window.location.href = '/student-dashboard';
+                else window.location.href = '/dashboard';
             } else {
                 var msg = (result && result.error) ? result.error : 'Invalid User ID or Password.';
                 errText.textContent = msg;

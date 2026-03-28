@@ -1096,9 +1096,6 @@
         }
 
         function showSuccessOverlay(student) {
-            const parentLine = student.parent_password
-                ? `<tr><td style="padding:4px 10px;color:#666;">Parent Password</td><td style="padding:4px 10px;font-weight:600;color:#333;font-family:monospace;">${student.parent_password}</td></tr>`
-                : '';
             document.body.insertAdjacentHTML('beforeend', `
             <div class="success-overlay" id="successOverlay">
                 <div class="success-card">
@@ -1106,10 +1103,6 @@
                     <h5 style="font-weight:700;color:#333;margin-bottom:6px;">Admission Successful!</h5>
                     <p style="color:#666;font-size:13px;margin-bottom:4px;"><strong>${student.name||''}</strong> admitted successfully.</p>
                     <p style="color:#304ffe;font-weight:600;font-size:14px;margin-bottom:8px;">${student.admission_no||''}</p>
-                    <table style="margin:0 auto 16px;font-size:13px;border-collapse:collapse;text-align:left;">
-                        <tr><td style="padding:4px 10px;color:#666;">Student Password</td><td style="padding:4px 10px;font-weight:600;color:#333;font-family:monospace;">${student.student_password||''}</td></tr>
-                        ${parentLine}
-                    </table>
                     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
                         <button class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark" onclick="addAnother()"><i class="fas fa-plus mg-r-5"></i> Add Another</button>
                         <a href="all-student.html" class="btn-fill-lg btn-outline-navy"><i class="fas fa-list mg-r-5"></i> View List</a>
