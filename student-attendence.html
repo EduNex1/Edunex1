@@ -415,7 +415,8 @@
                     const studentId = parseInt($(this).data('student-id'));
                     if (!studentId) return;
                     const status = $(this).find('.att-status-select').val();
-                    records.push({ student_id: studentId, status: status });
+                    const remark = $(this).find('.att-remark').val() || '';
+                    records.push({ student_id: studentId, status: status, remark: remark });
                 });
 
                 if (!records.length) { showToast('No records to save', 'error'); return; }

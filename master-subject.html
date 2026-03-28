@@ -61,9 +61,10 @@
         let cache = [];
         async function load(){
             try { cache = await getSubjects(); if(!Array.isArray(cache)) cache=[]; } catch(e){ cache=[]; showToast('Failed to load','error'); }
+            cache.sort((a,b) => (a.display_order || 0) - (b.display_order || 0) || (a.id || 0) - (b.id || 0));
             const rows = cache.map((s,i)=>{
                 const actBadge = s.is_activity?'<span class="activity-badge">Activity</span>':'';
-                return `<tr><td class="text-center">${i+1}</td><td><strong>${escHtml(s.name)}</strong>${actBadge}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${s.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                return `<tr><td class="text-center">${s.display_order || i+1}</td><td><strong>${escHtml(s.name)}</strong>${actBadge}</td><td style="white-space:nowrap;"><button class="action-btn action-btn-edit" onclick="editItem(${s.id})"><i class="fas fa-pen"></i></button> <button class="action-btn action-btn-delete" onclick="del(${s.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`;
             }).join('');
             $('#listBody').html(rows||'<tr><td colspan="3" class="text-center text-muted" style="padding:30px;">No subjects</td></tr>');
         }
