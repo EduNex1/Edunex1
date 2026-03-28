@@ -777,7 +777,7 @@ async function populateClassDropdown(selectElement, includeAll) {
         return;
     }
     selectElement.disabled = false;
-    classes.forEach(function(c) { html += '<option value="' + c.id + '">Class ' + c.name + '</option>'; });
+    classes.forEach(function(c) { html += '<option value="' + c.id + '">' + c.name + '</option>'; });
     selectElement.innerHTML = html;
 }
 

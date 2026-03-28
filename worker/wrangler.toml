@@ -15,4 +15,4 @@ bucket_name = "vkis-school-uploads"
 # Configure local dev origins explicitly when needed; keep empty for production deployments.
 ALLOWED_ORIGINS = ""
 # Set DEV_MODE to "true" for local development only.
-DEV_MODE = "true"
+DEV_MODE = "false"
