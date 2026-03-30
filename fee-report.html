@@ -127,7 +127,7 @@
         const PAYMENT_MODES = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'DD', 'Online'];
 
         $(document).ready(async function () {
-            if (typeof initPage === 'function') 
+            if (typeof initPage === 'function') await initPage('fee-report');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             await populateClassDropdown(document.getElementById('fClass'), true);
