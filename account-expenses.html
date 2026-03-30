@@ -176,7 +176,7 @@
         let vendorsCache = [];
 
         $(document).ready(async function(){
-            if(typeof initPage==='function') 
+            if(typeof initPage==='function') await initPage('account-expenses');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
             await populateDropdowns();
             await renderList();
