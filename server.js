@@ -1,8 +1,48 @@
 const express = require('express');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const API_BACKEND = 'https://vkis-api.schoolhub100.workers.dev';
+
+// ── API Proxy: forward /api/* to Cloudflare Worker (avoids CORS for local dev) ──
+app.use('/api', (req, res) => {
+    const targetUrl = `${API_BACKEND}/api${req.url}`;
+    const parsedUrl = new URL(targetUrl);
+
+    const proxyHeaders = {};
+    // Forward only safe headers
+    if (req.headers['content-type']) proxyHeaders['content-type'] = req.headers['content-type'];
+    if (req.headers['authorization']) proxyHeaders['authorization'] = req.headers['authorization'];
+    if (req.headers['accept']) proxyHeaders['accept'] = req.headers['accept'];
+    proxyHeaders['host'] = parsedUrl.hostname;
+    proxyHeaders['origin'] = 'https://edunex1.vercel.app';
+
+    const options = {
+        hostname: parsedUrl.hostname,
+        port: 443,
+        path: parsedUrl.pathname + parsedUrl.search,
+        method: req.method,
+        headers: proxyHeaders,
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        const resHeaders = {};
+        // Copy content-type from upstream
+        if (proxyRes.headers['content-type']) resHeaders['content-type'] = proxyRes.headers['content-type'];
+        res.writeHead(proxyRes.statusCode, resHeaders);
+        proxyRes.pipe(res, { end: true });
+    });
+
+    proxyReq.on('error', (err) => {
+        console.error('API Proxy Error:', err.message);
+        res.status(502).json({ error: 'API proxy error: ' + err.message });
+    });
+
+    // Pipe request body (for POST/PUT/DELETE)
+    req.pipe(proxyReq, { end: true });
+});
 
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -233,6 +273,7 @@ app.listen(PORT, () => {
     console.log(`\nSchool Management System - EduNex1`);
     console.log(`------------------------------------`);
     console.log(`Server running at: http://localhost:${PORT}`);
+    console.log(`API Proxy:         /api/* → ${API_BACKEND}`);
     console.log(`Dashboard:         http://localhost:${PORT}/dashboard`);
     console.log(`Students:          http://localhost:${PORT}/student-list`);
     console.log(`Staff:             http://localhost:${PORT}/view-staff`);

@@ -187,8 +187,8 @@
                         <tr>
                             <td>${i + 1}</td>
                             <td style="white-space:nowrap;font-weight:600;">${fmtDate(h.date)}</td>
-                            <td>${h.title}</td>
-                            <td class="col-hide-md" style="color:#666;">${h.description || '—'}</td>
+                            <td>${h.name || h.title || ''}</td>
+                            <td class="col-hide-md" style="color:#666;">${h.type || h.description || '—'}</td>
                             <td class="no-print">
                                 <button class="action-btn edit" onclick="editHoliday(${h.id})" title="Edit"><i class="fas fa-pen"></i></button>
                                 <button class="action-btn delete" onclick="removeHoliday(${h.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
@@ -208,10 +208,10 @@
                 try {
                     const editId = parseInt($('#editId').val());
                     if (editId) {
-                        await updateMasterData('holidays', editId, { date, title, description: desc });
+                        await updateMasterData('holidays', editId, { date, name: title, type: desc });
                         showToast('Holiday updated', 'success');
                     } else {
-                        await createMasterData('holidays', { date, title, description: desc });
+                        await createMasterData('holidays', { date, name: title, type: desc });
                         showToast('Holiday added', 'success');
                     }
                     cache = await getHolidays();
@@ -229,7 +229,7 @@
             window.editHoliday = function (id) {
                 const h = cache.find(x => x.id === id);
                 if (!h) return;
-                $('#hDate').val(h.date); $('#hTitle').val(h.title); $('#hDesc').val(h.description || '');
+                $('#hDate').val(h.date); $('#hTitle').val(h.name || h.title || ''); $('#hDesc').val(h.type || h.description || '');
                 $('#editId').val(id);
                 $('#btnSave').html('<i class="fas fa-save"></i> Update');
                 $('html, body').animate({ scrollTop: 0 }, 300);

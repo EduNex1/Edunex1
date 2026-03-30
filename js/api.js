@@ -24,7 +24,9 @@ function exportCSV(rows, columns, filename) {
     if (typeof showToast === 'function') showToast('Exported ' + rows.length + ' records', 'success');
 }
 
-const API_BASE = 'https://vkis-api.schoolhub100.workers.dev';
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''  // Use local proxy (same-origin) for local dev
+    : 'https://vkis-api.schoolhub100.workers.dev';
 
 const authStorage = {
     getItem: function(key) {
