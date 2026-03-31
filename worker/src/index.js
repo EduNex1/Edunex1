@@ -1135,8 +1135,17 @@ router.post('/api/students', async (req, env) => {
     const serial = await getNextId(env.DB, branchId, 'admission', yr);
     const admNo = `${code}${yr}${String(serial).padStart(3, '0')}`;
 
+    // Auto-generate roll number if not provided
+    let rollNo = d.roll_no || null;
+    if (!rollNo && d.class_id && d.section) {
+        const maxRollRow = await env.DB.prepare(
+            'SELECT MAX(roll_no) as max_roll FROM students WHERE branch_id=? AND class_id=? AND section=? AND session=?'
+        ).bind(branchId, d.class_id, d.section, d.session || '').first();
+        rollNo = (maxRollRow && maxRollRow.max_roll) ? maxRollRow.max_roll + 1 : 1;
+    }
+
     const r = await env.DB.prepare(`INSERT INTO students (branch_id, admission_no, photo_url, name, father_name, mother_name, dob, gender, category, religion, phone, email, address, aadhar_no, class_id, section, session, roll_no, route_id, admission_date, id_type, status, fee_amount, fee_paid, extra_data) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .bind(branchId, admNo, d.photo_url || '', d.name, d.father_name || '', d.mother_name || '', d.dob || '', d.gender || '', d.category || '', d.religion || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.class_id || null, d.section || '', d.session || '', d.roll_no || null, d.route_id || null, d.admission_date || new Date().toISOString().slice(0, 10), d.id_type || 'Aadharshila ID', 'Active', d.fee_amount || 0, 0, d.extra_data || '{}').run();
+        .bind(branchId, admNo, d.photo_url || '', d.name, d.father_name || '', d.mother_name || '', d.dob || '', d.gender || '', d.category || '', d.religion || '', d.phone || '', d.email || '', d.address || '', d.aadhar_no || '', d.class_id || null, d.section || '', d.session || '', rollNo, d.route_id || null, d.admission_date || new Date().toISOString().slice(0, 10), d.id_type || 'Aadharshila ID', 'Active', d.fee_amount || 0, 0, d.extra_data || '{}').run();
 
     const studentId = r.meta.last_row_id;
 

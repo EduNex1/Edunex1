@@ -230,8 +230,15 @@ function mapExamRowsToNames(rows) {
 
 async function getExamNames(filters = {}) {
     const branchId = (filters && filters.branch_id) || (typeof getSelectedBranch === 'function' ? getSelectedBranch() : '');
+    const selectedSession = typeof getSelectedSession === 'function' ? getSelectedSession() : '';
     const master = await fetchExamNamesMaster(branchId);
-    if (master.length) return master;
+    if (master.length) {
+        // Add session to master exam names from selected session
+        return master.map(exam => ({
+            ...exam,
+            session: exam.session || selectedSession || ''
+        }));
+    }
     let exams = [];
     try {
         exams = await getExams({ ...filters, useMasterFallback: false });
