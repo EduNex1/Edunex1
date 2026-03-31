@@ -1,5 +1,6 @@
 <!doctype html>
 <html class="no-js" lang="">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -16,28 +17,149 @@
     <link rel="stylesheet" href="css/custom-overrides.css">
     <link rel="stylesheet" href="css/print-all.css">
     <script src="js/modernizr-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        .filter-card{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:18px 20px;margin-bottom:16px}
-        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
-        .form-control{font-size:12px;height:36px}
-        .list-table{width:100%;border-collapse:collapse}
-        .list-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 12px;text-align:left;white-space:nowrap}
-        .list-table tbody td{font-size:12px;padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-        .list-table tbody tr:hover td{background:#f5f7ff}
-        .table-card{background:#fff;border:2px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px}
-        .table-header{padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-        .table-header h5{margin:0;font-size:14px;font-weight:700;color:#0d1b4a}
-        .empty-state{text-align:center;padding:40px;color:#bbb}.empty-state i{font-size:36px;margin-bottom:10px;display:block}
-        .info-strip{background:#f8f9ff;border:1px solid #e0e0e0;border-radius:10px;padding:12px 20px;margin-bottom:16px;display:none;font-size:12px}
-        .info-strip b{color:#0d1b4a;margin-right:4px}
-        .info-strip span{margin-right:20px;color:#333}
-        .mark-input{width:70px;font-size:12px;height:30px;text-align:center;border:1px solid #ced4da;border-radius:4px;padding:2px 6px}
-        .mark-input:focus{border-color:#1565c0;outline:none;box-shadow:0 0 0 2px rgba(21,101,192,.15)}
-        .grade-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;display:inline-block;background:#e3f2fd;color:#0d1b4a}
-        .prac-tag{font-size:9px;color:#888;font-style:italic}
+        .filter-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            padding: 18px 20px;
+            margin-bottom: 16px
+        }
+
+        .form-label-sm {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+            letter-spacing: .3px
+        }
+
+        .form-control {
+            font-size: 12px;
+            height: 36px
+        }
+
+        .list-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .list-table thead th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #0d1b4a;
+            color: #fff;
+            padding: 8px 12px;
+            text-align: left;
+            white-space: nowrap
+        }
+
+        .list-table tbody td {
+            font-size: 12px;
+            padding: 6px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle
+        }
+
+        .list-table tbody tr:hover td {
+            background: #f5f7ff
+        }
+
+        .table-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 16px
+        }
+
+        .table-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .table-header h5 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0d1b4a
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #bbb
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block
+        }
+
+        .info-strip {
+            background: #f8f9ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 12px
+        }
+
+        .info-strip b {
+            color: #0d1b4a;
+            margin-right: 4px
+        }
+
+        .info-strip span {
+            margin-right: 20px;
+            color: #333
+        }
+
+        .mark-input {
+            width: 70px;
+            font-size: 12px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 2px 6px
+        }
+
+        .mark-input:focus {
+            border-color: #1565c0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(21, 101, 192, .15)
+        }
+
+        .grade-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            background: #e3f2fd;
+            color: #0d1b4a
+        }
+
+        .prac-tag {
+            font-size: 9px;
+            color: #888;
+            font-style: italic
+        }
     </style>
 </head>
+
 <body>
     <div id="preloader"></div>
     <div id="wrapper" class="wrapper bg-ash">
@@ -47,39 +169,59 @@
             <div class="dashboard-content-one">
                 <div class="breadcrumbs-area">
                     <h3>Result</h3>
-                    <ul><li><a href="/dashboard">Home</a></li><li>Result Update — Subject Wise</li></ul>
+                    <ul>
+                        <li><a href="/dashboard">Home</a></li>
+                        <li>Result Update — Subject Wise</li>
+                    </ul>
                 </div>
                 <div class="card height-auto">
                     <div class="card-body">
-                        <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-book-open"></i> Result Update — Subject Wise</h3></div></div>
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3><i class="fas fa-book-open"></i> Result Update — Subject Wise</h3>
+                            </div>
+                        </div>
 
-                        
+
                         <div class="filter-card">
                             <div class="row" style="gap:0;">
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Select Class *</label>
-                                    <select class="form-control" id="fClass" onchange="onClassChange()"><option value="">— Class —</option></select>
+                                    <select class="form-control" id="fClass" onchange="onClassChange()">
+                                        <option value="">— Class —</option>
+                                    </select>
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Select Section *</label>
-                                    <select class="form-control" id="fSection"><option value="">— Section —</option></select>
+                                    <select class="form-control" id="fSection">
+                                        <option value="">— Section —</option>
+                                    </select>
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Select Exam *</label>
-                                    <select class="form-control" id="fExam"><option value="">— Exam —</option></select>
+                                    <select class="form-control" id="fExam">
+                                        <option value="">— Exam —</option>
+                                    </select>
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-6 form-group">
                                     <label class="form-label-sm">Select Subject *</label>
-                                    <select class="form-control" id="fSubject"><option value="">— Subject —</option></select>
+                                    <select class="form-control" id="fSubject">
+                                        <option value="">— Subject —</option>
+                                    </select>
                                 </div>
-                                <div class="col-lg-4 col-md-12 col-12 form-group d-flex align-items-end" style="gap:8px;">
-                                    <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;" onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
-                                    <button class="btn btn-sm" style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;" onclick="resetAll()"><i class="fas fa-redo"></i> Reset</button>
+                                <div class="col-lg-4 col-md-12 col-12 form-group d-flex align-items-end"
+                                    style="gap:8px;">
+                                    <button class="btn btn-sm"
+                                        style="background:#0d1b4a;color:#fff;font-size:12px;padding:7px 20px;"
+                                        onclick="searchResult()"><i class="fas fa-search"></i> Search</button>
+                                    <button class="btn btn-sm"
+                                        style="background:#f0f0f0;color:#333;font-size:12px;padding:7px 20px;"
+                                        onclick="resetAll()"><i class="fas fa-redo"></i> Reset</button>
                                 </div>
                             </div>
                         </div>
 
-                        
+
                         <div class="info-strip" id="infoStrip">
                             <b>Class:</b><span id="isClass">—</span>
                             <b>Section:</b><span id="isSection">—</span>
@@ -87,7 +229,7 @@
                             <b>Subject:</b><span id="isSubject">—</span>
                         </div>
 
-                        
+
                         <div class="table-card" id="marksCard" style="display:none;">
                             <div class="table-header">
                                 <h5><i class="fas fa-clipboard-list"></i> Subject-wise Marks Entry</h5>
@@ -110,7 +252,9 @@
                                 </table>
                             </div>
                             <div style="padding:14px 20px;text-align:right;">
-                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 28px;" onclick="updateAll()"><i class="fas fa-save"></i> Update</button>
+                                <button class="btn btn-sm"
+                                    style="background:#0d1b4a;color:#fff;font-size:12px;padding:8px 28px;"
+                                    onclick="updateAll()"><i class="fas fa-save"></i> Update</button>
                             </div>
                         </div>
 
@@ -135,7 +279,7 @@
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
 
             let gradingRules = [];
-            try { gradingRules = await getGradingSystem(); } catch(e) {}
+            try { gradingRules = await getGradingSystem(); } catch (e) { }
 
             function getGrade(pct) {
                 if (gradingRules && gradingRules.length) {
@@ -151,7 +295,11 @@
             }
 
             let classCache = [], examCache = [], subjectCache = [], studentCache = [];
-            try { [classCache, examCache, subjectCache] = await Promise.all([getClasses(), getExams(), getSubjects()]); } catch(e) {}
+            try { 
+                [classCache, subjectCache] = await Promise.all([getClasses(), getSubjects()]); 
+                // Load exams with master fallback to get all exam names
+                examCache = await getExamNames();
+            } catch (e) { }
 
             classCache.forEach(c => document.getElementById('fClass').innerHTML += `<option value="${c.id}">${c.name}</option>`);
             examCache.forEach(e => document.getElementById('fExam').innerHTML += `<option value="${e.id}">${e.name}</option>`);
@@ -162,7 +310,7 @@
                 const secSel = document.getElementById('fSection');
                 secSel.innerHTML = '<option value="">— Section —</option>';
                 if (!classId) return;
-                try { studentCache = await getStudents({ class_id: classId }); } catch(e) { studentCache = []; }
+                try { studentCache = await getStudents({ class_id: classId }); } catch (e) { studentCache = []; }
                 await populateSectionSelect(secSel, { classId, students: studentCache, placeholder: 'Select Section' });
             };
 
@@ -193,7 +341,12 @@
                 document.getElementById('infoStrip').style.display = 'block';
 
                 let existingResults = [];
-                try { existingResults = await getExamResults({ exam_id: examId }); } catch(e) {}
+                try { 
+                    existingResults = await getExamResults({ exam_id: examId }); 
+                    console.log('Loaded existing results for exam:', examId, 'results:', existingResults);
+                } catch (e) { 
+                    console.error('Error loading results:', e);
+                }
 
                 const tbody = document.getElementById('marksBody');
                 tbody.innerHTML = '';
@@ -255,9 +408,16 @@
                     }
                 });
                 try {
-                    await saveExamResults(currentExamId, results);
+                    console.log('Saving marks with exam_id:', currentExamId, 'results:', results);
+                    const response = await saveExamResults(currentExamId, results);
+                    console.log('Save response:', response);
                     alert(`Marks updated for ${results.length} student(s)`);
-                } catch(e) { alert('Error saving marks'); }
+                    // Reload to verify data was saved
+                    searchResult();
+                } catch (e) { 
+                    console.error('Save error:', e);
+                    alert('Error saving marks: ' + e.message); 
+                }
             };
 
             window.resetAll = function () {
@@ -271,4 +431,5 @@
         })();
     </script>
 </body>
+
 </html>

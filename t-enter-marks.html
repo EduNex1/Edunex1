@@ -98,11 +98,13 @@
         const user = getUser();
         if (!user || !user.linked_id) return;
         try {
-            const [sections, perms, exams] = await Promise.all([
+            const [sections, perms] = await Promise.all([
                 getSections(),
                 getTeacherPermissions(user.linked_id),
-                getExams()
+                loadGradingSystem()
             ]);
+            // Load exams with master fallback to get all exam names
+            const exams = await getExamNames();
             teacherAssignments = (perms || []).map(function (perm) {
                 const section = (sections || []).find(function (row) { return row.id === perm.section_id; });
                 return {
@@ -166,8 +168,20 @@
         }
     }
 
+    let gradingRules = [];
+    async function loadGradingSystem() {
+        try { gradingRules = await getGradingSystem(); } catch(e) { console.error(e); }
+    }
+
     function calculateGrade(total, maxMarks) {
         const percentage = maxMarks > 0 ? (total / maxMarks) * 100 : 0;
+        if (gradingRules && gradingRules.length) {
+            const sorted = gradingRules.slice().sort((a, b) => (b.min_percentage || 0) - (a.min_percentage || 0));
+            for (const rule of sorted) {
+                if (percentage >= (rule.min_percentage || 0)) return rule.grade;
+            }
+            return sorted.length ? sorted[sorted.length - 1].grade : 'E';
+        }
         if (percentage >= 90) return 'A+';
         if (percentage >= 75) return 'A';
         if (percentage >= 60) return 'B';

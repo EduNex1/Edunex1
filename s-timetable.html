@@ -59,15 +59,25 @@
             const data = await getTimetable(filters) || [];
             if (!data.length) { $('#ttArea').html('<p style="text-align:center;color:#888;">No timetable available.</p>'); return; }
             const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            const periods = [...new Set(data.map(d => d.period))].sort((a,b) => a - b);
+            const periods = [];
+            const periodNames = {};
+            data.forEach(d => {
+                const pid = String(d.period || '');
+                if (!periods.includes(pid)) {
+                    periods.push(pid);
+                    periodNames[pid] = d.period_name || 'Period ' + pid;
+                }
+            });
+            periods.sort((a,b) => Number(a) - Number(b));
+
             const periodMap = {};
             data.forEach(d => {
-                const key = d.period + '_' + d.day;
-                periodMap[key] = d.subject_name || d.subject || '-';
+                const key = String(d.period) + '_' + d.day;
+                periodMap[key] = d.subject_name || '-';
             });
             let html = '<div class="table-responsive"><table class="recent-table"><thead><tr><th>Period</th>' + days.map(d => '<th>' + d + '</th>').join('') + '</tr></thead><tbody>';
             periods.forEach(p => {
-                html += `<tr><td><strong>Period ${p}</strong></td>`;
+                html += `<tr><td><strong>${periodNames[p]}</strong></td>`;
                 days.forEach(d => {
                     const sub = periodMap[p + '_' + d] || '-';
                     html += `<td>${escHtml(sub)}</td>`;

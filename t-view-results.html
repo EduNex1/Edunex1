@@ -93,11 +93,12 @@
         const user = getUser();
         if (!user || !user.linked_id) return;
         try {
-            const [sections, perms, exams] = await Promise.all([
+            const [sections, perms] = await Promise.all([
                 getSections(),
-                getTeacherPermissions(user.linked_id),
-                getExams()
+                getTeacherPermissions(user.linked_id)
             ]);
+            // Load exams with master fallback to get all exam names
+            const exams = await getExamNames();
             resultAssignments = (perms || []).map(function (perm) {
                 const section = (sections || []).find(function (row) { return row.id === perm.section_id; });
                 return {

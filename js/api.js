@@ -100,15 +100,18 @@ async function api(endpoint, options = {}) {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const method = (fetchOptions.method || 'GET').toUpperCase();
+    const sessionEndpoints = ['/api/students', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise', '/api/result-details'];
+    
+    // Auto-inject session for GET requests
     if (!skipSessionInjection && method === 'GET' && typeof getSelectedSession === 'function') {
         const sess = getSelectedSession();
         if (sess && !endpoint.includes('session=')) {
-            const sessionEndpoints = ['/api/students', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise'];
             if (sessionEndpoints.some(ep => endpoint.startsWith(ep) && (endpoint === ep || endpoint.charAt(ep.length) === '?'))) {
                 endpoint += (endpoint.includes('?') ? '&' : '?') + 'session=' + encodeURIComponent(sess);
             }
         }
     }
+    
 
     // Auto-inject branch_id for selected branch
     if (typeof getSelectedBranch === 'function') {

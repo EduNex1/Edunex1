@@ -2231,7 +2231,9 @@ router.get('/api/exam-results', async (req, env) => {
         q += ' AND er.student_id=?'; b.push(studentId);
     }
     const session = url.searchParams.get('session');
-    if (session && session !== 'All') {
+    // Only apply session filter when exam_id is NOT provided (browsing mode)
+    // When exam_id is provided, fetch results for that specific exam regardless of session
+    if (session && session !== 'All' && !examId) {
         q = q.replace('FROM exam_results er', 'FROM exam_results er JOIN exams ex ON er.exam_id = ex.id');
         q += ' AND ex.session=?'; b.push(session);
     }
@@ -2632,7 +2634,7 @@ router.get('/api/timetable', async (req, env) => {
     const staffId = url.searchParams.get('staff_id');
     const day = url.searchParams.get('day');
     const subjectId = url.searchParams.get('subject_id');
-    let q = 'SELECT t.*, sub.name as subject_name, s.name as teacher_name, c.name as class_name FROM timetable t LEFT JOIN subjects sub ON t.subject_id = sub.id LEFT JOIN staff s ON t.staff_id = s.id LEFT JOIN classes c ON t.class_id = c.id WHERE 1=1';
+    let q = 'SELECT t.*, sub.name as subject_name, s.name as teacher_name, c.name as class_name, p.name as period_name FROM timetable t LEFT JOIN subjects sub ON t.subject_id = sub.id LEFT JOIN staff s ON t.staff_id = s.id LEFT JOIN classes c ON t.class_id = c.id LEFT JOIN periods p ON t.period = p.id WHERE 1=1';
     const b = [];
     const effBranch = await getEffectiveBranchId(req, env, user);
     if (effBranch) { q += ' AND t.branch_id=?'; b.push(effBranch); }

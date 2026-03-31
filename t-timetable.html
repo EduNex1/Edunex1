@@ -58,7 +58,17 @@
             const tt = await getTimetable({ staff_id: user.linked_id }) || [];
             if (!tt.length) { $('#ttArea').html('<p style="text-align:center;color:#888;">No timetable available.</p>'); return; }
             const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            const periods = [...new Set(tt.map(t => String(t.period || '')))].sort((a, b) => Number(a) - Number(b));
+            const periods = [];
+            const periodNames = {};
+            tt.forEach(t => {
+                const pid = String(t.period || '');
+                if (!periods.includes(pid)) {
+                    periods.push(pid);
+                    periodNames[pid] = t.period_name || 'Period ' + pid;
+                }
+            });
+            periods.sort((a, b) => Number(a) - Number(b));
+
             const ttBgs = ['#fff3e0','#e3f2fd','#e8f5e9','#f3e5f5','#e0f2f1','#fce4ec','#e8eaf6','#fff8e1','#fbe9e7'];
             const subMap = {};
             tt.forEach(t => {
@@ -68,7 +78,7 @@
             days.forEach(d => html += `<th>${d}</th>`);
             html += '</tr></thead><tbody>';
             periods.forEach((period, index) => {
-                html += `<tr><td><strong>${period}</strong></td><td>${(tt.find(t => String(t.period || '') === period) || {}).time || '-'}</td>`;
+                html += `<tr><td><strong>${periodNames[period]}</strong></td><td>${(tt.find(t => String(t.period || '') === period) || {}).time || '-'}</td>`;
                 days.forEach(day => {
                     const cell = subMap[period + '_' + day];
                     const bg = cell && cell.subject ? ttBgs[index % ttBgs.length] : '';

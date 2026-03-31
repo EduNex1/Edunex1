@@ -290,7 +290,7 @@
                     const sub = subjectCache.find(s => s.id === e.subject_id);
                     tbody.append(`<tr>
                         <td><span class="day-badge">${(e.day||'').substring(0, 3)}</span></td>
-                        <td><strong>${(periodCache.find(px => px.id === e.period) || {}).name || ('P' + e.period)}</strong> <span style="color:#888;font-size:11px;">${e.time || ''}</span></td>
+                        <td><strong>${e.period_name || (periodCache.find(px => px.id === e.period) || {}).name || ('P' + e.period)}</strong> <span style="color:#888;font-size:11px;">${e.time || ''}</span></td>
                         <td>${cls ? cls.name : '-'} / ${e.section || '-'}</td>
                         <td style="font-weight:600;">${sub ? sub.name : (e.subject_name || '-')}</td>
                         <td class="col-hide-md">${e.teacher_name || '-'}</td>

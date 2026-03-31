@@ -235,7 +235,10 @@
             function isSeniorClass(classId) { return SENIOR_CLASS_IDS.includes(classId); }
 
             let classCache = [], examCache = [], subjectCache = [], coAreas = [], branches = [], studentCache = [];
-            try { [classCache, examCache, subjectCache, coAreas, branches] = await Promise.all([getClasses(), getExams(), getSubjects(), getCoScholasticAreas(), getBranches()]); } catch(e) {}
+            try { 
+                [classCache, subjectCache, coAreas, branches] = await Promise.all([getClasses(), getSubjects(), getCoScholasticAreas(), getBranches()]); 
+                examCache = await getExamNames();
+            } catch(e) {}
             const _selBr = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
             const school = (_selBr ? branches.find(b => String(b.id) === String(_selBr)) : null) || branches[0] || {};
 
