@@ -48,7 +48,7 @@ function renderSidebar(activeMenu) {
     const examMenus = [];
     const feeMasterMenus = ['fee-particulars', 'fee-amount-slab'];
     const masterMenus = ['master-academic-session', 'master-designation', 'master-class', 'master-section', 'master-subject', 'master-exam-name', 'master-exam-group', 'master-period', 'master-homework-type', 'master-house', 'master-stream'];
-    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-options', 'settings-exam'];
+    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-options', 'settings-exam', 'admin-permission-requests'];
 
     const isStudentActive = studentMenus.includes(activeMenu);
     const isAttendanceActive = attendanceMenus.includes(activeMenu);
@@ -94,6 +94,11 @@ function renderSidebar(activeMenu) {
                 <li class="nav-item">
                     <a href="/dashboard" class="nav-link${mc('dashboard')}"><i class="flaticon-dashboard"></i><span>Dashboard</span></a>
                 </li>
+
+                <!-- Permission Requests (Teachers ki requests) -->
+                ${hasAccess('permission_requests') ? `<li class="nav-item">
+                    <a href="/admin-permission-requests" class="nav-link${mc('admin-permission-requests')}"><i class="fas fa-clipboard-check"></i><span>Permission Requests</span></a>
+                </li>` : ''}
 
                 <!-- No Permissions Warning -->
                 ${(!isSuperAdmin && !_hasAnyPerm) ? `<li class="nav-item" style="padding:10px 14px 6px;">
@@ -1023,6 +1028,8 @@ function renderTeacherSidebar(activeMenu) {
         '</ul></li>' +
 
         '<li class="nav-item"><a href="/t-my-attendance" class="nav-link' + mc('t-my-attendance') + '"><i class="fas fa-calendar-check"></i><span>My Attendance</span></a></li>' +
+
+        '<li class="nav-item"><a href="/t-permission-request" class="nav-link' + mc('t-permission-request') + '"><i class="fas fa-hand-paper"></i><span>Permission Request</span></a></li>' +
 
         '<li class="nav-item"><a href="/t-my-profile" class="nav-link' + mc('t-my-profile') + '"><i class="flaticon-user"></i><span>My Profile</span></a></li>' +
 

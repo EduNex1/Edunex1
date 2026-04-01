@@ -115,8 +115,31 @@
                             <a href="/t-timetable" class="quick-item"><i class="fas fa-calendar-alt"></i><span>Timetable</span></a>
                             <a href="/t-datesheet" class="quick-item"><i class="fas fa-file-alt"></i><span>Datesheet</span></a>
                             <a href="/t-notice" class="quick-item"><i class="fas fa-bullhorn"></i><span>Notices</span></a>
+                            <a href="/t-permission-request" class="quick-item"><i class="fas fa-hand-paper"></i><span>Permission</span></a>
                             <a href="/t-my-profile" class="quick-item"><i class="fas fa-user"></i><span>My Profile</span></a>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Permission Requests Status -->
+                <div class="chart-card" style="margin-top:16px;">
+                    <div class="chart-card-header"><i class="fas fa-hand-paper"></i> My Permission Requests</div>
+                    <div class="chart-card-body" style="padding:12px 16px;">
+                        <div id="permRequestsWidget" style="display:flex;gap:16px;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:100px;text-align:center;padding:12px;background:#fff8e1;border-radius:8px;">
+                                <div style="font-size:24px;font-weight:700;color:#f9a825;" id="tPendingRequests">0</div>
+                                <div style="font-size:10px;color:#666;text-transform:uppercase;">Pending</div>
+                            </div>
+                            <div style="flex:1;min-width:100px;text-align:center;padding:12px;background:#e8f5e9;border-radius:8px;">
+                                <div style="font-size:24px;font-weight:700;color:#2e7d32;" id="tApprovedRequests">0</div>
+                                <div style="font-size:10px;color:#666;text-transform:uppercase;">Approved</div>
+                            </div>
+                            <div style="flex:1;min-width:100px;text-align:center;padding:12px;background:#ffebee;border-radius:8px;">
+                                <div style="font-size:24px;font-weight:700;color:#c62828;" id="tRejectedRequests">0</div>
+                                <div style="font-size:10px;color:#666;text-transform:uppercase;">Rejected</div>
+                            </div>
+                        </div>
+                        <a href="/t-permission-request" style="display:block;text-align:center;margin-top:12px;font-size:11px;color:#1565c0;">View All Requests →</a>
                     </div>
                 </div>
 
@@ -201,10 +224,30 @@
 
                 var notices = await getNotices() || [];
                 renderNotices(notices.slice(0, 4));
+                
+                // Load permission requests widget
+                loadPermissionRequestsWidget();
             } catch (error) {
                 console.error(error);
                 document.getElementById('scheduleBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c62828;padding:16px;">Failed to load schedule.</td></tr>';
                 document.getElementById('noticeList').innerHTML = '<div style="text-align:center;color:#c62828;padding:16px;font-size:12px;">Failed to load notices.</div>';
+            }
+        }
+
+        async function loadPermissionRequestsWidget() {
+            try {
+                var requests = await getTeacherPermissionRequests({}) || [];
+                var pending = 0, approved = 0, rejected = 0;
+                requests.forEach(function(r) {
+                    if (r.status === 'Pending') pending++;
+                    else if (r.status === 'Approved') approved++;
+                    else if (r.status === 'Rejected') rejected++;
+                });
+                document.getElementById('tPendingRequests').textContent = pending;
+                document.getElementById('tApprovedRequests').textContent = approved;
+                document.getElementById('tRejectedRequests').textContent = rejected;
+            } catch(e) {
+                console.error('Failed to load permission requests:', e);
             }
         }
 

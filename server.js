@@ -198,6 +198,9 @@ const routes = {
     '/settings-options': 'settings-options.html',
     '/settings-exam': 'settings-exam.html',
 
+    '/admin-permission-requests': 'admin-permission-requests.html',
+    '/t-permission-request': 't-permission-request.html',
+
     '/t-my-students': 't-my-students.html',
     '/t-mark-attendance': 't-mark-attendance.html',
     '/t-attendance-report': 't-attendance-report.html',

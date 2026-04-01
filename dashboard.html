@@ -607,6 +607,23 @@
                         </div>
                     </div>
 
+                    <!-- Teacher Permission Requests Widget -->
+                    <div class="row" id="permissionRequestsRow" style="display:none;">
+                        <div class="col-12">
+                            <div class="chart-card">
+                                <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span><i class="fas fa-hand-paper"></i> Pending Teacher Permission Requests</span>
+                                    <a href="/admin-permission-requests" style="font-size:11px;color:#ffd54f;">View All →</a>
+                                </div>
+                                <div class="chart-card-body" style="padding:12px 16px;">
+                                    <div id="permissionRequestsList">
+                                        <div style="text-align:center;color:#888;padding:16px;font-size:12px;">Loading...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     
                     <div class="chart-card">
                         <div class="chart-card-header"><i class="fas fa-th-large"></i> Quick Access</div>
@@ -854,6 +871,68 @@
                         '</div>';
                 });
                 document.getElementById('activeStaffList').innerHTML = staffHtml || '<p class="text-muted text-center py-3" style="font-size:11px;">No active staff found</p>';
+                
+                // Load pending permission requests
+                loadPendingPermissionRequests();
+            }
+
+            async function loadPendingPermissionRequests() {
+                try {
+                    // Check if user has access to permission_requests module
+                    var user = typeof getUser === 'function' ? getUser() : null;
+                    var hasAccess = false;
+                    
+                    if (user && user.role === 'super_admin') {
+                        hasAccess = true;
+                    } else {
+                        var perms = typeof getUserPerms === 'function' ? getUserPerms() : null;
+                        if (perms && Array.isArray(perms)) {
+                            var perm = perms.find(function(p) { return p.module === 'permission_requests'; });
+                            hasAccess = !!(perm && perm.access);
+                        }
+                    }
+                    
+                    if (!hasAccess) {
+                        document.getElementById('permissionRequestsRow').style.display = 'none';
+                        return;
+                    }
+                    
+                    var requests = await getTeacherPermissionRequests({ status: 'Pending' }) || [];
+                    
+                    if (!requests.length) {
+                        document.getElementById('permissionRequestsRow').style.display = 'none';
+                        return;
+                    }
+                    
+                    document.getElementById('permissionRequestsRow').style.display = 'block';
+                    
+                    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">';
+                    requests.slice(0, 6).forEach(function(r) {
+                        var typeColors = { Leave: '#1565c0', Resource: '#7b1fa2', Equipment: '#ef6c00', Other: '#616161' };
+                        var typeColor = typeColors[r.request_type] || '#666';
+                        var priorityBadge = r.priority === 'Urgent' ? '<span style="background:#ffebee;color:#c62828;font-size:9px;padding:2px 6px;border-radius:3px;margin-left:6px;">Urgent</span>' : '';
+                        var createdDate = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '-';
+                        
+                        html += '<div style="background:#fff;border:1px solid #e8eaf6;border-radius:8px;padding:12px;">' +
+                            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
+                                '<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:' + typeColor + ';">' + escapeHtml(r.request_type) + '</span>' +
+                                '<span style="font-size:10px;color:#888;">' + createdDate + '</span>' +
+                            '</div>' +
+                            '<div style="font-weight:700;font-size:12px;color:#0d1b4a;margin-bottom:4px;">' + escapeHtml(r.staff_name || '-') + priorityBadge + '</div>' +
+                            '<div style="font-size:11px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(r.subject) + '">' + escapeHtml(r.subject) + '</div>' +
+                        '</div>';
+                    });
+                    html += '</div>';
+                    
+                    if (requests.length > 6) {
+                        html += '<div style="text-align:center;margin-top:12px;"><a href="/admin-permission-requests" style="font-size:11px;color:#1565c0;">+ ' + (requests.length - 6) + ' more pending requests</a></div>';
+                    }
+                    
+                    document.getElementById('permissionRequestsList').innerHTML = html;
+                } catch(e) {
+                    console.error('Failed to load permission requests:', e);
+                    document.getElementById('permissionRequestsRow').style.display = 'none';
+                }
             }
 
             function escapeHtml(str) {

@@ -4304,6 +4304,198 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
     return json({ ok: true });
 });
 
+/* ─── Teacher Permission Requests ─── */
+router.get('/api/teacher-permission-requests', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    
+    const url = new URL(req.url);
+    let q = `SELECT tpr.*, s.name as staff_name, s.employee_id, s.designation, s.phone as staff_phone,
+        u.login_id as reviewed_by_name
+        FROM teacher_permission_requests tpr
+        JOIN staff s ON tpr.staff_id = s.id
+        LEFT JOIN users u ON tpr.reviewed_by = u.id
+        WHERE 1=1`;
+    const b = [];
+    
+    // Branch filtering
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND tpr.branch_id=?'; b.push(effBranch); }
+    
+    // Teacher can only see their own requests
+    if (user.role === 'teacher') {
+        q += ' AND tpr.staff_id=?';
+        b.push(user.linked_id);
+    }
+    
+    // Filters
+    const status = url.searchParams.get('status');
+    const requestType = url.searchParams.get('request_type');
+    const staffId = url.searchParams.get('staff_id');
+    const fromDate = url.searchParams.get('from_date');
+    const toDate = url.searchParams.get('to_date');
+    const priority = url.searchParams.get('priority');
+    
+    if (status && status !== 'All') { q += ' AND tpr.status=?'; b.push(status); }
+    if (requestType && requestType !== 'All') { q += ' AND tpr.request_type=?'; b.push(requestType); }
+    if (staffId) { q += ' AND tpr.staff_id=?'; b.push(staffId); }
+    if (fromDate) { q += ' AND DATE(tpr.created_at)>=?'; b.push(fromDate); }
+    if (toDate) { q += ' AND DATE(tpr.created_at)<=?'; b.push(toDate); }
+    if (priority && priority !== 'All') { q += ' AND tpr.priority=?'; b.push(priority); }
+    
+    q += ' ORDER BY tpr.created_at DESC, tpr.id DESC';
+    
+    const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
+    return json(results);
+});
+
+router.get('/api/teacher-permission-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    
+    const row = await env.DB.prepare(`SELECT tpr.*, s.name as staff_name, s.employee_id, s.designation, s.phone as staff_phone,
+        u.login_id as reviewed_by_name
+        FROM teacher_permission_requests tpr
+        JOIN staff s ON tpr.staff_id = s.id
+        LEFT JOIN users u ON tpr.reviewed_by = u.id
+        WHERE tpr.id=?`).bind(params.id).first();
+    
+    if (!row) return json({ error: 'Not found' }, 404);
+    
+    // Branch access check
+    if (!(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
+    
+    // Teacher can only view their own requests
+    if (user.role === 'teacher' && Number(row.staff_id) !== Number(user.linked_id)) {
+        return json({ error: 'Forbidden' }, 403);
+    }
+    
+    return json(row);
+});
+
+router.post('/api/teacher-permission-requests', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || user.role !== 'teacher') return json({ error: 'Only teachers can submit permission requests' }, 403);
+    
+    const d = await req.json();
+    
+    // Validation
+    if (!d.request_type || !d.subject) {
+        return json({ error: 'Request type and subject are required' }, 400);
+    }
+    
+    const validTypes = ['Leave', 'Resource', 'Equipment', 'Other'];
+    if (!validTypes.includes(d.request_type)) {
+        return json({ error: 'Invalid request type' }, 400);
+    }
+    
+    const validPriorities = ['Normal', 'Urgent'];
+    const priority = validPriorities.includes(d.priority) ? d.priority : 'Normal';
+    
+    // Get teacher's branch from staff record
+    const staff = await env.DB.prepare('SELECT id, branch_id FROM staff WHERE id=?').bind(user.linked_id).first();
+    if (!staff) return json({ error: 'Teacher profile not found' }, 404);
+    
+    // Sanitize inputs
+    const subject = String(d.subject || '').trim().slice(0, 200);
+    const description = String(d.description || '').trim().slice(0, 2000);
+    
+    const result = await env.DB.prepare(`INSERT INTO teacher_permission_requests 
+        (branch_id, staff_id, request_type, subject, description, priority, status) 
+        VALUES (?,?,?,?,?,?,?)`)
+        .bind(staff.branch_id, user.linked_id, d.request_type, subject, description, priority, 'Pending')
+        .run();
+    
+    return json({ id: result.meta.last_row_id, success: true }, 201);
+});
+
+router.put('/api/teacher-permission-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    
+    const d = await req.json();
+    
+    const existing = await env.DB.prepare('SELECT * FROM teacher_permission_requests WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    
+    // Branch access check
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+    
+    // Teacher can only edit their own PENDING requests
+    if (user.role === 'teacher') {
+        if (Number(existing.staff_id) !== Number(user.linked_id)) {
+            return json({ error: 'Forbidden' }, 403);
+        }
+        if (existing.status !== 'Pending') {
+            return json({ error: 'Cannot edit request that has been reviewed' }, 400);
+        }
+        
+        // Teacher can only update subject, description, priority
+        const updates = {};
+        if (d.subject !== undefined) updates.subject = String(d.subject).trim().slice(0, 200);
+        if (d.description !== undefined) updates.description = String(d.description).trim().slice(0, 2000);
+        if (d.priority !== undefined && ['Normal', 'Urgent'].includes(d.priority)) updates.priority = d.priority;
+        if (d.request_type !== undefined && ['Leave', 'Resource', 'Equipment', 'Other'].includes(d.request_type)) updates.request_type = d.request_type;
+        
+        if (Object.keys(updates).length === 0) return json({ success: true });
+        
+        const sets = Object.keys(updates).map(k => `${k}=?`).join(', ');
+        const vals = Object.values(updates);
+        
+        await env.DB.prepare(`UPDATE teacher_permission_requests SET ${sets}, updated_at=datetime('now') WHERE id=?`)
+            .bind(...vals, params.id).run();
+        
+        return json({ success: true });
+    }
+    
+    // Admin can approve/reject
+    if (!isAdminRole(user)) return json({ error: 'Forbidden' }, 403);
+    
+    const status = String(d.status || '').trim();
+    if (!['Approved', 'Rejected'].includes(status)) {
+        return json({ error: 'Valid status (Approved/Rejected) is required' }, 400);
+    }
+    
+    if (existing.status !== 'Pending') {
+        return json({ error: 'This request has already been reviewed' }, 409);
+    }
+    
+    const adminRemarks = String(d.admin_remarks || '').trim().slice(0, 1000);
+    
+    await env.DB.prepare(`UPDATE teacher_permission_requests 
+        SET status=?, admin_remarks=?, reviewed_by=?, reviewed_at=datetime('now'), updated_at=datetime('now') 
+        WHERE id=?`)
+        .bind(status, adminRemarks, user.id, params.id).run();
+    
+    return json({ success: true });
+});
+
+router.delete('/api/teacher-permission-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    
+    const existing = await env.DB.prepare('SELECT * FROM teacher_permission_requests WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    
+    // Branch access check
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+    
+    // Teacher can only delete their own PENDING requests
+    if (user.role === 'teacher') {
+        if (Number(existing.staff_id) !== Number(user.linked_id)) {
+            return json({ error: 'Forbidden' }, 403);
+        }
+        if (existing.status !== 'Pending') {
+            return json({ error: 'Cannot delete request that has been reviewed' }, 400);
+        }
+    } else if (!isAdminRole(user)) {
+        return json({ error: 'Forbidden' }, 403);
+    }
+    
+    await env.DB.prepare('DELETE FROM teacher_permission_requests WHERE id=?').bind(params.id).run();
+    return json({ success: true });
+});
+
 export default {
     async fetch(request, env) {
         const origin = request.headers.get('Origin') || '';

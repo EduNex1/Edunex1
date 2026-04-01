@@ -696,3 +696,21 @@ async function getExamGroups() { return getMasterData('exam_groups'); }
 async function getFaceDescriptors(filters = {}) { const p = new URLSearchParams(filters).toString(); return api(`/api/face-descriptors${p ? '?' + p : ''}`); }
 async function saveFaceDescriptor(data) { return api('/api/face-descriptors', { method: 'POST', body: JSON.stringify(data) }); }
 async function deleteFaceDescriptor(type, personId) { return api(`/api/face-descriptors/${type}/${personId}`, { method: 'DELETE' }); }
+
+/* ─── Teacher Permission Requests ─── */
+async function getTeacherPermissionRequests(filters = {}) {
+    const params = new URLSearchParams(filters).toString();
+    return api(`/api/teacher-permission-requests${params ? '?' + params : ''}`);
+}
+async function getTeacherPermissionRequest(id) {
+    return api(`/api/teacher-permission-requests/${id}`);
+}
+async function createTeacherPermissionRequest(data) {
+    return api('/api/teacher-permission-requests', { method: 'POST', body: JSON.stringify(data) });
+}
+async function updateTeacherPermissionRequest(id, data) {
+    return api(`/api/teacher-permission-requests/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+async function deleteTeacherPermissionRequest(id) {
+    return api(`/api/teacher-permission-requests/${id}`, { method: 'DELETE' });
+}

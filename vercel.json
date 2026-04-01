@@ -146,6 +146,9 @@
     { "source": "/t-holidays", "destination": "/t-holidays.html" },
     { "source": "/t-my-attendance", "destination": "/t-my-attendance.html" },
     { "source": "/t-my-profile", "destination": "/t-my-profile.html" },
+    { "source": "/t-permission-request", "destination": "/t-permission-request.html" },
+
+    { "source": "/admin-permission-requests", "destination": "/admin-permission-requests.html" },
 
     { "source": "/p-my-children", "destination": "/p-my-children.html" },
     { "source": "/p-attendance", "destination": "/p-attendance.html" },
