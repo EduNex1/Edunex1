@@ -160,6 +160,10 @@
             });
 
             async function renderList() {
+                const btn = $('#btnSearch');
+                const originalText = btn.html();
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+                
                 try {
                     const filters = {};
                     const fMonth = $('#fMonth').val();
@@ -173,6 +177,13 @@
                     const fDateTo = $('#fDateTo').val();
                     const fClass = $('#fClass').val();
                     const fSection = $('#fSection').val();
+                    
+                    // Date range validation
+                    if (fDateFrom && fDateTo && fDateFrom > fDateTo) {
+                        showToast('From date cannot be after To date', 'error');
+                        btn.prop('disabled', false).html(originalText);
+                        return;
+                    }
 
                     if (fReceipt) deps = deps.filter(d => (d.receipt_no||'').toLowerCase().includes(fReceipt));
                     if (fMode) deps = deps.filter(d => d.payment_mode === fMode);
@@ -182,6 +193,8 @@
                     if (fSection) deps = deps.filter(d => d.section === fSection);
 
                     deps.sort((a, b) => (b.date||'').localeCompare(a.date||''));
+                    
+                    btn.prop('disabled', false).html(originalText);
 
                     _displayedData = deps.map(function(d) { var cls = classesCache.find(function(c){ return c.id === d.class_id; }); return Object.assign({}, d, { class_name: cls ? cls.name : '' }); });
                     if (!deps.length) {
@@ -225,7 +238,10 @@
                             <div class="t-item"><label>Total Received</label><div class="t-val">₹${totalReceived.toLocaleString('en-IN')}</div></div>
                         </div>`;
                     $('#receiptList').html(html);
-                } catch(e) { $('#receiptList').html('<div class="empty-state">Error loading receipts</div>'); }
+                } catch(e) { 
+                    $('#receiptList').html('<div class="empty-state">Error loading receipts</div>'); 
+                    $('#btnSearch').prop('disabled', false).html('<i class="fas fa-search"></i> Search');
+                }
             }
 
             function getBadgeClass(mode) {

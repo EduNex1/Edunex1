@@ -549,8 +549,9 @@
             $('#sLateFee, #sConcession, #sReceived').on('input', recalcGrandTotal);
 
             $('#btnSubmit').on('click', async function () {
-                if (!selectedStudent) return;
+                if (!selectedStudent) { showToast('Select a student first', 'error'); return; }
                 const month = $('#selMonth').val();
+                if (!month) { showToast('Select a month', 'error'); return; }
                 const payMode = $('#rPayMode').val();
                 if (!payMode) { showToast('Select a payment mode', 'error'); return; }
 
@@ -559,6 +560,12 @@
 
                 const late = parseFloat($('#sLateFee').val()) || 0;
                 const conc = parseFloat($('#sConcession').val()) || 0;
+                
+                // Validate no negative values
+                if (late < 0) { showToast('Late fee cannot be negative', 'error'); return; }
+                if (conc < 0) { showToast('Concession cannot be negative', 'error'); return; }
+                if (received < 0) { showToast('Received amount cannot be negative', 'error'); return; }
+                
                 const oldBal = getOldBalance();
                 const grand = Math.max(0, totalAmount + late + oldBal - conc);
                 const balance = grand - received;

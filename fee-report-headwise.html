@@ -142,11 +142,22 @@
         });
 
         async function renderReport() {
+            const btn = $('#btnSearch');
+            const originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Loading...');
+            
             const fDateFrom = $('#fDateFrom').val();
             const fDateTo = $('#fDateTo').val();
             const fClass = $('#fClass').val();
             const fSection = $('#fSection').val();
             const fMode = $('#fMode').val();
+            
+            // Date range validation
+            if (fDateFrom && fDateTo && fDateFrom > fDateTo) {
+                showToast('From date cannot be after To date', 'error');
+                btn.prop('disabled', false).html(originalText);
+                return;
+            }
 
             const filters = {};
             if (fDateFrom) filters.from_date = fDateFrom;
@@ -160,7 +171,9 @@
             }
 
             let deps;
-            try { deps = await getFeeHeadwiseReport(filters); } catch(err){ showToast('Failed to load data','error'); return; }
+            try { deps = await getFeeHeadwiseReport(filters); } catch(err){ showToast('Failed to load data','error'); btn.prop('disabled', false).html(originalText); return; }
+            
+            btn.prop('disabled', false).html(originalText);
 
             if (!deps.length) {
                 $('#reportArea').html('<div class="empty-state"><i class="fas fa-inbox"></i>No data found for selected filters</div>');

@@ -382,47 +382,6 @@ async function syncBranchExamsFromMaster(env, branchId) {
     return results || [];
 }
 
-async function resolveExamIdForWrite(env, branchId, rawExamId, fallbackName = '') {
-    const resolvedBranchId = Number(branchId || 0);
-    if (!resolvedBranchId) throw new Error('Branch is required');
-
-    const numericExamId = Number(rawExamId || 0);
-    if (numericExamId > 0) {
-        const existingById = await env.DB.prepare(
-            'SELECT id FROM exams WHERE branch_id=? AND id=?'
-        ).bind(resolvedBranchId, numericExamId).first();
-        if (existingById) return Number(existingById.id);
-    }
-
-    const requestedName = normalizeExamName(fallbackName);
-    let resolvedName = requestedName;
-
-    if (numericExamId > 0 && !resolvedName) {
-        const masterRow = await env.DB.prepare(
-            'SELECT name FROM exam_names WHERE branch_id=? AND id=?'
-        ).bind(resolvedBranchId, numericExamId).first();
-        if (masterRow) resolvedName = normalizeExamName(masterRow.name);
-    }
-
-    if (!resolvedName && String(rawExamId || '').trim()) {
-        resolvedName = normalizeExamName(rawExamId);
-    }
-
-    if (!resolvedName) {
-        throw new Error('Please select a valid exam');
-    }
-
-    const existingByName = await env.DB.prepare(
-        'SELECT id FROM exams WHERE branch_id=? AND lower(name)=lower(?) ORDER BY CASE WHEN session IS NULL OR session=\'\' THEN 0 ELSE 1 END, id ASC LIMIT 1'
-    ).bind(resolvedBranchId, resolvedName).first();
-    if (existingByName) return Number(existingByName.id);
-
-    const insertResult = await env.DB.prepare(
-        'INSERT INTO exams (branch_id, name, group_id, session) VALUES (?,?,?,?)'
-    ).bind(resolvedBranchId, resolvedName, null, '').run();
-    return Number(insertResult.meta.last_row_id || 0);
-}
-
 function getAllowedOrigins(env) {
     const configured = String(env.ALLOWED_ORIGINS || '')
         .split(',')
@@ -456,41 +415,9 @@ function normalizeSmsPhoneNumber(phone, countryCode = '91') {
     return '';
 }
 
-async function sendViaMsg91(apiKey, payload) {
-    const response = await fetch('https://api.msg91.com/api/v5/flow/', {
-        method: 'POST',
-        headers: {
-            authkey: apiKey,
-            'content-type': 'application/json',
-            accept: 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.type === 'error') {
-        throw new Error(data.message || 'MSG91 API error');
-    }
-    return data;
-}
-
-function buildMsg91Recipients(recipients, defaultVariables = {}, fallbackMessage = '') {
-    return (Array.isArray(recipients) ? recipients : []).map((recipient) => {
-        const phone = normalizeSmsPhoneNumber(recipient.phone);
-        if (!phone) return null;
-        const row = { mobiles: phone };
-        const mergedVariables = { ...defaultVariables, ...(recipient.variables || {}) };
-        const entries = Object.entries(mergedVariables).filter(([, value]) => value !== undefined && value !== null && value !== '');
-        if (!entries.length && fallbackMessage) {
-            row.VAR1 = fallbackMessage;
-            return row;
-        }
-        entries.forEach(([key, value], index) => {
-            const normalizedKey = /^var\d+$/i.test(key) ? key.toUpperCase() : `VAR${index + 1}`;
-            row[normalizedKey] = String(value);
-        });
-        return row;
-    }).filter(Boolean);
-}
+// SMS functions disabled - MSG91 integration removed
+// async function sendViaMsg91(apiKey, payload) { ... }
+// function buildMsg91Recipients(recipients, defaultVariables = {}, fallbackMessage = '') { ... }
 
 async function getAccessibleStudentIdsForUser(env, user) {
     if (user.role === 'student') return user.linked_id ? [Number(user.linked_id)] : [];
@@ -2169,7 +2096,10 @@ router.post('/api/exam-results', async (req, env) => {
     const { exam_id, results: marks, branch_id } = await req.json();
     const bid = await getWritableBranchId(req, env, user, branch_id);
     if (!exam_id || !Array.isArray(marks) || !marks.length) return json({ error: 'exam_id and results are required' }, 400);
-    const resolvedExamId = await resolveExamIdForWrite(env, bid, exam_id);
+    
+    // Use exam_id directly (from exam_names table) - no resolution needed
+    const finalExamId = Number(exam_id);
+    
     let teacherAssignments = [];
     if (user.role === 'teacher') {
         teacherAssignments = await getTeacherAssignments(env, user);
@@ -2200,7 +2130,7 @@ router.post('/api/exam-results', async (req, env) => {
             }
         }
         await env.DB.prepare('INSERT OR REPLACE INTO exam_results (branch_id, exam_id, student_id, subject_id, theory_marks, practical_marks, total_marks, max_marks, min_marks, grade) VALUES (?,?,?,?,?,?,?,?,?,?)')
-            .bind(bid, resolvedExamId, m.student_id, m.subject_id, theoryMarks, practicalMarks, totalMarks, maxMarks, minMarks, m.grade || '').run();
+            .bind(bid, finalExamId, m.student_id, m.subject_id, theoryMarks, practicalMarks, totalMarks, maxMarks, minMarks, m.grade || '').run();
     }
     return json({ success: true });
 });
@@ -2215,7 +2145,12 @@ router.get('/api/exam-results', async (req, env) => {
     const b = [];
     const effBranch = await getEffectiveBranchId(req, env, user);
     if (effBranch) { q += ' AND er.branch_id=?'; b.push(effBranch); }
-    if (examId) { q += ' AND er.exam_id=?'; b.push(examId); }
+    
+    // Use exam_id directly (from exam_names table) - no resolution needed
+    if (examId) {
+        q += ' AND er.exam_id=?'; b.push(Number(examId));
+    }
+    
     if (user.role === 'student') {
         if (studentId && Number(studentId) !== Number(user.linked_id)) return json({ error: 'Forbidden' }, 403);
         q += ' AND er.student_id=?'; b.push(user.linked_id);
@@ -2238,13 +2173,6 @@ router.get('/api/exam-results', async (req, env) => {
         if (studentId) { q += ' AND er.student_id=?'; b.push(studentId); }
     } else if (studentId) {
         q += ' AND er.student_id=?'; b.push(studentId);
-    }
-    const session = url.searchParams.get('session');
-    // Only apply session filter when exam_id is NOT provided (browsing mode)
-    // When exam_id is provided, fetch results for that specific exam regardless of session
-    if (session && session !== 'All' && !examId) {
-        q = q.replace('FROM exam_results er', 'FROM exam_results er JOIN exams ex ON er.exam_id = ex.id');
-        q += ' AND ex.session=?'; b.push(session);
     }
     const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
     return json(results);
@@ -2293,16 +2221,16 @@ router.post('/api/result-details', async (req, env) => {
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const bid = await getWritableBranchId(req, env, user, d.branch_id);
-    const resolvedExamId = await resolveExamIdForWrite(env, bid, d.exam_id);
+    const finalExamId = Number(d.exam_id);
     if (user.role === 'teacher') {
         const assignments = await getTeacherAssignments(env, user);
         if (!assignments.length) return json({ error: 'No class assigned' }, 403);
         const student = await env.DB.prepare('SELECT class_id, section FROM students WHERE branch_id=? AND id=?').bind(bid, d.student_id).first();
         if (!student || !teacherHasAssignment(assignments, student.class_id, student.section)) return json({ error: 'Forbidden' }, 403);
     }
-    await env.DB.prepare('DELETE FROM result_details WHERE branch_id=? AND student_id=? AND exam_id=?').bind(bid, d.student_id, resolvedExamId).run();
+    await env.DB.prepare('DELETE FROM result_details WHERE branch_id=? AND student_id=? AND exam_id=?').bind(bid, d.student_id, finalExamId).run();
     await env.DB.prepare('INSERT INTO result_details (branch_id, student_id, exam_id, attendance, remark, height, weight, result, division, rank, result_date, promoted_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
-        .bind(bid, d.student_id, resolvedExamId, d.attendance||'', d.remark||'', d.height||'', d.weight||'', d.result||'Pass', d.division||'', d.rank||null, d.result_date||'', d.promoted_to||'').run();
+        .bind(bid, d.student_id, finalExamId, d.attendance||'', d.remark||'', d.height||'', d.weight||'', d.result||'Pass', d.division||'', d.rank||null, d.result_date||'', d.promoted_to||'').run();
     return json({ success: true });
 });
 
@@ -2753,9 +2681,9 @@ router.post('/api/course-schedules', async (req, env) => {
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const bid = await getWritableBranchId(req, env, user, d.branch_id);
-    const resolvedExamId = d.exam_id ? await resolveExamIdForWrite(env, bid, d.exam_id) : null;
+    const finalExamId = d.exam_id ? Number(d.exam_id) : null;
     const r = await env.DB.prepare('INSERT INTO course_schedules (branch_id, class_id, subject_id, exam_id, schedule, topic, assignment) VALUES (?,?,?,?,?,?,?)')
-        .bind(bid, d.class_id, d.subject_id, resolvedExamId, d.schedule, d.topic, d.assignment||'').run();
+        .bind(bid, d.class_id, d.subject_id, finalExamId, d.schedule, d.topic, d.assignment||'').run();
     return json({ id: r.meta.last_row_id }, 201);
 });
 
@@ -2774,9 +2702,9 @@ router.put('/api/course-schedules/:id', async (req, env, params) => {
         if (!existing) return json({ error: 'Not found' }, 404);
         targetBranchId = existing.branch_id;
     }
-    const resolvedExamId = d.exam_id ? await resolveExamIdForWrite(env, targetBranchId, d.exam_id) : null;
+    const finalExamId = d.exam_id ? Number(d.exam_id) : null;
     await env.DB.prepare('UPDATE course_schedules SET class_id=?, subject_id=?, exam_id=?, schedule=?, topic=?, assignment=? WHERE id=?')
-        .bind(d.class_id, d.subject_id, resolvedExamId, d.schedule, d.topic, d.assignment||'', params.id).run();
+        .bind(d.class_id, d.subject_id, finalExamId, d.schedule, d.topic, d.assignment||'', params.id).run();
     return json({ success: true });
 });
 
@@ -2989,9 +2917,9 @@ router.post('/api/date-sheets', async (req, env) => {
     if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const d = await req.json();
     const bid = await getWritableBranchId(req, env, user, d.branch_id);
-    const resolvedExamId = await resolveExamIdForWrite(env, bid, d.exam_id, d.exam_name);
+    const finalExamId = Number(d.exam_id);
     const { results } = await env.DB.prepare('INSERT INTO date_sheets (branch_id, exam_id, publish_date, status) VALUES (?,?,?,?) RETURNING *')
-        .bind(bid, resolvedExamId, d.publish_date||null, d.status||'Draft').all();
+        .bind(bid, finalExamId, d.publish_date||null, d.status||'Draft').all();
     return json(results[0], 201);
 });
 
@@ -3001,9 +2929,9 @@ router.put('/api/date-sheets/:id', async (req, env, params) => {
     const d = await req.json();
     const access = await ensureBranchAccess(env, user, 'date_sheets', params.id);
     if (access.error) return json({ error: access.error }, access.status);
-    const resolvedExamId = await resolveExamIdForWrite(env, access.branch_id, d.exam_id, d.exam_name);
+    const finalExamId = Number(d.exam_id);
     await env.DB.prepare('UPDATE date_sheets SET exam_id=?, publish_date=?, status=? WHERE id=?')
-        .bind(resolvedExamId, d.publish_date||null, d.status||'Draft', params.id).run();
+        .bind(finalExamId, d.publish_date||null, d.status||'Draft', params.id).run();
     return json({ success: true });
 });
 
@@ -3340,72 +3268,13 @@ router.post('/api/email/send', async (req, env) => {
 });
 
 router.get('/api/sms-log', async (req, env) => {
-    const user = await authenticate(req, env);
-    if (!user) return json({ error: 'Unauthorized' }, 401);
-    if (!['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    let q = 'SELECT * FROM sms_log WHERE 1=1';
-    const b = [];
-    const effBranch = await getEffectiveBranchId(req, env, user);
-    if (effBranch) { q += ' AND branch_id=?'; b.push(effBranch); }
-    q += ' ORDER BY sent_at DESC';
-    const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
-    return json(results);
+    // SMS feature disabled - returning empty log
+    return json([]);
 });
 
 router.post('/api/sms/send', async (req, env) => {
-    const user = await authenticate(req, env);
-    if (!user || !['super_admin','branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
-    const d = await req.json();
-    const bid = await getWritableBranchId(req, env, user, d.branch_id);
-    const settings = await getOptionSettingsMap(env, bid);
-    const apiKey = settings.sms_api_key || '';
-    const flowId = String(d.template_id || settings.msg91_tpl_general || '').trim();
-    if (!apiKey) return json({ error: 'MSG91 API key not configured. Go to Settings -> Option Settings.' }, 400);
-    if (!flowId) return json({ error: 'MSG91 Flow / Template ID is required' }, 400);
-
-    const recipients = buildMsg91Recipients(d.recipients, d.variables || {}, d.message || '');
-    if (!recipients.length) return json({ error: 'No valid recipients provided' }, 400);
-
-    const payload = { flow_id: flowId, recipients };
-    const sender = String(d.sender || settings.msg91_sender || '').trim();
-    const route = String(d.route || settings.msg91_route || '').trim();
-    if (sender) payload.sender = sender;
-    if (route) payload.route = route;
-
-    const logStmt = env.DB.prepare('INSERT INTO sms_log (branch_id, type, recipient_type, recipient_id, phone, message, status) VALUES (?,?,?,?,?,?,?)');
-    const logBatch = [];
-    try {
-        await sendViaMsg91(apiKey, payload);
-        recipients.forEach((recipient, index) => {
-            const original = (Array.isArray(d.recipients) ? d.recipients[index] : {}) || {};
-            logBatch.push(logStmt.bind(
-                bid,
-                d.type || 'manual',
-                d.recipient_type || '',
-                original.recipient_id || null,
-                recipient.mobiles,
-                d.message || '',
-                'Sent'
-            ));
-        });
-        if (logBatch.length) await env.DB.batch(logBatch);
-        return json({ success: true, sent_count: recipients.length, failed_count: 0 });
-    } catch (error) {
-        recipients.forEach((recipient, index) => {
-            const original = (Array.isArray(d.recipients) ? d.recipients[index] : {}) || {};
-            logBatch.push(logStmt.bind(
-                bid,
-                d.type || 'manual',
-                d.recipient_type || '',
-                original.recipient_id || null,
-                recipient.mobiles,
-                d.message || '',
-                'Failed'
-            ));
-        });
-        if (logBatch.length) await env.DB.batch(logBatch);
-        return json({ error: error.message || 'SMS sending failed' }, 502);
-    }
+    // SMS feature disabled
+    return json({ error: 'SMS feature is currently disabled. Please contact administrator.' }, 400);
 });
 
 router.get('/api/activity-log', async (req, env) => {
@@ -3632,9 +3501,9 @@ router.post('/api/co-scholastic-results', async (req, env) => {
     if (!user || !['super_admin','branch_admin','teacher'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
     const { exam_id, student_id, results: entries, branch_id } = await req.json();
     const bid = await getWritableBranchId(req, env, user, branch_id);
-    const resolvedExamId = await resolveExamIdForWrite(env, bid, exam_id);
+    const finalExamId = Number(exam_id);
     for (const e of entries) {
-        await env.DB.prepare('INSERT OR REPLACE INTO co_scholastic_results (branch_id, student_id, exam_id, area_id, grade, discipline) VALUES (?,?,?,?,?,?)').bind(bid, student_id, resolvedExamId, e.area_id, e.grade || '', e.discipline || '').run();
+        await env.DB.prepare('INSERT OR REPLACE INTO co_scholastic_results (branch_id, student_id, exam_id, area_id, grade, discipline) VALUES (?,?,?,?,?,?)').bind(bid, student_id, finalExamId, e.area_id, e.grade || '', e.discipline || '').run();
     }
     return json({ success: true });
 });
@@ -3886,7 +3755,7 @@ router.get('/api/attendance/staff', async (req, env) => {
     return json(results);
 });
 
-const SENSITIVE_SETTINGS = new Set(['zoho_api_key', 'zoho_token', 'api_key', 'secret_key', 'smtp_password', 'sms_api_key']);
+const SENSITIVE_SETTINGS = new Set(['zoho_api_key', 'zoho_token', 'api_key', 'secret_key', 'smtp_password']);
 const PUBLIC_SETTINGS = new Set(['enable_fee_due_student_portal', 'enable_fee_due_installment', 'enable_discount_in_receipt', 'academic_start_month', 'enable_sunday_working']);
 router.get('/api/public-settings', async (req, env) => {
     const user = await authenticate(req, env);
