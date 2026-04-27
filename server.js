@@ -5,19 +5,18 @@ const https = require('https');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_BACKEND = 'https://vkis-api.schoolhub100.workers.dev';
+const PUBLIC_ORIGIN = process.env.PUBLIC_ORIGIN || 'https://crm.edunex1.com';
 
-// ── API Proxy: forward /api/* to Cloudflare Worker (avoids CORS for local dev) ──
 app.use('/api', (req, res) => {
     const targetUrl = `${API_BACKEND}/api${req.url}`;
     const parsedUrl = new URL(targetUrl);
 
     const proxyHeaders = {};
-    // Forward only safe headers
     if (req.headers['content-type']) proxyHeaders['content-type'] = req.headers['content-type'];
     if (req.headers['authorization']) proxyHeaders['authorization'] = req.headers['authorization'];
     if (req.headers['accept']) proxyHeaders['accept'] = req.headers['accept'];
     proxyHeaders['host'] = parsedUrl.hostname;
-    proxyHeaders['origin'] = 'https://edunex1.vercel.app';
+    proxyHeaders['origin'] = PUBLIC_ORIGIN;
 
     const options = {
         hostname: parsedUrl.hostname,
@@ -29,7 +28,6 @@ app.use('/api', (req, res) => {
 
     const proxyReq = https.request(options, (proxyRes) => {
         const resHeaders = {};
-        // Copy content-type from upstream
         if (proxyRes.headers['content-type']) resHeaders['content-type'] = proxyRes.headers['content-type'];
         res.writeHead(proxyRes.statusCode, resHeaders);
         proxyRes.pipe(res, { end: true });
@@ -40,7 +38,6 @@ app.use('/api', (req, res) => {
         res.status(502).json({ error: 'API proxy error: ' + err.message });
     });
 
-    // Pipe request body (for POST/PUT/DELETE)
     req.pipe(proxyReq, { end: true });
 });
 

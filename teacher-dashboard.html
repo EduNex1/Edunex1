@@ -121,7 +121,6 @@
                     </div>
                 </div>
 
-                <!-- Permission Requests Status -->
                 <div class="chart-card" style="margin-top:16px;">
                     <div class="chart-card-header"><i class="fas fa-hand-paper"></i> My Permission Requests</div>
                     <div class="chart-card-body" style="padding:12px 16px;">
@@ -224,8 +223,7 @@
 
                 var notices = await getNotices() || [];
                 renderNotices(notices.slice(0, 4));
-                
-                // Load permission requests widget
+
                 loadPermissionRequestsWidget();
             } catch (error) {
                 console.error(error);

@@ -418,7 +418,7 @@
             let classCache = [], examCache = [], subjectCache = [], studentCache = [];
             try { 
                 [classCache, subjectCache] = await Promise.all([getClasses(), getSubjects()]); 
-                // Load exams with master fallback to get all exam names
+
                 examCache = await getExamNames();
             } catch (e) { }
 
@@ -576,7 +576,7 @@
                     const response = await saveExamResults(currentExam.id, results);
                     console.log('Save response:', response);
                     alert(`Marks updated for ${results.length} subject(s) — ${currentStudent.name}`);
-                    // Reload to verify data was saved
+
                     searchResult();
                 } catch (e) { 
                     console.error('Save error:', e);

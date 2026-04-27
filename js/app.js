@@ -11,7 +11,6 @@ function requireRoles(allowedRoles, redirectTo) {
     var user = typeof getUser === 'function' ? getUser() : null;
     if (!user) { window.location.href = redirectTo || '/'; return false; }
     var effectiveRole = user.role;
-    // Treat 'staff' same as 'teacher' for permission purposes
     if (effectiveRole === 'staff' && allowedRoles.includes('teacher')) effectiveRole = 'teacher';
     if (!allowedRoles.includes(effectiveRole)) {
         if (!redirectTo) {
@@ -90,17 +89,17 @@ function renderSidebar(activeMenu) {
         <div class="sidebar-menu-content">
             <ul class="nav nav-sidebar-menu sidebar-toggle-view">
 
-                <!-- Dashboard -->
+                
                 <li class="nav-item">
                     <a href="/dashboard" class="nav-link${mc('dashboard')}"><i class="flaticon-dashboard"></i><span>Dashboard</span></a>
                 </li>
 
-                <!-- Permission Requests (Teachers ki requests) -->
+                
                 ${hasAccess('permission_requests') ? `<li class="nav-item">
                     <a href="/admin-permission-requests" class="nav-link${mc('admin-permission-requests')}"><i class="fas fa-clipboard-check"></i><span>Permission Requests</span></a>
                 </li>` : ''}
 
-                <!-- No Permissions Warning -->
+                
                 ${(!isSuperAdmin && !_hasAnyPerm) ? `<li class="nav-item" style="padding:10px 14px 6px;">
                     <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 12px;font-size:11px;color:#856404;line-height:1.5;">
                         <i class="fas fa-lock" style="margin-right:5px;"></i><strong>No permissions assigned.</strong><br>
@@ -108,7 +107,7 @@ function renderSidebar(activeMenu) {
                     </div>
                 </li>` : ''}
 
-                <!-- Students -->
+                
                 ${hasAccess('students') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-classmates"></i><span>Students</span></a>
                     <ul class="nav sub-group-menu${sga(isStudentActive)}">
@@ -127,7 +126,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Attendance -->
+                
                 ${hasAccess('attendance') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-checklist"></i><span>Attendance</span></a>
                     <ul class="nav sub-group-menu${sga(isAttendanceActive)}">
@@ -152,7 +151,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Cards & Certificates -->
+                
                 ${hasAccess('cards_certs') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-script"></i><span>Cards & Certificates</span></a>
                     <ul class="nav sub-group-menu${sga(isCardsCertsActive)}">
@@ -174,7 +173,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Academics -->
+                
                 ${hasAccess('academics') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-mortarboard"></i><span>Academics</span></a>
                     <ul class="nav sub-group-menu${sga(isAcademicsActive)}">
@@ -208,7 +207,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Staff -->
+                
                 ${hasAccess('staff') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-multiple-users-silhouette"></i><span>Staff</span></a>
                     <ul class="nav sub-group-menu${sga(isStaffActive)}">
@@ -230,7 +229,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Fee Master -->
+                
                 ${hasAccess('fee_master') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-file-invoice-dollar"></i><span>Fee Master</span></a>
                     <ul class="nav sub-group-menu${sga(isFeeMasterActive)}">
@@ -243,7 +242,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Fee -->
+                
                 ${hasAccess('fee') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-money"></i><span>Fee</span></a>
                     <ul class="nav sub-group-menu${sga(isFeeActive)}">
@@ -274,7 +273,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Payroll -->
+                
                 ${hasAccess('payroll') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-wallet"></i><span>Payroll</span></a>
                     <ul class="nav sub-group-menu${sga(isPayrollActive)}">
@@ -296,7 +295,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Accounts -->
+                
                 ${hasAccess('accounts') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-calculator"></i><span>Accounts</span></a>
                     <ul class="nav sub-group-menu${sga(isAccountsNewActive)}">
@@ -327,7 +326,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Email -->
+                
                 ${hasAccess('messaging') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-envelope"></i><span>Email</span></a>
                     <ul class="nav sub-group-menu${sga(isMessagingActive)}">
@@ -343,7 +342,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Result -->
+                
                 ${hasAccess('result') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-poll"></i><span>Result</span></a>
                     <ul class="nav sub-group-menu${sga(isResultActive)}">
@@ -365,7 +364,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Transport -->
+                
                 ${hasAccess('transport') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-bus-side-view"></i><span>Transport</span></a>
                     <ul class="nav sub-group-menu${sga(isTransportActive)}">
@@ -384,7 +383,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Library -->
+                
                 ${hasAccess('library') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-books"></i><span>Library</span></a>
                     <ul class="nav sub-group-menu${sga(isLibraryActive)}">
@@ -409,7 +408,7 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- Masters -->
+                
                 ${hasAccess('masters') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="fas fa-cogs"></i><span>Masters</span></a>
                     <ul class="nav sub-group-menu${sga(isMasterActive)}">
@@ -427,12 +426,12 @@ function renderSidebar(activeMenu) {
                     </ul>
                 </li>` : ''}
 
-                <!-- My Profile -->
+                
                 <li class="nav-item">
                     <a href="${isSuperAdmin ? '/super-admin-profile' : '/admin-profile'}" class="nav-link${activeMenu === 'admin-profile' || activeMenu === 'super-admin-profile' ? ' menu-active' : ''}"><i class="fas fa-user-circle"></i><span>My Profile</span></a>
                 </li>
 
-                <!-- Settings -->
+                
                 ${hasAccess('settings') ? `<li class="nav-item sidebar-nav-item">
                     <a href="#" class="nav-link"><i class="flaticon-settings"></i><span>Settings</span></a>
                     <ul class="nav sub-group-menu${sga(isSettingsActive)}">
@@ -934,7 +933,6 @@ function initPage(activeMenu) {
     else if (path.startsWith('/p-') || path === '/parent-dashboard') role = 'parent';
     else if (path.startsWith('/s-') || path === '/student-dashboard' || path === '/student-dashboard.html') role = 'student';
 
-    // Override: if user role is teacher/staff/student/parent, always use their portal sidebar
     if (user) {
         if ((user.role === 'teacher' || user.role === 'staff') && !['super_admin','branch_admin'].includes(user.role)) role = 'teacher';
         else if (user.role === 'student') role = 'student';
@@ -956,7 +954,6 @@ function initPage(activeMenu) {
     }
     renderFooter();
 
-    // Background permission refresh for non-super_admin admins
     if (['super_admin', 'branch_admin'].includes(role) && role !== 'super_admin') {
         (async function() {
             try {
@@ -972,7 +969,7 @@ function initPage(activeMenu) {
                         }
                     }
                 }
-            } catch(e) { /* ignore */ }
+            } catch(e) {  }
         })();
     }
 

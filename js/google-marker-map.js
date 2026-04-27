@@ -1,9 +1,7 @@
 (function ($) {
   "use strict";
 
-  /*-------------------------------------
-   // Marker Map
-   -------------------------------------*/
+  
   if ($("#markergoogleMap").length) {
     window.onload = function () {
       var styles = [{

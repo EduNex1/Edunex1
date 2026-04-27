@@ -19,7 +19,7 @@
     <script src="js/modernizr-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* ===== SECTION HEADERS (Same as admit-form) ===== */
+        
         .section-header {
             background: #0d1b4a;
             color: #fff;
@@ -40,7 +40,7 @@
             opacity: 0.8;
         }
 
-        /* ===== DETAIL CARDS ===== */
+        
         .detail-card {
             background: #fff;
             border-radius: 8px;
@@ -54,7 +54,7 @@
             padding: 16px 20px;
         }
 
-        /* ===== FIELD DISPLAY ===== */
+        
         .detail-field {
             margin-bottom: 12px;
         }
@@ -87,7 +87,7 @@
             font-weight: 400;
         }
 
-        /* ===== PHOTO BOX (Same as admit-form) ===== */
+        
         .photo-box {
             width: 100px;
             height: 120px;
@@ -123,7 +123,7 @@
             font-size: 9px;
         }
 
-        /* ===== ACTION BUTTONS (top right) ===== */
+        
         .page-actions {
             display: flex;
             gap: 8px;
@@ -177,7 +177,7 @@
             text-decoration: none;
         }
 
-        /* ===== SUBJECT BADGES ===== */
+        
         .subjects-grid {
             display: flex;
             flex-wrap: wrap;
@@ -569,7 +569,6 @@
             setText('dAddress', s.address || '-');
             setText('dRoute', route ? route.name : (s.route_id ? ('Route #' + s.route_id) : 'No Route'));
 
-            // Fetch monthly fee status for this student
             try {
                 var allSlabs = await getFeeSlabs(s.class_id, s.session);
                 var nonTransport = Array.isArray(allSlabs) ? allSlabs.filter(function(x) { return !x.is_transport; }) : [];
@@ -646,7 +645,7 @@
                     document.getElementById('dParentPassword').textContent = '-';
                 }
             } else {
-                // Hide entire credential card for non-admin roles
+
                 var credCard = document.getElementById('dPassword');
                 if (credCard) {
                     var card = credCard.closest('.detail-card');

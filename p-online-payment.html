@@ -252,8 +252,7 @@
                 $('#proofPreview').hide().empty();
                 return;
             }
-            
-            // Validate file size (max 5MB)
+
             const maxSize = 5 * 1024 * 1024;
             if (file.size > maxSize) {
                 showToast('File size must be under 5MB', 'error');
@@ -261,8 +260,7 @@
                 $('#proofPreview').hide().empty();
                 return;
             }
-            
-            // Validate file type
+
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
             if (!allowedTypes.includes(file.type)) {
                 showToast('Only images (JPG, PNG, GIF) or PDF allowed', 'error');

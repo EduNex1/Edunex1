@@ -176,7 +176,7 @@
     $(async function () {
         initPage('s-fee-status');
         if (typeof requireRoles === 'function' && !requireRoles(['student'])) return;
-        // Check if fee due report is enabled for student portal
+
         try {
             const pubSettings = await getPublicSettings();
             if (pubSettings && pubSettings['enable_fee_due_student_portal'] !== '1' && pubSettings['enable_fee_due_student_portal'] !== 1) {
@@ -198,7 +198,6 @@
                 getFeeSlabs(stu.class_id, stu.session)
             ]);
 
-            // Parse applicable months for each slab to build per-month charges
             function _parseMonths(slab) {
                 try { const mp = typeof slab.months==='string'&&slab.months ? JSON.parse(slab.months) : (Array.isArray(slab.months)?slab.months:null); return Array.isArray(mp)?mp:SCHOOL_MONTHS; } catch(e){ return SCHOOL_MONTHS; }
             }
@@ -211,12 +210,12 @@
             }
             const transportFee = Number(stu.transport_fee||0);
             const oldBalance = Number(stu.old_balance||0);
-            // Filter slabs: exclude transport, match student category
+
             const nonTransportSlabs = (slabs||[]).filter(function(x){ return !x.is_transport; });
             const stuCat = stu.category || 'Default';
             const catSlabs = nonTransportSlabs.filter(function(x){ return (x.category||'Default') === stuCat; });
             const filteredSlabs = catSlabs.length ? catSlabs : nonTransportSlabs.filter(function(x){ return (x.category||'Default') === 'Default'; });
-            // Build per-month fee map
+
             const monthFeeMap = {};
             SCHOOL_MONTHS.forEach(m => { monthFeeMap[m] = transportFee; });
             filteredSlabs.forEach(x => {
@@ -256,7 +255,6 @@
             const totalPaid = (deps||[]).reduce((s,x)=>s+Number(x.received_amount||0),0);
             const pending = Math.max(0, annualFee + oldBalance - totalPaid - totalDisc);
 
-            // Pool-based month tile calculation: distribute total paid across months (Apr→Mar)
             let paymentPool = totalPaid;
             let paidMonths = 0;
             if (paymentPool > 0 && oldBalance > 0) { paymentPool = Math.max(0, paymentPool - oldBalance); }

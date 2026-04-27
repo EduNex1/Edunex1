@@ -171,7 +171,7 @@
             const deps = await getFeeDeposits({student_id:child.id})||[];
             const totalPaid = deps.reduce((sum,row)=>sum+Number(row.received_amount||0),0);
             const slabs = await getFeeSlabs(child.class_id, child.session)||[];
-            // Filter: exclude transport, match student category
+
             const nonTransport = slabs.filter(function(x){ return !x.is_transport; });
             const childCat = child.category || 'Default';
             const catSlabs = nonTransport.filter(function(x){ return (x.category||'Default') === childCat; });

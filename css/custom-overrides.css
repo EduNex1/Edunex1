@@ -215,8 +215,6 @@ body {
     overflow: hidden;
 }
 
-/* Let printed pages overflow naturally (the dashboard wrapper
-   already clips on-screen, but print must not be clipped). */
 @media print {
     html,
     body {
@@ -2607,10 +2605,6 @@ a.btn-outline-navy:hover {
         margin-top: 30px;
     }
 }
-
-/* Print styles are handled entirely by print-all.css.
-   Removed aggressive "body * { visibility:hidden }" rule that
-   blanked pages lacking a #printArea element. */
 
 .action-btn,
 .action-icon {

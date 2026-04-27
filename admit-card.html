@@ -19,9 +19,6 @@
     <script src="js/modernizr-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* ============ PAGE UI ============ */
-
-        /* Checkbox alignment fix */
         #studentTable td:first-child,
         #studentTable th:first-child {
             text-align: center;
@@ -74,9 +71,6 @@
             justify-content: center;
         }
 
-        /* ============================================================
-           ADMIT CARD — Simple Formal Indian School Style
-           ============================================================ */
         .admit-card {
             --ac-dark: #1a1a1a;
             width: 680px;
@@ -87,7 +81,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header */
         .admit-card .ac-header {
             text-align: center;
             padding: 14px 20px 10px;
@@ -143,7 +136,6 @@
             margin-top: 4px;
         }
 
-        /* Badge */
         .admit-card .ac-badge {
             text-align: center;
             padding: 6px 0 4px;
@@ -155,12 +147,10 @@
             border-bottom: 1.5px solid #333;
         }
 
-        /* Body */
         .admit-card .ac-body {
             padding: 14px 20px;
         }
 
-        /* Student Info */
         .admit-card .ac-student-info {
             display: flex;
             gap: 16px;
@@ -209,7 +199,6 @@
             font-weight: 500;
         }
 
-        /* Exam Info */
         .admit-card .ac-exam-info {
             border: 1px solid #ccc;
             padding: 8px 14px;
@@ -231,7 +220,6 @@
             font-weight: 600;
         }
 
-        /* Date Sheet Table */
         .admit-card .ac-datesheet {
             width: 100%;
             border-collapse: collapse;
@@ -261,7 +249,6 @@
             background: #f9f9f9;
         }
 
-        /* Footer - 3 Signatures */
         .admit-card .ac-footer {
             padding: 16px 20px 8px;
             border-top: 1.5px solid #333;
@@ -288,7 +275,6 @@
             display: block;
         }
 
-        /* Precautions */
         .admit-card .ac-precautions {
             padding: 8px 20px 10px;
             border-top: 1px dashed #aaa;
@@ -316,7 +302,6 @@
             padding-left: 2px;
         }
 
-        /* ===== RESPONSIVE: TABLET ===== */
         @media (max-width: 767px) {
             .admit-card {
                 width: 100%;
@@ -384,7 +369,6 @@
             }
         }
 
-        /* ===== RESPONSIVE: MOBILE ===== */
         @media (max-width: 575px) {
             .admit-card .ac-student-info {
                 flex-direction: column;
@@ -407,7 +391,6 @@
             }
         }
 
-        /* Print styles */
         @media print {
             body * {
                 visibility: hidden;
@@ -439,7 +422,6 @@
             }
         }
 
-        /* Custom checkbox for datesheet toggle */
         .datesheet-toggle {
             display: flex;
             align-items: center;

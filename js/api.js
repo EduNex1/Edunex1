@@ -1,11 +1,9 @@
 
-/* Global HTML-escape utility – prevents stored XSS when inserting API data into the DOM */
 function escHtml(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-/* CSV Export utility – downloads array of objects as a CSV file */
 function exportCSV(rows, columns, filename) {
     if (!rows || !rows.length) { if (typeof showToast === 'function') showToast('No data to export', 'error'); return; }
     filename = filename || 'export.csv';
@@ -102,7 +100,6 @@ async function api(endpoint, options = {}) {
     const method = (fetchOptions.method || 'GET').toUpperCase();
     const sessionEndpoints = ['/api/students', '/api/fee-deposits', '/api/exam-results', '/api/datesheets', '/api/fee-report', '/api/fee-report-headwise', '/api/result-details'];
     
-    // Auto-inject session for GET requests
     if (!skipSessionInjection && method === 'GET' && typeof getSelectedSession === 'function') {
         const sess = getSelectedSession();
         if (sess && !endpoint.includes('session=')) {
@@ -111,9 +108,6 @@ async function api(endpoint, options = {}) {
             }
         }
     }
-    
-
-    // Auto-inject branch_id for selected branch
     if (typeof getSelectedBranch === 'function') {
         const branchId = getSelectedBranch();
         if (branchId) {
@@ -233,7 +227,6 @@ async function getExamNames(filters = {}) {
     const selectedSession = typeof getSelectedSession === 'function' ? getSelectedSession() : '';
     const master = await fetchExamNamesMaster(branchId);
     if (master.length) {
-        // Add session to master exam names from selected session
         return master.map(exam => ({
             ...exam,
             session: exam.session || selectedSession || ''
@@ -697,7 +690,6 @@ async function getFaceDescriptors(filters = {}) { const p = new URLSearchParams(
 async function saveFaceDescriptor(data) { return api('/api/face-descriptors', { method: 'POST', body: JSON.stringify(data) }); }
 async function deleteFaceDescriptor(type, personId) { return api(`/api/face-descriptors/${type}/${personId}`, { method: 'DELETE' }); }
 
-/* ─── Teacher Permission Requests ─── */
 async function getTeacherPermissionRequests(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/teacher-permission-requests${params ? '?' + params : ''}`);

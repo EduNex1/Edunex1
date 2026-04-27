@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        /* ===== WELCOME BANNER ===== */
+        
         .welcome-banner {
             background: linear-gradient(135deg, #0d1b4a 0%, #1a3a7a 60%, #2952a3 100%) !important;
             border-radius: 10px;
@@ -81,7 +81,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* ===== STAT CARDS ROW ===== */
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -204,7 +204,7 @@
             text-overflow: ellipsis;
         }
 
-        /* ===== CHART CARDS ===== */
+        
         .chart-card {
             background: #fff;
             border-radius: 8px;
@@ -235,7 +235,7 @@
             padding: 16px;
         }
 
-        /* ===== RECENT STUDENTS TABLE ===== */
+        
         .recent-table {
             width: 100%;
             border-collapse: collapse;
@@ -269,7 +269,7 @@
             color: #0d1b4a;
         }
 
-        /* ===== QUICK ACCESS GRID ===== */
+        
         .quick-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -308,7 +308,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* ===== ACTIVITY TIMELINE ===== */
+        
         .activity-item {
             display: flex;
             gap: 10px;
@@ -356,7 +356,7 @@
             margin-top: 1px;
         }
 
-        /* ===== STAFF LIST IN CARDS ===== */
+        
         .staff-mini {
             display: flex;
             align-items: center;
@@ -392,7 +392,7 @@
             color: #888;
         }
 
-        /* ===== RESPONSIVE ===== */
+        
         @media (max-width: 991px) {
             .welcome-banner {
                 padding: 16px 20px;
@@ -607,7 +607,6 @@
                         </div>
                     </div>
 
-                    <!-- Teacher Permission Requests Widget -->
                     <div class="row" id="permissionRequestsRow" style="display:none;">
                         <div class="col-12">
                             <div class="chart-card">
@@ -871,14 +870,13 @@
                         '</div>';
                 });
                 document.getElementById('activeStaffList').innerHTML = staffHtml || '<p class="text-muted text-center py-3" style="font-size:11px;">No active staff found</p>';
-                
-                // Load pending permission requests
+
                 loadPendingPermissionRequests();
             }
 
             async function loadPendingPermissionRequests() {
                 try {
-                    // Check if user has access to permission_requests module
+
                     var user = typeof getUser === 'function' ? getUser() : null;
                     var hasAccess = false;
                     

@@ -132,7 +132,6 @@
                                 </div>
                             </div>
 
-                            
                             <div class="form-section" style="margin-top:10px;">
                                 <div class="form-section-title"><i class="fas fa-phone-alt"></i> Contact & Address</div>
                                 <div class="row">
@@ -155,7 +154,6 @@
                                 </div>
                             </div>
 
-                            
                             <div class="form-actions">
                                 <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Profile</button>
                             </div>
@@ -163,7 +161,6 @@
                     </div>
                 </div>
 
-                
                 <div class="card height-auto" id="pwCard" style="display:none;">
                     <div class="card-body">
                         <div class="heading-layout1">
@@ -248,7 +245,6 @@
             $('#profileState').html('<p style="text-align:center;color:#c62828;padding:20px;">Failed to load profile.</p>');
         }
 
-        /* ─── Photo Upload & Crop ─── */
         $('#photoInput').on('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -298,7 +294,7 @@
             closeCropModal();
         }
 
-        /* ─── Save Profile ─── */
+        
         $('#profileForm').on('submit', async function (event) {
             event.preventDefault();
             try {
@@ -327,7 +323,7 @@
             }
         });
 
-        /* ─── Change Password ─── */
+        
         $('#pwForm').on('submit', async function (event) {
             event.preventDefault();
             var cur = $('#pwCurrent').val(), nw = $('#pwNew').val(), cf = $('#pwConfirm').val();

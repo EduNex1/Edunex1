@@ -155,7 +155,6 @@
                 existingDiscounts.filter(d => !_discSess || !d.session || d.session === _discSess)
                     .forEach(d => { discountMap[d.particular_id] = (discountMap[d.particular_id] || 0) + d.amount; });
 
-                // Fetch class-specific fee slabs
                 let slabCache = [];
                 try { slabCache = await getFeeSlabs(stu.class_id, _discSess || undefined); } catch(e) {}
                 const slabMap = {};

@@ -26,6 +26,7 @@ async function verifyJWT(token, secret) {
 
 const DEFAULT_ALLOWED_ORIGINS = [
     'https://edunex1.vercel.app',
+    'https://crm.edunex1.com',
 ];
 
 function json(data, status = 200) {
@@ -141,21 +142,20 @@ function roundCurrency(value) {
     return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
 }
 
-// Helper: fetch fee slabs for a student, filtering by session with fallback
 async function getStudentSlabs(env, branchId, classId, category, session) {
     const cat = category || 'Default';
     const sess = session || '';
-    // Try session-specific slabs first
+
     let { results: slabs } = await env.DB.prepare(
         `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND fs.session=? AND (fp.is_transport IS NULL OR fp.is_transport=0)`
     ).bind(branchId, classId, cat, sess).all();
-    // Fallback to empty-session slabs if no session-specific found
+
     if (!slabs.length && sess) {
         ({ results: slabs } = await env.DB.prepare(
             `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category=? AND (fs.session IS NULL OR fs.session='') AND (fp.is_transport IS NULL OR fp.is_transport=0)`
         ).bind(branchId, classId, cat).all());
     }
-    // Fallback to Default category
+
     if (!slabs.length) {
         ({ results: slabs } = await env.DB.prepare(
             `SELECT fs.amount, fp.months FROM fee_slabs fs LEFT JOIN fee_particulars fp ON fs.particular_id=fp.id WHERE fs.branch_id=? AND fs.class_id=? AND fs.category='Default' AND (fs.session=? OR fs.session IS NULL OR fs.session='') AND (fp.is_transport IS NULL OR fp.is_transport=0)`
@@ -303,16 +303,13 @@ function isAdminRole(user) {
     return ['super_admin', 'branch_admin'].includes(user.role);
 }
 
-/* Resolve the effective branch_id for the current request.
-   - super_admin: uses branch_id from URL param (empty = all branches)
-   - branch_admin / multi-branch user: uses branch_id from URL param IF it's in their assigned branches, else their primary branch
-   - single-branch user: always their own branch_id */
+
 async function getEffectiveBranchId(req, env, user) {
     const url = new URL(req.url);
     const requested = url.searchParams.get('branch_id');
     if (user.role === 'super_admin') return requested || '';
     if (!requested) return user.branch_id;
-    // For non-super_admin, check if the requested branch is in their assigned branches
+
     const assignedIds = await getUserAssignedBranchIds(env, user.id, user.branch_id);
     if (assignedIds.map(String).includes(String(requested))) return requested;
     return user.branch_id;
@@ -415,9 +412,8 @@ function normalizeSmsPhoneNumber(phone, countryCode = '91') {
     return '';
 }
 
-// SMS functions disabled - MSG91 integration removed
-// async function sendViaMsg91(apiKey, payload) { ... }
-// function buildMsg91Recipients(recipients, defaultVariables = {}, fallbackMessage = '') { ... }
+
+
 
 async function getAccessibleStudentIdsForUser(env, user) {
     if (user.role === 'student') return user.linked_id ? [Number(user.linked_id)] : [];
@@ -960,9 +956,9 @@ router.post('/api/user-permissions', async (req, env) => {
     const targetUser = await env.DB.prepare('SELECT id, branch_id FROM users WHERE id = ?').bind(user_id).first();
     if (!targetUser) return json({ error: 'User not found' }, 404);
     if (user.role === 'branch_admin' && !(await userCanAccessBranch(env, user, targetUser.branch_id))) return json({ error: 'Forbidden' }, 403);
-    // Branch admin cannot edit their own permissions
+
     if (user.role === 'branch_admin' && user_id === user.id) return json({ error: 'Cannot edit own permissions' }, 403);
-    // Branch admin can only grant modules they themselves have access to
+
     let filteredPermissions = permissions;
     if (user.role === 'branch_admin') {
         const { results: myPerms } = await env.DB.prepare('SELECT module FROM user_permissions WHERE user_id = ? AND access = 1').bind(user.id).all();
@@ -1062,7 +1058,6 @@ router.post('/api/students', async (req, env) => {
     const serial = await getNextId(env.DB, branchId, 'admission', yr);
     const admNo = `${code}${yr}${String(serial).padStart(3, '0')}`;
 
-    // Auto-generate roll number if not provided
     let rollNo = d.roll_no || null;
     if (!rollNo && d.class_id && d.section) {
         const maxRollRow = await env.DB.prepare(
@@ -1076,7 +1071,6 @@ router.post('/api/students', async (req, env) => {
 
     const studentId = r.meta.last_row_id;
 
-    // Auto-compute fee_amount from slabs + transport for the student
     try {
         const finalSlabs = await getStudentSlabs(env, branchId, d.class_id, d.category, d.session);
         const slabAnnual = computeSlabAnnual(finalSlabs);
@@ -1086,7 +1080,7 @@ router.post('/api/students', async (req, env) => {
         if (computedFee > 0) {
             await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, studentId).run();
         }
-    } catch(e) { /* fee_amount stays as 0 if computation fails */ }
+    } catch(e) {  }
     const studentPwd = generatePassword();
     const studentPwdHash = await hashPassword(studentPwd);
     await env.DB.prepare('INSERT INTO users (login_id, password_hash, role, branch_id, linked_id) VALUES (?,?,?,?,?)')
@@ -1143,7 +1137,7 @@ router.put('/api/students/:id', async (req, env, params) => {
             d.extra_data ?? existing.extra_data ?? '{}',
             params.id
         ).run();
-    // Auto-recompute fee_amount if class or route changed
+
     const finalClassId = d.class_id ?? existing.class_id;
     const finalRouteId = d.route_id ?? existing.route_id;
     const finalCategory = d.category ?? existing.category ?? 'Default';
@@ -1157,12 +1151,11 @@ router.put('/api/students/:id', async (req, env, params) => {
             const tFee = route ? Number(route.fee||0)*12 : 0;
             const computedFee = roundCurrency(slabAnnual + tFee);
             await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, params.id).run();
-        } catch(e) { /* keep existing fee_amount */ }
+        } catch(e) {  }
     }
     return json({ success: true });
 });
 
-// Bulk recompute fee_amount for all active students
 router.post('/api/students/recompute-fees', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
@@ -1181,7 +1174,7 @@ router.post('/api/students/recompute-fees', async (req, env) => {
             const computedFee = roundCurrency(slabAnnual + tFee);
             await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(computedFee, stu.id).run();
             updated++;
-        } catch(e) { /* skip this student */ }
+        } catch(e) {  }
     }
     return json({ success: true, updated, total: students.length });
 });
@@ -1405,7 +1398,7 @@ router.post('/api/attendance/students', async (req, env) => {
         await env.DB.prepare('INSERT OR REPLACE INTO student_attendance (branch_id, student_id, date, status, remark, marked_by) VALUES (?,?,?,?,?,?)')
             .bind(bid, r.student_id, date, r.status, r.remark || '', user.id).run();
     }
-    // Auto email for absent/present students
+
     try {
         const _absIds = (records||[]).filter(r => r.status === 'Absent').map(r => r.student_id).filter(Boolean);
         const _presIds = (records||[]).filter(r => r.status === 'Present').map(r => r.student_id).filter(Boolean);
@@ -1704,7 +1697,6 @@ router.get('/api/fee-due-report', async (req, env) => {
 
         const stuDiscounts = allDiscounts[student.id] || [];
 
-        // Calculate total paid across ALL months (not just per-month)
         let totalPaidAllMonths = 0;
         for (const monthName of monthsToCheck) {
             const deposits = allDeposits[`${student.id}_${monthName}`] || [];
@@ -1712,7 +1704,6 @@ router.get('/api/fee-due-report', async (req, env) => {
         }
         totalPaidAllMonths = roundCurrency(totalPaidAllMonths);
 
-        // Calculate total annual charge
         let totalAnnualCharge = 0;
         for (const monthName of monthsToCheck) {
             const monthDiscs = stuDiscounts.filter(d => !d.month || d.month === '' || d.month === monthName);
@@ -1722,14 +1713,11 @@ router.get('/api/fee-due-report', async (req, env) => {
         }
         totalAnnualCharge = roundCurrency(totalAnnualCharge);
 
-        // If total paid covers entire annual fee + old balance, skip — no dues
         if (totalPaidAllMonths >= roundCurrency(totalAnnualCharge + oldBalance)) continue;
 
-        // Distribute payments across months: use remaining pool after each month
         let paymentPool = totalPaidAllMonths;
         let totalDue = oldBalance;
 
-        // First deduct old balance from pool
         if (paymentPool > 0 && oldBalance > 0) {
             paymentPool = Math.max(0, roundCurrency(paymentPool - oldBalance));
         }
@@ -2096,8 +2084,7 @@ router.post('/api/exam-results', async (req, env) => {
     const { exam_id, results: marks, branch_id } = await req.json();
     const bid = await getWritableBranchId(req, env, user, branch_id);
     if (!exam_id || !Array.isArray(marks) || !marks.length) return json({ error: 'exam_id and results are required' }, 400);
-    
-    // Use exam_id directly (from exam_names table) - no resolution needed
+
     const finalExamId = Number(exam_id);
     
     let teacherAssignments = [];
@@ -2145,8 +2132,7 @@ router.get('/api/exam-results', async (req, env) => {
     const b = [];
     const effBranch = await getEffectiveBranchId(req, env, user);
     if (effBranch) { q += ' AND er.branch_id=?'; b.push(effBranch); }
-    
-    // Use exam_id directly (from exam_names table) - no resolution needed
+
     if (examId) {
         q += ' AND er.exam_id=?'; b.push(Number(examId));
     }
@@ -3216,7 +3202,7 @@ async function tryAutoEmail(env, branchId, settingKey, toEmail, toName, subject,
         const fromEmail = settings['zoho_from_email'] || 'noreply@edunex1.com';
         const fromName = settings['zoho_from_name'] || 'EduNex1';
         await sendViaZoho(apiKey, fromEmail, fromName, toEmail, toName || toEmail, subject, htmlBody);
-    } catch(e) { /* silent */ }
+    } catch(e) {  }
 }
 
 router.post('/api/email/send', async (req, env) => {
@@ -3268,12 +3254,12 @@ router.post('/api/email/send', async (req, env) => {
 });
 
 router.get('/api/sms-log', async (req, env) => {
-    // SMS feature disabled - returning empty log
+
     return json([]);
 });
 
 router.post('/api/sms/send', async (req, env) => {
-    // SMS feature disabled
+
     return json({ error: 'SMS feature is currently disabled. Please contact administrator.' }, 400);
 });
 
@@ -3582,7 +3568,7 @@ router.post('/api/students/promote', async (req, env) => {
     for (const sid of student_ids) {
         const stu = await env.DB.prepare('SELECT id, class_id, session, category, route_id, old_balance FROM students WHERE id=?').bind(sid).first();
         if (!stu) continue;
-        // Use session-aware slab helper for OLD class (before promotion)
+
         const oldSlabs = await getStudentSlabs(env, bid, stu.class_id, stu.category, stu.session);
         const annualSlabFee = roundCurrency(computeSlabAnnual(oldSlabs));
         const route = stu.route_id ? await env.DB.prepare('SELECT fee FROM transport_routes WHERE id=?').bind(stu.route_id).first() : null;
@@ -3590,14 +3576,14 @@ router.post('/api/students/promote', async (req, env) => {
         const annualFee = roundCurrency(annualSlabFee + transportFee * 12);
         const paidRow = await env.DB.prepare('SELECT COALESCE(SUM(received_amount),0) as total FROM fee_deposits WHERE student_id=? AND session=?').bind(sid, stu.session||'').first();
         const totalPaid = roundCurrency(paidRow ? paidRow.total : 0);
-        // Session-filtered discounts
+
         const discRow = await env.DB.prepare('SELECT COALESCE(SUM(amount),0) as total FROM fee_discounts WHERE student_id=? AND branch_id=? AND (session=? OR session IS NULL OR session=\'\')').bind(sid, bid, stu.session||'').first();
         const totalDisc = roundCurrency(discRow ? discRow.total : 0);
         const unpaid = Math.max(0, roundCurrency(annualFee - totalPaid - totalDisc));
         const newOldBalance = roundCurrency((stu.old_balance || 0) + unpaid);
         await env.DB.prepare('UPDATE students SET class_id=?, section=?, session=?, old_balance=?, fee_paid=0 WHERE id=?')
             .bind(to_class_id, to_section||'', to_session||'', newOldBalance, sid).run();
-        // Recompute fee_amount for the NEW class and session
+
         try {
             const newSlabs = await getStudentSlabs(env, bid, to_class_id, stu.category, to_session);
             const newSlabAnnual = computeSlabAnnual(newSlabs);
@@ -3605,7 +3591,7 @@ router.post('/api/students/promote', async (req, env) => {
             const newTFee = newRoute ? Number(newRoute.fee||0)*12 : 0;
             const newFeeAmount = roundCurrency(newSlabAnnual + newTFee);
             await env.DB.prepare('UPDATE students SET fee_amount=? WHERE id=?').bind(newFeeAmount, sid).run();
-        } catch(e) { /* keep existing fee_amount */ }
+        } catch(e) {  }
         if (Array.isArray(subject_ids)) {
             await env.DB.prepare('DELETE FROM student_subjects WHERE student_id=?').bind(sid).run();
             for (const subjectId of subject_ids) {
@@ -4014,7 +4000,7 @@ router.get('/api/dashboard/stats', async (req, env) => {
     for (const st of activeStudentsForFee) {
         const cat = st.category || 'Default';
         const sess = st.session || '';
-        // Filter slabs by class, category, and session (with fallback to empty session)
+
         let stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (sl.session||'') === sess);
         if (!stuSlabs.length && sess) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === cat && (!sl.session || sl.session === ''));
         if (!stuSlabs.length) stuSlabs = allSlabs.filter(sl => sl.class_id === st.class_id && (sl.category||'Default') === 'Default' && ((sl.session||'') === sess || !sl.session || sl.session === ''));
@@ -4173,7 +4159,7 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
     return json({ ok: true });
 });
 
-/* ─── Teacher Permission Requests ─── */
+
 router.get('/api/teacher-permission-requests', async (req, env) => {
     const user = await authenticate(req, env);
     if (!user) return json({ error: 'Unauthorized' }, 401);
@@ -4186,18 +4172,15 @@ router.get('/api/teacher-permission-requests', async (req, env) => {
         LEFT JOIN users u ON tpr.reviewed_by = u.id
         WHERE 1=1`;
     const b = [];
-    
-    // Branch filtering
+
     const effBranch = await getEffectiveBranchId(req, env, user);
     if (effBranch) { q += ' AND tpr.branch_id=?'; b.push(effBranch); }
-    
-    // Teacher can only see their own requests
+
     if (user.role === 'teacher') {
         q += ' AND tpr.staff_id=?';
         b.push(user.linked_id);
     }
-    
-    // Filters
+
     const status = url.searchParams.get('status');
     const requestType = url.searchParams.get('request_type');
     const staffId = url.searchParams.get('staff_id');
@@ -4230,11 +4213,9 @@ router.get('/api/teacher-permission-requests/:id', async (req, env, params) => {
         WHERE tpr.id=?`).bind(params.id).first();
     
     if (!row) return json({ error: 'Not found' }, 404);
-    
-    // Branch access check
+
     if (!(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
-    
-    // Teacher can only view their own requests
+
     if (user.role === 'teacher' && Number(row.staff_id) !== Number(user.linked_id)) {
         return json({ error: 'Forbidden' }, 403);
     }
@@ -4247,8 +4228,7 @@ router.post('/api/teacher-permission-requests', async (req, env) => {
     if (!user || user.role !== 'teacher') return json({ error: 'Only teachers can submit permission requests' }, 403);
     
     const d = await req.json();
-    
-    // Validation
+
     if (!d.request_type || !d.subject) {
         return json({ error: 'Request type and subject are required' }, 400);
     }
@@ -4260,12 +4240,10 @@ router.post('/api/teacher-permission-requests', async (req, env) => {
     
     const validPriorities = ['Normal', 'Urgent'];
     const priority = validPriorities.includes(d.priority) ? d.priority : 'Normal';
-    
-    // Get teacher's branch from staff record
+
     const staff = await env.DB.prepare('SELECT id, branch_id FROM staff WHERE id=?').bind(user.linked_id).first();
     if (!staff) return json({ error: 'Teacher profile not found' }, 404);
-    
-    // Sanitize inputs
+
     const subject = String(d.subject || '').trim().slice(0, 200);
     const description = String(d.description || '').trim().slice(0, 2000);
     
@@ -4286,11 +4264,9 @@ router.put('/api/teacher-permission-requests/:id', async (req, env, params) => {
     
     const existing = await env.DB.prepare('SELECT * FROM teacher_permission_requests WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    
-    // Branch access check
+
     if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
-    
-    // Teacher can only edit their own PENDING requests
+
     if (user.role === 'teacher') {
         if (Number(existing.staff_id) !== Number(user.linked_id)) {
             return json({ error: 'Forbidden' }, 403);
@@ -4298,8 +4274,7 @@ router.put('/api/teacher-permission-requests/:id', async (req, env, params) => {
         if (existing.status !== 'Pending') {
             return json({ error: 'Cannot edit request that has been reviewed' }, 400);
         }
-        
-        // Teacher can only update subject, description, priority
+
         const updates = {};
         if (d.subject !== undefined) updates.subject = String(d.subject).trim().slice(0, 200);
         if (d.description !== undefined) updates.description = String(d.description).trim().slice(0, 2000);
@@ -4316,8 +4291,7 @@ router.put('/api/teacher-permission-requests/:id', async (req, env, params) => {
         
         return json({ success: true });
     }
-    
-    // Admin can approve/reject
+
     if (!isAdminRole(user)) return json({ error: 'Forbidden' }, 403);
     
     const status = String(d.status || '').trim();
@@ -4345,11 +4319,9 @@ router.delete('/api/teacher-permission-requests/:id', async (req, env, params) =
     
     const existing = await env.DB.prepare('SELECT * FROM teacher_permission_requests WHERE id=?').bind(params.id).first();
     if (!existing) return json({ error: 'Not found' }, 404);
-    
-    // Branch access check
+
     if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
-    
-    // Teacher can only delete their own PENDING requests
+
     if (user.role === 'teacher') {
         if (Number(existing.staff_id) !== Number(user.linked_id)) {
             return json({ error: 'Forbidden' }, 403);

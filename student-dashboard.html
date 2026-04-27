@@ -173,7 +173,7 @@
 
             const deps = await getFeeDeposits({student_id:stu.id})||[];
             const slabs = await getFeeSlabs(stu.class_id, stu.session)||[];
-            // Filter: exclude transport, match student category
+
             const nonTransport = slabs.filter(function(x){ return !x.is_transport; });
             const stuCat = stu.category || 'Default';
             const catSlabs = nonTransport.filter(function(x){ return (x.category||'Default') === stuCat; });

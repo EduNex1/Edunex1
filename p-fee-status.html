@@ -16,7 +16,7 @@
     <script src="js/modernizr-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* ===== Fee Summary Row ===== */
+        
         .fee-summary-row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -59,7 +59,7 @@
         .fee-box.box-oldbal { border-top: 3px solid #6a1b9a; }
         .fee-box.box-oldbal .fb-value { color: #6a1b9a; }
 
-        /* ===== Month Grid ===== */
+        
         .month-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -111,7 +111,7 @@
         .month-tile.upcoming .mt-amount { color: #9e9e9e; }
         .month-tile.upcoming .mt-badge { background: #f5f5f5; color: #757575; }
 
-        /* ===== Breakdown List ===== */
+        
         .bd-row {
             display: flex;
             justify-content: space-between;
@@ -127,7 +127,7 @@
         .bd-row.bd-total .bd-name { font-weight: 700; color: #0d1b4a; }
         .bd-row.bd-total .bd-val { font-weight: 800; font-size: 15px; }
 
-        /* ===== Payment Row ===== */
+        
         .pay-row {
             display: flex;
             align-items: center;
@@ -149,7 +149,7 @@
         .pay-amt .pa-val { font-size: 14px; font-weight: 700; color: #2e7d32; }
         .pay-amt .pa-bal { font-size: 10px; color: #c62828; }
 
-        /* ===== Responsive ===== */
+        
         @media (max-width: 991px) {
             .fee-summary-row { grid-template-columns: repeat(2, 1fr); }
             .month-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -328,7 +328,6 @@
                 getFeeSlabs(child.class_id, child.session)
             ]);
 
-            // Parse applicable months for each slab to build per-month charges
             function _parseMonths(slab) {
                 try { const mp = typeof slab.months==='string'&&slab.months ? JSON.parse(slab.months) : (Array.isArray(slab.months)?slab.months:null); return Array.isArray(mp)?mp:SCHOOL_MONTHS; } catch(e){ return SCHOOL_MONTHS; }
             }
@@ -341,12 +340,12 @@
             }
             const transportFee = Number(child.transport_fee||0);
             const oldBalance = Number(child.old_balance||0);
-            // Filter slabs: exclude transport, match student category
+
             const nonTransportSlabs = (slabs||[]).filter(function(x){ return !x.is_transport; });
             const childCat = child.category || 'Default';
             const catSlabs = nonTransportSlabs.filter(function(x){ return (x.category||'Default') === childCat; });
             const filteredSlabs = catSlabs.length ? catSlabs : nonTransportSlabs.filter(function(x){ return (x.category||'Default') === 'Default'; });
-            // Build per-month fee map
+
             const monthFeeMap = {};
             SCHOOL_MONTHS.forEach(m => { monthFeeMap[m] = transportFee; });
             filteredSlabs.forEach(x => {
@@ -386,12 +385,11 @@
             const totalPaid = (deps||[]).reduce((s,x)=>s+Number(x.received_amount||0),0);
             const pending = Math.max(0, annualFee + oldBalance - totalPaid - totalDisc);
 
-            // Pool-based month tile calculation: distribute total paid across months (Apr→Mar)
             let paymentPool = totalPaid;
             let paidMonths = 0;
-            // Deduct old balance from pool first
+
             if (paymentPool > 0 && oldBalance > 0) { paymentPool = Math.max(0, paymentPool - oldBalance); }
-            // Distribute blanket discount across months proportionally
+
             const blanketDiscPerMonth = SCHOOL_MONTHS.length > 0 ? blanketDiscTotal / SCHOOL_MONTHS.length : 0;
 
             const monthStatus = {};

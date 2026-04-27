@@ -20,7 +20,7 @@
     <style>
         .att-wrap { display: flex; gap: 16px; min-height: 480px; }
 
-        /* Camera */
+        
         .cam-box {
             flex: 1; background: #000; border-radius: 12px; overflow: hidden;
             position: relative; min-height: 400px;
@@ -34,7 +34,7 @@
         }
         @keyframes scanAnim { 0% { top: 0; } 100% { top: 100%; } }
 
-        /* Topbar on camera */
+        
         .cam-top {
             position: absolute; top: 0; left: 0; right: 0; padding: 10px 14px;
             background: linear-gradient(180deg, rgba(0,0,0,.55), transparent);
@@ -54,7 +54,7 @@
         }
         .cam-top .cb:hover { background: rgba(255,255,255,.3); }
 
-        /* Loader */
+        
         .cam-ld {
             position: absolute; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; background: rgba(0,0,0,.85);
@@ -64,10 +64,10 @@
         .cam-ld p { font-size: 13px; margin: 0; }
         .cam-ld .sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 4px; }
 
-        /* Side panel */
+        
         .side-col { width: 320px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
 
-        /* Clock */
+        
         .clk-card {
             background: #fff; border-radius: 12px; padding: 14px; text-align: center;
             box-shadow: 0 2px 12px rgba(0,0,0,.06);
@@ -75,7 +75,7 @@
         .clk-card .cd { font-size: 12px; font-weight: 600; color: #555; }
         .clk-card .ct { font-size: 26px; font-weight: 800; color: #0d1b4a; font-variant-numeric: tabular-nums; }
 
-        /* Rec card */
+        
         .rec-card {
             background: #fff; border-radius: 12px; padding: 16px; text-align: center;
             box-shadow: 0 2px 12px rgba(0,0,0,.06); animation: slideIn .3s ease;
@@ -107,7 +107,7 @@
         .rec-card .ptag.present { background: #e8f5e9; color: #2e7d32; }
         .rec-card .ptag.late { background: #fff3e0; color: #e65100; }
 
-        /* Absent notification */
+        
         .absent-notif {
             background: #ffebee; border: 1px solid #ef9a9a; border-radius: 10px; padding: 10px 14px;
             font-size: 11px; color: #c62828; font-weight: 600; text-align: center;
@@ -115,7 +115,7 @@
         }
         .absent-notif i { margin-right: 4px; }
 
-        /* Timing bar */
+        
         .timing-bar {
             display: flex; align-items: center; gap: 10px; background: #fff;
             border-radius: 12px; padding: 10px 14px; box-shadow: 0 2px 12px rgba(0,0,0,.06);
@@ -127,7 +127,7 @@
         .timing-bar .tb-val { color: #042954; font-weight: 800; }
         .timing-bar .tb-sep { color: #ddd; }
 
-        /* Log */
+        
         .log-card {
             background: #fff; border-radius: 12px; flex: 1; overflow: hidden;
             box-shadow: 0 2px 12px rgba(0,0,0,.06); display: flex; flex-direction: column;
@@ -157,7 +157,7 @@
         .le i { font-size: 28px; }
         .le p { font-size: 11px; margin-top: 4px; }
 
-        /* Fullscreen */
+        
         .att-wrap.fs { position: fixed; inset: 0; z-index: 9999; background: #000; border-radius: 0; gap: 0; }
         .att-wrap.fs .cam-box { border-radius: 0; height: 100vh; }
         .att-wrap.fs .side-col {

@@ -151,8 +151,7 @@
             const fClass = $('#fClass').val();
             const fSection = $('#fSection').val();
             const fMode = $('#fMode').val();
-            
-            // Date range validation
+
             if (fDateFrom && fDateTo && fDateFrom > fDateTo) {
                 showToast('From date cannot be after To date', 'error');
                 btn.prop('disabled', false).html(originalText);

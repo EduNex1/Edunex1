@@ -160,7 +160,6 @@
         try { bankCache = await getBankAccounts(); } catch(e){ showToast('Failed to load bank accounts','error'); }
         try { txnCache = await getCashTransactions(); } catch(e){ showToast('Failed to load transactions','error'); }
 
-        /* populate filter bank dropdown */
         bankCache.forEach(b=>{
             $('#fBank').append(`<option value="${b.id}">${b.bank_name} (${b.account_no||''})</option>`);
         });

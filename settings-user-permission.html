@@ -74,14 +74,12 @@
         const curUserId = curUser ? curUser.id : 0;
         const isSuperAdm = curUser && curUser.role === 'super_admin';
 
-        // For branch_admin: fetch own permissions to know which modules they can grant
         let myPerms = [];
         if (!isSuperAdm) {
             try { myPerms = await getUserPermissions(curUserId); } catch(e) {}
             myPerms = Array.isArray(myPerms) ? myPerms : [];
         }
 
-        // Visible modules: super_admin sees all 16; branch_admin sees only their accessible modules
         const visibleModules = isSuperAdm
             ? PLATFORM_MODULES
             : PLATFORM_MODULES.filter(m => {
@@ -96,7 +94,7 @@
         let usersCache = [];
         try { usersCache = await getUsers(); } catch(e) {}
         usersCache = Array.isArray(usersCache) ? usersCache : (usersCache.results || []);
-        // Exclude current user from dropdown (cannot edit own permissions)
+
         usersCache.filter(u => u.id !== curUserId).forEach(u => $('#selUser').append(`<option value="${u.id}">${u.login_id} (${u.role})</option>`));
 
         $('#selUser').on('change', async function(){

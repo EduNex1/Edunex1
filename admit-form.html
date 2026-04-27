@@ -21,7 +21,6 @@
     <script src="js/modernizr-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* ─── Admission Form Overrides ─── */
         .admit-form-card {
             border: none;
             border-radius: 10px;
@@ -83,7 +82,6 @@
             min-height: 34px;
         }
 
-        /* Photo area in form */
         .photo-box {
             width: 100px;
             height: 120px;
@@ -126,7 +124,6 @@
             font-size: 9px;
         }
 
-        /* Radio ID type selector */
         .id-type-selector {
             display: flex;
             gap: 14px;
@@ -149,7 +146,6 @@
             accent-color: #304ffe;
         }
 
-        /* Consent note */
         .consent-box {
             background: #f8f9ff;
             border: 1px solid #e0e4f0;
@@ -171,7 +167,6 @@
             margin-right: 8px;
         }
 
-        /* Buttons */
         .form-actions {
             display: flex;
             gap: 10px;
@@ -855,11 +850,10 @@
         });
 
         function getFormData(photoUrl) {
-            // Map radio button value to display name for id_type DB column
+
             const idTypeVal = $('input[name="idType"]:checked').val() || 'aadharshila_id';
             const idTypeMap = { unique_id: 'Unique ID', enrollment_no: 'Enrollment No.', aadharshila_id: 'Aadharshila ID' };
 
-            // Extra data for fields without dedicated DB columns
             const extra = {
                 pen: ($('#pen').val() || '').trim(),
                 id_type_value: ($('#idTypeValue').val() || '').trim(),
@@ -923,7 +917,6 @@
             };
         }
 
-        /* ─── Crop Modal ─── */
         function openCropModal(imgSrc) {
             $('.crop-modal-overlay').remove();
             const html = `
@@ -963,7 +956,6 @@
             closeCropModal();
         }
 
-        /* ─── Document Upload ─── */
         async function addDocument() {
             const name = $('#docName').val().trim();
             const fileInput = document.getElementById('docFileInput');
@@ -1000,7 +992,6 @@
             container.html(html);
         }
 
-        /* ─── Utilities ─── */
         function parseDateInput(d) { if (!d) return ''; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : d; }
         function formatDateForInput(d) { if (!d) return ''; const dt = new Date(d); if (isNaN(dt)) return d; return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear(); }
 
@@ -1029,7 +1020,6 @@
                 $('#formTitle').html('<i class="fas fa-user-edit"></i> Edit Student — ' + s.name);
                 document.title = 'Edit Student — EduNex1';
 
-                // ── Core DB fields ──
                 $('#admissionNo').val(s.admission_no || '');
                 $('#studentName').val(s.name || '');
                 $('#fatherName').val(s.father_name || '');
@@ -1050,18 +1040,15 @@
                 if (s.photo_url) { $('#photoPreview').attr('src', s.photo_url).show(); $('#uploadPlaceholder').hide(); uploadedPhotoUrl = s.photo_url; croppedPhotoBlob = null; }
                 if (s.aadhar_no) $('#aadharNumber').val(s.aadhar_no);
 
-                // ── id_type radio ──
                 if (s.id_type) {
                     const idTypeReverseMap = { 'Unique ID': 'unique_id', 'Enrollment No.': 'enrollment_no', 'Aadharshila ID': 'aadharshila_id' };
                     const radioVal = idTypeReverseMap[s.id_type] || 'aadharshila_id';
                     $('input[name="idType"][value="' + radioVal + '"]').prop('checked', true);
                 }
 
-                // ── Parse extra_data JSON ──
                 let ex = {};
                 try { ex = s.extra_data ? (typeof s.extra_data === 'object' ? s.extra_data : JSON.parse(s.extra_data)) : {}; } catch(e) { ex = {}; }
 
-                // Scholar details
                 if (ex.pen) $('#pen').val(ex.pen);
                 if (ex.id_type_value) $('#idTypeValue').val(ex.id_type_value);
                 if (ex.stream) $('#stream').val(ex.stream);
@@ -1075,14 +1062,12 @@
                 if (ex.sssm_id) $('#sssmId').val(ex.sssm_id);
                 if (ex.blood_group) $('#bloodGroup').val(ex.blood_group);
 
-                // Address details
                 if (ex.state) $('#state').val(ex.state);
                 if (ex.district) $('#district').val(ex.district);
                 if (ex.pin_code) $('#pinCode').val(ex.pin_code);
                 if (ex.nationality) $('#nationality').val(ex.nationality);
                 if (ex.residence_period) $('#residencePeriod').val(ex.residence_period);
 
-                // Guardian details
                 if (ex.guardian_name) $('#guardianName').val(ex.guardian_name);
                 if (ex.guardian_address) $('#guardianAddress').val(ex.guardian_address);
                 if (ex.guardian_mobile) $('#guardianMobile').val(ex.guardian_mobile);
@@ -1090,19 +1075,16 @@
                 if (ex.father_occupation) $('#fatherOccupation').val(ex.father_occupation);
                 if (ex.caste_name) $('#casteName').val(ex.caste_name);
 
-                // TC details
                 if (ex.withdrawal_file_no) $('#withdrawalFileNo').val(ex.withdrawal_file_no);
                 if (ex.scholar_reg_no) $('#scholarRegNo').val(ex.scholar_reg_no);
                 if (ex.last_school) $('#lastSchool').val(ex.last_school);
 
-                // Bank details
                 if (ex.account_holder) $('#accountHolder').val(ex.account_holder);
                 if (ex.bank_branch_name) $('#branchName').val(ex.bank_branch_name);
                 if (ex.account_number) $('#accountNumber').val(ex.account_number);
                 if (ex.ifsc_code) $('#ifscCode').val(ex.ifsc_code);
                 if (ex.security_amount) $('#securityAmount').val(ex.security_amount);
 
-                // Other details
                 if (ex.transport_opt === 'Yes') {
                     $('#transportOpt').val('Yes');
                     $('#routeGroup').show();

@@ -21,7 +21,6 @@
     <script src="js/modernizr-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* ─── Staff Form Overrides (same as admit-form) ─── */
         .admit-form-card { border: none; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         .admit-form-card .card-body { padding: 24px 28px; }
 
@@ -45,7 +44,6 @@
         }
         .admit-form textarea.form-control { height: auto; min-height: 34px; }
 
-        /* Photo area */
         .photo-box {
             width: 100px; height: 120px; border: 2px dashed #c5cae9;
             border-radius: 8px; background: #f8f9ff; cursor: pointer;
@@ -58,7 +56,6 @@
         .photo-box .ph-placeholder i { font-size: 20px; color: #304ffe; display: block; margin-bottom: 2px; }
         .photo-box .ph-placeholder span { font-size: 9px; }
 
-        /* Consent note */
         .consent-box {
             background: #f8f9ff; border: 1px solid #e0e4f0; border-radius: 8px;
             padding: 14px 18px; margin: 16px 0;
@@ -66,7 +63,6 @@
         .consent-box label { text-transform: none; font-size: 12px; font-weight: 500; color: #444; cursor: pointer; }
         .consent-box input[type="checkbox"] { accent-color: #304ffe; margin-right: 8px; }
 
-        /* Buttons */
         .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
         .form-actions .btn-submit {
             background: #0d1b4a; color: #fff;
@@ -481,7 +477,6 @@
             };
         }
 
-        /* ─── Crop Modal ─── */
         function openCropModal(imgSrc) {
             $('.crop-modal-overlay').remove();
             const html = `
@@ -521,7 +516,6 @@
             closeCropModal();
         }
 
-        /* ─── Document Upload ─── */
         async function addDocument() {
             const name = $('#docName').val().trim();
             const fileInput = document.getElementById('docFileInput');
@@ -558,11 +552,9 @@
             container.html(html);
         }
 
-        /* ─── Utilities ─── */
         function parseDateInput(d) { if (!d) return ''; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : d; }
         function formatDateForInput(d) { if (!d) return ''; const dt = new Date(d); if (isNaN(dt)) return d; return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + dt.getFullYear(); }
 
-        /* ─── Validation ─── */
         function validateForm() {
             let v = true;
             const req = ['staffName', 'fatherName', 'dob', 'gender', 'phone', 'email', 'address', 'designation', 'qualification', 'joiningDate'];

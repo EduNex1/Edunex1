@@ -1,10 +1,4 @@
-/**
- * ============================================
- * SCHOOL MANAGEMENT SYSTEM — MOCK DATA STORE
- * ============================================
- * Centralized data for all modules.
- * Will be replaced by Cloudflare D1 API calls later.
- */
+
 
 const SCHOOL_CONFIG = {
     name: "Vaish Khan International School",
@@ -20,7 +14,6 @@ const SCHOOL_CONFIG = {
     schoolCode: "12345"
 };
 
-// ==================== BRANCHES (used by dashboard/template) ====================
 const SCHOOL_BRANCHES = [
     { id: 1, name: "Lucknow", code: "LKN", address: "NH-24, Lucknow, UP", status: "Active", studentsCount: 1250, teachersCount: 85 },
     { id: 2, name: "Bareilly", code: "BRL", address: "Civil Lines, Bareilly, UP", status: "Active", studentsCount: 980, teachersCount: 62 },
@@ -28,7 +21,6 @@ const SCHOOL_BRANCHES = [
     { id: 4, name: "Barabanki", code: "BBK", address: "Station Road, Barabanki, UP", status: "Active", studentsCount: 520, teachersCount: 35 }
 ];
 
-// ==================== SESSIONS ====================
 const SESSIONS = [
     { id: 1, name: "2023-2024", startDate: "2023-04-01", endDate: "2024-03-31", status: "Completed" },
     { id: 2, name: "2024-2025", startDate: "2024-04-01", endDate: "2025-03-31", status: "Completed" },
@@ -37,7 +29,6 @@ const SESSIONS = [
 
 const CURRENT_SESSION = SESSIONS.find(s => s.status === "Active");
 
-// ==================== CLASSES ====================
 const CLASSES = [
     { id: 1, name: "Nursery", shortName: "NUR", fee: 2500 },
     { id: 2, name: "LKG", shortName: "LKG", fee: 2800 },
@@ -56,7 +47,6 @@ const CLASSES = [
     { id: 15, name: "12", shortName: "XII", fee: 6000 }
 ];
 
-// ==================== SECTIONS ====================
 const SECTIONS = [
     { id: 1, name: "A" },
     { id: 2, name: "B" },
@@ -64,13 +54,10 @@ const SECTIONS = [
     { id: 4, name: "D" }
 ];
 
-// ==================== CATEGORIES ====================
 const CATEGORIES = ["General", "OBC", "SC", "ST", "EWS"];
 
-// ==================== RELIGIONS ====================
 const RELIGIONS = ["Hindu", "Muslim", "Christian", "Sikh", "Buddhist", "Jain", "Other"];
 
-// ==================== SUBJECTS ====================
 const SUBJECTS = [
     { id: 1, name: "Hindi", code: "HIN", hasPractical: false },
     { id: 2, name: "English", code: "ENG", hasPractical: false },
@@ -86,21 +73,17 @@ const SUBJECTS = [
     { id: 12, name: "Moral Science", code: "MS", hasPractical: false }
 ];
 
-// Class IDs 12(9th), 13(10th), 14(11th), 15(12th) are senior secondary
 const SENIOR_CLASS_IDS = [12, 13, 14, 15];
 function isSeniorClass(classId) { return SENIOR_CLASS_IDS.includes(classId); }
 
-// Co-Scholastic areas (graded A-E, only for 9-12 report cards)
 const CO_SCHOLASTIC_AREAS = [
     { id: 1, name: "Work Education" },
     { id: 2, name: "Art Education" },
     { id: 3, name: "Health & Physical Education" }
 ];
 
-// Discipline grading (A/B/C)
 const DISCIPLINE_GRADES = ['A', 'B', 'C'];
 
-// Co-scholastic grade helper (5-point scale)
 function getCoScholasticGrade(val) {
     if (val >= 5) return 'A';
     if (val >= 4) return 'B';
@@ -109,7 +92,6 @@ function getCoScholasticGrade(val) {
     return 'E';
 }
 
-// Co-scholastic results per student per exam
 let CO_SCHOLASTIC_RESULTS = [
     { studentId: 1, examId: 2, areaId: 1, grade: 'A' },
     { studentId: 1, examId: 2, areaId: 2, grade: 'B' },
@@ -127,7 +109,6 @@ function getCoScholastic(studentId, examId) {
     return { areas, discipline: disc ? disc.discipline : '—' };
 }
 
-// ==================== ROUTES ====================
 const ROUTES = [
     { id: 1, name: "Route 1 — Aliganj → School", stops: "Aliganj, Kapoorthala, Mahanagar", fee: 800 },
     { id: 2, name: "Route 2 — Gomtinagar → School", stops: "Gomtinagar, Vikas Nagar, Indira Nagar", fee: 900 },
@@ -136,7 +117,6 @@ const ROUTES = [
     { id: 5, name: "Route 5 — Jankipuram → School", stops: "Jankipuram, Sitapur Road, Vikas Nagar", fee: 950 }
 ];
 
-// ==================== STUDENTS ====================
 let STUDENTS = [
     {
         id: 1, admissionNo: "ADM-2025-001",
@@ -420,7 +400,6 @@ let STUDENTS = [
     }
 ];
 
-// ==================== CHARACTER CERTIFICATES ====================
 let CHARACTER_CERTIFICATES = [
     {
         id: 1,
@@ -433,10 +412,8 @@ let CHARACTER_CERTIFICATES = [
     }
 ];
 
-// ==================== PROMOTION RECORDS ====================
 let PROMOTION_RECORDS = [];
 
-// ==================== ACTIVITY LOG (legacy template) ====================
 let SYSTEM_ACTIVITY_LOG = [
     { id: 1, user: "Admin", action: "Logged In", module: "Auth", timestamp: "2026-02-27 09:00:00", details: "Login from 192.168.1.1" },
     { id: 2, user: "Admin", action: "Viewed", module: "Students", timestamp: "2026-02-27 09:05:00", details: "Viewed Student List" },
@@ -445,32 +422,23 @@ let SYSTEM_ACTIVITY_LOG = [
     { id: 5, user: "Admin", action: "Deleted", module: "Students", timestamp: "2026-02-27 10:30:00", details: "Removed duplicate record #999" }
 ];
 
-// ==================== HELPER FUNCTIONS ====================
 
-/**
- * Get class object by ID
- */
+
 function getClassById(classId) {
     return CLASSES.find(c => c.id === classId) || null;
 }
 
-/**
- * Get subject object by ID
- */
+
 function getSubjectById(subjectId) {
     return SUBJECTS.find(s => s.id === subjectId) || null;
 }
 
-/**
- * Get route object by ID
- */
+
 function getRouteById(routeId) {
     return ROUTES.find(r => r.id === routeId) || null;
 }
 
-/**
- * Get students by class and optional section
- */
+
 function getStudentsByClass(classId, section) {
     return STUDENTS.filter(s => {
         let match = s.classId === classId;
@@ -481,11 +449,7 @@ function getStudentsByClass(classId, section) {
     });
 }
 
-/**
- * Sort students array by given criteria
- * @param {Array} students - Array of student objects
- * @param {string} orderBy - 'rollNo' | 'admNo' | 'nameAZ' | 'nameZA'
- */
+
 function sortStudents(students, orderBy) {
     switch (orderBy) {
         case 'admNo':
@@ -504,9 +468,7 @@ function sortStudents(students, orderBy) {
     return students;
 }
 
-/**
- * Filter students by multiple criteria
- */
+
 function filterStudents(filters) {
     return STUDENTS.filter(s => {
         let match = true;
@@ -538,9 +500,7 @@ function filterStudents(filters) {
     });
 }
 
-/**
- * Generate next admission number
- */
+
 function generateAdmissionNo() {
     const year = new Date().getFullYear();
     const maxNo = STUDENTS.reduce((max, s) => {
@@ -551,16 +511,12 @@ function generateAdmissionNo() {
     return `ADM-${year}-${String(maxNo + 1).padStart(3, '0')}`;
 }
 
-/**
- * Generate next student ID
- */
+
 function generateStudentId() {
     return STUDENTS.length > 0 ? Math.max(...STUDENTS.map(s => s.id)) + 1 : 1;
 }
 
-/**
- * Format date to DD/MM/YYYY
- */
+
 function formatDate(dateStr) {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -570,9 +526,7 @@ function formatDate(dateStr) {
     return `${day}/${month}/${year}`;
 }
 
-/**
- * Get student subject names as array
- */
+
 function getStudentSubjectNames(student) {
     return (student.subjects || []).map(sid => {
         const subj = getSubjectById(sid);
@@ -580,16 +534,12 @@ function getStudentSubjectNames(student) {
     }).filter(Boolean);
 }
 
-/**
- * Check if student is already promoted for a given session
- */
+
 function isStudentPromoted(studentId, toSession) {
     return PROMOTION_RECORDS.find(p => p.studentId === studentId && p.toSession === toSession) || null;
 }
 
-/**
- * Add a new student
- */
+
 function addStudent(studentData) {
     studentData.id = generateStudentId();
     studentData.admissionNo = generateAdmissionNo();
@@ -599,9 +549,7 @@ function addStudent(studentData) {
     return studentData;
 }
 
-/**
- * Delete a student by ID
- */
+
 function deleteStudent(studentId) {
     const student = STUDENTS.find(s => s.id === studentId);
     if (student) {
@@ -612,9 +560,7 @@ function deleteStudent(studentId) {
     return false;
 }
 
-/**
- * Add activity log entry
- */
+
 function addActivityLog(action, module, details) {
     ACTIVITY_LOG.push({
         id: ACTIVITY_LOG.length + 1,
@@ -626,9 +572,7 @@ function addActivityLog(action, module, details) {
     });
 }
 
-/**
- * Get category-wise student count
- */
+
 function getCategoryWiseCounts() {
     const counts = {};
     CATEGORIES.forEach(cat => {
@@ -637,9 +581,7 @@ function getCategoryWiseCounts() {
     return counts;
 }
 
-/**
- * Get class-wise student count
- */
+
 function getClassWiseCounts() {
     const counts = {};
     CLASSES.forEach(cls => {
@@ -648,8 +590,6 @@ function getClassWiseCounts() {
     return counts;
 }
 
-
-// ==================== EXAMS ====================
 
 const EXAMS = [
     {
@@ -721,8 +661,6 @@ function getSubjectById(id) {
 }
 
 
-// ==================== TRANSFER CERTIFICATES ====================
-
 let tcCounter = 3;
 let TRANSFER_CERTIFICATES = [
     {
@@ -753,15 +691,12 @@ let TRANSFER_CERTIFICATES = [
     }
 ];
 
-
-// ==================== STAFF DESIGNATIONS ====================
 const STAFF_DESIGNATIONS = [
     'Principal', 'Vice Principal', 'Teacher',
     'Clerk', 'Accountant', 'Peon', 'Librarian', 'Lab Assistant',
     'Sports Coach', 'Counselor', 'Driver', 'Guard'
 ];
 
-// ==================== STAFF ====================
 let STAFF = [
     {
         id: 1, employeeId: 'EMP-2025-001',
@@ -1020,7 +955,6 @@ let STAFF = [
     }
 ];
 
-// ==================== STAFF HELPER FUNCTIONS ====================
 
 function generateEmployeeId() {
     const year = new Date().getFullYear();
@@ -1067,11 +1001,9 @@ function deleteStaff(staffId) {
     return false;
 }
 
-// ==================== STAFF ATTENDANCE ====================
 
 let STAFF_ATTENDANCE = [];
 
-// Auto-generate attendance for last 30 days (excluding Sundays)
 (function generateStaffAttendance() {
     const activeStaff = STAFF.filter(s => s.status === 'Active');
     const today = new Date();
@@ -1101,9 +1033,9 @@ function getStaffAttendance(date) {
 }
 
 function saveStaffAttendance(date, records) {
-    // Remove existing records for this date
+
     STAFF_ATTENDANCE = STAFF_ATTENDANCE.filter(a => a.date !== date);
-    // Add new records
+
     records.forEach(r => {
         STAFF_ATTENDANCE.push({
             staffId: r.staffId,
@@ -1133,11 +1065,9 @@ function getStaffAttendanceSummary(staffId, fromDate, toDate) {
     return { present, absent, leave, total, percentage };
 }
 
-// ==================== STUDENT ATTENDANCE ====================
 
 let STUDENT_ATTENDANCE = [];
 
-// Auto-generate attendance for last 30 days (excluding Sundays)
 (function generateStudentAttendance() {
     const activeStudents = STUDENTS.filter(s => s.status === 'Active');
     const today = new Date();
@@ -1167,10 +1097,10 @@ function getStudentAttendance(date) {
 }
 
 function saveStudentAttendance(date, records) {
-    // Remove existing records for this date matching these students
+
     const studentIds = records.map(r => r.studentId);
     STUDENT_ATTENDANCE = STUDENT_ATTENDANCE.filter(a => !(a.date === date && studentIds.includes(a.studentId)));
-    // Add new records
+
     records.forEach(r => {
         STUDENT_ATTENDANCE.push({
             studentId: r.studentId,
@@ -1200,15 +1130,12 @@ function getStudentAttendanceSummary(studentId, fromDate, toDate) {
     return { present, absent, leave, total, percentage };
 }
 
-/**
- * Get date-wise attendance summary for a class/section
- */
+
 function getStudentAttendanceDateWise(classId, section, fromDate, toDate) {
     const students = STUDENTS.filter(s => s.status === 'Active' && s.classId === classId && s.section === section);
     const studentIds = students.map(s => s.id);
     const records = STUDENT_ATTENDANCE.filter(a => a.date >= fromDate && a.date <= toDate && studentIds.includes(a.studentId));
 
-    // Group by date
     const dateMap = {};
     records.forEach(r => {
         if (!dateMap[r.date]) dateMap[r.date] = { date: r.date, present: 0, absent: 0, leave: 0, total: 0 };
@@ -1221,7 +1148,6 @@ function getStudentAttendanceDateWise(classId, section, fromDate, toDate) {
     return Object.values(dateMap).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-// ==================== NOTICES ====================
 let noticeCounter = 6;
 let NOTICES = [
     { id: 1, date: '2026-03-03', notice: 'Annual examination schedule has been published. All students must check the notice board for details.', displayTo: ['students', 'teachers'], createdAt: '2026-03-03' },
@@ -1243,7 +1169,6 @@ function updateNotice(id, data) {
 }
 function deleteNotice(id) { NOTICES = NOTICES.filter(x => x.id !== id); }
 
-// ==================== TIMETABLE ====================
 let timetableCounter = 25;
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const PERIODS = [
@@ -1258,7 +1183,7 @@ const PERIODS = [
 ];
 
 let TIMETABLE = [];
-// Auto-generate sample timetable for Class 5 Section A
+
 (function () {
     const subjectIds = [1, 2, 3, 4, 5, 6, 11];
     const teacherIds = STAFF.filter(s => s.designation === 'Teacher' && s.status === 'Active').map(s => s.id);
@@ -1308,7 +1233,6 @@ function filterTimetable(filters) {
     }).sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.periodNo - b.periodNo);
 }
 
-// ==================== COURSE SCHEDULE ====================
 let scheduleCounter = 8;
 let COURSE_SCHEDULES = [
     { id: 1, classId: 8, subjectId: 3, examId: 1, schedule: '2026-02-01 to 2026-02-15', topic: 'Algebra — Linear Equations', assignment: 'Exercise 5.1, 5.2' },
@@ -1342,7 +1266,6 @@ function filterSchedules(filters) {
     });
 }
 
-// ==================== SYLLABUS ====================
 let syllabusCounter = 6;
 let SYLLABI = [
     { id: 1, classId: 8, subjectId: 3, title: 'Mathematics — Class 5 Full Syllabus', note: 'Covers all chapters as per CBSE 2025-26 curriculum', fileName: 'maths_class5_syllabus.pdf', status: 'Published', createdAt: '2026-01-15' },
@@ -1364,7 +1287,6 @@ function updateSyllabus(id, data) {
 }
 function deleteSyllabus(id) { SYLLABI = SYLLABI.filter(x => x.id !== id); }
 
-// ==================== DATE SHEETS ====================
 let dateSheetCounter = 4;
 let dateSheetEntryCounter = 30;
 let DATE_SHEETS = [
@@ -1439,7 +1361,6 @@ function deleteDateSheetEntry(sheetId, entryId) {
 }
 function getDateSheetById(id) { return DATE_SHEETS.find(x => x.id === id); }
 
-// ==================== HOLIDAYS ====================
 let holidayCounter = 8;
 let HOLIDAYS = [
     { id: 1, date: '2026-01-26', title: 'Republic Day', description: 'National holiday — Republic Day celebration' },
@@ -1454,7 +1375,6 @@ function addHoliday(d) { const h = { id: holidayCounter++, date: d.date, title: 
 function updateHoliday(id, d) { const h = HOLIDAYS.find(x => x.id === id); if (h) Object.assign(h, { date: d.date, title: d.title, description: d.description || '' }); return h; }
 function deleteHoliday(id) { HOLIDAYS = HOLIDAYS.filter(x => x.id !== id); }
 
-// ==================== ACTIVITY CALENDAR ====================
 let classGroupCounter = 4;
 let CLASS_GROUPS = [
     { id: 1, name: 'Primary (Nursery–5)', classIds: [1, 2, 3, 4, 5, 6, 7, 8] },
@@ -1477,7 +1397,6 @@ function addActivity(d) { const a = { id: activityCounter++, date: d.date, class
 function updateActivity(id, d) { const a = ACTIVITIES.find(x => x.id === id); if (a) Object.assign(a, { date: d.date, classGroupId: parseInt(d.classGroupId), event: d.event, description: d.description || '' }); return a; }
 function deleteActivity(id) { ACTIVITIES = ACTIVITIES.filter(x => x.id !== id); }
 
-// ==================== HOMEWORK ====================
 let homeworkCounter = 8;
 const HOMEWORK_TYPES = ['Assignment', 'Worksheet', 'Project', 'Reading', 'Practice'];
 let HOMEWORKS = [
@@ -1493,7 +1412,6 @@ function addHomework(d) { const h = { id: homeworkCounter++, date: d.date, class
 function updateHomework(id, d) { const h = HOMEWORKS.find(x => x.id === id); if (h) Object.assign(h, { date: d.date, classId: parseInt(d.classId), subjectId: parseInt(d.subjectId), homework: d.homework, type: d.type, status: d.status }); return h; }
 function deleteHomework(id) { HOMEWORKS = HOMEWORKS.filter(x => x.id !== id); }
 
-// ==================== PHOTO GALLERY ====================
 let galleryCounter = 5;
 let GALLERIES = [
     { id: 1, date: '2026-01-26', title: 'Republic Day Celebration 2026', status: 'Published', photos: ['republic_day_1.jpg', 'republic_day_2.jpg', 'republic_day_3.jpg', 'republic_day_4.jpg', 'republic_day_5.jpg'] },
@@ -1505,7 +1423,6 @@ function addGallery(d) { const g = { id: galleryCounter++, date: d.date, title: 
 function updateGallery(id, d) { const g = GALLERIES.find(x => x.id === id); if (g) Object.assign(g, { date: d.date, title: d.title, status: d.status, photos: d.photos || g.photos }); return g; }
 function deleteGallery(id) { GALLERIES = GALLERIES.filter(x => x.id !== id); }
 
-// ==================== TEACHER PERMISSIONS ====================
 const PERMISSION_MODULES = ['Student Attendance', 'Homework'];
 let permissionCounter = 8;
 let TEACHER_PERMISSIONS = [
@@ -1521,7 +1438,6 @@ function addPermission(d) { const p = { id: permissionCounter++, staffId: parseI
 function updatePermission(id, d) { const p = TEACHER_PERMISSIONS.find(x => x.id === id); if (p) Object.assign(p, { staffId: parseInt(d.staffId), classId: parseInt(d.classId), sectionId: parseInt(d.sectionId), subjectId: parseInt(d.subjectId), modules: d.modules || [] }); return p; }
 function deletePermission(id) { TEACHER_PERMISSIONS = TEACHER_PERMISSIONS.filter(x => x.id !== id); }
 
-// ==================== FEE STRUCTURE & DEPOSITS ====================
 const PAYMENT_MODES = ['Cash', 'Online / UPI', 'Bank Transfer', 'Cheque', 'DD'];
 const FEE_MONTHS = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
 let receiptCounter = 1013;
@@ -1550,7 +1466,6 @@ function getStudentBalance(studentId) {
     return FEE_DEPOSITS.filter(d => d.studentId === parseInt(studentId)).reduce((sum, d) => sum + d.balance, 0);
 }
 
-// ==================== FEE DISCOUNTS ====================
 let discountCounter = 4;
 let FEE_DISCOUNTS = [
     { id: 1, studentId: 2, session: '2025-2026', discounts: { 1: 200, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 } },
@@ -1568,7 +1483,6 @@ function saveStudentDiscount(studentId, session, discounts) {
     return d;
 }
 
-// ==================== PAYROLL — DEDUCTION HEADS ====================
 let deductionHeadCounter = 4;
 let DEDUCTION_HEADS = [
     { id: 1, name: 'Provident Fund (PF)' },
@@ -1578,7 +1492,6 @@ let DEDUCTION_HEADS = [
 function addDeductionHead(name) { const h = { id: deductionHeadCounter++, name: name }; DEDUCTION_HEADS.push(h); return h; }
 function deleteDeductionHead(id) { DEDUCTION_HEADS = DEDUCTION_HEADS.filter(h => h.id !== id); }
 
-// ==================== PAYROLL — ALLOWANCE HEADS ====================
 let allowanceHeadCounter = 5;
 let ALLOWANCE_HEADS = [
     { id: 1, name: 'House Rent Allowance (HRA)' },
@@ -1589,13 +1502,11 @@ let ALLOWANCE_HEADS = [
 function addAllowanceHead(name) { const h = { id: allowanceHeadCounter++, name: name }; ALLOWANCE_HEADS.push(h); return h; }
 function deleteAllowanceHead(id) { ALLOWANCE_HEADS = ALLOWANCE_HEADS.filter(h => h.id !== id); }
 
-// ==================== PAYROLL — SALARY SETTINGS ====================
 let SALARY_SETTINGS = {
     leaveAllowedPerMonth: 2,
     latePenalty: 'quarter'  // 'quarter' = 1/4 day salary, 'half' = 1/2 day, 'full' = full day
 };
 
-// ==================== PAYROLL — GENERATED SALARIES ====================
 let salaryCounter = 4;
 let GENERATED_SALARIES = [
     { id: 1, staffId: 3, month: 'January', year: 2026, absentDays: 1, lateDays: 2, halfDays: 0, totalDeductedDays: 1.5, basicSalary: 48000, salaryPerDay: 1600, totalBasicSalary: 45600, allowances: { 1: 2000, 2: 1500 }, deductions: { 1: 1800 }, totalAllowance: 3500, totalDeduction: 1800, finalSalary: 47300, generateDate: '2026-02-01', remark: '', status: 'Paid', paymentDate: '2026-02-05', paymentMode: 'Bank' },
@@ -1604,7 +1515,6 @@ let GENERATED_SALARIES = [
 ];
 function generateSalaryId() { return salaryCounter++; }
 
-// ==================== ACCOUNTS — EXPENSE HEADS ====================
 let expenseHeadCounter = 6;
 let EXPENSE_HEADS = [
     { id: 1, name: 'Stationery' },
@@ -1616,7 +1526,6 @@ let EXPENSE_HEADS = [
 function addExpenseHead(name) { EXPENSE_HEADS.push({ id: expenseHeadCounter++, name }); }
 function deleteExpenseHead(id) { EXPENSE_HEADS = EXPENSE_HEADS.filter(h => h.id !== id); }
 
-// ==================== ACCOUNTS — INCOME HEADS ====================
 let incomeHeadCounter = 5;
 let INCOME_HEADS = [
     { id: 1, name: 'Tuition Fee' },
@@ -1627,7 +1536,6 @@ let INCOME_HEADS = [
 function addIncomeHead(name) { INCOME_HEADS.push({ id: incomeHeadCounter++, name }); }
 function deleteIncomeHead(id) { INCOME_HEADS = INCOME_HEADS.filter(h => h.id !== id); }
 
-// ==================== ACCOUNTS — VENDORS ====================
 let vendorCounter = 5;
 let VENDORS = [
     { id: 1, name: 'Sharma Stationery', mobile: '9876543210', email: 'sharma@mail.com', address: 'Main Market, Vaish Khan', remark: 'Regular supplier' },
@@ -1638,7 +1546,6 @@ let VENDORS = [
 function addVendor(data) { data.id = vendorCounter++; VENDORS.push(data); return data; }
 function deleteVendor(id) { VENDORS = VENDORS.filter(v => v.id !== id); }
 
-// ==================== ACCOUNTS — BANK ACCOUNTS ====================
 let bankAccountCounter = 4;
 let BANK_ACCOUNTS = [
     { id: 1, holderName: 'VKIS School Account', accountNo: '1234567890', bankName: 'State Bank of India', ifsc: 'SBIN0001234', branch: 'Vaish Khan Branch', remark: 'Main school account' },
@@ -1648,7 +1555,6 @@ let BANK_ACCOUNTS = [
 function addBankAccount(data) { data.id = bankAccountCounter++; BANK_ACCOUNTS.push(data); return data; }
 function deleteBankAccount(id) { BANK_ACCOUNTS = BANK_ACCOUNTS.filter(b => b.id !== id); }
 
-// ==================== ACCOUNTS — EXPENSES ====================
 let expenseCounter = 7;
 let EXPENSES = [
     { id: 1, date: '2026-01-05', headId: 1, name: 'Notebooks & Pens', amount: 3500, vendorId: 1, bankId: 1, mode: 'Cash', detail: 'Monthly stationery purchase' },
@@ -1661,7 +1567,6 @@ let EXPENSES = [
 function addExpense(data) { data.id = expenseCounter++; EXPENSES.push(data); return data; }
 function deleteExpense(id) { EXPENSES = EXPENSES.filter(e => e.id !== id); }
 
-// ==================== ACCOUNTS — INCOMES ====================
 let incomeCounter = 6;
 let INCOMES = [
     { id: 1, date: '2026-01-05', headId: 1, amount: 85000, bankId: 1, detail: 'January tuition fees collected' },
@@ -1673,7 +1578,6 @@ let INCOMES = [
 function addIncome(data) { data.id = incomeCounter++; INCOMES.push(data); return data; }
 function deleteIncome(id) { INCOMES = INCOMES.filter(i => i.id !== id); }
 
-// ==================== ACCOUNTS — CASH DEPOSITS/WITHDRAWALS ====================
 let cashTxnCounter = 5;
 let CASH_TRANSACTIONS = [
     { id: 1, date: '2026-01-08', type: 'Deposit', amount: 50000, bankId: 1, by: 'Rajesh Kumar', remark: 'Monthly cash deposit' },
@@ -1684,7 +1588,6 @@ let CASH_TRANSACTIONS = [
 function addCashTxn(data) { data.id = cashTxnCounter++; CASH_TRANSACTIONS.push(data); return data; }
 function deleteCashTxn(id) { CASH_TRANSACTIONS = CASH_TRANSACTIONS.filter(t => t.id !== id); }
 
-// ==================== MESSAGING — SMS TEMPLATES ====================
 const SMS_TEMPLATES = [
     { id: 1, key: 'school-fee', name: 'School Fee Reminder', message: 'Dear Parent, this is a reminder that the school fee for your ward {student_name}, Class {class}/{section}, is due. Kindly deposit the fee at the earliest.\n\nRegards,\n{school_name}\n{school_phone}' },
     { id: 2, key: 'school-timing', name: 'School Timing', message: 'Dear Parent, please note the school timing for session 2025-26:\nMorning: 8:00 AM - 2:00 PM\nWinter: 9:00 AM - 3:00 PM\nKindly ensure your ward {student_name} arrives on time.\n\nRegards,\n{school_name}\n{school_phone}' },
@@ -1696,7 +1599,6 @@ const SMS_TEMPLATES = [
     { id: 8, key: 'staff-meeting', name: 'Staff Meeting', message: 'Dear {staff_name}, you are requested to attend a staff meeting on {date} at {time} in the conference hall. Your presence is mandatory.\n\nRegards,\n{school_name}\n{school_phone}' }
 ];
 
-// ==================== MESSAGING — SENT SMS LOG ====================
 let smsLogCounter = 7;
 let SMS_LOG = [
     { id: 1, type: 'Student', template: 'School Fee Reminder', message: 'Dear Parent, this is a reminder that the school fee for your ward Aarav Sharma, Class 5/A, is due. Kindly deposit the fee at the earliest.\n\nRegards,\nVaish Khan International School\n+91 99999 88888', recipients: 'Aarav Sharma (Class 5/A)', recipientCount: 1, date: '2026-02-01', status: 'Sent' },
@@ -1708,9 +1610,7 @@ let SMS_LOG = [
 ];
 function addSmsLog(data) { data.id = smsLogCounter++; SMS_LOG.push(data); return data; }
 
-// ==================== RESULT MODULE ====================
 
-// Grade calculation helper
 function getGrade(pct) {
     if (pct >= 91) return 'A1';
     if (pct >= 81) return 'A2';
@@ -1722,9 +1622,8 @@ function getGrade(pct) {
     return 'E';
 }
 
-// EXAM_RESULTS: stores marks per student, per exam, per subject
 let EXAM_RESULTS = [
-    // Aarav Sharma (id:1) — Class 8/A — Unit Test I
+
     { id: 1, studentId: 1, examId: 1, subjectId: 1, minMarks: 11, maxMarks: 50, obtainedMarks: 42, practical: null, grade: 'A2' },
     { id: 2, studentId: 1, examId: 1, subjectId: 2, minMarks: 11, maxMarks: 50, obtainedMarks: 45, practical: null, grade: 'A1' },
     { id: 3, studentId: 1, examId: 1, subjectId: 3, minMarks: 11, maxMarks: 50, obtainedMarks: 38, practical: null, grade: 'B1' },
@@ -1733,7 +1632,7 @@ let EXAM_RESULTS = [
     { id: 6, studentId: 1, examId: 1, subjectId: 6, minMarks: 11, maxMarks: 50, obtainedMarks: 44, practical: null, grade: 'A1' },
     { id: 7, studentId: 1, examId: 1, subjectId: 9, minMarks: 11, maxMarks: 50, obtainedMarks: 39, practical: null, grade: 'B1' },
     { id: 8, studentId: 1, examId: 1, subjectId: 10, minMarks: 11, maxMarks: 50, obtainedMarks: 46, practical: null, grade: 'A1' },
-    // Aarav Sharma — Half Yearly
+
     { id: 9, studentId: 1, examId: 2, subjectId: 1, minMarks: 26, maxMarks: 100, obtainedMarks: 82, practical: null, grade: 'A2' },
     { id: 10, studentId: 1, examId: 2, subjectId: 2, minMarks: 26, maxMarks: 100, obtainedMarks: 88, practical: null, grade: 'A2' },
     { id: 11, studentId: 1, examId: 2, subjectId: 3, minMarks: 26, maxMarks: 100, obtainedMarks: 75, practical: null, grade: 'B1' },
@@ -1742,7 +1641,7 @@ let EXAM_RESULTS = [
     { id: 14, studentId: 1, examId: 2, subjectId: 6, minMarks: 26, maxMarks: 100, obtainedMarks: 90, practical: 19, grade: 'A1' },
     { id: 15, studentId: 1, examId: 2, subjectId: 9, minMarks: 26, maxMarks: 100, obtainedMarks: 78, practical: null, grade: 'B1' },
     { id: 16, studentId: 1, examId: 2, subjectId: 10, minMarks: 26, maxMarks: 100, obtainedMarks: 92, practical: null, grade: 'A1' },
-    // Ananya Gupta (id:2) — Class 8/A — Unit Test I
+
     { id: 17, studentId: 2, examId: 1, subjectId: 1, minMarks: 11, maxMarks: 50, obtainedMarks: 44, practical: null, grade: 'A1' },
     { id: 18, studentId: 2, examId: 1, subjectId: 2, minMarks: 11, maxMarks: 50, obtainedMarks: 47, practical: null, grade: 'A1' },
     { id: 19, studentId: 2, examId: 1, subjectId: 3, minMarks: 11, maxMarks: 50, obtainedMarks: 41, practical: null, grade: 'A2' },
@@ -1751,7 +1650,7 @@ let EXAM_RESULTS = [
     { id: 22, studentId: 2, examId: 1, subjectId: 6, minMarks: 11, maxMarks: 50, obtainedMarks: 46, practical: null, grade: 'A1' },
     { id: 23, studentId: 2, examId: 1, subjectId: 9, minMarks: 11, maxMarks: 50, obtainedMarks: 42, practical: null, grade: 'A2' },
     { id: 24, studentId: 2, examId: 1, subjectId: 10, minMarks: 11, maxMarks: 50, obtainedMarks: 48, practical: null, grade: 'A1' },
-    // Ananya Gupta — Half Yearly
+
     { id: 25, studentId: 2, examId: 2, subjectId: 1, minMarks: 26, maxMarks: 100, obtainedMarks: 85, practical: null, grade: 'A2' },
     { id: 26, studentId: 2, examId: 2, subjectId: 2, minMarks: 26, maxMarks: 100, obtainedMarks: 92, practical: null, grade: 'A1' },
     { id: 27, studentId: 2, examId: 2, subjectId: 3, minMarks: 26, maxMarks: 100, obtainedMarks: 78, practical: null, grade: 'B1' },
@@ -1760,7 +1659,7 @@ let EXAM_RESULTS = [
     { id: 30, studentId: 2, examId: 2, subjectId: 6, minMarks: 26, maxMarks: 100, obtainedMarks: 94, practical: 20, grade: 'A1' },
     { id: 31, studentId: 2, examId: 2, subjectId: 9, minMarks: 26, maxMarks: 100, obtainedMarks: 82, practical: null, grade: 'A2' },
     { id: 32, studentId: 2, examId: 2, subjectId: 10, minMarks: 26, maxMarks: 100, obtainedMarks: 95, practical: null, grade: 'A1' },
-    // Rahul Dubey (id:11) — Class 8/A — Unit Test I
+
     { id: 33, studentId: 11, examId: 1, subjectId: 1, minMarks: 11, maxMarks: 50, obtainedMarks: 30, practical: null, grade: 'C1' },
     { id: 34, studentId: 11, examId: 1, subjectId: 2, minMarks: 11, maxMarks: 50, obtainedMarks: 35, practical: null, grade: 'B1' },
     { id: 35, studentId: 11, examId: 1, subjectId: 3, minMarks: 11, maxMarks: 50, obtainedMarks: 28, practical: null, grade: 'C1' },
@@ -1769,7 +1668,7 @@ let EXAM_RESULTS = [
     { id: 38, studentId: 11, examId: 1, subjectId: 6, minMarks: 11, maxMarks: 50, obtainedMarks: 38, practical: null, grade: 'B1' },
     { id: 39, studentId: 11, examId: 1, subjectId: 9, minMarks: 11, maxMarks: 50, obtainedMarks: 34, practical: null, grade: 'C1' },
     { id: 40, studentId: 11, examId: 1, subjectId: 10, minMarks: 11, maxMarks: 50, obtainedMarks: 40, practical: null, grade: 'A2' },
-    // Lakshya Tiwari (id:7) — Class 8/B — Unit Test I
+
     { id: 41, studentId: 7, examId: 1, subjectId: 1, minMarks: 11, maxMarks: 50, obtainedMarks: 36, practical: null, grade: 'B1' },
     { id: 42, studentId: 7, examId: 1, subjectId: 2, minMarks: 11, maxMarks: 50, obtainedMarks: 40, practical: null, grade: 'A2' },
     { id: 43, studentId: 7, examId: 1, subjectId: 3, minMarks: 11, maxMarks: 50, obtainedMarks: 33, practical: null, grade: 'C1' },
@@ -1781,7 +1680,6 @@ let EXAM_RESULTS = [
 ];
 let examResultCounter = 49;
 
-// RESULT_DETAILS: attendance, height, weight, remark etc. per student per exam
 let RESULT_DETAILS = [
     { id: 1, studentId: 1, examId: 2, attendance: '92%', remark: 'Very Good', height: '142', weight: '38', result: 'Pass', division: 'First', rank: 1, resultDate: '2025-11-15', promotedTo: '' },
     { id: 2, studentId: 2, examId: 2, attendance: '95%', remark: 'Excellent', height: '140', weight: '36', result: 'Pass', division: 'First', rank: 2, resultDate: '2025-11-15', promotedTo: '' },
@@ -1790,9 +1688,7 @@ let RESULT_DETAILS = [
 ];
 let resultDetailCounter = 5;
 
-// EXAM_GROUPS: moved to Master Module section below
 
-// Helper: get or create result entry
 function getResult(studentId, examId, subjectId) {
     return EXAM_RESULTS.find(r => r.studentId === studentId && r.examId === examId && r.subjectId === subjectId);
 }
@@ -1823,7 +1719,6 @@ function saveResultDetail(data) {
     return data;
 }
 
-// ==================== VEHICLES ====================
 let vehicleCounter = 7;
 let VEHICLES = [
     { id: 1, regNo: "UP32 AT 1234", type: "Self Owned", name: "Bus", engineNo: "ENG-20190045", chasisNo: "CHAS-20190045", seats: 40, pollutionCert: "Valid", pollutionRenewal: "2025-12-15", fitnessRenewal: "2025-11-20", status: "Active", driverName: "Ramesh Kumar", driverMobile: "9876543210", driverAddress: "25, Aliganj, Lucknow", otherInfo: "", routeId: 1 },
@@ -1895,7 +1790,6 @@ function deleteMapping(id) {
     return false;
 }
 
-// ==================== LIBRARY ====================
 let bookCounter = 11;
 let BOOK_TYPES = [
     { id: 1, name: 'Course Book' },
@@ -1986,7 +1880,6 @@ function returnBook(issueId, returnDate) {
     return issue;
 }
 
-// ==================== LIBRARY SETTINGS ====================
 let LIBRARY_SETTINGS = {
     finePerDay: 2,
     defaultDueDays: 14,
@@ -2009,7 +1902,6 @@ function calcPenalty(extraDays, ratePerDay) {
     return extraDays * (ratePerDay || LIBRARY_SETTINGS.finePerDay);
 }
 
-// ==================== FEE MASTER ====================
 const FEE_MODES = ['Monthly', 'Quarterly', 'Half-Yearly', 'Once', 'Other'];
 const ALL_MONTHS = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March'];
 
@@ -2061,7 +1953,7 @@ function saveFeeSlab(data) {
         const s = FEE_SLABS.find(x => x.id === data.id);
         if (s) { Object.assign(s, data); return s; }
     }
-    // check existing
+
     const existing = FEE_SLABS.find(s => s.category === data.category && s.classId === data.classId);
     if (existing) { Object.assign(existing, data); return existing; }
     data.id = feeSlabCounter++;
@@ -2075,9 +1967,7 @@ function deleteFeeSlab(id) {
     return false;
 }
 
-// ==================== MASTER MODULE ====================
 
-// --- Academic Session CRUD (SESSIONS exists at top) ---
 let sessionCounter = 4;
 function saveAcademicSession(data) {
     if (data.id) { const s = SESSIONS.find(x => x.id === data.id); if (s) { Object.assign(s, data); return s; } }
@@ -2085,7 +1975,6 @@ function saveAcademicSession(data) {
 }
 function deleteAcademicSession(id) { const i = SESSIONS.findIndex(s => s.id === id); if (i > -1) { SESSIONS.splice(i, 1); return true; } return false; }
 
-// --- Staff Designation ---
 let MASTER_DESIGNATIONS = [
     { id: 1, name: 'Principal', serialNo: 1, attendance: 'Yes' },
     { id: 2, name: 'Vice Principal', serialNo: 2, attendance: 'Yes' },
@@ -2108,7 +1997,6 @@ function saveMasterDesignation(data) {
 }
 function deleteMasterDesignation(id) { const i = MASTER_DESIGNATIONS.findIndex(d => d.id === id); if (i > -1) { MASTER_DESIGNATIONS.splice(i, 1); syncDesignations(); return true; } return false; }
 
-// --- Class CRUD (CLASSES exists at top) ---
 let classCounter = 16;
 function saveMasterClass(data) {
     if (data.id) { const c = CLASSES.find(x => x.id === data.id); if (c) { Object.assign(c, data); return c; } }
@@ -2116,7 +2004,6 @@ function saveMasterClass(data) {
 }
 function deleteMasterClass(id) { const i = CLASSES.findIndex(c => c.id === id); if (i > -1) { CLASSES.splice(i, 1); return true; } return false; }
 
-// --- Section CRUD (SECTIONS exists at top) ---
 let sectionCounter = 5;
 function saveMasterSection(data) {
     if (data.id) { const s = SECTIONS.find(x => x.id === data.id); if (s) { Object.assign(s, data); return s; } }
@@ -2124,7 +2011,6 @@ function saveMasterSection(data) {
 }
 function deleteMasterSection(id) { const i = SECTIONS.findIndex(s => s.id === id); if (i > -1) { SECTIONS.splice(i, 1); return true; } return false; }
 
-// --- Subject CRUD (SUBJECTS exists at top) ---
 let subjectCounter = 13;
 function saveMasterSubject(data) {
     if (data.id) { const s = SUBJECTS.find(x => x.id === data.id); if (s) { Object.assign(s, data); return s; } }
@@ -2132,7 +2018,6 @@ function saveMasterSubject(data) {
 }
 function deleteMasterSubject(id) { const i = SUBJECTS.findIndex(s => s.id === id); if (i > -1) { SUBJECTS.splice(i, 1); return true; } return false; }
 
-// --- Exam Name ---
 let EXAM_NAMES = [
     { id: 1, name: 'Unit Test - I', serialNo: 1, minMarks: 10, maxMarks: 25, status: 'Published' },
     { id: 2, name: 'Half Yearly', serialNo: 2, minMarks: 33, maxMarks: 100, status: 'Published' },
@@ -2147,7 +2032,6 @@ function saveExamName(data) {
 }
 function deleteExamName(id) { const i = EXAM_NAMES.findIndex(e => e.id === id); if (i > -1) { EXAM_NAMES.splice(i, 1); return true; } return false; }
 
-// --- Exam Group ---
 let EXAM_GROUPS = [
     { id: 1, name: 'Full Session', examIds: [1, 2, 3, 4] },
     { id: 2, name: 'Board Preparation', examIds: [2, 4, 5] }
@@ -2159,7 +2043,6 @@ function saveExamGroup(data) {
 }
 function deleteExamGroup(id) { const i = EXAM_GROUPS.findIndex(g => g.id === id); if (i > -1) { EXAM_GROUPS.splice(i, 1); return true; } return false; }
 
-// --- Period ---
 let MASTER_PERIODS = [
     { id: 1, name: '1st Period', serialNo: 1 },
     { id: 2, name: '2nd Period', serialNo: 2 },
@@ -2177,7 +2060,6 @@ function saveMasterPeriod(data) {
 }
 function deleteMasterPeriod(id) { const i = MASTER_PERIODS.findIndex(p => p.id === id); if (i > -1) { MASTER_PERIODS.splice(i, 1); return true; } return false; }
 
-// --- Homework Type ---
 let MASTER_HW_TYPES = [
     { id: 1, name: 'Assignment', serialNo: 1 },
     { id: 2, name: 'Worksheet', serialNo: 2 },
@@ -2194,7 +2076,6 @@ function saveMasterHwType(data) {
 }
 function deleteMasterHwType(id) { const i = MASTER_HW_TYPES.findIndex(t => t.id === id); if (i > -1) { MASTER_HW_TYPES.splice(i, 1); return true; } return false; }
 
-// --- House ---
 let HOUSES = [
     { id: 1, name: 'Red House', color: '#e53935' },
     { id: 2, name: 'Blue House', color: '#1e88e5' },
@@ -2208,7 +2089,6 @@ function saveMasterHouse(data) {
 }
 function deleteMasterHouse(id) { const i = HOUSES.findIndex(h => h.id === id); if (i > -1) { HOUSES.splice(i, 1); return true; } return false; }
 
-// --- Stream ---
 let STREAMS = [
     { id: 1, name: 'Science' },
     { id: 2, name: 'Commerce' },
@@ -2221,11 +2101,9 @@ function saveMasterStream(data) {
 }
 function deleteMasterStream(id) { const i = STREAMS.findIndex(s => s.id === id); if (i > -1) { STREAMS.splice(i, 1); return true; } return false; }
 
-// =====================================================================
-// SETTINGS MODULE
-// =====================================================================
 
-// --- Branches ---
+
+
 let BRANCHES = [
     { id: 1, name: 'VKIS Main Branch' },
     { id: 2, name: 'VKIS City Campus' }
@@ -2237,7 +2115,6 @@ function saveBranch(data) {
 }
 function deleteBranch(id) { const i = BRANCHES.findIndex(b => b.id === id); if (i > -1) { BRANCHES.splice(i, 1); return true; } return false; }
 
-// --- Branch School Settings ---
 let BRANCH_SETTINGS = [
     { id: 1, branchId: 1, logo: '', schoolName: 'Vaish Khan International School', tagline: 'Excellence in Education Since 1995', address: 'Sector 12, Noida, Uttar Pradesh', contactPerson: 'Mr. Rajesh Kumar', phone: '0120-4567890', mobile: '9876543210', email: 'main@vkis.edu.in', udiseCode: '09241200501', academicSession: '2025-2026', erpSession: '2025-2026', timeFrom: '08:00', timeTo: '14:00', signingDesignation: 'Principal', signingName: 'Dr. Anita Sharma', signingSignature: '' },
     { id: 2, branchId: 2, logo: '', schoolName: 'VKIS City Campus', tagline: 'Nurturing Future Leaders', address: 'MG Road, New Delhi', contactPerson: 'Mrs. Priya Verma', phone: '011-2345678', mobile: '9876543211', email: 'city@vkis.edu.in', udiseCode: '07071600301', academicSession: '2025-2026', erpSession: '2025-2026', timeFrom: '07:30', timeTo: '13:30', signingDesignation: 'Vice Principal', signingName: 'Mr. Suresh Gupta', signingSignature: '' }
@@ -2249,7 +2126,6 @@ function saveBranchSetting(branchId, data) {
     data.id = branchSettingCounter++; data.branchId = branchId; BRANCH_SETTINGS.push(data); return data;
 }
 
-// --- Settings Users ---
 let SETTINGS_USERS = [
     { id: 1, username: 'admin', name: 'Admin User', mobile: '9876543210', email: 'admin@vkis.edu.in', password: 'admin123', branchId: 1 },
     { id: 2, username: 'rverma', name: 'Rajesh Verma', mobile: '9876543211', email: 'rajesh@vkis.edu.in', password: 'rajesh1', branchId: 1 },
@@ -2265,7 +2141,6 @@ function saveSettingsUser(data) {
 }
 function deleteSettingsUser(id) { const i = SETTINGS_USERS.findIndex(u => u.id === id); if (i > -1) { SETTINGS_USERS.splice(i, 1); return true; } return false; }
 
-// --- Platform Modules (for permissions) ---
 const PLATFORM_MODULES = [
     { key: 'dashboard', name: 'Dashboard', desc: 'Overview, statistics, charts, quick links' },
     { key: 'students', name: 'Students', desc: 'Student list, admission, promotion, assign subjects' },
@@ -2285,11 +2160,10 @@ const PLATFORM_MODULES = [
     { key: 'settings', name: 'Settings', desc: 'Users, permissions, branches, options, exam settings' }
 ];
 
-// --- User Permissions ---
 let USER_PERMISSIONS = [];
-// Initialize default permissions for user 1 (admin = all true)
+
 PLATFORM_MODULES.forEach(m => { USER_PERMISSIONS.push({ userId: 1, module: m.key, access: true, modify: true, delete: true }); });
-// User 2 - limited
+
 PLATFORM_MODULES.forEach(m => { USER_PERMISSIONS.push({ userId: 2, module: m.key, access: ['dashboard', 'students', 'attendance', 'result'].includes(m.key), modify: ['students', 'attendance'].includes(m.key), delete: false }); });
 
 function getUserPermissions(userId) { return PLATFORM_MODULES.map(m => { const p = USER_PERMISSIONS.find(x => x.userId === userId && x.module === m.key); return { module: m.key, moduleName: m.name, desc: m.desc, access: p ? p.access : false, modify: p ? p.modify : false, delete: p ? p.delete : false }; }); }
@@ -2298,7 +2172,6 @@ function saveUserPermissions(userId, perms) {
     perms.forEach(p => { USER_PERMISSIONS.push({ userId, module: p.module, access: !!p.access, modify: !!p.modify, delete: !!p.delete }); });
 }
 
-// --- Activity Log ---
 let ACTIVITY_LOG = [
     { id: 1, userId: 1, userName: 'Admin User', activity: 'Logged in to the system', dateTime: '2025-12-01 09:00:15', ipAddress: '192.168.1.100' },
     { id: 2, userId: 1, userName: 'Admin User', activity: 'Viewed Student List', dateTime: '2025-12-01 09:05:30', ipAddress: '192.168.1.100' },
@@ -2312,7 +2185,6 @@ let ACTIVITY_LOG = [
     { id: 10, userId: 1, userName: 'Admin User', activity: 'Updated Branch School Settings', dateTime: '2025-12-03 15:45:00', ipAddress: '192.168.1.100' }
 ];
 
-// --- Option Settings ---
 let OPTION_SETTINGS = {
     academicStartMonth: 'April',
     enableFeeDueInstallment: true,
@@ -2326,7 +2198,6 @@ let OPTION_SETTINGS = {
     feeDemandBillNote: 'Please submit your fees as soon as possible.'
 };
 
-// --- Exam Settings ---
 let ADMIT_CARD_INSTRUCTIONS = [
     { id: 1, text: 'Students must carry their admit card to the examination hall.' },
     { id: 2, text: 'No electronic devices are allowed during the exam.' },

@@ -1,11 +1,8 @@
-/* ==============================================================
-   SHARED PRINT STYLES — All pages
-   Loaded globally. Hides chrome, preserves content colors/photos.
-   ============================================================== */
+
 
 @media print {
 
-    /* ── Page setup ── */
+    
     @page {
         margin: 8mm 10mm;
     }
@@ -19,14 +16,14 @@
         color-adjust: exact !important;
     }
 
-    /* ── Force color preservation everywhere ── */
+    
     *, *::before, *::after {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         color-adjust: exact !important;
     }
 
-    /* ── Hide navigation chrome ── */
+    
     #sidebar-container,
     .sidebar,
     .sidebar-menu,
@@ -61,7 +58,7 @@
         visibility: hidden !important;
     }
 
-    /* ── Unwrap layout wrappers ── */
+    
     .wrapper,
     .dashboard-page-one,
     .dashboard-content-one,
@@ -83,8 +80,7 @@
         display: none !important;
     }
 
-    /* Card headers: keep visible by default so section titles print.
-       Individual pages can hide them with .no-print if needed. */
+    
     .chart-card-header,
     .card-head {
         background: transparent !important;
@@ -102,7 +98,7 @@
         display: none !important;
     }
 
-    /* ── Images (photos, logos, QR) ── */
+    
     img {
         max-width: 100% !important;
         page-break-inside: avoid !important;
@@ -111,7 +107,7 @@
         visibility: visible !important;
     }
 
-    /* ── Tables ── */
+    
     table {
         width: 100% !important;
         border-collapse: collapse !important;
@@ -136,7 +132,7 @@
         border: 1px solid #ccc !important;
     }
 
-    /* ── Page breaks ── */
+    
     .page-break,
     .print-page-break {
         page-break-before: always !important;
@@ -155,9 +151,7 @@
         break-inside: avoid !important;
     }
 
-    /* ══════════════════════════════════════
-       ID CARDS
-       ══════════════════════════════════════ */
+    
     #printArea,
     #printArea * {
         visibility: visible !important;
@@ -189,9 +183,7 @@
         object-fit: cover !important;
     }
 
-    /* ══════════════════════════════════════
-       RECEIPTS & BILLS
-       ══════════════════════════════════════ */
+    
     .receipt-page {
         border: 2px solid #000 !important;
         padding: 16px 20px !important;
@@ -213,9 +205,7 @@
         color: #fff !important;
     }
 
-    /* ══════════════════════════════════════
-       MARKSHEETS & RESULTS
-       ══════════════════════════════════════ */
+    
     .marksheet-wrapper,
     .marksheet-wrapper * {
         visibility: visible !important;
@@ -259,9 +249,7 @@
         color: #c62828 !important;
     }
 
-    /* ══════════════════════════════════════
-       CONSOLIDATED MARKS
-       ══════════════════════════════════════ */
+    
     .print-area,
     .print-area * {
         visibility: visible !important;
@@ -297,18 +285,14 @@
         color: #c62828 !important;
     }
 
-    /* ══════════════════════════════════════
-       CERTIFICATES (Character, Transfer)
-       ══════════════════════════════════════ */
+    
     .certificate-preview {
         border: 3px solid #000 !important;
         padding: 50px !important;
         background: #fff !important;
     }
 
-    /* ══════════════════════════════════════
-       FEE REPORTS
-       ══════════════════════════════════════ */
+    
     .report-table th,
     .fee-tbl th,
     .list-table th,
@@ -320,9 +304,7 @@
         color: #fff !important;
     }
 
-    /* ══════════════════════════════════════
-       SCHOOL HEADER (consolidated, datesheet etc)
-       ══════════════════════════════════════ */
+    
     .school-header-print {
         visibility: visible !important;
     }
@@ -336,17 +318,13 @@
         color: #0d1b4a !important;
     }
 
-    /* ══════════════════════════════════════
-       SALARY SLIPS
-       ══════════════════════════════════════ */
+    
     .salary-slip {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
 
-    /* ══════════════════════════════════════
-       STUDENT / STAFF DETAILS PAGES
-       ══════════════════════════════════════ */
+    
     .student-info-card,
     .staff-info-card,
     .detail-card,
@@ -363,9 +341,7 @@
         display: block !important;
     }
 
-    /* ══════════════════════════════════════
-       ADMIT CARDS
-       ══════════════════════════════════════ */
+    
     .admit-card {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
@@ -377,9 +353,7 @@
         display: block !important;
     }
 
-    /* ══════════════════════════════════════
-       DATESHEET
-       ══════════════════════════════════════ */
+    
     .datesheet-print-wrap {
         visibility: visible !important;
     }
@@ -389,9 +363,7 @@
         color: #fff !important;
     }
 
-    /* ══════════════════════════════════════
-       STATUS BADGES
-       ══════════════════════════════════════ */
+    
     .badge,
     .status-badge,
     .grade-badge,
@@ -399,9 +371,7 @@
         border: 1px solid currentColor !important;
     }
 
-    /* ══════════════════════════════════════
-       PARENT / STUDENT FEE STATUS
-       ══════════════════════════════════════ */
+    
     .fee-box {
         border: 1px solid #ccc !important;
     }
@@ -414,9 +384,7 @@
         border: 1px solid #ccc !important;
     }
 
-    /* ══════════════════════════════════════
-       RESULT HEADER (student portal)
-       ══════════════════════════════════════ */
+    
     .result-header {
         background: #0d1b4a !important;
         color: #fff !important;

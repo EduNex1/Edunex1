@@ -97,7 +97,7 @@
                 getSections(),
                 getTeacherPermissions(user.linked_id)
             ]);
-            // Load exams with master fallback to get all exam names
+
             const exams = await getExamNames();
             resultAssignments = (perms || []).map(function (perm) {
                 const section = (sections || []).find(function (row) { return row.id === perm.section_id; });

@@ -1,63 +1,5 @@
-/**************************************
 
-Template Name: Akkhor 
-Template URL: https://www.radiustheme.com/demo/html/psdboss/akkhor/
-Description: School Management Admin Dashboard HTML Template
-Author: PsdBosS
-Author URL: https://themeforest.net/user/psdboss
-Version: 1.0 
 
-======================================  
-        Table Of Contents
-======================================
-1. TYPOGRAPHY
-2. BOOTSTRAP OVERWRITE
-    2.1 Card
-    2.2 Dropdown
-    2.3 Forms
-    2.4 Grid
-    2.5 Media Object
-    2.6 Table
-    2.7 Modal
-3. VENDOR CUSTOM STYLE
-    3.1 Data Table
-    3.2 Full Calender
-    3.3 Select 2
-4. ELEMENTS CUSTOM STYLE
-    4.1 Animation
-    4.2 Button
-5. PAGE LAYOUT STYLE
-    5.1 Content
-    5.2 Default 
-    5.3 Footer
-    5.4 Header Menu
-    5.5 Sidebar Menu
-6. TEMPLATE STYLE
-    6.1 Student Page Style
-    6.2 Notice Board
-    6.3 Messaging
-    6.4 Account Settings
-    6.5 UI Elements
-    6.6 Login Page
-7. DASHBOARD STYLES
-    7.1 Dashboard Page One
-    7.2 Dashboard Page Two
-    7.3 Dashboard Page Three
-    7.4 Dashboard Page Four
-8. HELPER CLASSES
-    8.1 Background
-    8.2 Border
-    8.3 Height
-    8.4 Margin
-    8.5 Misc
-    8.6 Padding
-    8.7 Position
-    8.8 Text
-
-**************************************/
-/*=======================================================================
-[01] TYPOGRAPHY
-=========================================================================*/
 @import url(https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900);
 
 html {
@@ -138,10 +80,8 @@ h6 {
   font-size: 16px;
 }
 
-/*=======================================================================
-[02] BOOTSTRAP OVERWRITE
-=========================================================================*/
-/*=============== 2.1 Card ==================*/
+
+
 .card {
   padding-bottom: 30px;
   border: none;
@@ -157,7 +97,7 @@ h6 {
   box-shadow: 0px 10px 20px 0px rgba(229, 229, 229, 0.75);
 }
 
-/*=============== 2.2 Dropdown ==================*/
+
 .dropdown .dropdown-menu {
   top: 58px;
   min-width: 140px;
@@ -172,7 +112,7 @@ h6 {
   padding: 10px 15px;
 }
 
-/*=============== 2.3 Forms ==================*/
+
 .form-group .form-control {
   height: 45px;
   background-color: #f8f8f8;
@@ -264,7 +204,7 @@ h6 {
   color: #08b13c;
 }
 
-/*=============== 2.4 Grid ==================*/
+
 .col-12-xxxl,
 .col-11-xxxl,
 .col-10-xxxl,
@@ -541,7 +481,7 @@ h6 {
   padding-right: 10px;
 }
 
-/*=============== 2.5 Media Object ==================*/
+
 .media-body {
   margin-left: 3rem;
 }
@@ -881,7 +821,7 @@ h6 {
   }
 }
 
-/*=============== 2.6 Table ==================*/
+
 .bs-table thead tr th {
   text-align: center;
   color: #111111;
@@ -893,7 +833,7 @@ h6 {
   padding: 10px;
 }
 
-/*=============== 2.7 Modal ==================*/
+
 .modal .modal-dialog .modal-content {
   border: none;
 }
@@ -970,10 +910,8 @@ h6 {
   outline: none;
 }
 
-/*=======================================================================
-3. VENDOR CUSTOM STYLE
-=========================================================================*/
-/*=============== 3.1 Data Table ==================*/
+
+
 .dataTables_wrapper .table {
   border-collapse: collapse;
   border: 1px solid #e1e1e1;
@@ -1133,7 +1071,7 @@ h6 {
   border-color: #ffae01;
 }
 
-/*=============== 3.2 Full Calender ==================*/
+
 .fc-calender .fc-header-toolbar .fc-left {
   width: 50%;
   margin-bottom: 30px;
@@ -1274,7 +1212,7 @@ h6 {
   }
 }
 
-/*=============== 3.3 Select 2 ==================*/
+
 .select2-container .select2-selection--single {
   background-color: #f0f1f3;
   border-color: #f0f1f3;
@@ -1328,10 +1266,8 @@ h6 {
   font-size: 15px;
 }
 
-/*=======================================================================
-4. ELEMENTS CUSTOM STYLE
-=========================================================================*/
-/*=============== 4.1 Animation ==================*/
+
+
 @-webkit-keyframes dropdownanimate {
   0% {
     opacity: 0;
@@ -1408,7 +1344,7 @@ h6 {
   }
 }
 
-/*=============== 4.2 Button ==================*/
+
 .fw-btn-fill {
   overflow: hidden;
   position: relative;
@@ -1528,10 +1464,8 @@ h6 {
   background: #ff9d01;
 }
 
-/*=======================================================================
-5. PAGE LAYOUT STYLE
-=========================================================================*/
-/*=============== 5.1 Content ==================*/
+
+
 .breadcrumbs-area {
   padding: 34px 0 35px;
   position: relative;
@@ -1685,7 +1619,7 @@ h6 {
   width: 22px;
 }
 
-/*=============== 5.2 Default ==================*/
+
 a {
   text-decoration: none;
 }
@@ -1737,7 +1671,7 @@ ul {
   padding: 5px 10px;
 }
 
-/*=============== 5.3 Footer ==================*/
+
 .footer-wrap-layout1 {
   padding: 2rem 0 4rem;
 }
@@ -1765,7 +1699,7 @@ ul {
   color: #707070;
 }
 
-/*=============== 5.4 Header Menu ==================*/
+
 .header-menu-one {
   -webkit-box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.1);
@@ -2465,7 +2399,7 @@ ul {
   background-color: #f6f6f6;
 }
 
-/*=============== 5.5 Sidebar Menu ==================*/
+
 .sidebar-menu-one {
   width: 26rem;
   position: fixed;
@@ -2827,10 +2761,8 @@ ul {
   left: 0;
 }
 
-/*=======================================================================
-6. TEMPLATE STYLE
-=========================================================================*/
-/*=============== 6.1 Student Page Style ==================*/
+
+
 .single-info-details {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -2985,7 +2917,7 @@ ul {
   margin-bottom: 0;
 }
 
-/*=============== 6.2 Notice Board ==================*/
+
 .notice-board-wrap {
   max-height: 900px;
   overflow-y: scroll;
@@ -3025,7 +2957,7 @@ ul {
   color: #a4a4a4;
 }
 
-/*=============== 6.3 Messaging ==================*/
+
 .message-box-wrap .card-body .message-success-box {
   text-align: center;
   padding: 5rem 2rem;
@@ -3172,7 +3104,7 @@ ul {
   left: -17px;
 }
 
-/*=============== 6.4 Account Settings ==================*/
+
 .account-settings-box .user-details-box {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -3253,7 +3185,7 @@ ul {
   background-color: #debbbb;
 }
 
-/*=============== 6.5 UI Elements ==================*/
+
 .ui-btn-wrap ul li {
   display: inline-block;
   margin-right: 10px;
@@ -3966,7 +3898,7 @@ ul {
   outline: none;
 }
 
-/*=============== 6.6 Login Page ==================*/
+
 .login-page-wrap {
   background-image: url('img/figure/login-bg.jpg');
   background-repeat: no-repeat;
@@ -4205,10 +4137,8 @@ ul {
   color: #ffaa01;
 }
 
-/*=======================================================================
-7. DASHBOARD STYLES 
-=========================================================================*/
-/*=============== 7.1 Dashboard Page One ==================*/
+
+
 .dashboard-page-one {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -4721,7 +4651,7 @@ ul {
   color: #ffffff;
 }
 
-/*=============== 7.2 Dashboard Page Two ==================*/
+
 .dashboard-card-ten .card-body .student-info .media {
   margin-bottom: 6px;
 }
@@ -4773,7 +4703,7 @@ ul {
   margin-bottom: 18px;
 }
 
-/*=============== 7.3 Dashboard Page Three ==================*/
+
 .dashboard-card-twelve .card-body .kids-details-wrap .kids-details-box {
   display: flex;
   background-color: #fafafa;
@@ -4812,7 +4742,7 @@ ul {
   color: #333333;
 }
 
-/*=============== 7.4 Dashboard Page Four ==================*/
+
 .dashboard-summery-two {
   margin-bottom: 30px;
   background-color: #ffffff;
@@ -4866,10 +4796,8 @@ ul {
   }
 }
 
-/*=======================================================================
-8. HELPER CLASSES
-=========================================================================*/
-/*=============== 8.1 Background ==================*/
+
+
 .bg-transparent {
   background-color: transparent;
 }
@@ -5095,7 +5023,7 @@ ul {
   background: linear-gradient(to right, #43a047, #66bb6a);
 }
 
-/*=============== 8.2 Border ==================*/
+
 .border-dodger-blue {
   border: 1px solid #2196f3 !important;
 }
@@ -5156,7 +5084,7 @@ ul {
   border-radius: 50%;
 }
 
-/*=============== 8.3 Height ==================*/
+
 .height-auto {
   height: auto !important;
 }
@@ -5173,7 +5101,7 @@ ul {
   max-height: 66rem !important;
 }
 
-/*=============== 8.4 Margin ==================*/
+
 .mg-0 {
   margin: 0;
 }
@@ -5528,7 +5456,7 @@ ul {
   margin-right: 22px;
 }
 
-/*=============== 8.5 Misc ==================*/
+
 .pseudo-bg-Aquamarine:after {
   background-color: #1de9b6;
 }
@@ -5625,7 +5553,7 @@ ul {
   padding: 12px 25px;
 }
 
-/*=============== 8.6 Padding ==================*/
+
 .pd-0 {
   padding: 0;
 }
@@ -5949,7 +5877,7 @@ ul {
   padding-right: 22px;
 }
 
-/*=============== 8.7 Position ==================*/
+
 .position-relative {
   position: relative;
 }
@@ -5966,7 +5894,7 @@ ul {
   position: static;
 }
 
-/*=============== 8.8 Text ==================*/
+
 .text-10 {
   font-size: 10px;
 }
