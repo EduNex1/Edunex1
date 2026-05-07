@@ -42,6 +42,7 @@
         .instruction-card h5{font-size:14px;font-weight:800;color:#117534;margin-bottom:10px}
         .settings-grid{display:grid;grid-template-columns:170px 1fr;gap:6px 12px;font-size:12px;color:#333;max-width:560px}
         .settings-grid .k{font-weight:700;color:#5f6673}
+        .settings-note{font-size:11px;color:#4b5565;line-height:1.5;margin-top:10px;max-width:620px}
         .helper-text{font-size:11px;color:#777;line-height:1.5;margin-top:4px}
         .empty-row{text-align:center;color:#9298a5;padding:28px!important}
         @media (max-width:768px){.metric-row{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.device-table{min-width:760px}}
@@ -127,9 +128,13 @@
                                 <div class="k">Menu</div><div>COMM - Cloud Server Settings</div>
                                 <div class="k">Server Mode</div><div>ADMS</div>
                                 <div class="k">Domain Name</div><div>ON (Enable)</div>
-                                <div class="k">Server Address</div><div>crm.edunex1.com</div>
-                                <div class="k">Server Port</div><div>8081</div>
+                                <div class="k">Server Address</div><div>adms.edunex1.com</div>
+                                <div class="k">Server Port</div><div>80 (only if the field is shown)</div>
+                                <div class="k">HTTPS</div><div>OFF (if shown)</div>
                                 <div class="k">Proxy Server</div><div>OFF</div>
+                            </div>
+                            <div class="settings-note">
+                                If the device stays offline, set device Network DNS to 1.1.1.1 and secondary DNS to 8.8.8.8, then save and restart the device.
                             </div>
                             <button type="button" class="btn btn-sm mt-3" id="btnCopySettings" style="background:#117534;color:#fff;font-size:12px;font-weight:700"><i class="fas fa-copy"></i> Copy Settings</button>
                         </div>
@@ -335,9 +340,12 @@
             'Menu: COMM > Cloud Server Settings',
             'Server Mode: ADMS',
             'Domain Name: ON',
-            'Server Address: crm.edunex1.com',
-            'Server Port: 8081',
-            'Proxy Server: OFF'
+            'Server Address: adms.edunex1.com',
+            'Server Port: 80 (only if shown)',
+            'HTTPS: OFF (if shown)',
+            'Proxy Server: OFF',
+            'Network DNS: 1.1.1.1',
+            'Secondary DNS: 8.8.8.8'
         ].join('\n');
         navigator.clipboard.writeText(text).then(function(){
             showToast('Device settings copied', 'success');
