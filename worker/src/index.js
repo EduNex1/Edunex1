@@ -4984,6 +4984,199 @@ router.delete('/api/face-descriptors/:type/:personId', async (req, env, params) 
     return json({ ok: true });
 });
 
+const PARENT_REQUEST_TYPES = ['Leave', 'Early Pickup', 'Document', 'Fee', 'Transport', 'Other'];
+const REQUEST_PRIORITIES = ['Normal', 'Urgent'];
+
+function cleanRequestText(value, max) {
+    return String(value || '').trim().slice(0, max);
+}
+
+function cleanRequestDate(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
+}
+
+async function getParentRequestRow(env, id) {
+    return env.DB.prepare(`SELECT psr.*, s.name as student_name, s.admission_no, s.father_name, s.mother_name, s.phone as student_phone,
+        s.section, c.name as class_name, u.login_id as reviewed_by_name
+        FROM parent_student_requests psr
+        JOIN students s ON psr.student_id = s.id
+        LEFT JOIN classes c ON s.class_id = c.id
+        LEFT JOIN users u ON psr.reviewed_by = u.id
+        WHERE psr.id=?`).bind(id).first();
+}
+
+async function getParentOwnedStudent(env, user, studentId) {
+    if (!user || user.role !== 'parent' || !studentId) return null;
+    return env.DB.prepare(`SELECT id, branch_id, name, admission_no, class_id, section
+        FROM students WHERE id=? AND phone=? AND status='Active'`)
+        .bind(studentId, user.login_id || '').first();
+}
+
+router.get('/api/parent-student-requests', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['parent', 'super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+
+    const url = new URL(req.url);
+    let q = `SELECT psr.*, s.name as student_name, s.admission_no, s.father_name, s.mother_name, s.phone as student_phone,
+        s.section, c.name as class_name, u.login_id as reviewed_by_name
+        FROM parent_student_requests psr
+        JOIN students s ON psr.student_id = s.id
+        LEFT JOIN classes c ON s.class_id = c.id
+        LEFT JOIN users u ON psr.reviewed_by = u.id
+        WHERE 1=1`;
+    const b = [];
+
+    const effBranch = user.role === 'parent' ? '' : await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND psr.branch_id=?'; b.push(effBranch); }
+
+    if (user.role === 'parent') {
+        q += ' AND psr.parent_phone=?';
+        b.push(user.login_id || '');
+    }
+
+    const status = url.searchParams.get('status');
+    const requestType = url.searchParams.get('request_type');
+    const studentId = url.searchParams.get('student_id');
+    const fromDate = url.searchParams.get('from_date');
+    const toDate = url.searchParams.get('to_date');
+    const priority = url.searchParams.get('priority');
+
+    if (status && status !== 'All') { q += ' AND psr.status=?'; b.push(status); }
+    if (requestType && requestType !== 'All') { q += ' AND psr.request_type=?'; b.push(requestType); }
+    if (studentId) { q += ' AND psr.student_id=?'; b.push(studentId); }
+    if (fromDate) { q += ' AND DATE(psr.created_at)>=?'; b.push(fromDate); }
+    if (toDate) { q += ' AND DATE(psr.created_at)<=?'; b.push(toDate); }
+    if (priority && priority !== 'All') { q += ' AND psr.priority=?'; b.push(priority); }
+
+    q += ' ORDER BY psr.created_at DESC, psr.id DESC';
+    const { results } = b.length ? await env.DB.prepare(q).bind(...b).all() : await env.DB.prepare(q).all();
+    return json(results || []);
+});
+
+router.get('/api/parent-student-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['parent', 'super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+
+    const row = await getParentRequestRow(env, params.id);
+    if (!row) return json({ error: 'Not found' }, 404);
+    if (user.role === 'parent' && String(row.parent_phone || '') !== String(user.login_id || '')) {
+        return json({ error: 'Forbidden' }, 403);
+    }
+    if (user.role !== 'parent' && !(await userCanAccessBranch(env, user, row.branch_id))) return json({ error: 'Forbidden' }, 403);
+    return json(row);
+});
+
+router.post('/api/parent-student-requests', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || user.role !== 'parent') return json({ error: 'Only parents can submit child requests' }, 403);
+
+    const d = await req.json();
+    const studentId = Number(d.student_id || 0);
+    const student = await getParentOwnedStudent(env, user, studentId);
+    if (!student) return json({ error: 'Child profile not found for this parent account' }, 404);
+
+    const requestType = cleanRequestText(d.request_type, 40);
+    if (!PARENT_REQUEST_TYPES.includes(requestType)) return json({ error: 'Invalid request type' }, 400);
+    const subject = cleanRequestText(d.subject, 200);
+    if (!subject) return json({ error: 'Subject is required' }, 400);
+    const priority = REQUEST_PRIORITIES.includes(d.priority) ? d.priority : 'Normal';
+    const description = cleanRequestText(d.description, 2500);
+    const templateKey = cleanRequestText(d.template_key, 80);
+    const fromDate = cleanRequestDate(d.from_date);
+    const toDate = cleanRequestDate(d.to_date);
+
+    const result = await env.DB.prepare(`INSERT INTO parent_student_requests
+        (branch_id, student_id, parent_phone, request_type, template_key, subject, description, priority, from_date, to_date, status)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(student.branch_id, student.id, user.login_id || '', requestType, templateKey, subject, description, priority, fromDate, toDate, 'Pending')
+        .run();
+
+    return json({ id: result.meta.last_row_id, success: true }, 201);
+});
+
+router.put('/api/parent-student-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['parent', 'super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM parent_student_requests WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    if (user.role !== 'parent' && !(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+
+    const d = await req.json();
+
+    if (user.role === 'parent') {
+        if (String(existing.parent_phone || '') !== String(user.login_id || '')) return json({ error: 'Forbidden' }, 403);
+        if (existing.status !== 'Pending') return json({ error: 'Cannot edit request that has been reviewed' }, 400);
+
+        const updates = {};
+        if (d.student_id !== undefined) {
+            const student = await getParentOwnedStudent(env, user, Number(d.student_id || 0));
+            if (!student) return json({ error: 'Child profile not found for this parent account' }, 404);
+            updates.student_id = student.id;
+            updates.branch_id = student.branch_id;
+        }
+        if (d.request_type !== undefined) {
+            const requestType = cleanRequestText(d.request_type, 40);
+            if (PARENT_REQUEST_TYPES.includes(requestType)) updates.request_type = requestType;
+        }
+        if (d.template_key !== undefined) updates.template_key = cleanRequestText(d.template_key, 80);
+        if (d.subject !== undefined) updates.subject = cleanRequestText(d.subject, 200);
+        if (d.description !== undefined) updates.description = cleanRequestText(d.description, 2500);
+        if (d.priority !== undefined && REQUEST_PRIORITIES.includes(d.priority)) updates.priority = d.priority;
+        if (d.from_date !== undefined) updates.from_date = cleanRequestDate(d.from_date);
+        if (d.to_date !== undefined) updates.to_date = cleanRequestDate(d.to_date);
+        if (Object.prototype.hasOwnProperty.call(updates, 'subject') && !updates.subject) {
+            return json({ error: 'Subject is required' }, 400);
+        }
+        if (!Object.keys(updates).length) return json({ success: true });
+
+        const sets = Object.keys(updates).map(k => `${k}=?`).join(', ');
+        await env.DB.prepare(`UPDATE parent_student_requests SET ${sets}, updated_at=datetime('now') WHERE id=?`)
+            .bind(...Object.values(updates), params.id).run();
+        return json({ success: true });
+    }
+
+    if (!isAdminRole(user)) return json({ error: 'Forbidden' }, 403);
+    const status = cleanRequestText(d.status, 20);
+    if (!['Approved', 'Rejected'].includes(status)) {
+        return json({ error: 'Valid status (Approved/Rejected) is required' }, 400);
+    }
+    if (existing.status !== 'Pending') {
+        return json({ error: 'This request has already been reviewed' }, 409);
+    }
+
+    await env.DB.prepare(`UPDATE parent_student_requests
+        SET status=?, admin_remarks=?, reviewed_by=?, reviewed_at=datetime('now'), updated_at=datetime('now')
+        WHERE id=?`)
+        .bind(status, cleanRequestText(d.admin_remarks, 1000), user.id, params.id).run();
+    return json({ success: true });
+});
+
+router.delete('/api/parent-student-requests/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['parent', 'super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM parent_student_requests WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    if (user.role !== 'parent' && !(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+
+    if (user.role === 'parent') {
+        if (String(existing.parent_phone || '') !== String(user.login_id || '')) return json({ error: 'Forbidden' }, 403);
+        if (existing.status !== 'Pending') return json({ error: 'Cannot delete request that has been reviewed' }, 400);
+    } else if (!isAdminRole(user)) {
+        return json({ error: 'Forbidden' }, 403);
+    }
+
+    await env.DB.prepare('DELETE FROM parent_student_requests WHERE id=?').bind(params.id).run();
+    return json({ success: true });
+});
+
 
 router.get('/api/teacher-permission-requests', async (req, env) => {
     const user = await authenticate(req, env);

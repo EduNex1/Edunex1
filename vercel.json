@@ -150,8 +150,10 @@
     { "source": "/t-permission-request", "destination": "/t-permission-request.html" },
 
     { "source": "/admin-permission-requests", "destination": "/admin-permission-requests.html" },
+    { "source": "/admin-parent-requests", "destination": "/admin-parent-requests.html" },
 
     { "source": "/p-my-children", "destination": "/p-my-children.html" },
+    { "source": "/p-requests", "destination": "/p-requests.html" },
     { "source": "/p-attendance", "destination": "/p-attendance.html" },
     { "source": "/p-fee-status", "destination": "/p-fee-status.html" },
     { "source": "/p-online-payment", "destination": "/p-online-payment.html" },

@@ -47,7 +47,7 @@ function renderSidebar(activeMenu) {
     const examMenus = [];
     const feeMasterMenus = ['fee-particulars', 'fee-amount-slab'];
     const masterMenus = ['master-academic-session', 'master-designation', 'master-class', 'master-section', 'master-subject', 'master-exam-name', 'master-exam-group', 'master-period', 'master-homework-type', 'master-house', 'master-stream'];
-    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-devices', 'settings-options', 'settings-exam', 'admin-permission-requests'];
+    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-devices', 'settings-options', 'settings-exam', 'admin-permission-requests', 'admin-parent-requests'];
 
     const isStudentActive = studentMenus.includes(activeMenu);
     const isAttendanceActive = attendanceMenus.includes(activeMenu);
@@ -96,7 +96,10 @@ function renderSidebar(activeMenu) {
 
                 
                 ${hasAccess('permission_requests') ? `<li class="nav-item">
-                    <a href="/admin-permission-requests" class="nav-link${mc('admin-permission-requests')}"><i class="fas fa-clipboard-check"></i><span>Permission Requests</span></a>
+                    <a href="/admin-permission-requests" class="nav-link${mc('admin-permission-requests')}"><i class="fas fa-clipboard-check"></i><span>Teacher Requests</span></a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin-parent-requests" class="nav-link${mc('admin-parent-requests')}"><i class="fas fa-user-friends"></i><span>Parent Requests</span></a>
                 </li>` : ''}
 
                 
@@ -1053,6 +1056,8 @@ function renderParentSidebar(activeMenu) {
         '<li class="nav-item"><a href="/p-my-children" class="nav-link' + mc('p-my-children') + '"><i class="flaticon-classmates"></i><span>My Children</span></a></li>' +
 
         '<li class="nav-item"><a href="/p-attendance" class="nav-link' + mc('p-attendance') + '"><i class="flaticon-checklist"></i><span>Attendance</span></a></li>' +
+
+        '<li class="nav-item"><a href="/p-requests" class="nav-link' + mc('p-requests') + '"><i class="fas fa-paper-plane"></i><span>Child Requests</span></a></li>' +
 
         '<li class="nav-item sidebar-nav-item">' +
         '<a href="#" class="nav-link"><i class="flaticon-technological"></i><span>Fee</span></a>' +

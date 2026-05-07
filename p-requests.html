@@ -1,0 +1,372 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Child Requests - Parent Portal - EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <link rel="stylesheet" href="css/parent-portal-theme.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .request-card{background:#fff;border:1px solid #e8eaf6;border-radius:8px;padding:14px 16px;margin-bottom:12px}
+        .request-header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:9px}
+        .request-type{font-size:10px;font-weight:800;text-transform:uppercase;padding:4px 9px;border-radius:4px;background:#e8eaf6;color:#0d1b4a}
+        .request-type.leave{background:#e3f2fd;color:#1565c0}
+        .request-type.early{background:#fff3e0;color:#ef6c00}
+        .request-type.document{background:#f3e5f5;color:#7b1fa2}
+        .request-type.fee{background:#e8f5e9;color:#2e7d32}
+        .request-type.transport{background:#e0f2f1;color:#00695c}
+        .request-subject{font-size:14px;font-weight:800;color:#0d1b4a;margin-bottom:5px}
+        .request-desc{font-size:12px;color:#555;line-height:1.5;white-space:pre-wrap;margin-bottom:9px}
+        .request-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#7b8290}
+        .status-badge{font-size:10px;font-weight:800;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+        .status-badge.pending{background:#fff8e1;color:#f9a825}
+        .status-badge.approved{background:#e8f5e9;color:#2e7d32}
+        .status-badge.rejected{background:#ffebee;color:#c62828}
+        .priority-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;margin-left:6px;background:#eef1ff;color:#3949ab}
+        .priority-badge.urgent{background:#ffebee;color:#c62828}
+        .template-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:14px}
+        .template-btn{border:1px solid #dde4f0;background:#f8faff;border-radius:8px;padding:10px 11px;text-align:left;cursor:pointer;color:#0d1b4a}
+        .template-btn:hover{border-color:#0d1b4a;background:#eef3ff}
+        .template-title{font-size:12px;font-weight:800;margin-bottom:2px}
+        .template-sub{font-size:10px;color:#697386;line-height:1.35}
+        .admin-remarks{background:#f5f7ff;border-left:3px solid #3949ab;padding:9px 12px;margin-top:10px;border-radius:0 6px 6px 0;font-size:12px}
+        .admin-remarks strong{display:block;font-size:10px;text-transform:uppercase;color:#0d1b4a;margin-bottom:4px}
+        .empty-state{text-align:center;padding:48px 20px;color:#9298a5;background:#fff;border:1px solid #e8eaf6;border-radius:8px}
+        .empty-state i{font-size:40px;color:#c5cae9;margin-bottom:12px}
+        .action-btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+        .action-btns .btn{font-size:10px;padding:5px 10px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Child Requests</h3>
+                    <ul><li><a href="/parent-dashboard">Home</a></li><li>Requests</li></ul>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                        <span><i class="fas fa-paper-plane"></i> <span id="formTitle">Submit Request</span></span>
+                        <button type="button" id="cancelEditBtn" class="btn btn-sm" style="display:none;background:rgba(255,255,255,.15);color:#fff;font-size:10px;border:1px solid rgba(255,255,255,.3);" onclick="cancelEdit()">Cancel Edit</button>
+                    </div>
+                    <div class="chart-card-body">
+                        <div class="template-grid" id="templateGrid"></div>
+                        <form id="requestForm" onsubmit="return submitRequest(event)">
+                            <input type="hidden" id="editingId">
+                            <input type="hidden" id="templateKey">
+                            <div class="row gutters-8">
+                                <div class="col-lg-3 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Child *</label>
+                                    <select id="studentId" class="form-control" required></select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Request Type *</label>
+                                    <select id="reqType" class="form-control" required>
+                                        <option value="Leave">Leave</option>
+                                        <option value="Early Pickup">Early Pickup</option>
+                                        <option value="Document">Document</option>
+                                        <option value="Fee">Fee</option>
+                                        <option value="Transport">Transport</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">From Date</label>
+                                    <input type="date" id="fromDate" class="form-control">
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6 form-group">
+                                    <label class="form-label-sm">To Date</label>
+                                    <input type="date" id="toDate" class="form-control">
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-12 form-group">
+                                    <label class="form-label-sm">Priority</label>
+                                    <select id="reqPriority" class="form-control">
+                                        <option value="Normal">Normal</option>
+                                        <option value="Urgent">Urgent</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 form-group">
+                                    <label class="form-label-sm">Subject *</label>
+                                    <input type="text" id="reqSubject" class="form-control" maxlength="200" placeholder="Short request title" required>
+                                </div>
+                                <div class="col-12 form-group">
+                                    <label class="form-label-sm">Message</label>
+                                    <textarea id="reqDescription" class="form-control" rows="5" maxlength="2500" placeholder="Request details for branch admin"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" id="submitBtn" class="btn btn-fill-lg bg-blue-dark btn-hover-yellow" style="font-size:12px;padding:10px 28px;">
+                                        <i class="fas fa-paper-plane"></i> Submit Request
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="chart-card" style="margin-bottom:16px;">
+                    <div class="chart-card-header"><i class="fas fa-filter"></i> My Requests</div>
+                    <div class="chart-card-body">
+                        <div class="row gutters-8 align-items-end">
+                            <div class="col-lg-2 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">Status</label>
+                                <select id="filterStatus" class="form-control" onchange="loadRequests()">
+                                    <option value="All">All Status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-6 form-group">
+                                <label class="form-label-sm">Type</label>
+                                <select id="filterType" class="form-control" onchange="loadRequests()">
+                                    <option value="All">All Types</option>
+                                    <option value="Leave">Leave</option>
+                                    <option value="Early Pickup">Early Pickup</option>
+                                    <option value="Document">Document</option>
+                                    <option value="Fee">Fee</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-12 form-group">
+                                <button class="btn btn-sm" style="background:#0d1b4a;color:#fff;font-size:11px;padding:8px 16px;width:100%;" onclick="loadRequests()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="requestsList"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading requests...</p></div></div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    var children = [];
+    var templates = [
+        { key:'sick_leave', title:'Sick Leave', sub:'For fever, illness or rest', type:'Leave', priority:'Normal', subject:'Leave request due to sickness', body:'Dear Sir/Madam,\n\nMy child {child} is not feeling well and will not be able to attend school from {from} to {to}. Kindly grant leave for these days.\n\nThank you.' },
+        { key:'family_leave', title:'Family Function', sub:'Short family leave', type:'Leave', priority:'Normal', subject:'Leave request for family function', body:'Dear Sir/Madam,\n\nDue to an important family function, my child {child} will not be able to attend school from {from} to {to}. Kindly approve the leave.\n\nThank you.' },
+        { key:'appointment', title:'Doctor Appointment', sub:'Medical appointment or checkup', type:'Leave', priority:'Normal', subject:'Leave request for doctor appointment', body:'Dear Sir/Madam,\n\nMy child {child} has a medical appointment on {from}. Kindly allow leave/absence for the required time.\n\nThank you.' },
+        { key:'early_pickup', title:'Early Pickup', sub:'Need to pick child early', type:'Early Pickup', priority:'Urgent', subject:'Early pickup request', body:'Dear Sir/Madam,\n\nI need to pick up my child {child} early on {from} due to an urgent reason. Kindly allow early pickup after verification.\n\nThank you.' },
+        { key:'document', title:'Document Request', sub:'Certificate, ID or school document', type:'Document', priority:'Normal', subject:'Document request for child', body:'Dear Sir/Madam,\n\nI request you to please provide the required school document/certificate for my child {child}. I will collect it as per school process.\n\nThank you.' },
+        { key:'transport', title:'Transport Help', sub:'Bus route or pickup issue', type:'Transport', priority:'Normal', subject:'Transport support request', body:'Dear Sir/Madam,\n\nThere is a transport-related issue for my child {child}. Kindly check and guide us with the next steps.\n\nThank you.' }
+    ];
+
+    $(async function(){
+        initPage('p-requests');
+        if (typeof requireRoles === 'function' && !requireRoles(['parent'])) return;
+        renderTemplates();
+        await loadChildren();
+        await loadRequests();
+    });
+
+    function renderTemplates(){
+        $('#templateGrid').html(templates.map(function(t){
+            return '<button type="button" class="template-btn" onclick="useTemplate(\'' + t.key + '\')">' +
+                '<div class="template-title">' + escHtml(t.title) + '</div>' +
+                '<div class="template-sub">' + escHtml(t.sub) + '</div>' +
+            '</button>';
+        }).join(''));
+    }
+
+    async function loadChildren(){
+        try {
+            children = await getMyChildren() || [];
+            var html = children.map(function(c){
+                var label = (c.name || 'Child') + ' - Class ' + (c.class_name || '-') + (c.section ? '-' + c.section : '');
+                return '<option value="' + c.id + '">' + escHtml(label) + '</option>';
+            }).join('');
+            $('#studentId').html(html || '<option value="">No active child found</option>');
+        } catch(e) {
+            $('#studentId').html('<option value="">Unable to load children</option>');
+            showToast('Unable to load child profiles', 'error');
+        }
+    }
+
+    function selectedChild(){
+        var id = $('#studentId').val();
+        return children.find(function(c){ return String(c.id) === String(id); }) || {};
+    }
+
+    function dateOrBlank(id){
+        return $('#' + id).val() || '';
+    }
+
+    function formatTemplateText(text){
+        var child = selectedChild();
+        var from = dateOrBlank('fromDate') || 'the selected date';
+        var to = dateOrBlank('toDate') || from;
+        return String(text || '').replace(/\{child\}/g, child.name || 'my child').replace(/\{from\}/g, from).replace(/\{to\}/g, to);
+    }
+
+    function useTemplate(key){
+        var t = templates.find(function(x){ return x.key === key; });
+        if (!t) return;
+        $('#templateKey').val(t.key);
+        $('#reqType').val(t.type);
+        $('#reqPriority').val(t.priority);
+        $('#reqSubject').val(t.subject);
+        $('#reqDescription').val(formatTemplateText(t.body));
+    }
+
+    async function loadRequests(){
+        var filters = {};
+        var status = $('#filterStatus').val();
+        var type = $('#filterType').val();
+        if (status && status !== 'All') filters.status = status;
+        if (type && type !== 'All') filters.request_type = type;
+        try {
+            var rows = await getParentStudentRequests(filters);
+            renderRequests(rows || []);
+        } catch(e) {
+            showToast(e.message || 'Failed to load requests', 'error');
+            $('#requestsList').html('<div class="empty-state"><i class="fas fa-exclamation-circle" style="color:#c62828;"></i><p>Could not load requests.</p></div>');
+        }
+    }
+
+    function renderRequests(rows){
+        if (!rows.length) {
+            $('#requestsList').html('<div class="empty-state"><i class="fas fa-inbox"></i><h5>No Requests Found</h5><p>Use a template above to submit your first child request.</p></div>');
+            return;
+        }
+        $('#requestsList').html(rows.map(function(r){
+            var statusClass = String(r.status || 'Pending').toLowerCase();
+            var typeClass = typeClassName(r.request_type);
+            var priorityClass = String(r.priority || 'Normal').toLowerCase();
+            var created = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '-';
+            var dates = r.from_date || r.to_date ? '<span><i class="fas fa-calendar-days"></i> ' + escHtml(r.from_date || '-') + (r.to_date && r.to_date !== r.from_date ? ' to ' + escHtml(r.to_date) : '') + '</span>' : '';
+            var actions = '';
+            if (r.status === 'Pending') {
+                actions = '<div class="action-btns">' +
+                    '<button class="btn" style="background:#e8eaf6;color:#3949ab;" onclick="editRequest(' + r.id + ')"><i class="fas fa-edit"></i> Edit</button>' +
+                    '<button class="btn" style="background:#ffebee;color:#c62828;" onclick="deleteRequest(' + r.id + ')"><i class="fas fa-trash"></i> Delete</button>' +
+                '</div>';
+            }
+            var remarks = r.admin_remarks && r.status !== 'Pending'
+                ? '<div class="admin-remarks"><strong>Admin Remarks</strong>' + escHtml(r.admin_remarks) + '</div>'
+                : '';
+            return '<div class="request-card">' +
+                '<div class="request-header"><div><span class="request-type ' + typeClass + '">' + escHtml(r.request_type) + '</span><span class="priority-badge ' + priorityClass + '">' + escHtml(r.priority) + '</span></div><span class="status-badge ' + statusClass + '">' + escHtml(r.status) + '</span></div>' +
+                '<div class="request-subject">' + escHtml(r.subject) + '</div>' +
+                '<div style="font-size:11px;color:#7b8290;margin-bottom:6px;"><i class="fas fa-user-graduate"></i> ' + escHtml(r.student_name || '-') + ' / ' + escHtml(r.admission_no || '-') + ' / Class ' + escHtml(r.class_name || '-') + (r.section ? '-' + escHtml(r.section) : '') + '</div>' +
+                (r.description ? '<div class="request-desc">' + escHtml(r.description) + '</div>' : '') +
+                '<div class="request-meta"><span><i class="fas fa-clock"></i> Submitted: ' + created + '</span>' + dates + '</div>' +
+                remarks + actions +
+            '</div>';
+        }).join(''));
+    }
+
+    async function submitRequest(e){
+        e.preventDefault();
+        var editingId = $('#editingId').val();
+        var payload = {
+            student_id: $('#studentId').val(),
+            request_type: $('#reqType').val(),
+            template_key: $('#templateKey').val(),
+            subject: $('#reqSubject').val().trim(),
+            description: $('#reqDescription').val().trim(),
+            priority: $('#reqPriority').val(),
+            from_date: $('#fromDate').val(),
+            to_date: $('#toDate').val()
+        };
+        if (!payload.student_id || !payload.request_type || !payload.subject) {
+            showToast('Please select child, request type and subject', 'error');
+            return false;
+        }
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        try {
+            if (editingId) {
+                await updateParentStudentRequest(editingId, payload);
+                showToast('Request updated', 'success');
+            } else {
+                await createParentStudentRequest(payload);
+                showToast('Request submitted', 'success');
+            }
+            resetForm();
+            await loadRequests();
+        } catch(e) {
+            showToast(e.message || 'Failed to save request', 'error');
+        } finally {
+            $('#submitBtn').prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Submit Request');
+        }
+        return false;
+    }
+
+    async function editRequest(id){
+        try {
+            var r = await getParentStudentRequest(id);
+            if (!r || r.status !== 'Pending') { showToast('Only pending requests can be edited', 'error'); return; }
+            $('#editingId').val(r.id);
+            $('#studentId').val(r.student_id);
+            $('#reqType').val(r.request_type);
+            $('#templateKey').val(r.template_key || '');
+            $('#reqPriority').val(r.priority || 'Normal');
+            $('#fromDate').val(r.from_date || '');
+            $('#toDate').val(r.to_date || '');
+            $('#reqSubject').val(r.subject || '');
+            $('#reqDescription').val(r.description || '');
+            $('#formTitle').text('Edit Request');
+            $('#submitBtn').html('<i class="fas fa-save"></i> Update Request');
+            $('#cancelEditBtn').show();
+            $('html, body').animate({ scrollTop: 0 }, 250);
+        } catch(e) {
+            showToast(e.message || 'Failed to load request', 'error');
+        }
+    }
+
+    async function deleteRequest(id){
+        if (!confirm('Delete this request?')) return;
+        try {
+            await deleteParentStudentRequest(id);
+            showToast('Request deleted', 'success');
+            await loadRequests();
+        } catch(e) {
+            showToast(e.message || 'Failed to delete request', 'error');
+        }
+    }
+
+    function cancelEdit(){ resetForm(); }
+    function resetForm(){
+        $('#editingId,#templateKey').val('');
+        $('#requestForm')[0].reset();
+        if (children[0]) $('#studentId').val(children[0].id);
+        $('#formTitle').text('Submit Request');
+        $('#submitBtn').html('<i class="fas fa-paper-plane"></i> Submit Request');
+        $('#cancelEditBtn').hide();
+    }
+    function typeClassName(type){
+        var raw = String(type || 'Other').toLowerCase();
+        if (raw.indexOf('early') >= 0) return 'early';
+        return raw.replace(/\s+/g, '-');
+    }
+    function escHtml(str){
+        return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    </script>
+</body>
+</html>

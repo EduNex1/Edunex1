@@ -1,0 +1,332 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Parent Requests - EduNex1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="fonts/flaticon.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/custom-overrides.css">
+    <script src="js/modernizr-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .filter-card{background:#fff;border-radius:10px;border:1px solid #e8eaf6;padding:16px;margin-bottom:16px}
+        .form-label-sm{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;display:block;letter-spacing:.3px}
+        .r-table{width:100%;border-collapse:collapse}
+        .r-table thead th{font-size:10px;font-weight:700;text-transform:uppercase;background:#0d1b4a;color:#fff;padding:8px 10px;text-align:left;white-space:nowrap}
+        .r-table tbody td{font-size:12px;padding:9px 10px;border-bottom:1px solid #eef1f6;vertical-align:middle}
+        .r-table tbody tr:hover td{background:#f8faff}
+        .type-badge{font-size:9px;font-weight:800;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:#e8eaf6;color:#0d1b4a}
+        .type-leave{background:#e3f2fd;color:#1565c0}
+        .type-early{background:#fff3e0;color:#ef6c00}
+        .type-document{background:#f3e5f5;color:#7b1fa2}
+        .type-fee{background:#e8f5e9;color:#2e7d32}
+        .type-transport{background:#e0f2f1;color:#00695c}
+        .status-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+        .status-pending{background:#fff3e0;color:#ef6c00}
+        .status-approved{background:#e8f5e9;color:#2e7d32}
+        .status-rejected{background:#ffebee;color:#c62828}
+        .priority-urgent{color:#c62828;font-weight:800}
+        .priority-normal{color:#666}
+        .action-btn{border:0;background:transparent;cursor:pointer;font-size:13px;padding:4px 8px;border-radius:4px}
+        .action-btn:hover{background:#eef2ff}
+        .action-btn.view{color:#1565c0}.action-btn.approve{color:#2e7d32}.action-btn.reject{color:#c62828}.action-btn.delete{color:#c62828}
+        .stats-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+        .stat-box{background:#fff;border:1px solid #e8eaf6;border-radius:10px;padding:14px 18px;min-width:140px;flex:1}
+        .stat-box .stat-label{font-size:10px;font-weight:800;color:#888;text-transform:uppercase;margin-bottom:4px}
+        .stat-box .stat-value{font-size:22px;font-weight:800;color:#0d1b4a}
+        .stat-box.pending .stat-value{color:#ef6c00}.stat-box.approved .stat-value{color:#2e7d32}.stat-box.rejected .stat-value{color:#c62828}
+        .table-card{background:#fff;border:1px solid #e8eaf6;border-radius:10px;overflow:hidden}
+        .empty-state{text-align:center;padding:46px;color:#9298a5}
+        .empty-state i{font-size:38px;margin-bottom:10px;color:#c5cae9}
+        .detail-modal .modal-header{background:#0d1b4a;color:#fff}
+        .detail-row{display:flex;border-bottom:1px solid #f0f0f0;padding:10px 0;gap:12px}
+        .detail-row:last-child{border-bottom:0}
+        .detail-label{width:150px;font-size:11px;font-weight:800;color:#777;text-transform:uppercase;flex-shrink:0}
+        .detail-value{font-size:13px;color:#333;flex:1;white-space:pre-wrap}
+        .remarks-input{width:100%;min-height:86px;border:1px solid #ddd;border-radius:6px;padding:10px;font-size:12px;margin-top:8px}
+    </style>
+</head>
+<body>
+    <div id="preloader"></div>
+    <div id="wrapper" class="wrapper bg-ash">
+        <div id="header-container"></div>
+        <div class="dashboard-page-one">
+            <div id="sidebar-container"></div>
+            <div class="dashboard-content-one">
+                <div class="breadcrumbs-area">
+                    <h3>Parent Requests</h3>
+                    <ul><li><a href="/dashboard">Home</a></li><li>Parent Requests</li></ul>
+                </div>
+
+                <div class="card height-auto">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title"><h3><i class="fas fa-user-friends"></i> Parent Child Requests</h3></div>
+                        </div>
+
+                        <div class="stats-row">
+                            <div class="stat-box pending"><div class="stat-label">Pending</div><div class="stat-value" id="statPending">0</div></div>
+                            <div class="stat-box approved"><div class="stat-label">Approved</div><div class="stat-value" id="statApproved">0</div></div>
+                            <div class="stat-box rejected"><div class="stat-label">Rejected</div><div class="stat-value" id="statRejected">0</div></div>
+                            <div class="stat-box"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">0</div></div>
+                        </div>
+
+                        <div class="filter-card">
+                            <div class="row gutters-8 align-items-end">
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Status</label>
+                                    <select class="form-control" id="fStatus">
+                                        <option value="">All Status</option>
+                                        <option value="Pending" selected>Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Type</label>
+                                    <select class="form-control" id="fType">
+                                        <option value="">All Types</option>
+                                        <option value="Leave">Leave</option>
+                                        <option value="Early Pickup">Early Pickup</option>
+                                        <option value="Document">Document</option>
+                                        <option value="Fee">Fee</option>
+                                        <option value="Transport">Transport</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Priority</label>
+                                    <select class="form-control" id="fPriority">
+                                        <option value="">All Priority</option>
+                                        <option value="Urgent">Urgent</option>
+                                        <option value="Normal">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date From</label>
+                                    <input type="date" class="form-control" id="fDateFrom">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-6 form-group">
+                                    <label class="form-label-sm">Date To</label>
+                                    <input type="date" class="form-control" id="fDateTo">
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-12 form-group">
+                                    <button class="btn btn-fill-md w-100" style="background:#0d1b4a;color:#fff;font-size:11px;" onclick="loadRequests()"><i class="fas fa-search"></i> Search</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="table-responsive" style="padding:0 2px 10px;">
+                                <table class="r-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px">Sr</th>
+                                            <th>Student</th>
+                                            <th>Parent</th>
+                                            <th>Type</th>
+                                            <th>Subject</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th style="width:120px;text-align:center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requestsBody"><tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin"></i><br>Loading requests...</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade detail-modal" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt"></i> Request Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color:#fff;opacity:1;"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+                <div class="modal-footer" id="modalFooter"><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.scrollUp.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+    var allRequests = [];
+    var canModify = false;
+    var canDelete = false;
+
+    $(async function(){
+        initPage('admin-parent-requests');
+        if (typeof requireRoles === 'function' && !requireRoles(['super_admin','branch_admin'])) return;
+        var user = typeof getUser === 'function' ? getUser() : null;
+        if (user && user.role === 'super_admin') {
+            canModify = true; canDelete = true;
+        } else {
+            var perms = typeof getUserPerms === 'function' ? getUserPerms() : null;
+            var perm = Array.isArray(perms) ? perms.find(function(p){ return p.module === 'permission_requests'; }) : null;
+            canModify = !!(perm && perm.modify);
+            canDelete = !!(perm && perm.can_delete);
+        }
+        await loadRequests();
+    });
+
+    async function loadRequests(){
+        var filters = {};
+        var status = $('#fStatus').val();
+        var type = $('#fType').val();
+        var priority = $('#fPriority').val();
+        var fromDate = $('#fDateFrom').val();
+        var toDate = $('#fDateTo').val();
+        if (status) filters.status = status;
+        if (type) filters.request_type = type;
+        if (priority) filters.priority = priority;
+        if (fromDate) filters.from_date = fromDate;
+        if (toDate) filters.to_date = toDate;
+        try {
+            allRequests = await getParentStudentRequests(filters) || [];
+            updateStats();
+            renderTable();
+        } catch(e) {
+            showToast(e.message || 'Failed to load parent requests', 'error');
+            $('#requestsBody').html('<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle" style="color:#c62828;"></i><br>Error loading data</td></tr>');
+        }
+    }
+
+    function updateStats(){
+        getParentStudentRequests({}).then(function(all){
+            var pending = 0, approved = 0, rejected = 0;
+            (all || []).forEach(function(r){
+                if (r.status === 'Pending') pending++;
+                else if (r.status === 'Approved') approved++;
+                else if (r.status === 'Rejected') rejected++;
+            });
+            $('#statPending').text(pending);
+            $('#statApproved').text(approved);
+            $('#statRejected').text(rejected);
+            $('#statTotal').text((all || []).length);
+        }).catch(function(){});
+    }
+
+    function renderTable(){
+        if (!allRequests.length) {
+            $('#requestsBody').html('<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><br>No requests found</td></tr>');
+            return;
+        }
+        $('#requestsBody').html(allRequests.map(function(r, i){
+            var typeClass = 'type-' + typeClassName(r.request_type);
+            var statusClass = 'status-' + String(r.status || 'Pending').toLowerCase();
+            var priorityClass = 'priority-' + String(r.priority || 'Normal').toLowerCase();
+            var created = r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '-';
+            var actions = '<button class="action-btn view" onclick="viewRequest(' + r.id + ')" title="View"><i class="fas fa-eye"></i></button>';
+            if (r.status === 'Pending' && canModify) {
+                actions += '<button class="action-btn approve" onclick="showActionModal(' + r.id + ', \'Approved\')" title="Approve"><i class="fas fa-check"></i></button>';
+                actions += '<button class="action-btn reject" onclick="showActionModal(' + r.id + ', \'Rejected\')" title="Reject"><i class="fas fa-times"></i></button>';
+            }
+            if (canDelete) actions += '<button class="action-btn delete" onclick="deleteRequest(' + r.id + ')" title="Delete"><i class="fas fa-trash"></i></button>';
+            return '<tr>' +
+                '<td>' + (i + 1) + '</td>' +
+                '<td><strong>' + escHtml(r.student_name || '-') + '</strong><br><small style="color:#888;">' + escHtml(r.admission_no || '') + ' / Class ' + escHtml(r.class_name || '-') + (r.section ? '-' + escHtml(r.section) : '') + '</small></td>' +
+                '<td>' + escHtml(r.father_name || r.mother_name || 'Parent') + '<br><small style="color:#888;">' + escHtml(r.parent_phone || '') + '</small></td>' +
+                '<td><span class="type-badge ' + typeClass + '">' + escHtml(r.request_type) + '</span><br><small class="' + priorityClass + '">' + escHtml(r.priority) + '</small></td>' +
+                '<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(r.subject) + '">' + escHtml(r.subject) + '</td>' +
+                '<td>' + created + '</td>' +
+                '<td><span class="status-badge ' + statusClass + '">' + escHtml(r.status) + '</span></td>' +
+                '<td style="text-align:center">' + actions + '</td>' +
+            '</tr>';
+        }).join(''));
+    }
+
+    async function viewRequest(id){
+        var r = allRequests.find(function(x){ return Number(x.id) === Number(id); });
+        if (!r) {
+            try { r = await getParentStudentRequest(id); } catch(e) { showToast('Request not found', 'error'); return; }
+        }
+        var created = r.created_at ? new Date(r.created_at).toLocaleString('en-IN') : '-';
+        var reviewed = r.reviewed_at ? new Date(r.reviewed_at).toLocaleString('en-IN') : '-';
+        var dates = r.from_date || r.to_date ? escHtml(r.from_date || '-') + (r.to_date && r.to_date !== r.from_date ? ' to ' + escHtml(r.to_date) : '') : '-';
+        var html = '<div class="detail-row"><div class="detail-label">Student</div><div class="detail-value"><strong>' + escHtml(r.student_name || '-') + '</strong><br>' + escHtml(r.admission_no || '') + ' / Class ' + escHtml(r.class_name || '-') + (r.section ? '-' + escHtml(r.section) : '') + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Parent</div><div class="detail-value">' + escHtml(r.father_name || r.mother_name || 'Parent') + '<br>' + escHtml(r.parent_phone || '') + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Type</div><div class="detail-value"><span class="type-badge type-' + typeClassName(r.request_type) + '">' + escHtml(r.request_type) + '</span></div></div>' +
+            '<div class="detail-row"><div class="detail-label">Priority</div><div class="detail-value priority-' + String(r.priority || 'Normal').toLowerCase() + '">' + escHtml(r.priority) + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Subject</div><div class="detail-value"><strong>' + escHtml(r.subject) + '</strong></div></div>' +
+            '<div class="detail-row"><div class="detail-label">Message</div><div class="detail-value">' + (r.description ? escHtml(r.description) : '<em style="color:#999;">No message provided</em>') + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Request Dates</div><div class="detail-value">' + dates + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Submitted</div><div class="detail-value">' + created + '</div></div>' +
+            '<div class="detail-row"><div class="detail-label">Status</div><div class="detail-value"><span class="status-badge status-' + String(r.status || 'Pending').toLowerCase() + '">' + escHtml(r.status) + '</span></div></div>';
+        if (r.status !== 'Pending') {
+            html += '<div class="detail-row"><div class="detail-label">Reviewed</div><div class="detail-value">' + reviewed + (r.reviewed_by_name ? ' by ' + escHtml(r.reviewed_by_name) : '') + '</div></div>';
+            if (r.admin_remarks) html += '<div class="detail-row"><div class="detail-label">Admin Remarks</div><div class="detail-value">' + escHtml(r.admin_remarks) + '</div></div>';
+        }
+        $('#modalBody').html(html);
+        var footer = '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>';
+        if (r.status === 'Pending' && canModify) {
+            footer = '<button type="button" class="btn" style="background:#2e7d32;color:#fff;" onclick="showActionModal(' + r.id + ', \'Approved\')"><i class="fas fa-check"></i> Approve</button>' +
+                '<button type="button" class="btn" style="background:#c62828;color:#fff;" onclick="showActionModal(' + r.id + ', \'Rejected\')"><i class="fas fa-times"></i> Reject</button>' + footer;
+        }
+        $('#modalFooter').html(footer);
+        $('#detailModal').modal('show');
+    }
+
+    function showActionModal(id, action){
+        var r = allRequests.find(function(x){ return Number(x.id) === Number(id); });
+        var label = action === 'Approved' ? 'Approve' : 'Reject';
+        var color = action === 'Approved' ? '#2e7d32' : '#c62828';
+        $('#modalBody').html('<div style="text-align:center;margin-bottom:16px;"><i class="fas fa-' + (action === 'Approved' ? 'check-circle' : 'times-circle') + '" style="font-size:48px;color:' + color + ';"></i><h5 style="margin:12px 0 4px;">' + label + ' Request?</h5><p style="color:#666;font-size:13px;">Request for <strong>' + escHtml(r ? r.student_name : '') + '</strong></p></div><div class="form-group"><label class="form-label-sm">Remarks</label><textarea id="actionRemarks" class="remarks-input" placeholder="Add remarks for parent..."></textarea></div>');
+        $('#modalFooter').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button><button type="button" class="btn" style="background:' + color + ';color:#fff;" onclick="processAction(' + id + ', \'' + action + '\')">' + label + '</button>');
+        $('#detailModal').modal('show');
+    }
+
+    async function processAction(id, action){
+        try {
+            await updateParentStudentRequest(id, { status: action, admin_remarks: $('#actionRemarks').val().trim() });
+            showToast('Request ' + action.toLowerCase(), 'success');
+            $('#detailModal').modal('hide');
+            await loadRequests();
+        } catch(e) {
+            showToast(e.message || 'Failed to update request', 'error');
+        }
+    }
+
+    async function deleteRequest(id){
+        if (!confirm('Delete this parent request?')) return;
+        try {
+            await deleteParentStudentRequest(id);
+            showToast('Request deleted', 'success');
+            await loadRequests();
+        } catch(e) {
+            showToast(e.message || 'Failed to delete request', 'error');
+        }
+    }
+
+    function typeClassName(type){
+        var raw = String(type || 'Other').toLowerCase();
+        if (raw.indexOf('early') >= 0) return 'early';
+        return raw.replace(/\s+/g, '-');
+    }
+    function escHtml(str){
+        return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    </script>
+</body>
+</html>

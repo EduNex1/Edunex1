@@ -229,6 +229,7 @@ const routes = {
     '/settings-exam': 'settings-exam.html',
 
     '/admin-permission-requests': 'admin-permission-requests.html',
+    '/admin-parent-requests': 'admin-parent-requests.html',
     '/t-permission-request': 't-permission-request.html',
 
     '/t-my-students': 't-my-students.html',
@@ -246,6 +247,7 @@ const routes = {
     '/t-my-profile': 't-my-profile.html',
 
     '/p-my-children': 'p-my-children.html',
+    '/p-requests': 'p-requests.html',
     '/p-attendance': 'p-attendance.html',
     '/p-fee-status': 'p-fee-status.html',
     '/p-online-payment': 'p-online-payment.html',

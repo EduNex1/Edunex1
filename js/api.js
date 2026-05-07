@@ -732,3 +732,20 @@ async function updateTeacherPermissionRequest(id, data) {
 async function deleteTeacherPermissionRequest(id) {
     return api(`/api/teacher-permission-requests/${id}`, { method: 'DELETE' });
 }
+
+async function getParentStudentRequests(filters = {}) {
+    const params = new URLSearchParams(filters).toString();
+    return api(`/api/parent-student-requests${params ? '?' + params : ''}`);
+}
+async function getParentStudentRequest(id) {
+    return api(`/api/parent-student-requests/${id}`);
+}
+async function createParentStudentRequest(data) {
+    return api('/api/parent-student-requests', { method: 'POST', body: JSON.stringify(data) });
+}
+async function updateParentStudentRequest(id, data) {
+    return api(`/api/parent-student-requests/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+async function deleteParentStudentRequest(id) {
+    return api(`/api/parent-student-requests/${id}`, { method: 'DELETE' });
+}
