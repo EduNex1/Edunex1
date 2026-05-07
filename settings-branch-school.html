@@ -18,6 +18,11 @@
         .qr-preview{width:80px;height:80px;border-radius:10px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px;background:#fafafa;overflow:hidden}
         .qr-preview img{width:100%;height:100%;object-fit:contain}
         .info-box{background:#e3f2fd;border:1px solid #bbdefb;border-radius:8px;padding:10px 14px;font-size:11px;color:#1565c0;margin-bottom:14px}
+        .settings-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+        .settings-tab{border:1px solid #dfe4ef;background:#fff;color:#0d1b4a;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;text-decoration:none}
+        .settings-tab.active{background:#0d1b4a;color:#fff}
+        .settings-tab:hover{text-decoration:none;color:#0d1b4a}
+        .settings-tab.active:hover{color:#fff}
     </style>
 </head>
 <body>
@@ -30,6 +35,10 @@
                 <div class="breadcrumbs-area"><h3>Settings</h3><ul><li><a href="/dashboard">Home</a></li><li>Branch School Settings</li></ul></div>
                 <div class="card height-auto"><div class="card-body">
                     <div class="heading-layout1"><div class="item-title"><h3><i class="fas fa-school"></i> Branch School Settings</h3></div></div>
+                    <div class="settings-tabs">
+                        <a href="/settings-branch-school" class="settings-tab active"><i class="fas fa-school"></i> School Details</a>
+                        <a href="/settings-devices" class="settings-tab"><i class="fas fa-microchip"></i> Devices</a>
+                    </div>
 
                     
                     <div class="filter-card">

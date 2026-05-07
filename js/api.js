@@ -690,6 +690,32 @@ async function getFaceDescriptors(filters = {}) { const p = new URLSearchParams(
 async function saveFaceDescriptor(data) { return api('/api/face-descriptors', { method: 'POST', body: JSON.stringify(data) }); }
 async function deleteFaceDescriptor(type, personId) { return api(`/api/face-descriptors/${type}/${personId}`, { method: 'DELETE' }); }
 
+async function getDevices(filters = {}) {
+    const p = new URLSearchParams(filters).toString();
+    return api(`/api/devices${p ? '?' + p : ''}`);
+}
+async function createDevice(data) { return api('/api/devices', { method: 'POST', body: JSON.stringify(data) }); }
+async function updateDevice(id, data) { return api(`/api/devices/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
+async function deleteDevice(id) { return api(`/api/devices/${id}`, { method: 'DELETE' }); }
+
+async function getFaceRegistrations(filters = {}) {
+    const p = new URLSearchParams(filters).toString();
+    return api(`/api/face-registrations${p ? '?' + p : ''}`);
+}
+async function registerFaceOnDevices(data) {
+    return api('/api/face-registrations', { method: 'POST', body: JSON.stringify(data) });
+}
+async function retryFaceRegistration(id) {
+    return api(`/api/face-registrations/${id}/retry`, { method: 'POST', body: JSON.stringify({}) });
+}
+async function removeFaceRegistration(id) {
+    return api(`/api/face-registrations/${id}`, { method: 'DELETE' });
+}
+async function getDeviceAttendanceDashboard(filters = {}) {
+    const p = new URLSearchParams(filters).toString();
+    return api(`/api/attendance/device-dashboard${p ? '?' + p : ''}`);
+}
+
 async function getTeacherPermissionRequests(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     return api(`/api/teacher-permission-requests${params ? '?' + params : ''}`);

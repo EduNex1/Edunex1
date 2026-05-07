@@ -3,6 +3,7 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "rewrites": [
+    { "source": "/iclock/:path*", "destination": "https://vkis-api.schoolhub100.workers.dev/iclock/:path*" },
     { "source": "/", "destination": "/login.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/teacher-dashboard", "destination": "/teacher-dashboard.html" },
@@ -22,8 +23,7 @@
     { "source": "/student-attendance-report", "destination": "/student-attendance-report.html" },
     { "source": "/student-attendance-detail", "destination": "/student-attendance-detail.html" },
     { "source": "/student-attendance-stats", "destination": "/student-attendance-stats.html" },
-    { "source": "/face-attendance", "destination": "/face-attendance.html" },
-    { "source": "/face-registration", "destination": "/face-registration.html" },
+    { "source": "/attendance-dashboard", "destination": "/attendance-dashboard.html" },
     { "source": "/face-settings", "destination": "/face-settings.html" },
 
     { "source": "/academic-notice", "destination": "/academic-notice.html" },
@@ -130,6 +130,7 @@
     { "source": "/settings-branches", "destination": "/settings-branches.html" },
     { "source": "/settings-branch-add", "destination": "/settings-branch-add.html" },
     { "source": "/settings-branch-school", "destination": "/settings-branch-school.html" },
+    { "source": "/settings-devices", "destination": "/settings-devices.html" },
     { "source": "/settings-options", "destination": "/settings-options.html" },
     { "source": "/settings-exam", "destination": "/settings-exam.html" },
 

@@ -687,6 +687,12 @@
 
                             
                             <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user-check"></i> Face Capture</div>
+                                <div id="studentFaceCapture"></div>
+                            </div>
+
+                            
+                            <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
                                 <div class="row">
                                     <div class="col-xl-4 col-lg-5 col-md-5 col-12 form-group">
@@ -748,11 +754,14 @@
     <script src="js/app.js"></script>
     <script src="js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <script src="js/face-api.min.js"></script>
+    <script src="js/face-capture-widget.js"></script>
 
     <script>
         let uploadedDocs = [];
         let croppedPhotoBlob = null;
         let uploadedPhotoUrl = '';
+        let faceWidget = null;
 
         function serializeUploadedDocs() {
             return uploadedDocs.map(function (doc) {
@@ -771,6 +780,10 @@
         $(document).ready(function () {
             initPage('new-admission');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            faceWidget = createFaceCaptureWidget({
+                container: document.getElementById('studentFaceCapture'),
+                title: 'Student Biometric Face Registration'
+            });
             $('#admissionNo').val('(Auto-generated)');
 
             populateClassDropdown(document.getElementById('classSelect'), false);
@@ -822,6 +835,10 @@
             $('#admissionForm').on('submit', async function (e) {
                 e.preventDefault();
                 if (!validateForm()) return;
+                if (faceWidget && faceWidget.hasPhoto() && !faceWidget.hasValidFace()) {
+                    showToast('Face photo is not clear. Please retry.', 'error');
+                    return;
+                }
 
                 try {
                     let photoUrl = uploadedPhotoUrl || ($('#photoPreview').is(':visible') ? $('#photoPreview').attr('src') : null);
@@ -839,15 +856,36 @@
 
                     if (editId) {
                         await updateStudent(parseInt(editId), formData);
+                        await registerStudentFaceIfReady(parseInt(editId));
                         showToast('Student updated successfully!', 'success');
                         setTimeout(() => { window.location.href = 'all-student.html'; }, 1500);
                     } else {
                         const newStudent = await createStudent(formData);
+                        await registerStudentFaceIfReady(newStudent.id);
                         showSuccessOverlay({ ...formData, ...newStudent });
                     }
                 } catch(err) { showToast('Error: ' + err.message, 'error'); }
             });
         });
+
+        async function registerStudentFaceIfReady(studentId) {
+            if (!faceWidget || !faceWidget.hasPhoto()) return;
+            try {
+                const faceFile = faceWidget.getFile('student-face');
+                if (!faceFile) return;
+                const uploaded = await uploadFile(faceFile);
+                if (!uploaded || uploaded.error || !uploaded.url) {
+                    throw new Error((uploaded && uploaded.error) || 'Face photo upload failed');
+                }
+                const payload = { user_type: 'student', user_id: studentId, photo_path: uploaded.url };
+                const branchId = typeof getSelectedBranch === 'function' ? getSelectedBranch() : '';
+                if (branchId) payload.branch_id = branchId;
+                const result = await registerFaceOnDevices(payload);
+                if (result && result.total > 0) showToast('Face registration queued for device sync', 'success');
+            } catch (error) {
+                showToast('Student saved, face registration queue failed: ' + (error.message || 'Error'), 'warning');
+            }
+        }
 
         function getFormData(photoUrl) {
 
@@ -1133,6 +1171,7 @@
                 $('#photoPreview').hide(); $('#uploadPlaceholder').show();
                 croppedPhotoBlob = null; uploadedPhotoUrl = '';
                 uploadedDocs = []; renderDocList();
+                if (faceWidget) faceWidget.reset();
                 $('#routeGroup').hide();
             }, 50);
         }

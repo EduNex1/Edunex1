@@ -300,6 +300,12 @@
 
                             
                             <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user-check"></i> Face Capture</div>
+                                <div id="staffFaceCapture"></div>
+                            </div>
+
+                            
+                            <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-paperclip"></i> Upload Documents</div>
                                 <div class="row">
                                     <div class="col-xl-4 col-lg-5 col-md-5 col-12 form-group">
@@ -347,6 +353,8 @@
     <script src="js/app.js"></script>
     <script src="js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <script src="js/face-api.min.js"></script>
+    <script src="js/face-capture-widget.js"></script>
 
     <script>
         let isEditMode = false;
@@ -354,10 +362,15 @@
         let uploadedDocs = [];
         let croppedPhotoBlob = null;
         let uploadedPhotoUrl = '';
+        let faceWidget = null;
 
         $(document).ready(async function () {
             initPage('add-staff');
             if (typeof requireRoles === 'function' && !requireRoles(['super_admin', 'branch_admin'])) return;
+            faceWidget = createFaceCaptureWidget({
+                container: document.getElementById('staffFaceCapture'),
+                title: 'Staff Biometric Face Registration'
+            });
 
             populateDesignationDropdown(document.getElementById('designation'), false);
 
@@ -401,6 +414,10 @@
             $('#staffForm').on('submit', async function (e) {
                 e.preventDefault();
                 if (!validateForm()) return;
+                if (faceWidget && faceWidget.hasPhoto() && !faceWidget.hasValidFace()) {
+                    showToast('Face photo is not clear. Please retry.', 'error');
+                    return;
+                }
 
                 if (isEditMode) {
                     try {
@@ -416,6 +433,7 @@
                         }
                         const formData = getStaffFormData(photoUrl);
                         await updateStaffMember(editStaffId, formData);
+                        await registerStaffFaceIfReady(editStaffId);
                         showToast('Staff updated successfully!', 'success');
                         setTimeout(() => { window.location.href = 'view-staff.html'; }, 1500);
                     } catch(err) { showToast('Error: ' + err.message, 'error'); }
@@ -433,11 +451,29 @@
                         }
                         const formData = getStaffFormData(photoUrl);
                         const newStaff = await createStaffMember(formData);
+                        await registerStaffFaceIfReady(newStaff.id);
                         showSuccessOverlay({ ...formData, ...newStaff });
                     } catch(err) { showToast('Error: ' + err.message, 'error'); }
                 }
             });
         });
+
+        async function registerStaffFaceIfReady(staffId) {
+            if (!faceWidget || !faceWidget.hasPhoto()) return;
+            try {
+                const faceFile = faceWidget.getFile('staff-face');
+                if (!faceFile) return;
+                const uploaded = await uploadFile(faceFile);
+                if (!uploaded || uploaded.error || !uploaded.url) {
+                    throw new Error((uploaded && uploaded.error) || 'Face photo upload failed');
+                }
+                const payload = { user_type: 'staff', user_id: staffId, photo_path: uploaded.url };
+                const result = await registerFaceOnDevices(payload);
+                if (result && result.total > 0) showToast('Face registration queued for device sync', 'success');
+            } catch (error) {
+                showToast('Staff saved, face registration queue failed: ' + (error.message || 'Error'), 'warning');
+            }
+        }
 
         function serializeUploadedDocs() {
             return uploadedDocs.map(function (doc) {
@@ -664,6 +700,7 @@
                 uploadedPhotoUrl = '';
                 uploadedDocs = [];
                 renderDocList();
+                if (faceWidget) faceWidget.reset();
             }, 50);
         }
     </script>

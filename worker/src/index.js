@@ -404,6 +404,475 @@ async function ensureBranchAccess(env, user, table, id) {
     return record;
 }
 
+function textResponse(body, status = 200) {
+    return new Response(body, {
+        status,
+        headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'no-store'
+        }
+    });
+}
+
+function normalizeDeviceSerial(value) {
+    return String(value || '').trim();
+}
+
+function formatAdmsDateTime(date = new Date()) {
+    const ist = new Date(date.getTime() + 330 * 60000);
+    return ist.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function nowSql() {
+    return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function isOnlineLastSeen(value) {
+    if (!value) return false;
+    const parsed = Date.parse(String(value).replace(' ', 'T') + 'Z');
+    if (Number.isNaN(parsed)) return false;
+    return Date.now() - parsed <= 10 * 60 * 1000;
+}
+
+function getRequestSerial(req) {
+    const url = new URL(req.url);
+    return normalizeDeviceSerial(url.searchParams.get('SN') || url.searchParams.get('sn') || url.searchParams.get('SerialNumber') || '');
+}
+
+async function getDeviceBySerial(env, serial) {
+    if (!serial) return null;
+    return env.DB.prepare('SELECT * FROM devices WHERE serial_number=?').bind(serial).first();
+}
+
+async function logUnknownDevice(env, req, serial, payload = '') {
+    try {
+        const url = new URL(req.url);
+        await env.DB.prepare('INSERT INTO unknown_device_logs (serial_number, endpoint, method, query_string, payload) VALUES (?,?,?,?,?)')
+            .bind(serial || '', url.pathname, req.method, url.searchParams.toString(), String(payload || '').slice(0, 8000)).run();
+    } catch {}
+}
+
+async function markDeviceSeen(env, serial) {
+    if (!serial) return null;
+    const device = await getDeviceBySerial(env, serial);
+    if (!device) return null;
+    await env.DB.prepare("UPDATE devices SET last_seen=datetime('now'), status='online', updated_at=datetime('now') WHERE serial_number=?")
+        .bind(serial).run();
+    device.last_seen = nowSql();
+    device.status = 'online';
+    return device;
+}
+
+function parseKeyValueParts(line) {
+    const map = {};
+    String(line || '').split(/\t|&/).forEach(part => {
+        const idx = part.indexOf('=');
+        if (idx <= 0) return;
+        const key = part.slice(0, idx).trim();
+        const value = part.slice(idx + 1).trim();
+        if (key) map[key.toLowerCase()] = value;
+    });
+    return map;
+}
+
+function parseDeviceCmdResults(body) {
+    const rows = String(body || '').split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+    if (!rows.length && String(body || '').trim()) rows.push(String(body).trim());
+    return rows.map(row => parseKeyValueParts(row)).filter(row => row.id || row.return !== undefined || row.cmd);
+}
+
+function normalizeZkTime(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return nowSql();
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(raw)) return raw.slice(0, 19);
+    if (/^\d{4}\/\d{2}\/\d{2}\s+\d{2}:\d{2}/.test(raw)) return raw.replace(/\//g, '-').slice(0, 19);
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 19).replace('T', ' ');
+    return nowSql();
+}
+
+function parseAttendanceLine(line) {
+    const text = String(line || '').trim();
+    if (!text) return null;
+    if (text.startsWith('~')) return null;
+    const kv = parseKeyValueParts(text);
+    const pin = kv.pin || kv.userpin || kv.userid || kv.user_id || '';
+    if (pin) {
+        const time = kv.time || kv.punchtime || kv.punch_time || kv.datetime || kv.eventtime || '';
+        return {
+            pin: normalizeDeviceSerial(pin),
+            punch_time: normalizeZkTime(time),
+            punch_type: normalizePunchType(kv.status || kv.inoutstatus || kv.punchtype || kv.event || ''),
+            verify_type: kv.verify || kv.verifytype || '',
+            work_code: kv.workcode || '',
+            raw_payload: text
+        };
+    }
+    const parts = text.split('\t');
+    if (parts.length >= 2 && parts[0] && /\d{4}[-/]\d{2}[-/]\d{2}/.test(parts[1])) {
+        return {
+            pin: normalizeDeviceSerial(parts[0]),
+            punch_time: normalizeZkTime(parts[1]),
+            punch_type: normalizePunchType(parts[2] || ''),
+            verify_type: parts[3] || '',
+            work_code: parts[4] || '',
+            raw_payload: text
+        };
+    }
+    return null;
+}
+
+function normalizePunchType(value) {
+    const raw = String(value || '').trim().toUpperCase();
+    if (['1', 'OUT', 'CHECKOUT', 'CHECK-OUT', 'CLOCKOUT', 'CLOCK-OUT'].includes(raw)) return 'OUT';
+    return 'IN';
+}
+
+function punchMinute(value) {
+    return normalizeZkTime(value).slice(0, 16);
+}
+
+function zktecoPinFor(userType, userId) {
+    const id = Number(userId || 0);
+    if (!id) return '';
+    return String((userType === 'staff' ? 200000 : 100000) + id);
+}
+
+async function resolveZkPin(env, serial, pin) {
+    const cleanPin = normalizeDeviceSerial(pin);
+    if (!cleanPin) return { user_id: '', user_type: 'unknown' };
+    const reg = await env.DB.prepare(
+        "SELECT user_id, user_type FROM face_registrations WHERE device_serial=? AND target_pin=? AND registration_status='success' ORDER BY id DESC LIMIT 1"
+    ).bind(serial, cleanPin).first();
+    if (reg) return { user_id: String(reg.user_id), user_type: reg.user_type };
+
+    const numeric = Number(cleanPin);
+    if (Number.isInteger(numeric) && numeric >= 200000) {
+        const staffId = numeric - 200000;
+        const staff = await env.DB.prepare('SELECT id FROM staff WHERE id=?').bind(staffId).first();
+        if (staff) return { user_id: String(staff.id), user_type: 'staff' };
+    }
+    if (Number.isInteger(numeric) && numeric >= 100000) {
+        const studentId = numeric - 100000;
+        const student = await env.DB.prepare('SELECT id FROM students WHERE id=?').bind(studentId).first();
+        if (student) return { user_id: String(student.id), user_type: 'student' };
+    }
+
+    const student = await env.DB.prepare('SELECT id FROM students WHERE admission_no=? OR id=?').bind(cleanPin, Number(cleanPin) || 0).first();
+    if (student) return { user_id: String(student.id), user_type: 'student' };
+    const staff = await env.DB.prepare('SELECT id FROM staff WHERE employee_id=? OR id=?').bind(cleanPin, Number(cleanPin) || 0).first();
+    if (staff) return { user_id: String(staff.id), user_type: 'staff' };
+    return { user_id: cleanPin, user_type: 'unknown' };
+}
+
+async function getAttendanceStatusFromTime(env, branchId, punchTime) {
+    const settings = await getOptionSettingsMap(env, branchId);
+    const lateDeadline = settings.face_att_late_deadline || '08:30';
+    const hhmm = String(punchTime || '').slice(11, 16);
+    return hhmm && hhmm > lateDeadline ? 'L' : 'P';
+}
+
+async function syncLegacyAttendanceFromDevice(env, branchId, resolved, record) {
+    if (!branchId || !resolved || !['student', 'staff'].includes(resolved.user_type)) return;
+    const date = String(record.punch_time || '').slice(0, 10);
+    if (!date || record.punch_type !== 'IN') return;
+    const status = await getAttendanceStatusFromTime(env, branchId, record.punch_time);
+    if (resolved.user_type === 'student') {
+        await env.DB.prepare(
+            "INSERT INTO student_attendance (branch_id, student_id, date, status, remark, marked_by) VALUES (?,?,?,?,?,NULL) ON CONFLICT(student_id, date) DO UPDATE SET status=CASE WHEN student_attendance.status='A' THEN excluded.status ELSE student_attendance.status END, remark=CASE WHEN student_attendance.status='A' THEN excluded.remark ELSE student_attendance.remark END"
+        ).bind(branchId, resolved.user_id, date, status, 'ZKTeco device').run();
+    } else {
+        await env.DB.prepare(
+            "INSERT INTO staff_attendance (branch_id, staff_id, date, status, remark) VALUES (?,?,?,?,?) ON CONFLICT(staff_id, date) DO UPDATE SET status=CASE WHEN staff_attendance.status='A' THEN excluded.status ELSE staff_attendance.status END, remark=CASE WHEN staff_attendance.status='A' THEN excluded.remark ELSE staff_attendance.remark END"
+        ).bind(branchId, resolved.user_id, date, status, 'ZKTeco device').run();
+    }
+}
+
+async function saveDeviceAttendanceRecords(env, device, serial, rawBody) {
+    const lines = String(rawBody || '').split(/\r?\n/);
+    let saved = 0, duplicates = 0;
+    for (const line of lines) {
+        const record = parseAttendanceLine(line);
+        if (!record || !record.pin) continue;
+        const resolved = await resolveZkPin(env, serial, record.pin);
+        const result = await env.DB.prepare(
+            'INSERT OR IGNORE INTO attendance_logs (user_id, user_type, device_serial, branch_id, school_id, punch_time, punch_minute, punch_type, zk_pin, verify_type, work_code, raw_payload) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+        ).bind(
+            resolved.user_id || record.pin,
+            resolved.user_type || 'unknown',
+            serial,
+            device ? device.branch_id : null,
+            device ? (device.school_id || device.branch_id || null) : null,
+            record.punch_time,
+            punchMinute(record.punch_time),
+            record.punch_type,
+            record.pin,
+            record.verify_type || '',
+            record.work_code || '',
+            record.raw_payload || ''
+        ).run();
+        if (result.meta && result.meta.changes) {
+            saved++;
+            if (device) await syncLegacyAttendanceFromDevice(env, device.branch_id, resolved, record);
+        } else {
+            duplicates++;
+        }
+    }
+    return { saved, duplicates };
+}
+
+function admsOptionsResponse(serial) {
+    const stamp = Math.floor(Date.now() / 1000);
+    return [
+        `GET OPTION FROM: ${serial || 'UNKNOWN'}`,
+        `Stamp=${stamp}`,
+        `OpStamp=${stamp}`,
+        `PhotoStamp=${stamp}`,
+        'ErrorDelay=60',
+        'Delay=30',
+        'TransTimes=00:00;14:00',
+        'TransInterval=1',
+        'TransFlag=111111111111',
+        'TimeZone=5.5',
+        'Realtime=1',
+        'Encrypt=0',
+        'ServerVer=2.4.1',
+        `DateTime=${formatAdmsDateTime()}`
+    ].join('\n');
+}
+
+function getR2KeyFromFileUrl(value) {
+    const raw = String(value || '');
+    const marker = '/api/files/';
+    const index = raw.indexOf(marker);
+    if (index >= 0) return decodeURIComponent(raw.slice(index + marker.length).split(/[?#]/)[0]);
+    return '';
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+}
+
+async function readPhotoBase64(env, photoPath) {
+    const raw = String(photoPath || '');
+    if (!raw) throw new Error('Face photo missing');
+    const dataMatch = raw.match(/^data:image\/[a-z0-9.+-]+;base64,(.+)$/i);
+    if (dataMatch) return dataMatch[1];
+    const key = getR2KeyFromFileUrl(raw);
+    if (key && env.UPLOADS) {
+        const obj = await env.UPLOADS.get(key);
+        if (!obj) throw new Error('Face photo file not found');
+        return arrayBufferToBase64(await obj.arrayBuffer());
+    }
+    const fetched = await fetch(raw);
+    if (!fetched.ok) throw new Error('Face photo could not be downloaded');
+    return arrayBufferToBase64(await fetched.arrayBuffer());
+}
+
+function buildUserInfoCommand(pin, person) {
+    const name = String(person && person.name ? person.name : pin).replace(/[\t\r\n]/g, ' ').trim().slice(0, 40);
+    return `DATA UPDATE USERINFO PIN=${pin}\tName=${name}\tPri=0\tPrivilege=0\tPasswd=\tCard=\tGrp=1\tTZ=0000000100000000\tVerify=0`;
+}
+
+async function buildFacePhotoCommand(env, registration) {
+    const base64 = await readPhotoBase64(env, registration.photo_path);
+    const pin = registration.target_pin;
+    return `DATA UPDATE BIOPHOTO PIN=${pin}\tFileName=${pin}.jpg\tType=9\tNo=0\tIndex=0\tSize=${base64.length}\tContent=${base64}`;
+}
+
+function buildFaceDeleteCommand(pin) {
+    return `DATA DELETE BIOPHOTO PIN=${pin}\tType=9`;
+}
+
+async function queueDeviceCommand(env, data) {
+    const existing = data.face_registration_id ? await env.DB.prepare(
+        "SELECT id FROM device_commands WHERE face_registration_id=? AND command_type=? AND status IN ('queued','sent') ORDER BY id DESC LIMIT 1"
+    ).bind(data.face_registration_id, data.command_type).first() : null;
+    if (existing) return existing.id;
+    const result = await env.DB.prepare(
+        'INSERT INTO device_commands (device_serial, branch_id, school_id, face_registration_id, command_type, command_text) VALUES (?,?,?,?,?,?)'
+    ).bind(
+        data.device_serial,
+        data.branch_id || null,
+        data.school_id || null,
+        data.face_registration_id || null,
+        data.command_type || 'generic',
+        data.command_text || ''
+    ).run();
+    return result.meta.last_row_id;
+}
+
+async function getPersonForFaceRegistration(env, userType, userId) {
+    if (userType === 'student') {
+        return env.DB.prepare('SELECT id, branch_id, name, photo_url FROM students WHERE id=?').bind(userId).first();
+    }
+    return env.DB.prepare('SELECT id, branch_id, name, photo_url FROM staff WHERE id=?').bind(userId).first();
+}
+
+async function getStaffRegistrationBranchIds(env, staffId, primaryBranchId) {
+    const ids = new Set([Number(primaryBranchId)].filter(Boolean));
+    const { results: users } = await env.DB.prepare("SELECT id, branch_id FROM users WHERE linked_id=? AND role IN ('teacher','staff')").bind(staffId).all();
+    for (const u of users || []) {
+        if (u.branch_id) ids.add(Number(u.branch_id));
+        const assigned = await getUserAssignedBranchIds(env, u.id, u.branch_id);
+        assigned.forEach(id => ids.add(Number(id)));
+    }
+    return Array.from(ids).filter(Boolean);
+}
+
+async function getDevicesForFaceTarget(env, userType, person, explicitBranchId, explicitDeviceSerial) {
+    const binds = [];
+    let q = "SELECT * FROM devices WHERE 1=1";
+    if (explicitDeviceSerial) {
+        q += ' AND serial_number=?';
+        binds.push(explicitDeviceSerial);
+    } else {
+        let branchIds = [];
+        if (userType === 'staff') branchIds = await getStaffRegistrationBranchIds(env, person.id, person.branch_id);
+        else branchIds = [Number(explicitBranchId || person.branch_id)].filter(Boolean);
+        if (explicitBranchId) branchIds = branchIds.filter(id => Number(id) === Number(explicitBranchId));
+        if (!branchIds.length) return [];
+        q += ` AND branch_id IN (${branchIds.map(() => '?').join(',')})`;
+        binds.push(...branchIds);
+    }
+    q += ' ORDER BY branch_id, device_name';
+    const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
+    return results || [];
+}
+
+async function upsertFaceRegistrationForDevice(env, person, userType, device, photoPath) {
+    const pin = zktecoPinFor(userType, person.id);
+    const row = await env.DB.prepare('SELECT id FROM face_registrations WHERE user_id=? AND user_type=? AND device_serial=?')
+        .bind(person.id, userType, device.serial_number).first();
+    if (row) {
+        await env.DB.prepare("DELETE FROM device_commands WHERE face_registration_id=? AND status IN ('queued','sent')")
+            .bind(row.id).run();
+        await env.DB.prepare("UPDATE face_registrations SET photo_path=?, branch_id=?, school_id=?, target_pin=?, registration_status='pending', registered_at=NULL, last_error='', updated_at=datetime('now') WHERE id=?")
+            .bind(photoPath || person.photo_url || '', device.branch_id, device.school_id || device.branch_id || null, pin, row.id).run();
+        return row.id;
+    }
+    const result = await env.DB.prepare(
+        "INSERT INTO face_registrations (user_id, user_type, photo_path, device_serial, branch_id, school_id, target_pin, registration_status) VALUES (?,?,?,?,?,?,?,'pending')"
+    ).bind(person.id, userType, photoPath || person.photo_url || '', device.serial_number, device.branch_id, device.school_id || device.branch_id || null, pin).run();
+    return result.meta.last_row_id;
+}
+
+async function queueFaceRegistrationCommands(env, registrationId, person, device) {
+    const reg = await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(registrationId).first();
+    if (!reg) return;
+    await queueDeviceCommand(env, {
+        device_serial: device.serial_number,
+        branch_id: device.branch_id,
+        school_id: device.school_id || device.branch_id || null,
+        face_registration_id: null,
+        command_type: 'face_userinfo',
+        command_text: buildUserInfoCommand(reg.target_pin, person)
+    });
+    await queueDeviceCommand(env, {
+        device_serial: device.serial_number,
+        branch_id: device.branch_id,
+        school_id: device.school_id || device.branch_id || null,
+        face_registration_id: registrationId,
+        command_type: 'face_photo',
+        command_text: 'FACE_PHOTO'
+    });
+}
+
+async function registerFaceForUser(env, options) {
+    const userType = String(options.user_type || '').trim();
+    const userId = Number(options.user_id || 0);
+    if (!['student', 'staff'].includes(userType) || !userId) return { error: 'Invalid user' };
+    const person = await getPersonForFaceRegistration(env, userType, userId);
+    if (!person) return { error: 'User not found' };
+    let devices = await getDevicesForFaceTarget(env, userType, person, options.branch_id, options.device_serial);
+    if (Array.isArray(options.allowed_branch_ids) && options.allowed_branch_ids.length) {
+        const allowed = new Set(options.allowed_branch_ids.map(Number));
+        devices = devices.filter(device => allowed.has(Number(device.branch_id)));
+    }
+    const rows = [];
+    for (const device of devices) {
+        const registrationId = await upsertFaceRegistrationForDevice(env, person, userType, device, options.photo_path || person.photo_url || '');
+        await queueFaceRegistrationCommands(env, registrationId, person, device);
+        rows.push(await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(registrationId).first());
+    }
+    return { rows, total: rows.length };
+}
+
+async function queuePendingFaceRegistrationsForDevice(env, serial) {
+    const { results } = await env.DB.prepare("SELECT fr.*, d.device_name, d.location FROM face_registrations fr JOIN devices d ON fr.device_serial=d.serial_number WHERE fr.device_serial=? AND fr.registration_status='pending'")
+        .bind(serial).all();
+    for (const reg of results || []) {
+        const pending = await env.DB.prepare("SELECT id FROM device_commands WHERE face_registration_id=? AND command_type='face_photo' AND status IN ('queued','sent') LIMIT 1")
+            .bind(reg.id).first();
+        if (pending) continue;
+        const person = await getPersonForFaceRegistration(env, reg.user_type, reg.user_id);
+        const device = await getDeviceBySerial(env, serial);
+        if (person && device) await queueFaceRegistrationCommands(env, reg.id, person, device);
+    }
+}
+
+async function buildQueuedDeviceCommands(env, serial) {
+    await env.DB.prepare("UPDATE device_commands SET status='queued', updated_at=datetime('now') WHERE device_serial=? AND status='sent' AND attempts < 3 AND sent_at IS NOT NULL AND datetime(sent_at) < datetime('now','-5 minutes')")
+        .bind(serial).run();
+    const { results } = await env.DB.prepare("SELECT * FROM device_commands WHERE device_serial=? AND status='queued' ORDER BY id LIMIT 5")
+        .bind(serial).all();
+    const lines = [];
+    for (const cmd of results || []) {
+        let commandText = cmd.command_text;
+        if (cmd.command_type === 'face_photo') {
+            const reg = await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(cmd.face_registration_id).first();
+            try {
+                commandText = await buildFacePhotoCommand(env, reg);
+            } catch (error) {
+                await env.DB.prepare("UPDATE device_commands SET status='failed', result_text=?, updated_at=datetime('now') WHERE id=?")
+                    .bind(error.message || 'Photo command build failed', cmd.id).run();
+                await env.DB.prepare("UPDATE face_registrations SET registration_status='failed', last_error=?, updated_at=datetime('now') WHERE id=?")
+                    .bind(error.message || 'Photo command build failed', cmd.face_registration_id).run();
+                continue;
+            }
+        }
+        lines.push(`C:${cmd.id}:${commandText}`);
+        await env.DB.prepare("UPDATE device_commands SET status='sent', attempts=attempts+1, sent_at=datetime('now'), updated_at=datetime('now') WHERE id=?")
+            .bind(cmd.id).run();
+        if (cmd.face_registration_id) {
+            await env.DB.prepare("UPDATE face_registrations SET last_push_at=datetime('now'), updated_at=datetime('now') WHERE id=?")
+                .bind(cmd.face_registration_id).run();
+        }
+    }
+    return lines.join('\n') + (lines.length ? '\n' : '');
+}
+
+async function applyDeviceCommandResults(env, serial, body) {
+    const results = parseDeviceCmdResults(body);
+    let updated = 0;
+    for (const result of results) {
+        const id = Number(result.id || 0);
+        if (!id) continue;
+        const returnCode = result.return ?? result.Return ?? '';
+        const ok = String(returnCode) === '0';
+        const existing = await env.DB.prepare('SELECT * FROM device_commands WHERE id=? AND device_serial=?').bind(id, serial).first();
+        await env.DB.prepare("UPDATE device_commands SET status=?, result_code=?, result_text=?, updated_at=datetime('now') WHERE id=? AND device_serial=?")
+            .bind(ok ? 'success' : 'failed', String(returnCode), JSON.stringify(result).slice(0, 1000), id, serial).run();
+        if (existing && existing.face_registration_id) {
+            if (existing.command_type === 'face_remove' && ok) {
+                await env.DB.prepare('DELETE FROM face_registrations WHERE id=?').bind(existing.face_registration_id).run();
+            } else {
+                await env.DB.prepare("UPDATE face_registrations SET registration_status=?, registered_at=CASE WHEN ?='success' THEN datetime('now') ELSE registered_at END, last_error=?, updated_at=datetime('now') WHERE id=?")
+                    .bind(ok ? 'success' : 'failed', ok ? 'success' : 'failed', ok ? '' : JSON.stringify(result).slice(0, 500), existing.face_registration_id).run();
+            }
+        }
+        updated++;
+    }
+    return updated;
+}
+
 function normalizeSmsPhoneNumber(phone, countryCode = '91') {
     const digits = String(phone || '').replace(/\D/g, '');
     if (!digits) return '';
@@ -1376,6 +1845,308 @@ function masterCRUD(table, nameField = 'name') {
     'deduction_heads', 'allowance_heads', 'transport_routes', 'vehicles', 'book_types', 'exam_names',
     'exam_groups', 'periods', 'homework_types', 'houses', 'streams', 'grading_system',
     'notices', 'holidays', 'academic_sessions', 'admit_card_instructions', 'syllabi', 'sms_templates'].forEach(t => masterCRUD(t));
+
+router.get('/iclock/cdata', async (req, env) => {
+    const serial = getRequestSerial(req);
+    const device = await markDeviceSeen(env, serial);
+    if (!device) await logUnknownDevice(env, req, serial);
+    return textResponse(admsOptionsResponse(serial));
+});
+
+router.post('/iclock/cdata', async (req, env) => {
+    const serial = getRequestSerial(req);
+    const body = await req.text();
+    const device = await markDeviceSeen(env, serial);
+    if (!device) {
+        await logUnknownDevice(env, req, serial, body);
+        return textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
+    }
+    const url = new URL(req.url);
+    const table = String(url.searchParams.get('table') || url.searchParams.get('tablename') || '').toUpperCase();
+    const shouldParseAttendance = !table || ['ATTLOG', 'ATTLOGS', 'CHECKINOUT'].includes(table);
+    const result = shouldParseAttendance
+        ? await saveDeviceAttendanceRecords(env, device, serial, body)
+        : { saved: 0, duplicates: 0 };
+    return textResponse(`OK: ${result.saved}\nDateTime=${formatAdmsDateTime()}`);
+});
+
+router.get('/iclock/getrequest', async (req, env) => {
+    const serial = getRequestSerial(req);
+    const device = await markDeviceSeen(env, serial);
+    if (!device) {
+        await logUnknownDevice(env, req, serial);
+        return textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
+    }
+    await queuePendingFaceRegistrationsForDevice(env, serial);
+    const commands = await buildQueuedDeviceCommands(env, serial);
+    return textResponse(commands || `OK\nDateTime=${formatAdmsDateTime()}`);
+});
+
+router.post('/iclock/devicecmd', async (req, env) => {
+    const serial = getRequestSerial(req);
+    const body = await req.text();
+    const device = await markDeviceSeen(env, serial);
+    if (!device) {
+        await logUnknownDevice(env, req, serial, body);
+        return textResponse('OK');
+    }
+    await applyDeviceCommandResults(env, serial, body);
+    return textResponse('OK');
+});
+
+router.get('/api/devices', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const url = new URL(req.url);
+    const status = url.searchParams.get('status');
+    let q = `SELECT d.*, b.name as branch_name, b.school_name,
+        CASE WHEN d.last_seen IS NOT NULL AND datetime(d.last_seen) >= datetime('now','-10 minutes') THEN 'online' ELSE 'offline' END as computed_status
+        FROM devices d LEFT JOIN branches b ON d.branch_id=b.id WHERE 1=1`;
+    const binds = [];
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND d.branch_id=?'; binds.push(effBranch); }
+    if (status && status !== 'All') {
+        if (status === 'online') q += " AND d.last_seen IS NOT NULL AND datetime(d.last_seen) >= datetime('now','-10 minutes')";
+        if (status === 'offline') q += " AND (d.last_seen IS NULL OR datetime(d.last_seen) < datetime('now','-10 minutes'))";
+    }
+    q += ' ORDER BY b.name, d.device_name';
+    const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
+    return json((results || []).map(row => ({ ...row, status: row.computed_status || row.status || 'offline' })));
+});
+
+router.post('/api/devices', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const d = await req.json();
+    const branchId = await getWritableBranchId(req, env, user, d.branch_id);
+    if (!branchId) return json({ error: 'branch_id required' }, 400);
+    const serial = normalizeDeviceSerial(d.serial_number);
+    const name = String(d.device_name || '').trim();
+    if (!serial || !name) return json({ error: 'Device name and serial number are required' }, 400);
+    try {
+        const result = await env.DB.prepare(
+            "INSERT INTO devices (device_name, serial_number, branch_id, school_id, location, status) VALUES (?,?,?,?,?,'offline')"
+        ).bind(name, serial, branchId, d.school_id || branchId, String(d.location || '').trim()).run();
+        return json({ id: result.meta.last_row_id, device_name: name, serial_number: serial, branch_id: branchId, location: d.location || '', status: 'offline' }, 201);
+    } catch (error) {
+        if (String(error.message || '').includes('UNIQUE')) return json({ error: 'This serial number is already linked to another branch' }, 409);
+        throw error;
+    }
+});
+
+router.put('/api/devices/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const existing = await env.DB.prepare('SELECT * FROM devices WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+    const d = await req.json();
+    const serial = normalizeDeviceSerial(d.serial_number ?? existing.serial_number);
+    const name = String(d.device_name ?? existing.device_name ?? '').trim();
+    const location = String(d.location ?? existing.location ?? '').trim();
+    if (!serial || !name) return json({ error: 'Device name and serial number are required' }, 400);
+    try {
+        await env.DB.prepare("UPDATE devices SET device_name=?, serial_number=?, location=?, updated_at=datetime('now') WHERE id=?")
+            .bind(name, serial, location, params.id).run();
+        if (serial !== existing.serial_number) {
+            await env.DB.prepare('UPDATE face_registrations SET device_serial=? WHERE device_serial=?').bind(serial, existing.serial_number).run();
+            await env.DB.prepare('UPDATE device_commands SET device_serial=? WHERE device_serial=?').bind(serial, existing.serial_number).run();
+        }
+        return json({ success: true });
+    } catch (error) {
+        if (String(error.message || '').includes('UNIQUE')) return json({ error: 'This serial number is already linked to another branch' }, 409);
+        throw error;
+    }
+});
+
+router.delete('/api/devices/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const existing = await env.DB.prepare('SELECT * FROM devices WHERE id=?').bind(params.id).first();
+    if (!existing) return json({ error: 'Not found' }, 404);
+    if (!(await userCanAccessBranch(env, user, existing.branch_id))) return json({ error: 'Forbidden' }, 403);
+    await env.DB.prepare('DELETE FROM device_commands WHERE device_serial=?').bind(existing.serial_number).run();
+    await env.DB.prepare('DELETE FROM face_registrations WHERE device_serial=?').bind(existing.serial_number).run();
+    await env.DB.prepare('DELETE FROM devices WHERE id=?').bind(params.id).run();
+    return json({ success: true });
+});
+
+router.get('/api/face-registrations', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['super_admin', 'branch_admin', 'teacher', 'staff'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const url = new URL(req.url);
+    const userType = url.searchParams.get('user_type');
+    const userId = url.searchParams.get('user_id');
+    let q = `SELECT fr.*, d.device_name, d.location, d.last_seen, b.name as branch_name,
+        CASE WHEN d.last_seen IS NOT NULL AND datetime(d.last_seen) >= datetime('now','-10 minutes') THEN 'online' ELSE 'offline' END as device_status
+        FROM face_registrations fr
+        LEFT JOIN devices d ON fr.device_serial=d.serial_number
+        LEFT JOIN branches b ON fr.branch_id=b.id
+        WHERE 1=1`;
+    const binds = [];
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    if (effBranch) { q += ' AND fr.branch_id=?'; binds.push(effBranch); }
+    if (userType) { q += ' AND fr.user_type=?'; binds.push(userType); }
+    if (userId) { q += ' AND fr.user_id=?'; binds.push(userId); }
+    if (user.role === 'teacher' || user.role === 'staff') {
+        q += " AND fr.user_type='staff' AND fr.user_id=?";
+        binds.push(user.linked_id);
+    }
+    q += ' ORDER BY b.name, d.device_name, fr.id DESC';
+    const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
+    return json(results || []);
+});
+
+router.post('/api/face-registrations', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const d = await req.json();
+    if (!['student', 'staff'].includes(d.user_type)) return json({ error: 'Invalid user_type' }, 400);
+    const person = await getPersonForFaceRegistration(env, d.user_type, Number(d.user_id));
+    if (!person) return json({ error: 'User not found' }, 404);
+    if (!(await userCanAccessBranch(env, user, person.branch_id))) return json({ error: 'Forbidden' }, 403);
+    if (d.branch_id && !(await userCanAccessBranch(env, user, d.branch_id))) return json({ error: 'Forbidden' }, 403);
+    const result = await registerFaceForUser(env, {
+        user_type: d.user_type,
+        user_id: Number(d.user_id),
+        branch_id: d.branch_id || undefined,
+        device_serial: d.device_serial || '',
+        photo_path: d.photo_path || person.photo_url || '',
+        allowed_branch_ids: user.role === 'super_admin' ? [] : await getUserAssignedBranchIds(env, user.id, user.branch_id)
+    });
+    if (result.error) return json({ error: result.error }, 400);
+    return json({ success: true, registrations: result.rows, total: result.total }, 201);
+});
+
+router.post('/api/face-registrations/:id/retry', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const reg = await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(params.id).first();
+    if (!reg) return json({ error: 'Not found' }, 404);
+    if (!(await userCanAccessBranch(env, user, reg.branch_id))) return json({ error: 'Forbidden' }, 403);
+    const person = await getPersonForFaceRegistration(env, reg.user_type, reg.user_id);
+    const device = await getDeviceBySerial(env, reg.device_serial);
+    if (!person || !device) return json({ error: 'Person or device not found' }, 404);
+    await env.DB.prepare("UPDATE face_registrations SET registration_status='pending', last_error='', updated_at=datetime('now') WHERE id=?").bind(reg.id).run();
+    await queueFaceRegistrationCommands(env, reg.id, person, device);
+    return json({ success: true });
+});
+
+router.delete('/api/face-registrations/:id', async (req, env, params) => {
+    const user = await authenticate(req, env);
+    if (!user || !['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const reg = await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(params.id).first();
+    if (!reg) return json({ error: 'Not found' }, 404);
+    if (!(await userCanAccessBranch(env, user, reg.branch_id))) return json({ error: 'Forbidden' }, 403);
+    const device = await getDeviceBySerial(env, reg.device_serial);
+    if (!device) {
+        await env.DB.prepare('DELETE FROM face_registrations WHERE id=?').bind(params.id).run();
+        return json({ success: true });
+    }
+    await env.DB.prepare("UPDATE face_registrations SET registration_status='pending', updated_at=datetime('now') WHERE id=?").bind(reg.id).run();
+    await queueDeviceCommand(env, {
+        device_serial: reg.device_serial,
+        branch_id: reg.branch_id,
+        school_id: reg.school_id || reg.branch_id || null,
+        face_registration_id: reg.id,
+        command_type: 'face_remove',
+        command_text: buildFaceDeleteCommand(reg.target_pin)
+    });
+    return json({ success: true, pending_remove: true });
+});
+
+router.get('/api/attendance/device-dashboard', async (req, env) => {
+    const user = await authenticate(req, env);
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!['super_admin', 'branch_admin'].includes(user.role)) return json({ error: 'Forbidden' }, 403);
+    const url = new URL(req.url);
+    const date = url.searchParams.get('date') || formatAdmsDateTime().slice(0, 10);
+    const effBranch = await getEffectiveBranchId(req, env, user);
+    const branchClause = effBranch ? ' AND branch_id=?' : '';
+    const branchJoinClause = effBranch ? ' AND al.branch_id=?' : '';
+    const branchBinds = effBranch ? [effBranch] : [];
+
+    const studentTotals = branchBinds.length
+        ? await env.DB.prepare(`SELECT COUNT(*) as total FROM students WHERE status='Active'${branchClause}`).bind(...branchBinds).first()
+        : await env.DB.prepare("SELECT COUNT(*) as total FROM students WHERE status='Active'").first();
+    const staffTotals = branchBinds.length
+        ? await env.DB.prepare(`SELECT COUNT(*) as total FROM staff WHERE status='Active'${branchClause}`).bind(...branchBinds).first()
+        : await env.DB.prepare("SELECT COUNT(*) as total FROM staff WHERE status='Active'").first();
+    const studentPresent = await env.DB.prepare(`SELECT COUNT(DISTINCT user_id) as total FROM attendance_logs WHERE user_type='student' AND punch_type='IN' AND date(punch_time)=?${branchClause}`).bind(date, ...branchBinds).first();
+    const staffPresent = await env.DB.prepare(`SELECT COUNT(DISTINCT user_id) as total FROM attendance_logs WHERE user_type='staff' AND punch_type='IN' AND date(punch_time)=?${branchClause}`).bind(date, ...branchBinds).first();
+
+    const { results: perDevice } = await env.DB.prepare(`SELECT d.id, d.device_name, d.serial_number, d.location, d.branch_id, b.name as branch_name,
+        CASE WHEN d.last_seen IS NOT NULL AND datetime(d.last_seen) >= datetime('now','-10 minutes') THEN 'online' ELSE 'offline' END as status,
+        COUNT(al.id) as punch_count,
+        COUNT(DISTINCT CASE WHEN al.user_type='student' THEN al.user_id END) as students,
+        COUNT(DISTINCT CASE WHEN al.user_type='staff' THEN al.user_id END) as staff
+        FROM devices d
+        LEFT JOIN branches b ON d.branch_id=b.id
+        LEFT JOIN attendance_logs al ON al.device_serial=d.serial_number AND date(al.punch_time)=?
+        WHERE 1=1${effBranch ? ' AND d.branch_id=?' : ''}
+        GROUP BY d.id
+        ORDER BY b.name, d.device_name`).bind(date, ...branchBinds).all();
+
+    const { results: entries } = await env.DB.prepare(`SELECT al.user_id, al.user_type, al.branch_id, al.device_serial,
+        d.device_name, d.location, b.name as branch_name,
+        COALESCE(s.name, st.name, al.user_id) as person_name,
+        s.admission_no, s.roll_no, c.name as class_name, s.section,
+        st.employee_id, st.designation,
+        MIN(CASE WHEN al.punch_type='IN' THEN al.punch_time END) as in_time,
+        MAX(CASE WHEN al.punch_type='OUT' THEN al.punch_time END) as out_time,
+        COUNT(*) as punch_count
+        FROM attendance_logs al
+        LEFT JOIN devices d ON al.device_serial=d.serial_number
+        LEFT JOIN branches b ON al.branch_id=b.id
+        LEFT JOIN students s ON al.user_type='student' AND al.user_id=s.id
+        LEFT JOIN classes c ON s.class_id=c.id
+        LEFT JOIN staff st ON al.user_type='staff' AND al.user_id=st.id
+        WHERE date(al.punch_time)=?${branchJoinClause}
+        GROUP BY al.user_type, al.user_id, al.device_serial
+        ORDER BY b.name, d.device_name, person_name`).bind(date, ...branchBinds).all();
+
+    const { results: branches } = await env.DB.prepare(`SELECT b.id, b.name,
+        (SELECT COUNT(*) FROM students s WHERE s.branch_id=b.id AND s.status='Active') as total_students,
+        (SELECT COUNT(DISTINCT al.user_id) FROM attendance_logs al WHERE al.branch_id=b.id AND al.user_type='student' AND al.punch_type='IN' AND date(al.punch_time)=?) as present_students,
+        (SELECT COUNT(*) FROM staff st WHERE st.branch_id=b.id AND st.status='Active') as total_staff,
+        (SELECT COUNT(DISTINCT al.user_id) FROM attendance_logs al WHERE al.branch_id=b.id AND al.user_type='staff' AND al.punch_type='IN' AND date(al.punch_time)=?) as present_staff
+        FROM branches b
+        WHERE 1=1${effBranch ? ' AND b.id=?' : ''}
+        ORDER BY b.name`).bind(date, date, ...branchBinds).all();
+
+    const deviceTotals = (perDevice || []).reduce((acc, device) => {
+        acc.total++;
+        if (device.status === 'online') acc.online++;
+        else acc.offline++;
+        return acc;
+    }, { total: 0, online: 0, offline: 0 });
+
+    return json({
+        date,
+        summary: {
+            students: {
+                total: Number(studentTotals.total || 0),
+                present: Number(studentPresent.total || 0),
+                absent: Math.max(0, Number(studentTotals.total || 0) - Number(studentPresent.total || 0))
+            },
+            staff: {
+                total: Number(staffTotals.total || 0),
+                present: Number(staffPresent.total || 0),
+                absent: Math.max(0, Number(staffTotals.total || 0) - Number(staffPresent.total || 0))
+            },
+            devices: deviceTotals
+        },
+        per_device: perDevice || [],
+        branch_comparison: (branches || []).map(row => ({
+            ...row,
+            absent_students: Math.max(0, Number(row.total_students || 0) - Number(row.present_students || 0)),
+            absent_staff: Math.max(0, Number(row.total_staff || 0) - Number(row.present_staff || 0))
+        })),
+        entries: entries || []
+    });
+});
 
 router.post('/api/attendance/students', async (req, env) => {
     const user = await authenticate(req, env);

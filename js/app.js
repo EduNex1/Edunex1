@@ -32,7 +32,7 @@ function renderSidebar(activeMenu) {
     const staffMenus = ['view-staff', 'add-staff', 'staff-attendance', 'staff-attendance-report', 'teacher-permission'];
     const feeMenus = ['fee-deposit', 'fee-online-requests', 'fee-online-request-review', 'fee-receipt', 'fee-report', 'fee-report-headwise', 'fee-due-report', 'fee-demand-bill', 'fee-discount'];
     const payrollMenus = ['deduction-head', 'allowance-head', 'salary-settings', 'salary-generate', 'salary-list'];
-    const attendanceMenus = ['student-attendance', 'student-attendance-report', 'student-attendance-stats', 'face-attendance', 'face-registration', 'face-settings'];
+    const attendanceMenus = ['student-attendance', 'student-attendance-report', 'student-attendance-stats', 'attendance-dashboard', 'face-settings'];
     const cardsCertsMenus = ['id-card', 'staff-id-card', 'admit-card', 'character-certificate', 'transfer-certificate'];
     const academicsMenus = ['academic-notice', 'academic-timetable', 'academic-schedule', 'academic-syllabus', 'academic-datesheet', 'academic-holidays', 'academic-activity', 'academic-homework', 'academic-gallery'];
     const teacherMenus = ['add-teacher'];
@@ -47,7 +47,7 @@ function renderSidebar(activeMenu) {
     const examMenus = [];
     const feeMasterMenus = ['fee-particulars', 'fee-amount-slab'];
     const masterMenus = ['master-academic-session', 'master-designation', 'master-class', 'master-section', 'master-subject', 'master-exam-name', 'master-exam-group', 'master-period', 'master-homework-type', 'master-house', 'master-stream'];
-    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-options', 'settings-exam', 'admin-permission-requests'];
+    const settingsMenus = ['settings-users', 'settings-user-add', 'settings-user-permission', 'settings-activity-log', 'settings-branches', 'settings-branch-add', 'settings-branch-school', 'settings-devices', 'settings-options', 'settings-exam', 'admin-permission-requests'];
 
     const isStudentActive = studentMenus.includes(activeMenu);
     const isAttendanceActive = attendanceMenus.includes(activeMenu);
@@ -140,13 +140,10 @@ function renderSidebar(activeMenu) {
                             <a href="/student-attendance-stats" class="nav-link${mc('student-attendance-stats')}"><i class="fas fa-angle-right"></i>Attendance Stats</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/face-attendance" class="nav-link${mc('face-attendance')}"><i class="fas fa-angle-right"></i>Face Attendance</a>
+                            <a href="/attendance-dashboard" class="nav-link${mc('attendance-dashboard')}"><i class="fas fa-angle-right"></i>Biometric Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a href="/face-registration" class="nav-link${mc('face-registration')}"><i class="fas fa-angle-right"></i>Face Registration</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/face-settings" class="nav-link${mc('face-settings')}"><i class="fas fa-angle-right"></i>Face Settings</a>
+                            <a href="/face-settings" class="nav-link${mc('face-settings')}"><i class="fas fa-angle-right"></i>Biometric Settings</a>
                         </li>
                     </ul>
                 </li>` : ''}
@@ -440,6 +437,7 @@ function renderSidebar(activeMenu) {
                         <li class="nav-item"><a href="/settings-activity-log" class="nav-link${mc('settings-activity-log')}"><i class="fas fa-angle-right"></i>Activity Log</a></li>
                         ${isSuperAdmin ? '<li class="nav-item"><a href="/settings-branches" class="nav-link'+mc('settings-branches')+'"><i class="fas fa-angle-right"></i>Branches</a></li>' : ''}
                         <li class="nav-item"><a href="/settings-branch-school" class="nav-link${mc('settings-branch-school')}"><i class="fas fa-angle-right"></i>${isSuperAdmin ? 'Branch School Settings' : 'School Settings'}</a></li>
+                        <li class="nav-item"><a href="/settings-devices" class="nav-link${mc('settings-devices')}"><i class="fas fa-angle-right"></i>Devices</a></li>
                         <li class="nav-item"><a href="/settings-options" class="nav-link${mc('settings-options')}"><i class="fas fa-angle-right"></i>Option Settings</a></li>
                         <li class="nav-item"><a href="/settings-exam" class="nav-link${mc('settings-exam')}"><i class="fas fa-angle-right"></i>Exam Settings</a></li>
                     </ul>

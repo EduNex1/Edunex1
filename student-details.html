@@ -457,6 +457,18 @@
                         
                         <div class="col-lg-6 col-12">
                             <div class="detail-card">
+                                <div class="section-header"><i class="fas fa-user-check"></i> Face Registration
+                                    <div class="ml-auto page-actions"><a href="#" id="btnFaceReReg" class="btn-action btn-action-edit"><i class="fas fa-redo"></i> Re-register</a></div>
+                                </div>
+                                <div class="detail-card-body" id="studentFaceRows">
+                                    <div style="font-size:12px;color:#888;">Loading face registration status...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="col-lg-6 col-12">
+                            <div class="detail-card">
                                 <div class="section-header"><i class="fas fa-book"></i> Assigned Subjects</div>
                                 <div class="detail-card-body">
                                     <div class="subjects-grid" id="dSubjects"></div>
@@ -538,6 +550,7 @@
                 '<a href="admit-form.html?edit=' + s.id + '" class="btn-action btn-action-edit"><i class="fas fa-pen"></i> Edit</a>' +
                 '<a href="#" class="btn-action btn-action-print" onclick="window.print();return false;"><i class="fas fa-print"></i> Print</a>' +
                 '<a href="all-student.html" class="btn-action btn-action-back"><i class="fas fa-arrow-left"></i> Back</a>';
+            document.getElementById('btnFaceReReg').href = 'admit-form.html?edit=' + s.id;
 
             var photoBox = document.getElementById('dPhoto');
             if (s.photo_url) {
@@ -662,7 +675,45 @@
                 subjectContainer.innerHTML = '<span style="color:#999;font-size:11px;">No subjects assigned</span>';
             }
 
+            await renderFaceStatus('student', s.id, 'studentFaceRows');
+
             document.getElementById('detailsContent').style.display = 'block';
+        }
+
+        async function renderFaceStatus(userType, userId, targetId) {
+            var target = document.getElementById(targetId);
+            try {
+                var rows = await getFaceRegistrations({ user_type: userType, user_id: userId });
+                if (!Array.isArray(rows) || !rows.length) {
+                    target.innerHTML = '<div style="font-size:12px;color:#888;">No device face registration yet.</div>';
+                    return;
+                }
+                target.innerHTML = rows.map(function(row) {
+                    var cls = row.registration_status === 'success' ? '#168a3a' : row.registration_status === 'failed' ? '#c62828' : '#a15c00';
+                    var label = row.registration_status === 'success' ? 'Registered' : row.registration_status === 'failed' ? 'Failed - Retry' : 'Pending';
+                    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #f0f2f6;padding:8px 0;">' +
+                        '<div><div style="font-size:12px;font-weight:700;color:#222;">' + safeHtml(row.device_name || row.device_serial || '-') + '</div>' +
+                        '<div style="font-size:10px;color:#888;">' + safeHtml(row.branch_name || '') + (row.device_status ? ' / ' + safeHtml(row.device_status) : '') + '</div></div>' +
+                        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' +
+                        '<span style="font-size:11px;font-weight:800;color:' + cls + '">' + label + '</span>' +
+                        (row.registration_status === 'failed' ? '<button onclick="retryFace(' + row.id + ',\'' + targetId + '\',' + userId + ')" class="btn-action btn-action-print" style="border:0;"><i class="fas fa-sync-alt"></i> Retry</button>' : '') +
+                        '<button onclick="removeFace(' + row.id + ',\'' + targetId + '\',' + userId + ')" class="btn-action btn-action-back" style="border:0;"><i class="fas fa-times"></i> Remove</button>' +
+                        '</div></div>';
+                }).join('');
+            } catch(e) {
+                target.innerHTML = '<div style="font-size:12px;color:#c62828;">Face status load failed.</div>';
+            }
+        }
+
+        async function retryFace(id, targetId, userId) {
+            try { await retryFaceRegistration(id); showToast('Face registration retry queued', 'success'); await renderFaceStatus('student', userId, targetId); }
+            catch(e) { showToast(e.message || 'Retry failed', 'error'); }
+        }
+
+        async function removeFace(id, targetId, userId) {
+            if (!confirm('Remove face from this device?')) return;
+            try { await removeFaceRegistration(id); showToast('Face remove queued', 'success'); await renderFaceStatus('student', userId, targetId); }
+            catch(e) { showToast(e.message || 'Remove failed', 'error'); }
         }
 
         async function doResetStudentPw() {

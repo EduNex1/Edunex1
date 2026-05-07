@@ -41,6 +41,39 @@ app.use('/api', (req, res) => {
     req.pipe(proxyReq, { end: true });
 });
 
+app.use('/iclock', (req, res) => {
+    const targetUrl = `${API_BACKEND}/iclock${req.url}`;
+    const parsedUrl = new URL(targetUrl);
+
+    const proxyHeaders = {};
+    if (req.headers['content-type']) proxyHeaders['content-type'] = req.headers['content-type'];
+    if (req.headers['accept']) proxyHeaders['accept'] = req.headers['accept'];
+    if (req.headers['user-agent']) proxyHeaders['user-agent'] = req.headers['user-agent'];
+    proxyHeaders['host'] = parsedUrl.hostname;
+
+    const options = {
+        hostname: parsedUrl.hostname,
+        port: 443,
+        path: parsedUrl.pathname + parsedUrl.search,
+        method: req.method,
+        headers: proxyHeaders,
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        const resHeaders = {};
+        if (proxyRes.headers['content-type']) resHeaders['content-type'] = proxyRes.headers['content-type'];
+        res.writeHead(proxyRes.statusCode, resHeaders);
+        proxyRes.pipe(res, { end: true });
+    });
+
+    proxyReq.on('error', (err) => {
+        console.error('ADMS Proxy Error:', err.message);
+        res.status(502).type('text/plain').send('ERROR');
+    });
+
+    req.pipe(proxyReq, { end: true });
+});
+
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
@@ -83,8 +116,7 @@ const routes = {
     '/student-attendance-report': 'student-attendance-report.html',
     '/student-attendance-detail': 'student-attendance-detail.html',
     '/student-attendance-stats': 'student-attendance-stats.html',
-    '/face-attendance': 'face-attendance.html',
-    '/face-registration': 'face-registration.html',
+    '/attendance-dashboard': 'attendance-dashboard.html',
     '/face-settings': 'face-settings.html',
 
     '/academic-notice': 'academic-notice.html',
@@ -192,6 +224,7 @@ const routes = {
     '/settings-branches': 'settings-branches.html',
     '/settings-branch-add': 'settings-branch-add.html',
     '/settings-branch-school': 'settings-branch-school.html',
+    '/settings-devices': 'settings-devices.html',
     '/settings-options': 'settings-options.html',
     '/settings-exam': 'settings-exam.html',
 
