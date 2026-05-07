@@ -453,6 +453,29 @@ async function logUnknownDevice(env, req, serial, payload = '') {
     } catch {}
 }
 
+function getRequestIp(req) {
+    return String(req.headers.get('CF-Connecting-IP') || req.headers.get('X-Forwarded-For') || '').split(',')[0].trim();
+}
+
+async function logAdmsRequest(env, req, serial, device, payload = '') {
+    try {
+        const url = new URL(req.url);
+        await env.DB.prepare(`INSERT INTO adms_request_logs
+            (serial_number, device_id, endpoint, method, query_string, user_agent, ip_address, payload_preview)
+            VALUES (?,?,?,?,?,?,?,?)`)
+            .bind(
+                serial || '',
+                device && device.id ? device.id : null,
+                url.pathname,
+                req.method,
+                url.searchParams.toString(),
+                String(req.headers.get('User-Agent') || '').slice(0, 500),
+                getRequestIp(req),
+                String(payload || '').slice(0, 1000)
+            ).run();
+    } catch {}
+}
+
 async function markDeviceSeen(env, serial) {
     if (!serial) return null;
     const device = await getDeviceBySerial(env, serial);
@@ -1871,6 +1894,7 @@ function masterCRUD(table, nameField = 'name') {
 router.get('/iclock/cdata', async (req, env) => {
     const serial = getRequestSerial(req);
     const device = await markDeviceSeen(env, serial);
+    await logAdmsRequest(env, req, serial, device);
     if (!device) await logUnknownDevice(env, req, serial);
     return textResponse(admsOptionsResponse(serial));
 });
@@ -1879,6 +1903,7 @@ router.post('/iclock/cdata', async (req, env) => {
     const serial = getRequestSerial(req);
     const body = await req.text();
     const device = await markDeviceSeen(env, serial);
+    await logAdmsRequest(env, req, serial, device, body);
     if (!device) {
         await logUnknownDevice(env, req, serial, body);
         return textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
@@ -1895,6 +1920,7 @@ router.post('/iclock/cdata', async (req, env) => {
 router.get('/iclock/getrequest', async (req, env) => {
     const serial = getRequestSerial(req);
     const device = await markDeviceSeen(env, serial);
+    await logAdmsRequest(env, req, serial, device);
     if (!device) {
         await logUnknownDevice(env, req, serial);
         return textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
@@ -1908,6 +1934,7 @@ router.post('/iclock/devicecmd', async (req, env) => {
     const serial = getRequestSerial(req);
     const body = await req.text();
     const device = await markDeviceSeen(env, serial);
+    await logAdmsRequest(env, req, serial, device, body);
     if (!device) {
         await logUnknownDevice(env, req, serial, body);
         return textResponse('OK');
@@ -1923,6 +1950,11 @@ router.get('/api/devices', async (req, env) => {
     const url = new URL(req.url);
     const status = url.searchParams.get('status');
     let q = `SELECT d.*, b.name as branch_name, b.school_name,
+        (SELECT ar.endpoint FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_endpoint,
+        (SELECT ar.method FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_method,
+        (SELECT ar.user_agent FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_user_agent,
+        (SELECT ar.ip_address FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_ip,
+        (SELECT ar.received_at FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_received_at,
         CASE WHEN d.last_seen IS NOT NULL AND datetime(d.last_seen) >= datetime('now','-10 minutes') THEN 'online' ELSE 'offline' END as computed_status
         FROM devices d LEFT JOIN branches b ON d.branch_id=b.id WHERE 1=1`;
     const binds = [];
@@ -5158,7 +5190,10 @@ export default {
             try {
                 if (request.method !== 'GET' && request.method !== 'HEAD') payload = await request.clone().text();
             } catch {}
-            await logUnknownDevice(env, request, getRequestSerial(request), payload);
+            const serial = getRequestSerial(request);
+            const device = await getDeviceBySerial(env, serial);
+            await logAdmsRequest(env, request, serial, device, payload);
+            await logUnknownDevice(env, request, serial, payload);
             response = textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
         } else {
             response = json({ error: 'Not found' }, 404);
