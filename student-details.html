@@ -712,7 +712,11 @@
 
         async function removeFace(id, targetId, userId) {
             if (!confirm('Remove face from this device?')) return;
-            try { await removeFaceRegistration(id); showToast('Face remove queued', 'success'); await renderFaceStatus('student', userId, targetId); }
+            try {
+                var result = await removeFaceRegistration(id);
+                showToast(result && result.pending_device_remove ? 'Face removed. Device cleanup queued.' : 'Face registration removed', 'success');
+                await renderFaceStatus('student', userId, targetId);
+            }
             catch(e) { showToast(e.message || 'Remove failed', 'error'); }
         }
 

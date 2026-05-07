@@ -629,15 +629,20 @@ function admsOptionsResponse(serial) {
         `Stamp=${stamp}`,
         `OpStamp=${stamp}`,
         `PhotoStamp=${stamp}`,
-        'ErrorDelay=60',
-        'Delay=30',
+        'ErrorDelay=10',
+        'Delay=5',
         'TransTimes=00:00;14:00',
         'TransInterval=1',
         'TransFlag=111111111111',
-        'TimeZone=5.5',
+        'TimeZone=+05:30',
         'Realtime=1',
         'Encrypt=0',
+        'Timeout=60',
+        'SyncTime=3600',
         'ServerVer=2.4.1',
+        'ATTLOGStamp=0',
+        'OPERLOGStamp=0',
+        'ATTPHOTOStamp=0',
         `DateTime=${formatAdmsDateTime()}`
     ].join('\n');
 }
@@ -692,9 +697,16 @@ function buildFaceDeleteCommand(pin) {
 }
 
 async function queueDeviceCommand(env, data) {
-    const existing = data.face_registration_id ? await env.DB.prepare(
-        "SELECT id FROM device_commands WHERE face_registration_id=? AND command_type=? AND status IN ('queued','sent') ORDER BY id DESC LIMIT 1"
-    ).bind(data.face_registration_id, data.command_type).first() : null;
+    let existing = null;
+    if (data.face_registration_id) {
+        existing = await env.DB.prepare(
+            "SELECT id FROM device_commands WHERE face_registration_id=? AND command_type=? AND status IN ('queued','sent') ORDER BY id DESC LIMIT 1"
+        ).bind(data.face_registration_id, data.command_type).first();
+    } else if (data.command_text) {
+        existing = await env.DB.prepare(
+            "SELECT id FROM device_commands WHERE device_serial=? AND command_type=? AND command_text=? AND status IN ('queued','sent') ORDER BY id DESC LIMIT 1"
+        ).bind(data.device_serial, data.command_type || 'generic', data.command_text).first();
+    }
     if (existing) return existing.id;
     const result = await env.DB.prepare(
         'INSERT INTO device_commands (device_serial, branch_id, school_id, face_registration_id, command_type, command_text) VALUES (?,?,?,?,?,?)'
@@ -707,6 +719,17 @@ async function queueDeviceCommand(env, data) {
         data.command_text || ''
     ).run();
     return result.meta.last_row_id;
+}
+
+async function clearPendingFaceCommands(env, registration) {
+    if (!registration) return;
+    await env.DB.prepare(`DELETE FROM device_commands
+        WHERE status IN ('queued','sent')
+          AND (
+            face_registration_id=?
+            OR (device_serial=? AND command_type='face_userinfo' AND command_text LIKE ?)
+          )`)
+        .bind(registration.id, registration.device_serial, `%PIN=${registration.target_pin}%`).run();
 }
 
 async function getPersonForFaceRegistration(env, userType, userId) {
@@ -749,11 +772,10 @@ async function getDevicesForFaceTarget(env, userType, person, explicitBranchId, 
 
 async function upsertFaceRegistrationForDevice(env, person, userType, device, photoPath) {
     const pin = zktecoPinFor(userType, person.id);
-    const row = await env.DB.prepare('SELECT id FROM face_registrations WHERE user_id=? AND user_type=? AND device_serial=?')
+    const row = await env.DB.prepare('SELECT * FROM face_registrations WHERE user_id=? AND user_type=? AND device_serial=?')
         .bind(person.id, userType, device.serial_number).first();
     if (row) {
-        await env.DB.prepare("DELETE FROM device_commands WHERE face_registration_id=? AND status IN ('queued','sent')")
-            .bind(row.id).run();
+        await clearPendingFaceCommands(env, row);
         await env.DB.prepare("UPDATE face_registrations SET photo_path=?, branch_id=?, school_id=?, target_pin=?, registration_status='pending', registered_at=NULL, last_error='', updated_at=datetime('now') WHERE id=?")
             .bind(photoPath || person.photo_url || '', device.branch_id, device.school_id || device.branch_id || null, pin, row.id).run();
         return row.id;
@@ -2041,20 +2063,20 @@ router.delete('/api/face-registrations/:id', async (req, env, params) => {
     if (!reg) return json({ error: 'Not found' }, 404);
     if (!(await userCanAccessBranch(env, user, reg.branch_id))) return json({ error: 'Forbidden' }, 403);
     const device = await getDeviceBySerial(env, reg.device_serial);
-    if (!device) {
-        await env.DB.prepare('DELETE FROM face_registrations WHERE id=?').bind(params.id).run();
-        return json({ success: true });
+    const wasPushed = reg.registration_status === 'success' || !!reg.last_push_at;
+    await clearPendingFaceCommands(env, reg);
+    if (device && wasPushed) {
+        await queueDeviceCommand(env, {
+            device_serial: reg.device_serial,
+            branch_id: reg.branch_id,
+            school_id: reg.school_id || reg.branch_id || null,
+            face_registration_id: null,
+            command_type: 'face_remove',
+            command_text: buildFaceDeleteCommand(reg.target_pin)
+        });
     }
-    await env.DB.prepare("UPDATE face_registrations SET registration_status='pending', updated_at=datetime('now') WHERE id=?").bind(reg.id).run();
-    await queueDeviceCommand(env, {
-        device_serial: reg.device_serial,
-        branch_id: reg.branch_id,
-        school_id: reg.school_id || reg.branch_id || null,
-        face_registration_id: reg.id,
-        command_type: 'face_remove',
-        command_text: buildFaceDeleteCommand(reg.target_pin)
-    });
-    return json({ success: true, pending_remove: true });
+    await env.DB.prepare('DELETE FROM face_registrations WHERE id=?').bind(params.id).run();
+    return json({ success: true, removed: true, pending_device_remove: !!(device && wasPushed) });
 });
 
 router.get('/api/attendance/device-dashboard', async (req, env) => {
@@ -5126,10 +5148,18 @@ export default {
         let response;
         const url = new URL(request.url);
         const apiUser = url.pathname.startsWith('/api/') ? await authenticate(request, env) : null;
-        const match = router.match(request.method, url.pathname);
+        const routePath = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname;
+        const match = router.match(request.method, routePath);
         if (match) {
             try { response = await match.handler(request, env, match.params); }
             catch (e) { response = json({ error: e.message }, 500); }
+        } else if (url.pathname.startsWith('/iclock')) {
+            let payload = '';
+            try {
+                if (request.method !== 'GET' && request.method !== 'HEAD') payload = await request.clone().text();
+            } catch {}
+            await logUnknownDevice(env, request, getRequestSerial(request), payload);
+            response = textResponse(`OK\nDateTime=${formatAdmsDateTime()}`);
         } else {
             response = json({ error: 'Not found' }, 404);
         }

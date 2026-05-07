@@ -39,6 +39,79 @@
         });
     }
 
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function getFaceBox(det) {
+        return det && (det.box || (det.detection && det.detection.box)) || null;
+    }
+
+    function inspectImageQuality(img, box) {
+        var sourceWidth = img.naturalWidth || img.width;
+        var sourceHeight = img.naturalHeight || img.height;
+        var faceRatio = 1;
+        var sx = 0;
+        var sy = 0;
+        var sw = sourceWidth;
+        var sh = sourceHeight;
+
+        if (box && box.width && box.height) {
+            var marginX = box.width * 0.35;
+            var marginY = box.height * 0.35;
+            sx = clamp(box.x - marginX, 0, sourceWidth);
+            sy = clamp(box.y - marginY, 0, sourceHeight);
+            sw = clamp(box.width + marginX * 2, 1, sourceWidth - sx);
+            sh = clamp(box.height + marginY * 2, 1, sourceHeight - sy);
+            faceRatio = (box.width * box.height) / Math.max(1, sourceWidth * sourceHeight);
+        }
+
+        var targetWidth = Math.max(80, Math.min(220, Math.round(sw)));
+        var targetHeight = Math.max(80, Math.round(targetWidth * (sh / sw)));
+        var canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+        var pixels = ctx.getImageData(0, 0, targetWidth, targetHeight).data;
+        var gray = new Float32Array(targetWidth * targetHeight);
+        var brightnessSum = 0;
+
+        for (var i = 0, j = 0; i < pixels.length; i += 4, j++) {
+            var value = pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114;
+            gray[j] = value;
+            brightnessSum += value;
+        }
+
+        var lapSum = 0;
+        var lapSqSum = 0;
+        var lapCount = 0;
+        for (var y = 1; y < targetHeight - 1; y++) {
+            for (var x = 1; x < targetWidth - 1; x++) {
+                var idx = y * targetWidth + x;
+                var lap = -4 * gray[idx] + gray[idx - 1] + gray[idx + 1] + gray[idx - targetWidth] + gray[idx + targetWidth];
+                lapSum += lap;
+                lapSqSum += lap * lap;
+                lapCount++;
+            }
+        }
+
+        var lapMean = lapCount ? lapSum / lapCount : 0;
+        return {
+            brightness: brightnessSum / Math.max(1, gray.length),
+            sharpness: lapCount ? Math.max(0, (lapSqSum / lapCount) - (lapMean * lapMean)) : 0,
+            faceRatio: faceRatio
+        };
+    }
+
+    function getQualityError(quality) {
+        if (quality.faceRatio < 0.035) return 'Face is too far from the camera - please move closer';
+        if (quality.brightness < 45) return 'Photo is too dark - please improve the lighting';
+        if (quality.brightness > 235) return 'Photo is too bright - please reduce glare';
+        if (quality.sharpness < 14) return 'Photo is blurry - please hold steady and retry';
+        return '';
+    }
+
     function validateFile(file, options) {
         var minSize = options.minSize !== undefined ? options.minSize : 200 * 1024;
         var maxSize = options.maxSize !== undefined ? options.maxSize : 2 * 1024 * 1024;
@@ -61,7 +134,7 @@
                         '<input type="file" accept="image/jpeg,image/png" data-role="file" style="display:none">' +
                     '</div>' +
                     '<div class="face-status muted" data-role="status">Upload a clear front-facing photo or capture one with the webcam.</div>' +
-                    '<div class="face-rules">Front facing face, eyes visible, good lighting, no sunglasses, JPG/PNG, 200KB to 2MB.</div>' +
+                    '<div class="face-rules">Front facing face, eyes visible, sharp focus, good lighting, no sunglasses, JPG/PNG, 200KB to 2MB.</div>' +
                 '</div>' +
             '</div>';
     }
@@ -136,6 +209,11 @@
                 var det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.45 }));
                 if (!det) {
                     setStatus('Face is not clear - please retry', 'bad');
+                    return false;
+                }
+                var qualityError = getQualityError(inspectImageQuality(img, getFaceBox(det)));
+                if (qualityError) {
+                    setStatus(qualityError, 'bad');
                     return false;
                 }
                 selectedBlob = blob;
