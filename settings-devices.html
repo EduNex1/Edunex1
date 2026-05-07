@@ -40,9 +40,13 @@
         .icon-btn.edit{background:#fff4df;color:#bb6b00}.icon-btn.delete{background:#ffe8e8;color:#c62828}
         .instruction-card{display:none;border:1px solid #cfe7d5;background:#f3fbf5;border-radius:8px;padding:14px 16px;margin-top:14px}
         .instruction-card h5{font-size:14px;font-weight:800;color:#117534;margin-bottom:10px}
+        .settings-section-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;color:#0d1b4a;letter-spacing:.3px;margin:13px 0 7px}
+        .settings-section-title:first-of-type{margin-top:0}
         .settings-grid{display:grid;grid-template-columns:170px 1fr;gap:6px 12px;font-size:12px;color:#333;max-width:560px}
         .settings-grid .k{font-weight:700;color:#5f6673}
         .settings-note{font-size:11px;color:#4b5565;line-height:1.5;margin-top:10px;max-width:620px}
+        .dns-alert{display:flex;gap:8px;align-items:flex-start;background:#fff7e7;border-left:3px solid #f2a51f;border-radius:6px;padding:9px 11px;margin-top:10px;font-size:11px;color:#5b4a21;line-height:1.45;max-width:660px}
+        .dns-alert i{color:#c37a00;margin-top:2px}
         .helper-text{font-size:11px;color:#777;line-height:1.5;margin-top:4px}
         .empty-row{text-align:center;color:#9298a5;padding:28px!important}
         @media (max-width:768px){.metric-row{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.device-table{min-width:760px}}
@@ -124,6 +128,7 @@
                         <div class="instruction-card" id="instructionCard">
                             <h5><i class="fas fa-check-circle"></i> Device Successfully Added</h5>
                             <div style="font-size:12px;color:#333;margin-bottom:10px">Now configure these settings on the device:</div>
+                            <div class="settings-section-title"><i class="fas fa-cloud"></i> Cloud Server Settings</div>
                             <div class="settings-grid">
                                 <div class="k">Menu</div><div>COMM - Cloud Server Settings</div>
                                 <div class="k">Server Mode</div><div>ADMS</div>
@@ -133,10 +138,19 @@
                                 <div class="k">HTTPS</div><div>OFF (if shown)</div>
                                 <div class="k">Proxy Server</div><div>OFF</div>
                             </div>
-                            <div class="settings-note">
-                                If the device stays offline, set device Network DNS to 1.1.1.1 and secondary DNS to 8.8.8.8, then save and restart the device.
+                            <div class="settings-section-title"><i class="fas fa-network-wired"></i> Network DNS Settings</div>
+                            <div class="settings-grid">
+                                <div class="k">Menu</div><div>COMM - Wi-Fi/Ethernet - Network Settings</div>
+                                <div class="k">Primary DNS</div><div>1.1.1.1</div>
+                                <div class="k">Secondary DNS</div><div>8.8.8.8</div>
+                                <div class="k">DHCP Note</div><div>If DNS fields are hidden, turn DHCP OFF, keep current IP/Subnet/Gateway, then set DNS.</div>
+                                <div class="k">After Save</div><div>Restart the device and wait 2-3 minutes.</div>
                             </div>
-                            <button type="button" class="btn btn-sm mt-3" id="btnCopySettings" style="background:#117534;color:#fff;font-size:12px;font-weight:700"><i class="fas fa-copy"></i> Copy Settings</button>
+                            <div class="dns-alert">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <div>DNS is required for Horus TL2 to resolve adms.edunex1.com. If DNS is wrong, Wi-Fi can still show connected but ADMS will stay offline.</div>
+                            </div>
+                            <button type="button" class="btn btn-sm mt-3" id="btnCopySettings" style="background:#117534;color:#fff;font-size:12px;font-weight:700"><i class="fas fa-copy"></i> Copy Full Settings</button>
                         </div>
                     </div>
                 </div>
@@ -344,8 +358,12 @@
             'Server Port: 80 (only if shown)',
             'HTTPS: OFF (if shown)',
             'Proxy Server: OFF',
-            'Network DNS: 1.1.1.1',
-            'Secondary DNS: 8.8.8.8'
+            '',
+            'Menu: COMM > Wi-Fi/Ethernet > Network Settings',
+            'Primary DNS: 1.1.1.1',
+            'Secondary DNS: 8.8.8.8',
+            'If DNS fields are hidden: turn DHCP OFF, keep current IP/Subnet/Gateway, set DNS, save and restart.',
+            'After save: restart device and wait 2-3 minutes.'
         ].join('\n');
         navigator.clipboard.writeText(text).then(function(){
             showToast('Device settings copied', 'success');
