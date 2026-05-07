@@ -9,6 +9,11 @@ pattern = "adms.crm.edunex1.com"
 custom_domain = true
 zone_name = "edunex1.com"
 
+[[routes]]
+pattern = "adms.edunex1.com"
+custom_domain = true
+zone_name = "edunex1.com"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "vkis-school-db"
