@@ -469,6 +469,13 @@
                         <div class="welcome-date" id="todayDate"></div>
                     </div>
 
+                    <div class="privacy-toolbar">
+                        <div class="privacy-hint"><i class="fas fa-shield-alt"></i> Financial data is hidden by default</div>
+                        <button type="button" class="privacy-toggle-btn" id="financialPrivacyToggle" aria-pressed="false">
+                            <i class="fas fa-eye"></i><span>Show Financial Data</span>
+                        </button>
+                    </div>
+
                     
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -491,16 +498,16 @@
                             <div class="stat-icon teal"><i class="fas fa-rupee-sign"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label">Collected</div>
-                                <div class="stat-number" id="feeCollected">₹0</div>
-                                <div class="stat-sub" id="feeCollectedSub"></div>
+                                <div class="stat-number privacy-sensitive" id="feeCollected">****</div>
+                                <div class="stat-sub privacy-sensitive" id="feeCollectedSub">Hidden</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label">Pending</div>
-                                <div class="stat-number" id="feePending">₹0</div>
-                                <div class="stat-sub" id="feePendingSub"></div>
+                                <div class="stat-number privacy-sensitive" id="feePending">****</div>
+                                <div class="stat-sub privacy-sensitive" id="feePendingSub">Hidden</div>
                             </div>
                         </div>
                         <div class="stat-card">
@@ -534,11 +541,12 @@
                         </div>
                         
                         <div class="col-lg-6 col-12">
-                            <div class="chart-card">
+                            <div class="chart-card finance-sensitive-card">
                                 <div class="chart-card-header"><i class="fas fa-calendar-alt"></i> Monthly Fee
                                     Collection
                                 </div>
                                 <div class="chart-card-body">
+                                    <div class="finance-lock-overlay"><i class="fas fa-lock"></i><span>Financial chart hidden</span></div>
                                     <canvas id="monthlyFeeChart" height="220"></canvas>
                                 </div>
                             </div>
@@ -548,10 +556,11 @@
                     <div class="row">
                         
                         <div class="col-lg-3 col-12">
-                            <div class="chart-card">
+                            <div class="chart-card finance-sensitive-card">
                                 <div class="chart-card-header"><i class="fas fa-chart-pie"></i> Fee Overview</div>
                                 <div class="chart-card-body"
                                     style="display:flex;align-items:center;justify-content:center;">
+                                    <div class="finance-lock-overlay"><i class="fas fa-lock"></i><span>Financial chart hidden</span></div>
                                     <canvas id="feeOverviewChart" height="180" style="max-width:200px;"></canvas>
                                 </div>
                             </div>
@@ -667,9 +676,13 @@
         
         <script src="js/app.js"></script>
         <script src="js/main.js"></script>
+        <script src="js/privacy-toggle.js"></script>
         <script>
             $(function () {
                 initPage('dashboard');
+                if (window.SensitiveVisibility) {
+                    window.SensitiveVisibility.init({ button: '#financialPrivacyToggle', defaultVisible: false });
+                }
                 buildDashboard();
             });
 
@@ -723,10 +736,10 @@
                     document.getElementById('activeStudentsSub').textContent = '';
                     document.getElementById('totalStaff').textContent = '--';
                     document.getElementById('teachersSub').textContent = '';
-                    document.getElementById('feeCollected').textContent = '--';
-                    document.getElementById('feeCollectedSub').textContent = '';
-                    document.getElementById('feePending').textContent = '--';
-                    document.getElementById('feePendingSub').textContent = '';
+                    setFinancialText('feeCollected', '--');
+                    setFinancialText('feeCollectedSub', '');
+                    setFinancialText('feePending', '--');
+                    setFinancialText('feePendingSub', '');
                     document.getElementById('totalClasses').textContent = '--';
                     document.getElementById('classesSub').textContent = '';
                     document.getElementById('totalSubjects').textContent = '--';
@@ -749,10 +762,10 @@
                 document.getElementById('activeStudentsSub').textContent = activeStudents + ' active';
                 document.getElementById('totalStaff').textContent = totalStaff;
                 document.getElementById('teachersSub').textContent = teachersCount + ' teachers';
-                document.getElementById('feeCollected').textContent = '₹' + totalCollected.toLocaleString('en-IN');
-                document.getElementById('feeCollectedSub').textContent = collectionPct + '% collected';
-                document.getElementById('feePending').textContent = '₹' + pendingFee.toLocaleString('en-IN');
-                document.getElementById('feePendingSub').textContent = dueCount + ' students due';
+                setFinancialText('feeCollected', '\u20B9' + totalCollected.toLocaleString('en-IN'));
+                setFinancialText('feeCollectedSub', collectionPct + '% collected', 'Hidden');
+                setFinancialText('feePending', '\u20B9' + pendingFee.toLocaleString('en-IN'));
+                setFinancialText('feePendingSub', dueCount + ' students due', 'Hidden');
                 document.getElementById('totalClasses').textContent = data.classes || 0;
                 document.getElementById('classesSub').textContent = (data.byClass ? data.byClass.length : 0) + ' groups';
                 document.getElementById('totalSubjects').textContent = data.subjects || 0;
@@ -936,6 +949,14 @@
             function escapeHtml(str) {
                 if (!str) return '';
                 return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+            function setFinancialText(id, value, mask) {
+                if (window.SensitiveVisibility) {
+                    window.SensitiveVisibility.setText(id, value, mask || '****');
+                    return;
+                }
+                var el = document.getElementById(id);
+                if (el) el.textContent = value == null ? '' : String(value);
             }
             function formatDate(d) { if (!d) return '—'; var dt = new Date(d); if (isNaN(dt)) return d; return dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
         </script>
