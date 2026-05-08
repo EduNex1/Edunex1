@@ -302,6 +302,7 @@
                             <div class="form-section">
                                 <div class="form-section-title"><i class="fas fa-user-check"></i> Face Capture</div>
                                 <div id="staffFaceCapture"></div>
+                                <div id="staffFaceDeviceSelector"></div>
                             </div>
 
                             
@@ -355,6 +356,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="js/face-api.min.js"></script>
     <script src="js/face-capture-widget.js"></script>
+    <script src="js/face-device-selector.js"></script>
 
     <script>
         let isEditMode = false;
@@ -371,6 +373,9 @@
                 container: document.getElementById('staffFaceCapture'),
                 title: 'Staff Biometric Face Registration'
             });
+            if (typeof loadFaceDeviceSelector === 'function') {
+                loadFaceDeviceSelector({ containerId: 'staffFaceDeviceSelector', mode: 'staff' });
+            }
 
             populateDesignationDropdown(document.getElementById('designation'), false);
 
@@ -468,8 +473,14 @@
                     throw new Error((uploaded && uploaded.error) || 'Face photo upload failed');
                 }
                 const payload = { user_type: 'staff', user_id: staffId, photo_path: uploaded.url };
+                const selectedDevices = typeof getSelectedFaceDeviceSerials === 'function' ? getSelectedFaceDeviceSerials('staffFaceDeviceSelector') : [];
+                if (typeof faceDeviceSelectorHasDevices === 'function' && faceDeviceSelectorHasDevices('staffFaceDeviceSelector') && !selectedDevices.length) {
+                    throw new Error('Please select at least one device for face registration.');
+                }
+                if (selectedDevices.length) payload.device_serials = selectedDevices;
                 const result = await registerFaceOnDevices(payload);
-                if (result && result.total > 0) showToast('Face registration queued for device sync', 'success');
+                if (typeof showFaceRegistrationQueueResult === 'function') showFaceRegistrationQueueResult(result, 'Staff face');
+                else if (result && result.total > 0) showToast('Face registration queued for device sync', 'success');
             } catch (error) {
                 showToast('Staff saved, face registration queue failed: ' + (error.message || 'Error'), 'warning');
             }

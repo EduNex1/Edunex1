@@ -36,6 +36,14 @@
         .status-dot:before{content:'';width:8px;height:8px;border-radius:50%;display:inline-block;background:#aab0bd}
         .status-dot.online{color:#138a36}.status-dot.online:before{background:#17b34a}
         .status-dot.offline{color:#78808f}.status-dot.offline:before{background:#c2c7d0}
+        .slot-meter{min-width:128px}
+        .slot-count{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:800;color:#0d1b4a;margin-bottom:4px}
+        .slot-count span:last-child{color:#687083;font-weight:700}
+        .slot-bar{height:6px;border-radius:999px;background:#e8ecf4;overflow:hidden}
+        .slot-fill{height:100%;width:0;background:#17b34a;border-radius:999px}
+        .slot-meter.near-full .slot-fill{background:#f2a51f}
+        .slot-meter.full .slot-fill{background:#d93025}
+        .slot-meter.full .slot-count{color:#d93025}
         .icon-btn{width:28px;height:28px;border:0;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-right:3px}
         .icon-btn.edit{background:#fff4df;color:#bb6b00}.icon-btn.delete{background:#ffe8e8;color:#c62828}
         .instruction-card{display:none;border:1px solid #cfe7d5;background:#f3fbf5;border-radius:8px;padding:14px 16px;margin-top:14px}
@@ -114,6 +122,11 @@
                                     <input class="form-control" id="deviceSerial" placeholder="Device serial no.">
                                     <div class="helper-text">You can find the serial number on the device label, or from Menu - System Info - Device Info - Serial No.</div>
                                 </div>
+                                <div class="col-lg-3 col-md-6 col-12 form-group">
+                                    <label class="form-label-sm">Face Capacity</label>
+                                    <input type="number" min="1" max="50000" class="form-control" id="deviceFaceCapacity" value="800" placeholder="800">
+                                    <div class="helper-text">Horus TL2 usually supports 800 faces. Change this if your model/storage is different.</div>
+                                </div>
                                 <div class="col-lg-3 col-md-6 col-12 form-group" id="formBranchWrap">
                                     <label class="form-label-sm">Branch</label>
                                     <select class="form-control" id="deviceBranch"></select>
@@ -161,8 +174,8 @@
                     </div>
                     <div class="table-responsive">
                         <table class="device-table">
-                            <thead><tr><th>Device Name</th><th>Location</th><th>Serial Number</th><th>Branch</th><th>Status</th><th>Last Seen</th><th style="width:80px">Action</th></tr></thead>
-                            <tbody id="deviceRows"><tr><td colspan="7" class="empty-row">Loading devices...</td></tr></tbody>
+                            <thead><tr><th>Device Name</th><th>Location</th><th>Serial Number</th><th>Branch</th><th>Status</th><th>Face Slots</th><th>Last Seen</th><th style="width:80px">Action</th></tr></thead>
+                            <tbody id="deviceRows"><tr><td colspan="8" class="empty-row">Loading devices...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -228,7 +241,7 @@
             renderDeviceRows();
             renderMetrics();
         } catch(e) {
-            $('#deviceRows').html('<tr><td colspan="7" class="empty-row">Failed to load devices</td></tr>');
+            $('#deviceRows').html('<tr><td colspan="8" class="empty-row">Failed to load devices</td></tr>');
             showToast(e.message || 'Failed to load devices', 'error');
         }
     }
@@ -242,7 +255,7 @@
 
     function renderDeviceRows(){
         if (!devicesCache.length) {
-            $('#deviceRows').html('<tr><td colspan="7" class="empty-row">No devices added yet</td></tr>');
+            $('#deviceRows').html('<tr><td colspan="8" class="empty-row">No devices added yet</td></tr>');
             return;
         }
         $('#deviceRows').html(devicesCache.map(function(d){
@@ -252,10 +265,23 @@
                 '<td style="font-family:monospace">'+escHtml(d.serial_number)+'</td>'+
                 '<td>'+escHtml(d.branch_name || '-')+'</td>'+
                 '<td><span class="status-dot '+(d.status === 'online' ? 'online' : 'offline')+'">'+(d.status === 'online' ? 'Online' : 'Offline')+'</span></td>'+
+                '<td>'+formatFaceSlotsCell(d)+'</td>'+
                 '<td>'+formatLastSeenCell(d)+'</td>'+
                 '<td><button class="icon-btn edit" title="Edit" onclick="editDevice('+d.id+')"><i class="fas fa-pen"></i></button><button class="icon-btn delete" title="Delete" onclick="removeDevice('+d.id+')"><i class="fas fa-trash"></i></button></td>'+
             '</tr>';
         }).join(''));
+    }
+
+    function formatFaceSlotsCell(device){
+        var used = Math.max(0, Number(device.face_registered_count || 0));
+        var capacity = Math.max(1, Number(device.face_capacity || 800));
+        var pct = Math.min(100, Math.round((used / capacity) * 100));
+        var status = used >= capacity ? 'full' : (pct >= 90 ? 'near-full' : 'available');
+        var available = Math.max(0, capacity - used);
+        return '<div class="slot-meter '+status+'" title="'+available+' face slot(s) available">'+
+            '<div class="slot-count"><strong>'+used+' / '+capacity+'</strong><span>'+available+' free</span></div>'+
+            '<div class="slot-bar"><div class="slot-fill" style="width:'+pct+'%"></div></div>'+
+        '</div>';
     }
 
     function formatLastSeen(value){
@@ -298,10 +324,15 @@
             device_name: $('#deviceName').val().trim(),
             location: $('#deviceLocation').val().trim(),
             serial_number: $('#deviceSerial').val().trim(),
+            face_capacity: Number($('#deviceFaceCapacity').val() || 800),
             branch_id: $('#deviceBranch').val() || $('#branchFilter').val() || undefined
         };
         if (!payload.device_name || !payload.serial_number) {
             showToast('Device name and serial number are required', 'error');
+            return;
+        }
+        if (!payload.face_capacity || payload.face_capacity < 1) {
+            showToast('Face capacity must be at least 1', 'error');
             return;
         }
         try {
@@ -327,6 +358,7 @@
         $('#deviceName').val(d.device_name || '');
         $('#deviceLocation').val(d.location || '');
         $('#deviceSerial').val(d.serial_number || '');
+        $('#deviceFaceCapacity').val(d.face_capacity || 800);
         $('#deviceBranch').val(d.branch_id || '');
         $('#btnCancelEdit').show();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -346,6 +378,7 @@
     function resetDeviceForm(){
         $('#deviceId').val('');
         $('#deviceName,#deviceLocation,#deviceSerial').val('');
+        $('#deviceFaceCapacity').val(800);
         $('#btnCancelEdit').hide();
     }
 

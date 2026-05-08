@@ -419,6 +419,34 @@ function normalizeDeviceSerial(value) {
     return String(value || '').trim();
 }
 
+function normalizeDeviceSerialList(value) {
+    if (Array.isArray(value)) {
+        return Array.from(new Set(value.map(normalizeDeviceSerial).filter(Boolean)));
+    }
+    if (typeof value === 'string') {
+        return Array.from(new Set(value.split(',').map(normalizeDeviceSerial).filter(Boolean)));
+    }
+    return [];
+}
+
+function normalizeFaceCapacity(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 1) return 800;
+    return Math.min(50000, Math.floor(parsed));
+}
+
+function withDeviceFaceUsage(row) {
+    const capacity = normalizeFaceCapacity(row && row.face_capacity);
+    const used = Math.max(0, Number(row && row.face_registered_count) || 0);
+    return {
+        ...row,
+        face_capacity: capacity,
+        face_registered_count: used,
+        face_available: Math.max(0, capacity - used),
+        face_capacity_status: used >= capacity ? 'full' : (used >= Math.floor(capacity * 0.9) ? 'near_full' : 'available')
+    };
+}
+
 function formatAdmsDateTime(date = new Date()) {
     const ist = new Date(date.getTime() + 330 * 60000);
     return ist.toISOString().slice(0, 19).replace('T', ' ');
@@ -773,30 +801,45 @@ async function getStaffRegistrationBranchIds(env, staffId, primaryBranchId) {
     return Array.from(ids).filter(Boolean);
 }
 
-async function getDevicesForFaceTarget(env, userType, person, explicitBranchId, explicitDeviceSerial) {
+async function getDevicesForFaceTarget(env, userType, person, explicitBranchId, explicitDeviceSerial, explicitDeviceSerials = []) {
     const binds = [];
     let q = "SELECT * FROM devices WHERE 1=1";
-    if (explicitDeviceSerial) {
-        q += ' AND serial_number=?';
-        binds.push(explicitDeviceSerial);
-    } else {
-        let branchIds = [];
-        if (userType === 'staff') branchIds = await getStaffRegistrationBranchIds(env, person.id, person.branch_id);
-        else branchIds = [Number(explicitBranchId || person.branch_id)].filter(Boolean);
-        if (explicitBranchId) branchIds = branchIds.filter(id => Number(id) === Number(explicitBranchId));
-        if (!branchIds.length) return [];
-        q += ` AND branch_id IN (${branchIds.map(() => '?').join(',')})`;
-        binds.push(...branchIds);
+    const serials = normalizeDeviceSerialList(explicitDeviceSerials);
+    const singleSerial = normalizeDeviceSerial(explicitDeviceSerial);
+    if (singleSerial) serials.push(singleSerial);
+    const selectedSerials = Array.from(new Set(serials.filter(Boolean)));
+
+    let branchIds = [];
+    if (userType === 'staff') branchIds = await getStaffRegistrationBranchIds(env, person.id, person.branch_id);
+    else branchIds = [Number(explicitBranchId || person.branch_id)].filter(Boolean);
+    if (explicitBranchId) branchIds = branchIds.filter(id => Number(id) === Number(explicitBranchId));
+    if (!branchIds.length) return [];
+
+    if (selectedSerials.length) {
+        q += ` AND serial_number IN (${selectedSerials.map(() => '?').join(',')})`;
+        binds.push(...selectedSerials);
     }
+    q += ` AND branch_id IN (${branchIds.map(() => '?').join(',')})`;
+    binds.push(...branchIds);
     q += ' ORDER BY branch_id, device_name';
     const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
     return results || [];
 }
 
-async function upsertFaceRegistrationForDevice(env, person, userType, device, photoPath) {
+async function getDeviceFaceRegisteredCount(env, serial) {
+    const row = await env.DB.prepare("SELECT COUNT(*) as total FROM face_registrations WHERE device_serial=? AND registration_status IN ('pending','success')")
+        .bind(serial).first();
+    return Number(row && row.total) || 0;
+}
+
+async function getExistingFaceRegistrationForDevice(env, person, userType, serial) {
+    return env.DB.prepare('SELECT * FROM face_registrations WHERE user_id=? AND user_type=? AND device_serial=?')
+        .bind(person.id, userType, serial).first();
+}
+
+async function upsertFaceRegistrationForDevice(env, person, userType, device, photoPath, existingRegistration = null) {
     const pin = zktecoPinFor(userType, person.id);
-    const row = await env.DB.prepare('SELECT * FROM face_registrations WHERE user_id=? AND user_type=? AND device_serial=?')
-        .bind(person.id, userType, device.serial_number).first();
+    const row = existingRegistration || await getExistingFaceRegistrationForDevice(env, person, userType, device.serial_number);
     if (row) {
         await clearPendingFaceCommands(env, row);
         await env.DB.prepare("UPDATE face_registrations SET photo_path=?, branch_id=?, school_id=?, target_pin=?, registration_status='pending', registered_at=NULL, last_error='', updated_at=datetime('now') WHERE id=?")
@@ -836,18 +879,34 @@ async function registerFaceForUser(env, options) {
     if (!['student', 'staff'].includes(userType) || !userId) return { error: 'Invalid user' };
     const person = await getPersonForFaceRegistration(env, userType, userId);
     if (!person) return { error: 'User not found' };
-    let devices = await getDevicesForFaceTarget(env, userType, person, options.branch_id, options.device_serial);
+    let devices = await getDevicesForFaceTarget(env, userType, person, options.branch_id, options.device_serial, options.device_serials);
     if (Array.isArray(options.allowed_branch_ids) && options.allowed_branch_ids.length) {
         const allowed = new Set(options.allowed_branch_ids.map(Number));
         devices = devices.filter(device => allowed.has(Number(device.branch_id)));
     }
     const rows = [];
+    const skipped = [];
     for (const device of devices) {
-        const registrationId = await upsertFaceRegistrationForDevice(env, person, userType, device, options.photo_path || person.photo_url || '');
+        const existing = await getExistingFaceRegistrationForDevice(env, person, userType, device.serial_number);
+        const existingUsesSlot = existing && ['pending', 'success'].includes(existing.registration_status);
+        const capacity = normalizeFaceCapacity(device.face_capacity);
+        const used = await getDeviceFaceRegisteredCount(env, device.serial_number);
+        if (!existingUsesSlot && used >= capacity) {
+            skipped.push({
+                device_serial: device.serial_number,
+                device_name: device.device_name || '',
+                branch_id: device.branch_id || null,
+                reason: 'capacity_full',
+                used,
+                capacity
+            });
+            continue;
+        }
+        const registrationId = await upsertFaceRegistrationForDevice(env, person, userType, device, options.photo_path || person.photo_url || '', existing);
         await queueFaceRegistrationCommands(env, registrationId, person, device);
         rows.push(await env.DB.prepare('SELECT * FROM face_registrations WHERE id=?').bind(registrationId).first());
     }
-    return { rows, total: rows.length };
+    return { rows, total: rows.length, skipped };
 }
 
 async function queuePendingFaceRegistrationsForDevice(env, serial) {
@@ -1950,6 +2009,7 @@ router.get('/api/devices', async (req, env) => {
     const url = new URL(req.url);
     const status = url.searchParams.get('status');
     let q = `SELECT d.*, b.name as branch_name, b.school_name,
+        (SELECT COUNT(*) FROM face_registrations fr WHERE fr.device_serial=d.serial_number AND fr.registration_status IN ('pending','success')) as face_registered_count,
         (SELECT ar.endpoint FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_endpoint,
         (SELECT ar.method FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_method,
         (SELECT ar.user_agent FROM adms_request_logs ar WHERE ar.serial_number=d.serial_number ORDER BY ar.id DESC LIMIT 1) as last_adms_user_agent,
@@ -1966,7 +2026,7 @@ router.get('/api/devices', async (req, env) => {
     }
     q += ' ORDER BY b.name, d.device_name';
     const { results } = binds.length ? await env.DB.prepare(q).bind(...binds).all() : await env.DB.prepare(q).all();
-    return json((results || []).map(row => ({ ...row, status: row.computed_status || row.status || 'offline' })));
+    return json((results || []).map(row => withDeviceFaceUsage({ ...row, status: row.computed_status || row.status || 'offline' })));
 });
 
 router.post('/api/devices', async (req, env) => {
@@ -1977,12 +2037,13 @@ router.post('/api/devices', async (req, env) => {
     if (!branchId) return json({ error: 'branch_id required' }, 400);
     const serial = normalizeDeviceSerial(d.serial_number);
     const name = String(d.device_name || '').trim();
+    const faceCapacity = normalizeFaceCapacity(d.face_capacity);
     if (!serial || !name) return json({ error: 'Device name and serial number are required' }, 400);
     try {
         const result = await env.DB.prepare(
-            "INSERT INTO devices (device_name, serial_number, branch_id, school_id, location, status) VALUES (?,?,?,?,?,'offline')"
-        ).bind(name, serial, branchId, d.school_id || branchId, String(d.location || '').trim()).run();
-        return json({ id: result.meta.last_row_id, device_name: name, serial_number: serial, branch_id: branchId, location: d.location || '', status: 'offline' }, 201);
+            "INSERT INTO devices (device_name, serial_number, branch_id, school_id, location, face_capacity, status) VALUES (?,?,?,?,?,?,'offline')"
+        ).bind(name, serial, branchId, d.school_id || branchId, String(d.location || '').trim(), faceCapacity).run();
+        return json({ id: result.meta.last_row_id, device_name: name, serial_number: serial, branch_id: branchId, location: d.location || '', face_capacity: faceCapacity, status: 'offline' }, 201);
     } catch (error) {
         if (String(error.message || '').includes('UNIQUE')) return json({ error: 'This serial number is already linked to another branch' }, 409);
         throw error;
@@ -1999,10 +2060,11 @@ router.put('/api/devices/:id', async (req, env, params) => {
     const serial = normalizeDeviceSerial(d.serial_number ?? existing.serial_number);
     const name = String(d.device_name ?? existing.device_name ?? '').trim();
     const location = String(d.location ?? existing.location ?? '').trim();
+    const faceCapacity = normalizeFaceCapacity(d.face_capacity ?? existing.face_capacity);
     if (!serial || !name) return json({ error: 'Device name and serial number are required' }, 400);
     try {
-        await env.DB.prepare("UPDATE devices SET device_name=?, serial_number=?, location=?, updated_at=datetime('now') WHERE id=?")
-            .bind(name, serial, location, params.id).run();
+        await env.DB.prepare("UPDATE devices SET device_name=?, serial_number=?, location=?, face_capacity=?, updated_at=datetime('now') WHERE id=?")
+            .bind(name, serial, location, faceCapacity, params.id).run();
         if (serial !== existing.serial_number) {
             await env.DB.prepare('UPDATE face_registrations SET device_serial=? WHERE device_serial=?').bind(serial, existing.serial_number).run();
             await env.DB.prepare('UPDATE device_commands SET device_serial=? WHERE device_serial=?').bind(serial, existing.serial_number).run();
@@ -2067,11 +2129,12 @@ router.post('/api/face-registrations', async (req, env) => {
         user_id: Number(d.user_id),
         branch_id: d.branch_id || undefined,
         device_serial: d.device_serial || '',
+        device_serials: normalizeDeviceSerialList(d.device_serials),
         photo_path: d.photo_path || person.photo_url || '',
         allowed_branch_ids: user.role === 'super_admin' ? [] : await getUserAssignedBranchIds(env, user.id, user.branch_id)
     });
     if (result.error) return json({ error: result.error }, 400);
-    return json({ success: true, registrations: result.rows, total: result.total }, 201);
+    return json({ success: true, registrations: result.rows, total: result.total, skipped: result.skipped || [] }, 201);
 });
 
 router.post('/api/face-registrations/:id/retry', async (req, env, params) => {
@@ -2083,6 +2146,11 @@ router.post('/api/face-registrations/:id/retry', async (req, env, params) => {
     const person = await getPersonForFaceRegistration(env, reg.user_type, reg.user_id);
     const device = await getDeviceBySerial(env, reg.device_serial);
     if (!person || !device) return json({ error: 'Person or device not found' }, 404);
+    const used = await getDeviceFaceRegisteredCount(env, device.serial_number);
+    const capacity = normalizeFaceCapacity(device.face_capacity);
+    if (!['pending', 'success'].includes(reg.registration_status) && used >= capacity) {
+        return json({ error: 'Device face capacity is full. Please choose another device.' }, 409);
+    }
     await env.DB.prepare("UPDATE face_registrations SET registration_status='pending', last_error='', updated_at=datetime('now') WHERE id=?").bind(reg.id).run();
     await queueFaceRegistrationCommands(env, reg.id, person, device);
     return json({ success: true });
